@@ -1,0 +1,549 @@
+{
+    "info": {
+        "_postman_id": "f69695ee-a016-4edd-ad0a-bf03cdeef374",
+        "description": "Unified Postman collection for Widia Kencana API endpoints.",
+        "name": "Widia Kencana - All",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "item": [
+                {
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Login response has access token\", function () {",
+                                    "  var jsonData = pm.response.json();",
+                                    "  pm.expect(jsonData).to.have.property(\"data\");",
+                                    "  pm.expect(jsonData.data).to.have.property(\"access_token\");",
+                                    "});",
+                                    "",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData \u0026\u0026 jsonData.data \u0026\u0026 jsonData.data.access_token) {",
+                                    "  var accessToken = jsonData.data.access_token;",
+                                    "  pm.collectionVariables.set(\"token\", accessToken);",
+                                    "  if (pm.environment \u0026\u0026 pm.environment.name) {",
+                                    "    pm.environment.set(\"token\", accessToken);",
+                                    "  }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "name": "Login",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"fakhri@widiakencana.com\",\n  \"password\": \"Cihanjuang180\"\n}"
+                        },
+                        "description": "Login with email and password. On success, returns access_token and sets refresh_token HttpOnly cookie.",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "login"
+                            ],
+                            "raw": "{{base_url}}/api/login"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Login success\",\n  \"data\": {\n    \"access_token\": \"\u003cjwt_access_token\u003e\",\n    \"userid\": \"1\",\n    \"name\": \"Admin\",\n    \"role\": \"admin\"\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Login - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"email\": \"fakhri@widiakencana.com\",\n  \"password\": \"Cihanjuang180\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "login"
+                                    ],
+                                    "raw": "{{base_url}}/api/login"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Login - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "login"
+                                    ],
+                                    "raw": "{{base_url}}/api/login"
+                                }
+                            },
+                            "status": "Bad Request"
+                        }
+                    ]
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "description": "Uses refresh_token from HttpOnly cookie to issue a new access token and rotate refresh token.",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Cookie",
+                                "value": "refresh_token=\u003crefresh_token_cookie\u003e"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "refresh-token"
+                            ],
+                            "raw": "{{base_url}}/api/refresh-token"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Token refreshed successfully\",\n  \"data\": {\n    \"access_token\": \"\u003cnew_jwt_access_token\u003e\"\n  }\n}",
+                            "code": 200,
+                            "name": "Refresh Token - Success",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Cookie",
+                                        "value": "refresh_token=\u003crefresh_token_cookie\u003e"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "refresh-token"
+                                    ],
+                                    "raw": "{{base_url}}/api/refresh-token"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing refresh token\"\n}",
+                            "code": 401,
+                            "name": "Refresh Token - Missing Cookie",
+                            "originalRequest": {
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "refresh-token"
+                                    ],
+                                    "raw": "{{base_url}}/api/refresh-token"
+                                }
+                            },
+                            "status": "Unauthorized"
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "description": "Invalidate refresh token in Redis and clear cookie.",
+                        "header": [
+                            {
+                                "key": "Cookie",
+                                "value": "refresh_token=\u003crefresh_token_cookie\u003e"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "logout"
+                            ],
+                            "raw": "{{base_url}}/api/logout"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Logout successful\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "name": "Logout - Success",
+                            "status": "OK"
+                        }
+                    ]
+                },
+                {
+                    "name": "Me",
+                    "request": {
+                        "description": "Get user profile from access token claims.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "me"
+                            ],
+                            "raw": "{{base_url}}/api/me"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"User profile\",\n  \"data\": {\n    \"userID\": \"1\",\n    \"name\": \"Admin\",\n    \"role\": \"admin\"\n  }\n}",
+                            "code": 200,
+                            "name": "Me - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid or expired token\"\n}",
+                            "code": 401,
+                            "name": "Me - Unauthorized",
+                            "status": "Unauthorized"
+                        }
+                    ]
+                }
+            ],
+            "name": "Auth"
+        },
+        {
+            "item": [
+                {
+                    "name": "List Quotations",
+                    "request": {
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "quotation-list"
+                            ],
+                            "raw": "{{base_url}}/api/quotation-list"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"total\": 12000000\n    }\n  ]\n}",
+                            "code": 200,
+                            "name": "List Quotations - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}",
+                            "code": 401,
+                            "name": "List Quotations - Unauthorized",
+                            "status": "Unauthorized"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Quotation Detail",
+                    "request": {
+                        "description": "Replace last path segment with quotation id.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "quotation-detail",
+                                "1"
+                            ],
+                            "raw": "{{base_url}}/api/quotation-detail/1"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"quotation_no\": \"Q-2026-0001\",\n    \"client_name\": \"PT Contoh\",\n    \"project\": \"Website Revamp\",\n    \"sections\": []\n  }\n}",
+                            "code": 200,
+                            "name": "Get Quotation Detail - Success",
+                            "status": "OK"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Quotation",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"client_name\": \"PT Contoh\",\n  \"attn_name\": \"Budi\",\n  \"attn_position\": \"Manager\",\n  \"address\": \"Jakarta\",\n  \"project\": \"Website Revamp\",\n  \"discount_type\": \"percent\",\n  \"discount_value\": 10,\n  \"subtotal\": 10000000,\n  \"total\": 9000000,\n  \"notes\": [\"Harga belum termasuk PPN\"],\n  \"sections\": [\n    {\n      \"title\": \"Development\",\n      \"position\": 1,\n      \"items\": [\n        {\n          \"name\": \"Backend API\",\n          \"qty\": 1,\n          \"unit\": \"project\",\n          \"price\": 5000000\n        }\n      ],\n      \"details\": []\n    }\n  ]\n}"
+                        },
+                        "description": "Sample full payload.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "quotation-add"
+                            ],
+                            "raw": "{{base_url}}/api/quotation-add"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation created successfully\",\n  \"data\": {\n    \"quotationNo\": \"Q-2026-0001\"\n  }\n}",
+                            "code": 200,
+                            "name": "Create Quotation - Success (Full Payload)",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"client_name\": \"PT Contoh\",\n  \"project\": \"Website Revamp\",\n  \"sections\": [\n    {\n      \"title\": \"Development\",\n      \"position\": 1,\n      \"items\": [\n        {\n          \"name\": \"Backend API\",\n          \"qty\": 1,\n          \"unit\": \"project\",\n          \"price\": 5000000\n        }\n      ],\n      \"details\": []\n    }\n  ]\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "quotation-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/quotation-add"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Failed to create quotation: client name cannot be empty\"\n}",
+                            "code": 401,
+                            "name": "Create Quotation - Validation Error (Minimal Invalid Payload)",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"client_name\": \"\",\n  \"project\": \"\",\n  \"sections\": []\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "quotation-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/quotation-add"
+                                }
+                            },
+                            "status": "Unauthorized"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Quotation",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"client_name\": \"PT Contoh Update\",\n  \"attn_name\": \"Budi\",\n  \"attn_position\": \"Director\",\n  \"address\": \"Bandung\",\n  \"project\": \"Website Revamp Phase 2\",\n  \"discount_type\": \"amount\",\n  \"discount_value\": 500000,\n  \"subtotal\": 15000000,\n  \"total\": 14500000,\n  \"notes\": [\"Revisi scope\"],\n  \"sections\": [\n    {\n      \"title\": \"Implementation\",\n      \"position\": 1,\n      \"items\": [\n        {\n          \"name\": \"API Enhancement\",\n          \"qty\": 1,\n          \"unit\": \"project\",\n          \"price\": 8000000\n        }\n      ],\n      \"details\": []\n    }\n  ]\n}"
+                        },
+                        "description": "Replace last path segment with quotation id.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "quotation-update",
+                                "1"
+                            ],
+                            "raw": "{{base_url}}/api/quotation-update/1"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "name": "Update Quotation - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid payload\"\n}",
+                            "code": 400,
+                            "name": "Update Quotation - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"client_name\": 123\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "quotation-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/quotation-update/1"
+                                }
+                            },
+                            "status": "Bad Request"
+                        }
+                    ]
+                }
+            ],
+            "name": "Quotation"
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8081"
+        },
+        {
+            "key": "token",
+            "value": ""
+        }
+    ]
+}

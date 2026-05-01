@@ -1,0 +1,268 @@
+{
+  "info": {
+    "_postman_id": "cbf0a346-bd3e-47f0-965a-4f0f8d4c989d",
+    "name": "Widia Kencana - Quotation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Quotation endpoints for Widia Kencana API. Rule: 1 route = 1 endpoint item."
+  },
+  "item": [
+    {
+      "name": "List Quotations",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/quotation-list",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotation-list"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "List Quotations - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"total\": 12000000\n    }\n  ]\n}"
+        },
+        {
+          "name": "List Quotations - Unauthorized",
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Quotation Detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/quotation-detail/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotation-detail",
+            "1"
+          ]
+        },
+        "description": "Replace last path segment with quotation id."
+      },
+      "response": [
+        {
+          "name": "Get Quotation Detail - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"quotation_no\": \"Q-2026-0001\",\n    \"client_name\": \"PT Contoh\",\n    \"project\": \"Website Revamp\",\n    \"sections\": []\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Quotation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"client_name\": \"PT Contoh\",\n  \"attn_name\": \"Budi\",\n  \"attn_position\": \"Manager\",\n  \"address\": \"Jakarta\",\n  \"project\": \"Website Revamp\",\n  \"discount_type\": \"percent\",\n  \"discount_value\": 10,\n  \"subtotal\": 10000000,\n  \"total\": 9000000,\n  \"notes\": [\"Harga belum termasuk PPN\"],\n  \"sections\": [\n    {\n      \"title\": \"Development\",\n      \"position\": 1,\n      \"items\": [\n        {\n          \"name\": \"Backend API\",\n          \"qty\": 1,\n          \"unit\": \"project\",\n          \"price\": 5000000\n        }\n      ],\n      \"details\": []\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotation-add",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotation-add"
+          ]
+        },
+        "description": "Sample full payload."
+      },
+      "response": [
+        {
+          "name": "Create Quotation - Success (Full Payload)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"PT Contoh\",\n  \"project\": \"Website Revamp\",\n  \"sections\": [\n    {\n      \"title\": \"Development\",\n      \"position\": 1,\n      \"items\": [\n        {\n          \"name\": \"Backend API\",\n          \"qty\": 1,\n          \"unit\": \"project\",\n          \"price\": 5000000\n        }\n      ],\n      \"details\": []\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/quotation-add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "quotation-add"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation created successfully\",\n  \"data\": {\n    \"quotationNo\": \"Q-2026-0001\"\n  }\n}"
+        },
+        {
+          "name": "Create Quotation - Validation Error (Minimal Invalid Payload)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"\",\n  \"project\": \"\",\n  \"sections\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/quotation-add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "quotation-add"
+              ]
+            }
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Failed to create quotation: client name cannot be empty\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Quotation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"client_name\": \"PT Contoh Update\",\n  \"attn_name\": \"Budi\",\n  \"attn_position\": \"Director\",\n  \"address\": \"Bandung\",\n  \"project\": \"Website Revamp Phase 2\",\n  \"discount_type\": \"amount\",\n  \"discount_value\": 500000,\n  \"subtotal\": 15000000,\n  \"total\": 14500000,\n  \"notes\": [\"Revisi scope\"],\n  \"sections\": [\n    {\n      \"title\": \"Implementation\",\n      \"position\": 1,\n      \"items\": [\n        {\n          \"name\": \"API Enhancement\",\n          \"qty\": 1,\n          \"unit\": \"project\",\n          \"price\": 8000000\n        }\n      ],\n      \"details\": []\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotation-update/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotation-update",
+            "1"
+          ]
+        },
+        "description": "Replace last path segment with quotation id."
+      },
+      "response": [
+        {
+          "name": "Update Quotation - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation updated successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Update Quotation - Invalid Payload",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": 123\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/quotation-update/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "quotation-update",
+                "1"
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid payload\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

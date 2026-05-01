@@ -1,0 +1,35 @@
+# Go build files
+/bin/
+/tmp/
+.gocache/
+.gomodcache/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.a
+*.o
+*.obj
+*.out
+*.test
+*.log
+coverage.out
+cover.out
+coverage.html
+
+# Environment file
+.env
+.env.local
+.env.*.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
