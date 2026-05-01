@@ -56,7 +56,7 @@ func (c Config) IsProduction() bool {
 }
 
 func (c Config) CookieSecure() bool {
-	return c.IsProduction()
+	return false
 }
 
 func (c Config) CookieDomain() string {

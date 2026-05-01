@@ -56,6 +56,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	if !h.cfg.RedisEnabled {
+		Error(c, http.StatusServiceUnavailable, "Refresh token is disabled")
+		return
+	}
+
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
 		Error(c, http.StatusUnauthorized, "Missing refresh token")
@@ -78,6 +83,11 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
+	if !h.cfg.RedisEnabled {
+		Success(c, "Logout successful", nil)
+		return
+	}
+
 	cookie, _ := c.Cookie("refresh_token")
 	_ = h.auth.Logout(c.Request.Context(), input.LogoutCommand{
 		RefreshToken: cookie,
