@@ -16,9 +16,9 @@ func main() {
 	app := bootstrap.NewApiApp(ctx)
 
 	if err := app.Start(); err != nil {
-		app.ServiceLogger.Error("ouchclient exited with error", "error", err)
+		app.ServiceLogger.Error("api exited with error", "error", err)
 		os.Exit(1)
 	}
 
-	app.ServiceLogger.Info("ouchclient shutdown complete")
+	app.ServiceLogger.Info("api shutdown complete")
 }

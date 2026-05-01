@@ -1,0 +1,18 @@
+version: "3"
+
+tasks:
+  run:dev:api:
+    desc: Run the API server in development mode with Air hot reload
+    preconditions:
+      - sh: command -v air >/dev/null 2>&1
+        msg: "air is required. Install it first, for example: go install github.com/air-verse/air@latest"
+    cmds:
+      - >
+        air
+        --build.cmd "go build -o ./tmp/api ./cmd/api"
+        --build.bin "./tmp/api"
+        --build.delay "200"
+        --build.exclude_dir "tmp,.git,.gocache,.gomodcache"
+        --build.exclude_regex ".*_test\\.go"
+        --build.include_ext "go,yaml,yml,json,env"
+        --misc.clean_on_exit "true"
