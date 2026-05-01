@@ -23,7 +23,7 @@ func (h *QuotationHandler) List(c *gin.Context) {
 		dto.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	dto.Success(c, "Success", data)
+	dto.Success(c, "Success", dto.NewQuotationListResponses(data))
 }
 
 func (h *QuotationHandler) Get(c *gin.Context) {
@@ -32,7 +32,7 @@ func (h *QuotationHandler) Get(c *gin.Context) {
 		dto.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	dto.Success(c, "Success", data)
+	dto.Success(c, "Success", dto.NewQuotationDetailResponse(data))
 }
 
 func (h *QuotationHandler) Create(c *gin.Context) {
@@ -42,15 +42,13 @@ func (h *QuotationHandler) Create(c *gin.Context) {
 		return
 	}
 
-	quotationNo, err := h.quotation.Create(c.Request.Context(), mapQuotationRequest(req))
+	quotationNo, err := h.quotation.Create(c.Request.Context(), req.ToCreateQuotationCommand())
 	if err != nil {
 		dto.Error(c, http.StatusUnauthorized, "Failed to create quotation: "+err.Error())
 		return
 	}
 
-	dto.Success(c, "Quotation created successfully", gin.H{
-		"quotationNo": quotationNo,
-	})
+	dto.Success(c, "Quotation created successfully", dto.NewQuotationCreatedResponse(quotationNo))
 }
 
 func (h *QuotationHandler) Update(c *gin.Context) {
@@ -60,49 +58,10 @@ func (h *QuotationHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if err := h.quotation.Update(c.Request.Context(), c.Param("id"), input.UpdateQuotationCommand(mapQuotationRequest(req))); err != nil {
+	if err := h.quotation.Update(c.Request.Context(), c.Param("id"), req.ToUpdateQuotationCommand()); err != nil {
 		dto.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	dto.Success(c, "Quotation updated successfully", nil)
-}
-
-func mapQuotationRequest(req dto.QuotationRequest) input.CreateQuotationCommand {
-	cmd := input.CreateQuotationCommand{
-		ClientName:    req.ClientName,
-		AttnName:      req.AttnName,
-		AttnPosition:  req.AttnPosition,
-		Address:       req.Address,
-		Project:       req.Project,
-		DiscountType:  req.DiscountType,
-		DiscountValue: req.DiscountValue,
-		SubTotal:      req.SubTotal,
-		Total:         req.Total,
-		Notes:         req.Notes,
-	}
-
-	for _, section := range req.Sections {
-		mappedSection := input.QuotationSectionInput{
-			Title:    section.Title,
-			Position: section.Position,
-		}
-		for _, item := range section.Items {
-			mappedSection.Items = append(mappedSection.Items, input.QuotationItemInput{
-				Name:  item.Name,
-				Qty:   item.Qty,
-				Unit:  item.Unit,
-				Price: item.Price,
-			})
-		}
-		for _, detail := range section.Details {
-			mappedSection.Details = append(mappedSection.Details, input.QuotationDetailInput{
-				Description: detail.Description,
-				Position:    detail.Position,
-			})
-		}
-		cmd.Sections = append(cmd.Sections, mappedSection)
-	}
-
-	return cmd
 }

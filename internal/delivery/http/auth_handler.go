@@ -43,12 +43,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.SetCookie("refresh_token", result.RefreshToken, int(result.RefreshTokenTTL.Seconds()), "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
 	}
 
-	dto.Success(c, "Login success", gin.H{
-		"access_token": result.AccessToken,
-		"userid":       result.UserID,
-		"name":         result.Name,
-		"role":         result.Role,
-	})
+	dto.Success(c, "Login success", dto.NewLoginResponse(result))
 }
 
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
@@ -73,9 +68,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refresh_token", result.RefreshToken, int(result.RefreshTokenTTL.Seconds()), "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
-	dto.Success(c, "Token refreshed successfully", gin.H{
-		"access_token": result.AccessToken,
-	})
+	dto.Success(c, "Token refreshed successfully", dto.NewRefreshTokenResponse(result))
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -104,11 +97,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
-	dto.Success(c, "User profile", gin.H{
-		"userID": result.UserID,
-		"name":   result.Name,
-		"role":   result.Role,
-	})
+	dto.Success(c, "User profile", dto.NewProfileResponse(result))
 }
 
 func UnauthorizedMessage(err error) string {
