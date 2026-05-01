@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
@@ -17,19 +18,14 @@ type AuthHandler struct {
 	cfg  config.Config
 }
 
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
 func NewAuthHandler(auth input.AuthUseCase, cfg config.Config) *AuthHandler {
 	return &AuthHandler{auth: auth, cfg: cfg}
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req LoginRequest
+	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		Error(c, http.StatusBadRequest, "Invalid request payload")
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -38,7 +34,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		Password: req.Password,
 	})
 	if err != nil {
-		Error(c, apperror.ToHTTPStatus(err), err.Error())
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}
 
@@ -47,7 +43,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.SetCookie("refresh_token", result.RefreshToken, int(result.RefreshTokenTTL.Seconds()), "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
 	}
 
-	Success(c, "Login success", gin.H{
+	dto.Success(c, "Login success", gin.H{
 		"access_token": result.AccessToken,
 		"userid":       result.UserID,
 		"name":         result.Name,
@@ -57,13 +53,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	if !h.cfg.RedisEnabled {
-		Error(c, http.StatusServiceUnavailable, "Refresh token is disabled")
+		dto.Error(c, http.StatusServiceUnavailable, "Refresh token is disabled")
 		return
 	}
 
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
-		Error(c, http.StatusUnauthorized, "Missing refresh token")
+		dto.Error(c, http.StatusUnauthorized, "Missing refresh token")
 		return
 	}
 
@@ -71,20 +67,20 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		RefreshToken: cookie,
 	})
 	if err != nil {
-		Error(c, apperror.ToHTTPStatus(err), err.Error())
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}
 
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refresh_token", result.RefreshToken, int(result.RefreshTokenTTL.Seconds()), "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
-	Success(c, "Token refreshed successfully", gin.H{
+	dto.Success(c, "Token refreshed successfully", gin.H{
 		"access_token": result.AccessToken,
 	})
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
 	if !h.cfg.RedisEnabled {
-		Success(c, "Logout successful", nil)
+		dto.Success(c, "Logout successful", nil)
 		return
 	}
 
@@ -94,7 +90,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	})
 
 	c.SetCookie("refresh_token", "", -1, "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
-	Success(c, "Logout successful", nil)
+	dto.Success(c, "Logout successful", nil)
 }
 
 func (h *AuthHandler) Me(c *gin.Context) {
@@ -104,11 +100,11 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		Role:   c.GetString("role"),
 	})
 	if err != nil {
-		Error(c, apperror.ToHTTPStatus(err), err.Error())
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}
 
-	Success(c, "User profile", gin.H{
+	dto.Success(c, "User profile", gin.H{
 		"userID": result.UserID,
 		"name":   result.Name,
 		"role":   result.Role,

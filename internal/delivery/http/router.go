@@ -3,6 +3,7 @@ package http
 import (
 	"os"
 
+	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/middleware"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
@@ -22,7 +23,7 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	r.Use(corsMiddleware(deps.Config))
 
 	r.GET("/health", func(c *gin.Context) {
-		Success(c, "ok", gin.H{"env": deps.Config.AppEnv})
+		dto.Success(c, "ok", gin.H{"env": deps.Config.AppEnv})
 	})
 
 	api := r.Group("/api")
