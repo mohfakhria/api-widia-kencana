@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
@@ -18,8 +19,11 @@ func NewQuotationUseCase(repo output.QuotationRepository) input.QuotationUseCase
 	return &quotationUseCase{repo: repo}
 }
 
-func (uc *quotationUseCase) List(ctx context.Context) ([]entity.Quotation, error) {
-	return uc.repo.List(ctx)
+func (uc *quotationUseCase) List(ctx context.Context, query input.ListQuotationQuery) ([]entity.Quotation, error) {
+	query.Status = strings.TrimSpace(query.Status)
+	query.Project = strings.TrimSpace(query.Project)
+
+	return uc.repo.List(ctx, query)
 }
 
 func (uc *quotationUseCase) GetByID(ctx context.Context, id string) (*entity.Quotation, error) {

@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
@@ -67,11 +69,45 @@ func (r *QuotationRepository) Create(ctx context.Context, quotation *entity.Quot
 	return quotationNo, nil
 }
 
-func (r *QuotationRepository) List(ctx context.Context) ([]entity.Quotation, error) {
-	rows, err := r.db.QueryContext(ctx, `
+func (r *QuotationRepository) List(ctx context.Context, query input.ListQuotationQuery) ([]entity.Quotation, error) {
+	var (
+		builder strings.Builder
+		args    []any
+	)
+
+	builder.WriteString(`
 		SELECT id, quotation_no, client_name, project, total, created_at, updated_at
-		FROM quotations ORDER BY created_at DESC
+		FROM quotations
+		WHERE 1=1
 	`)
+
+	if query.Status != "" {
+		args = append(args, query.Status)
+		builder.WriteString(`
+			AND EXISTS (
+				SELECT 1
+				FROM unnest(string_to_array(COALESCE(status, ''), ':')) AS status_step
+				WHERE status_step = $`)
+		builder.WriteString(strconv.Itoa(len(args)))
+		builder.WriteString(`
+			)
+		`)
+	}
+
+	if query.Project != "" {
+		args = append(args, "%"+query.Project+"%")
+		builder.WriteString(`
+			AND COALESCE(project, '') ILIKE $`)
+		builder.WriteString(strconv.Itoa(len(args)))
+		builder.WriteString(`
+		`)
+	}
+
+	builder.WriteString(`
+		ORDER BY created_at DESC
+	`)
+
+	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
 	if err != nil {
 		return nil, err
 	}

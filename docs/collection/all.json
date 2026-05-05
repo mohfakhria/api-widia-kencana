@@ -454,6 +454,7 @@
                 {
                     "name": "List Quotations",
                     "request": {
+                        "description": "Both query params are optional. Status is matched per token from colon-delimited values like new:po:sr.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -469,7 +470,19 @@
                                 "api",
                                 "quotation-list"
                             ],
-                            "raw": "{{base_url}}/api/quotation-list"
+                            "query": [
+                                {
+                                    "description": "Optional. Filter by status step token inside quotations.status, for example new, po, or sr.",
+                                    "key": "status",
+                                    "value": "po"
+                                },
+                                {
+                                    "description": "Optional. Case-insensitive partial match against project.",
+                                    "key": "project",
+                                    "value": "website"
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/quotation-list?status=po\u0026project=website"
                         }
                     },
                     "response": [

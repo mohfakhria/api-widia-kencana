@@ -17,15 +17,28 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/quotation-list",
+          "raw": "{{base_url}}/api/quotation-list?status=po&project=website",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
             "quotation-list"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "po",
+              "description": "Optional. Filter by status step token inside quotations.status, for example new, po, or sr."
+            },
+            {
+              "key": "project",
+              "value": "website",
+              "description": "Optional. Case-insensitive partial match against project."
+            }
           ]
-        }
+        },
+        "description": "Both query params are optional. Status is matched per token from colon-delimited values like new:po:sr."
       },
       "response": [
         {

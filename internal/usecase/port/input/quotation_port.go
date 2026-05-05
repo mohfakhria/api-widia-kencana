@@ -7,10 +7,15 @@ import (
 )
 
 type QuotationUseCase interface {
-	List(ctx context.Context) ([]entity.Quotation, error)
+	List(ctx context.Context, query ListQuotationQuery) ([]entity.Quotation, error)
 	GetByID(ctx context.Context, id string) (*entity.Quotation, error)
 	Create(ctx context.Context, cmd CreateQuotationCommand) (string, error)
 	Update(ctx context.Context, id string, cmd UpdateQuotationCommand) error
+}
+
+type ListQuotationQuery struct {
+	Status  string
+	Project string
 }
 
 type CreateQuotationCommand struct {

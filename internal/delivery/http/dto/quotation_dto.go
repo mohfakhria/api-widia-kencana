@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"strings"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
@@ -38,6 +39,11 @@ type QuotationItemRequest struct {
 type QuotationDetailRequest struct {
 	Description string `json:"description"`
 	Position    int    `json:"position"`
+}
+
+type QuotationListFilterRequest struct {
+	Status  string `form:"status"`
+	Project string `form:"project"`
 }
 
 type QuotationListResponse struct {
@@ -139,6 +145,13 @@ func (r QuotationRequest) ToCreateQuotationCommand() input.CreateQuotationComman
 
 func (r QuotationRequest) ToUpdateQuotationCommand() input.UpdateQuotationCommand {
 	return input.UpdateQuotationCommand(r.ToCreateQuotationCommand())
+}
+
+func (r QuotationListFilterRequest) ToListQuotationQuery() input.ListQuotationQuery {
+	return input.ListQuotationQuery{
+		Status:  strings.TrimSpace(r.Status),
+		Project: strings.TrimSpace(r.Project),
+	}
 }
 
 func NewQuotationListResponses(quotations []entity.Quotation) []QuotationListResponse {

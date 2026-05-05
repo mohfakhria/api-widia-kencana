@@ -1,10 +1,9 @@
 package http
 
 import (
-	"net/http"
-
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
+	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,9 +17,15 @@ func NewQuotationHandler(quotation input.QuotationUseCase) *QuotationHandler {
 }
 
 func (h *QuotationHandler) List(c *gin.Context) {
-	data, err := h.quotation.List(c.Request.Context())
+	var req dto.QuotationListFilterRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		dto.Error(c, 400, "Invalid query parameters")
+		return
+	}
+
+	data, err := h.quotation.List(c.Request.Context(), req.ToListQuotationQuery())
 	if err != nil {
-		dto.Error(c, http.StatusInternalServerError, err.Error())
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}
 	dto.Success(c, "Success", dto.NewQuotationListResponses(data))
@@ -29,7 +34,7 @@ func (h *QuotationHandler) List(c *gin.Context) {
 func (h *QuotationHandler) Get(c *gin.Context) {
 	data, err := h.quotation.GetByID(c.Request.Context(), c.Param("id"))
 	if err != nil {
-		dto.Error(c, http.StatusInternalServerError, err.Error())
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}
 	dto.Success(c, "Success", dto.NewQuotationDetailResponse(data))
@@ -38,13 +43,13 @@ func (h *QuotationHandler) Get(c *gin.Context) {
 func (h *QuotationHandler) Create(c *gin.Context) {
 	var req dto.QuotationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		dto.Error(c, http.StatusInternalServerError, "Invalid request payload")
+		dto.Error(c, 400, "Invalid request payload")
 		return
 	}
 
 	quotationNo, err := h.quotation.Create(c.Request.Context(), req.ToCreateQuotationCommand())
 	if err != nil {
-		dto.Error(c, http.StatusUnauthorized, "Failed to create quotation: "+err.Error())
+		dto.Error(c, apperror.ToHTTPStatus(err), "Failed to create quotation: "+err.Error())
 		return
 	}
 
@@ -54,12 +59,12 @@ func (h *QuotationHandler) Create(c *gin.Context) {
 func (h *QuotationHandler) Update(c *gin.Context) {
 	var req dto.QuotationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		dto.Error(c, http.StatusBadRequest, "Invalid payload")
+		dto.Error(c, 400, "Invalid payload")
 		return
 	}
 
 	if err := h.quotation.Update(c.Request.Context(), c.Param("id"), req.ToUpdateQuotationCommand()); err != nil {
-		dto.Error(c, http.StatusInternalServerError, err.Error())
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}
 
