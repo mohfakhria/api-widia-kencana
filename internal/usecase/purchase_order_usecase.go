@@ -79,14 +79,6 @@ func (uc *purchaseOrderUseCase) GetByQuotationID(ctx context.Context, quotationI
 	return results, nil
 }
 
-func (uc *purchaseOrderUseCase) DeleteByQuotationID(ctx context.Context, quotationID int64) error {
-	if quotationID <= 0 {
-		return domain.NewError(domain.ErrInvalidInput, "quotation id must be greater than 0")
-	}
-
-	return uc.repo.DeleteByQuotationID(ctx, quotationID)
-}
-
 func purchaseOrderItemKey(name, unit string, price float64) string {
 	return fmt.Sprintf("%s|%s|%f", name, unit, price)
 }

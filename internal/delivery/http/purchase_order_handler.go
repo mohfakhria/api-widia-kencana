@@ -50,21 +50,6 @@ func (h *PurchaseOrderHandler) GetByQuotationID(c *gin.Context) {
 	dto.Success(c, "Purchase order", dto.NewPurchaseOrderResponse(quotationID, items))
 }
 
-func (h *PurchaseOrderHandler) DeleteByQuotationID(c *gin.Context) {
-	quotationID, err := parsePurchaseOrderQuotationID(c.Param("quotationID"))
-	if err != nil {
-		dto.Error(c, http.StatusBadRequest, "Invalid quotation id")
-		return
-	}
-
-	if err := h.purchaseOrder.DeleteByQuotationID(c.Request.Context(), quotationID); err != nil {
-		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
-		return
-	}
-
-	dto.Success(c, "Purchase order deleted successfully", nil)
-}
-
 func parsePurchaseOrderQuotationID(raw string) (int64, error) {
 	return strconv.ParseInt(raw, 10, 64)
 }

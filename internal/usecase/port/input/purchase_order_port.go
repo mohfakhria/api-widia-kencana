@@ -5,7 +5,6 @@ import "context"
 type PurchaseOrderUseCase interface {
 	Upsert(ctx context.Context, cmd UpsertPurchaseOrderCommand) error
 	GetByQuotationID(ctx context.Context, quotationID int64) ([]PurchaseOrderItemResult, error)
-	DeleteByQuotationID(ctx context.Context, quotationID int64) error
 }
 
 type UpsertPurchaseOrderCommand struct {

@@ -40,7 +40,6 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.GET("/me", deps.AuthHandler.Me)
 		protected.POST("/purchase-order-upsert", deps.PurchaseOrderHandler.Upsert)
 		protected.GET("/purchase-order/:quotationID", deps.PurchaseOrderHandler.GetByQuotationID)
-		protected.DELETE("/purchase-order/:quotationID", deps.PurchaseOrderHandler.DeleteByQuotationID)
 		protected.GET("/quotation-list", deps.QuotationHandler.List)
 		protected.GET("/quotation-detail/:id", deps.QuotationHandler.Get)
 		protected.PUT("/quotation-update/:id", deps.QuotationHandler.Update)

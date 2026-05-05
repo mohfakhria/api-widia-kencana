@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
@@ -25,13 +26,13 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 	}
 	defer tx.Rollback()
 
-	var exists bool
-	err = tx.QueryRowContext(ctx, `SELECT EXISTS (SELECT 1 FROM quotations WHERE id = $1)`, quotationID).Scan(&exists)
+	var quotationStatus string
+	err = tx.QueryRowContext(ctx, `SELECT status FROM quotations WHERE id = $1 FOR UPDATE`, quotationID).Scan(&quotationStatus)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.NewError(domain.ErrNotFound, "quotation not found")
+		}
 		return err
-	}
-	if !exists {
-		return domain.NewError(domain.ErrNotFound, "quotation not found")
 	}
 
 	rows, err := tx.QueryContext(ctx, `
@@ -90,6 +91,17 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 		}
 	}
 
+	nextStatus := syncQuotationStatus(quotationStatus, "po", len(items) > 0)
+	if nextStatus != quotationStatus {
+		if _, err := tx.ExecContext(ctx, `
+			UPDATE quotations
+			SET status = $1, updated_at = NOW()
+			WHERE id = $2
+		`, nextStatus, quotationID); err != nil {
+			return err
+		}
+	}
+
 	return tx.Commit()
 }
 
@@ -128,19 +140,6 @@ func (r *PurchaseOrderRepository) GetByQuotationID(ctx context.Context, quotatio
 	return items, nil
 }
 
-func (r *PurchaseOrderRepository) DeleteByQuotationID(ctx context.Context, quotationID int64) error {
-	exists, err := r.quotationExists(ctx, r.db, quotationID)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return domain.NewError(domain.ErrNotFound, "quotation not found")
-	}
-
-	_, err = r.db.ExecContext(ctx, `DELETE FROM purchase_order WHERE quotation_id = $1`, quotationID)
-	return err
-}
-
 func (r *PurchaseOrderRepository) quotationExists(ctx context.Context, querier interface {
 	QueryRowContext(context.Context, string, ...any) *sql.Row
 }, quotationID int64) (bool, error) {
@@ -154,4 +153,62 @@ func (r *PurchaseOrderRepository) quotationExists(ctx context.Context, querier i
 
 func purchaseOrderItemKey(name, unit string, price float64) string {
 	return fmt.Sprintf("%s|%s|%f", name, unit, price)
+}
+
+func syncQuotationStatus(currentStatus, targetStatus string, shouldExist bool) string {
+	if targetStatus == "" {
+		return currentStatus
+	}
+
+	parts := strings.Split(currentStatus, ":")
+	filtered := make([]string, 0, len(parts)+1)
+	found := false
+
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if part == targetStatus {
+			found = true
+			if !shouldExist {
+				continue
+			}
+		}
+		filtered = append(filtered, part)
+	}
+
+	if shouldExist && !found {
+		filtered = append(filtered, targetStatus)
+	}
+
+	return strings.Join(filtered, ":")
+}
+
+func appendQuotationStatus(currentStatus, newStatus string) string {
+	if newStatus == "" {
+		return currentStatus
+	}
+
+	parts := strings.Split(currentStatus, ":")
+	filtered := make([]string, 0, len(parts)+1)
+	found := false
+
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if part == newStatus {
+			found = true
+		}
+		filtered = append(filtered, part)
+	}
+
+	if found {
+		return strings.Join(filtered, ":")
+	}
+
+	filtered = append(filtered, newStatus)
+	return strings.Join(filtered, ":")
 }
