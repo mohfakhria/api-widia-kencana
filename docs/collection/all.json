@@ -285,6 +285,186 @@
         {
             "item": [
                 {
+                    "name": "Upsert Purchase Order",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"id\": 1,\n  \"items\": [\n    {\n      \"name\": \"Hosting Annual\",\n      \"qty\": 1,\n      \"unit\": \"package\",\n      \"price\": 1500000\n    },\n    {\n      \"name\": \"Domain Renewal\",\n      \"qty\": 1,\n      \"unit\": \"year\",\n      \"price\": 250000\n    }\n  ]\n}"
+                        },
+                        "description": "Upsert purchase order items by quotation id. Matching key is name + unit + price.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "purchase-order-upsert"
+                            ],
+                            "raw": "{{base_url}}/api/purchase-order-upsert"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order upserted successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "name": "Upsert Purchase Order - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"item 1: name cannot be empty\"\n}",
+                            "code": 400,
+                            "name": "Upsert Purchase Order - Validation Error",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"id\": 1,\n  \"items\": [\n    {\n      \"name\": \"\",\n      \"qty\": 0,\n      \"unit\": \"package\",\n      \"price\": -1\n    }\n  ]\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "purchase-order-upsert"
+                                    ],
+                                    "raw": "{{base_url}}/api/purchase-order-upsert"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}",
+                            "code": 401,
+                            "name": "Upsert Purchase Order - Unauthorized",
+                            "status": "Unauthorized"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Purchase Order",
+                    "request": {
+                        "description": "Replace last path segment with quotation id.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "purchase-order",
+                                "1"
+                            ],
+                            "raw": "{{base_url}}/api/purchase-order/1"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order\",\n  \"data\": {\n    \"id\": 1,\n    \"items\": [\n      {\n        \"id\": 10,\n        \"name\": \"Hosting Annual\",\n        \"qty\": 1,\n        \"unit\": \"package\",\n        \"price\": 1500000,\n        \"total\": 1500000\n      },\n      {\n        \"id\": 11,\n        \"name\": \"Domain Renewal\",\n        \"qty\": 1,\n        \"unit\": \"year\",\n        \"price\": 250000,\n        \"total\": 250000\n      }\n    ]\n  }\n}",
+                            "code": 200,
+                            "name": "Get Purchase Order - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid quotation id\"\n}",
+                            "code": 400,
+                            "name": "Get Purchase Order - Invalid Quotation ID",
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"quotation not found\"\n}",
+                            "code": 404,
+                            "name": "Get Purchase Order - Not Found",
+                            "status": "Not Found"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Purchase Order",
+                    "request": {
+                        "description": "Replace last path segment with quotation id to delete all purchase order items for that quotation.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "purchase-order",
+                                "1"
+                            ],
+                            "raw": "{{base_url}}/api/purchase-order/1"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order deleted successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "name": "Delete Purchase Order - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid quotation id\"\n}",
+                            "code": 400,
+                            "name": "Delete Purchase Order - Invalid Quotation ID",
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"quotation not found\"\n}",
+                            "code": 404,
+                            "name": "Delete Purchase Order - Not Found",
+                            "status": "Not Found"
+                        }
+                    ]
+                }
+            ],
+            "name": "Purchase Order"
+        },
+        {
+            "item": [
+                {
                     "name": "List Quotations",
                     "request": {
                         "header": [

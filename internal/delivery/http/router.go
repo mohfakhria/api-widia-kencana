@@ -12,10 +12,11 @@ import (
 )
 
 type RouterDeps struct {
-	Config           config.Config
-	TokenSigner      output.TokenSigner
-	AuthHandler      *AuthHandler
-	QuotationHandler *QuotationHandler
+	Config               config.Config
+	TokenSigner          output.TokenSigner
+	AuthHandler          *AuthHandler
+	PurchaseOrderHandler *PurchaseOrderHandler
+	QuotationHandler     *QuotationHandler
 }
 
 func NewRouter(deps RouterDeps) *gin.Engine {
@@ -37,6 +38,9 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	protected.Use(middleware.AuthRequired(deps.TokenSigner))
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
+		protected.POST("/purchase-order-upsert", deps.PurchaseOrderHandler.Upsert)
+		protected.GET("/purchase-order/:quotationID", deps.PurchaseOrderHandler.GetByQuotationID)
+		protected.DELETE("/purchase-order/:quotationID", deps.PurchaseOrderHandler.DeleteByQuotationID)
 		protected.GET("/quotation-list", deps.QuotationHandler.List)
 		protected.GET("/quotation-detail/:id", deps.QuotationHandler.Get)
 		protected.PUT("/quotation-update/:id", deps.QuotationHandler.Update)

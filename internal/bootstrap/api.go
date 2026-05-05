@@ -59,13 +59,15 @@ func (a *ApiApp) initialize() error {
 		redisstore.NewRefreshTokenStore(a.redisClient, a.Config.RedisEnabled),
 		tokenSigner,
 	)
+	purchaseOrderUC := usecase.NewPurchaseOrderUseCase(pg.NewPurchaseOrderRepository(a.db))
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
-		Config:           a.Config,
-		TokenSigner:      tokenSigner,
-		AuthHandler:      deliveryhttp.NewAuthHandler(authUC, a.Config),
-		QuotationHandler: deliveryhttp.NewQuotationHandler(quotationUC),
+		Config:               a.Config,
+		TokenSigner:          tokenSigner,
+		AuthHandler:          deliveryhttp.NewAuthHandler(authUC, a.Config),
+		PurchaseOrderHandler: deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
+		QuotationHandler:     deliveryhttp.NewQuotationHandler(quotationUC),
 	})
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),
