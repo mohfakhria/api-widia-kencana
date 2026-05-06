@@ -51,6 +51,7 @@ type QuotationListResponse struct {
 	QuotationNo string    `json:"quotation_no"`
 	ClientName  string    `json:"client_name"`
 	Project     string    `json:"project"`
+	Status      string    `json:"status"`
 	Total       float64   `json:"total"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -162,6 +163,7 @@ func NewQuotationListResponses(quotations []entity.Quotation) []QuotationListRes
 			QuotationNo: quotation.QuotationNo,
 			ClientName:  quotation.ClientName,
 			Project:     quotation.Project,
+			Status:      quotation.Status,
 			Total:       quotation.Total,
 			CreatedAt:   quotation.CreatedAt,
 			UpdatedAt:   quotation.UpdatedAt,

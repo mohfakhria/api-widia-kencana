@@ -76,7 +76,7 @@ func (r *QuotationRepository) List(ctx context.Context, query input.ListQuotatio
 	)
 
 	builder.WriteString(`
-		SELECT id, quotation_no, client_name, project, total, created_at, updated_at
+		SELECT id, quotation_no, client_name, project, status, total, created_at, updated_at
 		FROM quotations
 		WHERE 1=1
 	`)
@@ -116,7 +116,7 @@ func (r *QuotationRepository) List(ctx context.Context, query input.ListQuotatio
 	var quotations []entity.Quotation
 	for rows.Next() {
 		var q entity.Quotation
-		if err := rows.Scan(&q.ID, &q.QuotationNo, &q.ClientName, &q.Project, &q.Total, &q.CreatedAt, &q.UpdatedAt); err != nil {
+		if err := rows.Scan(&q.ID, &q.QuotationNo, &q.ClientName, &q.Project, &q.Status, &q.Total, &q.CreatedAt, &q.UpdatedAt); err != nil {
 			return nil, err
 		}
 		quotations = append(quotations, q)

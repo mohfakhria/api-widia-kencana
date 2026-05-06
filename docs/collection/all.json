@@ -488,7 +488,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"total\": 12000000\n    }\n  ]\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"status\": \"new:po\",\n      \"total\": 12000000\n    }\n  ]\n}",
                             "code": 200,
                             "name": "List Quotations - Success",
                             "status": "OK"

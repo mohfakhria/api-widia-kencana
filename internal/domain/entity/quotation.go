@@ -10,6 +10,7 @@ type Quotation struct {
 	AttnPosition  string
 	Address       string
 	Project       string
+	Status        string
 	DiscountType  string
 	DiscountValue float64
 	SubTotal      float64
