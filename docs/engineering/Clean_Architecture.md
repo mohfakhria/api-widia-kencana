@@ -269,9 +269,13 @@ project-root/
 │   └── user/
 │       └── user.proto
 │
-├── migrations/
-│   ├── 000001_create_users.up.sql
-│   └── 000001_create_users.down.sql
+├── migration/
+│   ├── users.sql
+│   ├── quotations.sql
+│   ├── quotation_sections.sql
+│   ├── quotation_items.sql
+│   ├── quotation_details.sql
+│   └── purchase_order.sql
 │
 ├── go.mod
 ├── go.sum
