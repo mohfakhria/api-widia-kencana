@@ -19,7 +19,7 @@ func NewPurchaseOrderRepository(db *sql.DB) output.PurchaseOrderRepository {
 	return &PurchaseOrderRepository{db: db}
 }
 
-func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quotationID int64, items []entity.PurchaseOrderItem) error {
+func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purchaseOrder *entity.PurchaseOrder) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -27,7 +27,7 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 	defer tx.Rollback()
 
 	var quotationStatus string
-	err = tx.QueryRowContext(ctx, `SELECT status FROM quotations WHERE id = $1 FOR UPDATE`, quotationID).Scan(&quotationStatus)
+	err = tx.QueryRowContext(ctx, `SELECT status FROM quotations WHERE id = $1 FOR UPDATE`, purchaseOrder.QuotationID).Scan(&quotationStatus)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return domain.NewError(domain.ErrNotFound, "quotation not found")
@@ -35,20 +35,46 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 		return err
 	}
 
+	headerID, err := r.findPurchaseOrderHeaderID(ctx, tx, purchaseOrder.QuotationID)
+	if err != nil {
+		return err
+	}
+
+	if len(purchaseOrder.Items) == 0 {
+		if headerID != 0 {
+			if _, err := tx.ExecContext(ctx, `DELETE FROM purchase_order WHERE id = $1`, headerID); err != nil {
+				return err
+			}
+		}
+
+		return r.syncQuotationStatusAndCommit(ctx, tx, quotationStatus, purchaseOrder.QuotationID, false)
+	}
+
+	if headerID == 0 {
+		err = tx.QueryRowContext(ctx, `
+			INSERT INTO purchase_order (quotation_id)
+			VALUES ($1)
+			RETURNING id
+		`, purchaseOrder.QuotationID).Scan(&headerID)
+		if err != nil {
+			return err
+		}
+	}
+
 	rows, err := tx.QueryContext(ctx, `
-		SELECT id, quotation_id, name, qty, unit, price, total
-		FROM purchase_order
-		WHERE quotation_id = $1
-	`, quotationID)
+		SELECT id, purchase_order_id, name, qty, unit, price, total
+		FROM purchase_order_detail
+		WHERE purchase_order_id = $1
+	`, headerID)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 
-	existingByKey := make(map[string]entity.PurchaseOrderItem)
+	existingByKey := make(map[string]entity.PurchaseOrderDetail)
 	for rows.Next() {
-		var item entity.PurchaseOrderItem
-		if err := rows.Scan(&item.ID, &item.QuotationID, &item.Name, &item.Qty, &item.Unit, &item.Price, &item.Total); err != nil {
+		var item entity.PurchaseOrderDetail
+		if err := rows.Scan(&item.ID, &item.PurchaseOrderID, &item.Name, &item.Qty, &item.Unit, &item.Price, &item.Total); err != nil {
 			return err
 		}
 		existingByKey[purchaseOrderItemKey(item.Name, item.Unit, item.Price)] = item
@@ -57,14 +83,14 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 		return err
 	}
 
-	incomingKeys := make(map[string]struct{}, len(items))
-	for _, item := range items {
+	incomingKeys := make(map[string]struct{}, len(purchaseOrder.Items))
+	for _, item := range purchaseOrder.Items {
 		key := purchaseOrderItemKey(item.Name, item.Unit, item.Price)
 		incomingKeys[key] = struct{}{}
 
 		if existing, ok := existingByKey[key]; ok {
 			if _, err := tx.ExecContext(ctx, `
-				UPDATE purchase_order
+				UPDATE purchase_order_detail
 				SET qty = $1, price = $2, total = $3
 				WHERE id = $4
 			`, item.Qty, item.Price, item.Total, existing.ID); err != nil {
@@ -74,9 +100,9 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 		}
 
 		if _, err := tx.ExecContext(ctx, `
-			INSERT INTO purchase_order (quotation_id, name, qty, unit, price, total)
+			INSERT INTO purchase_order_detail (purchase_order_id, name, qty, unit, price, total)
 			VALUES ($1, $2, $3, $4, $5, $6)
-		`, quotationID, item.Name, item.Qty, item.Unit, item.Price, item.Total); err != nil {
+		`, headerID, item.Name, item.Qty, item.Unit, item.Price, item.Total); err != nil {
 			return err
 		}
 	}
@@ -86,13 +112,86 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 			continue
 		}
 
-		if _, err := tx.ExecContext(ctx, `DELETE FROM purchase_order WHERE id = $1`, item.ID); err != nil {
+		if _, err := tx.ExecContext(ctx, `DELETE FROM purchase_order_detail WHERE id = $1`, item.ID); err != nil {
 			return err
 		}
 	}
 
-	nextStatus := syncQuotationStatus(quotationStatus, "po", len(items) > 0)
-	if nextStatus != quotationStatus {
+	return r.syncQuotationStatusAndCommit(ctx, tx, quotationStatus, purchaseOrder.QuotationID, true)
+}
+
+func (r *PurchaseOrderRepository) GetByQuotationID(ctx context.Context, quotationID int64) (*entity.PurchaseOrder, error) {
+	exists, err := r.quotationExists(ctx, r.db, quotationID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, domain.NewError(domain.ErrNotFound, "quotation not found")
+	}
+
+	purchaseOrder := &entity.PurchaseOrder{
+		QuotationID: quotationID,
+		Items:       make([]entity.PurchaseOrderDetail, 0),
+	}
+
+	err = r.db.QueryRowContext(ctx, `
+		SELECT id
+		FROM purchase_order
+		WHERE quotation_id = $1
+	`, quotationID).Scan(&purchaseOrder.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return purchaseOrder, nil
+		}
+		return nil, err
+	}
+
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, purchase_order_id, name, qty, unit, price, total
+		FROM purchase_order_detail
+		WHERE purchase_order_id = $1
+		ORDER BY id ASC
+	`, purchaseOrder.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item entity.PurchaseOrderDetail
+		if err := rows.Scan(&item.ID, &item.PurchaseOrderID, &item.Name, &item.Qty, &item.Unit, &item.Price, &item.Total); err != nil {
+			return nil, err
+		}
+		purchaseOrder.Items = append(purchaseOrder.Items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return purchaseOrder, nil
+}
+
+func (r *PurchaseOrderRepository) findPurchaseOrderHeaderID(ctx context.Context, tx *sql.Tx, quotationID int64) (int64, error) {
+	var headerID int64
+	err := tx.QueryRowContext(ctx, `
+		SELECT id
+		FROM purchase_order
+		WHERE quotation_id = $1
+		FOR UPDATE
+	`, quotationID).Scan(&headerID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+
+	return headerID, nil
+}
+
+func (r *PurchaseOrderRepository) syncQuotationStatusAndCommit(ctx context.Context, tx *sql.Tx, currentStatus string, quotationID int64, hasItems bool) error {
+	nextStatus := syncQuotationStatus(currentStatus, "po", hasItems)
+	if nextStatus != currentStatus {
 		if _, err := tx.ExecContext(ctx, `
 			UPDATE quotations
 			SET status = $1, updated_at = NOW()
@@ -103,41 +202,6 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, quota
 	}
 
 	return tx.Commit()
-}
-
-func (r *PurchaseOrderRepository) GetByQuotationID(ctx context.Context, quotationID int64) ([]entity.PurchaseOrderItem, error) {
-	exists, err := r.quotationExists(ctx, r.db, quotationID)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, domain.NewError(domain.ErrNotFound, "quotation not found")
-	}
-
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, quotation_id, name, qty, unit, price, total
-		FROM purchase_order
-		WHERE quotation_id = $1
-		ORDER BY id ASC
-	`, quotationID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	items := make([]entity.PurchaseOrderItem, 0)
-	for rows.Next() {
-		var item entity.PurchaseOrderItem
-		if err := rows.Scan(&item.ID, &item.QuotationID, &item.Name, &item.Qty, &item.Unit, &item.Price, &item.Total); err != nil {
-			return nil, err
-		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return items, nil
 }
 
 func (r *PurchaseOrderRepository) quotationExists(ctx context.Context, querier interface {
@@ -182,33 +246,5 @@ func syncQuotationStatus(currentStatus, targetStatus string, shouldExist bool) s
 		filtered = append(filtered, targetStatus)
 	}
 
-	return strings.Join(filtered, ":")
-}
-
-func appendQuotationStatus(currentStatus, newStatus string) string {
-	if newStatus == "" {
-		return currentStatus
-	}
-
-	parts := strings.Split(currentStatus, ":")
-	filtered := make([]string, 0, len(parts)+1)
-	found := false
-
-	for _, part := range parts {
-		part = strings.TrimSpace(part)
-		if part == "" {
-			continue
-		}
-		if part == newStatus {
-			found = true
-		}
-		filtered = append(filtered, part)
-	}
-
-	if found {
-		return strings.Join(filtered, ":")
-	}
-
-	filtered = append(filtered, newStatus)
 	return strings.Join(filtered, ":")
 }

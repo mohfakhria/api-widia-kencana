@@ -23,7 +23,10 @@ func (uc *purchaseOrderUseCase) Upsert(ctx context.Context, cmd input.UpsertPurc
 		return domain.NewError(domain.ErrInvalidInput, "quotation id must be greater than 0")
 	}
 
-	items := make([]entity.PurchaseOrderItem, 0, len(cmd.Items))
+	purchaseOrder := &entity.PurchaseOrder{
+		QuotationID: cmd.QuotationID,
+		Items:       make([]entity.PurchaseOrderDetail, 0, len(cmd.Items)),
+	}
 	seenKeys := make(map[string]struct{}, len(cmd.Items))
 	for i, item := range cmd.Items {
 		if item.Name == "" {
@@ -41,17 +44,16 @@ func (uc *purchaseOrderUseCase) Upsert(ctx context.Context, cmd input.UpsertPurc
 		}
 		seenKeys[key] = struct{}{}
 
-		items = append(items, entity.PurchaseOrderItem{
-			QuotationID: cmd.QuotationID,
-			Name:        item.Name,
-			Qty:         item.Qty,
-			Unit:        item.Unit,
-			Price:       item.Price,
-			Total:       item.Qty * item.Price,
+		purchaseOrder.Items = append(purchaseOrder.Items, entity.PurchaseOrderDetail{
+			Name:  item.Name,
+			Qty:   item.Qty,
+			Unit:  item.Unit,
+			Price: item.Price,
+			Total: item.Qty * item.Price,
 		})
 	}
 
-	return uc.repo.UpsertByQuotationID(ctx, cmd.QuotationID, items)
+	return uc.repo.UpsertByQuotationID(ctx, purchaseOrder)
 }
 
 func (uc *purchaseOrderUseCase) GetByQuotationID(ctx context.Context, quotationID int64) ([]input.PurchaseOrderItemResult, error) {
@@ -59,13 +61,13 @@ func (uc *purchaseOrderUseCase) GetByQuotationID(ctx context.Context, quotationI
 		return nil, domain.NewError(domain.ErrInvalidInput, "quotation id must be greater than 0")
 	}
 
-	items, err := uc.repo.GetByQuotationID(ctx, quotationID)
+	purchaseOrder, err := uc.repo.GetByQuotationID(ctx, quotationID)
 	if err != nil {
 		return nil, err
 	}
 
-	results := make([]input.PurchaseOrderItemResult, 0, len(items))
-	for _, item := range items {
+	results := make([]input.PurchaseOrderItemResult, 0, len(purchaseOrder.Items))
+	for _, item := range purchaseOrder.Items {
 		results = append(results, input.PurchaseOrderItemResult{
 			ID:    item.ID,
 			Name:  item.Name,

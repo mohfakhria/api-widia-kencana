@@ -7,6 +7,6 @@ import (
 )
 
 type PurchaseOrderRepository interface {
-	UpsertByQuotationID(ctx context.Context, quotationID int64, items []entity.PurchaseOrderItem) error
-	GetByQuotationID(ctx context.Context, quotationID int64) ([]entity.PurchaseOrderItem, error)
+	UpsertByQuotationID(ctx context.Context, purchaseOrder *entity.PurchaseOrder) error
+	GetByQuotationID(ctx context.Context, quotationID int64) (*entity.PurchaseOrder, error)
 }
