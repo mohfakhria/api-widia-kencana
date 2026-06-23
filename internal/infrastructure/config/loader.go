@@ -10,19 +10,24 @@ import (
 )
 
 type Config struct {
-	AppEnv       string
-	AppPort      string
-	AppBaseURL   string
-	FrontendURL  string
-	PGHost       string
-	PGPort       string
-	PGUser       string
-	PGPassword   string
-	PGDB         string
-	RedisEnabled bool
-	RedisHost    string
-	RedisPort    string
-	JWTSecret    string
+	AppEnv         string
+	AppPort        string
+	AppBaseURL     string
+	FrontendURL    string
+	PGHost         string
+	PGPort         string
+	PGUser         string
+	PGPassword     string
+	PGDB           string
+	RedisEnabled   bool
+	RedisHost      string
+	RedisPort      string
+	JWTSecret      string
+	MinIOEndpoint  string
+	MinIOAccessKey string
+	MinIOSecretKey string
+	MinIOBucket    string
+	MinIOUseSSL    bool
 }
 
 func Load() Config {
@@ -31,19 +36,24 @@ func Load() Config {
 	}
 
 	return Config{
-		AppEnv:       getEnv("APP_ENV", "local"),
-		AppPort:      getEnv("APP_PORT", "8080"),
-		AppBaseURL:   getEnv("APP_BASEURL", "http://localhost:8080"),
-		FrontendURL:  getEnv("FRONTEND_URL", "http://localhost:3000"),
-		PGHost:       getEnv("PG_HOST", "localhost"),
-		PGPort:       getEnv("PG_PORT", "5432"),
-		PGUser:       getEnv("PG_USER", "postgres"),
-		PGPassword:   getEnv("PG_PASSWORD", "postgres"),
-		PGDB:         getEnv("PG_DB", "postgres"),
-		RedisEnabled: isRedisEnabled(),
-		RedisHost:    getEnv("REDIS_HOST", "localhost"),
-		RedisPort:    getEnv("REDIS_PORT", "6379"),
-		JWTSecret:    getEnv("JWT_SECRET", "change-this-in-env"),
+		AppEnv:         getEnv("APP_ENV", "local"),
+		AppPort:        getEnv("APP_PORT", "8080"),
+		AppBaseURL:     getEnv("APP_BASEURL", "http://localhost:8080"),
+		FrontendURL:    getEnv("FRONTEND_URL", "http://localhost:3000"),
+		PGHost:         getEnv("PG_HOST", "localhost"),
+		PGPort:         getEnv("PG_PORT", "5432"),
+		PGUser:         getEnv("PG_USER", "postgres"),
+		PGPassword:     getEnv("PG_PASSWORD", "postgres"),
+		PGDB:           getEnv("PG_DB", "postgres"),
+		RedisEnabled:   isRedisEnabled(),
+		RedisHost:      getEnv("REDIS_HOST", "localhost"),
+		RedisPort:      getEnv("REDIS_PORT", "6379"),
+		JWTSecret:      getEnv("JWT_SECRET", "change-this-in-env"),
+		MinIOEndpoint:  getEnv("MINIO_ENDPOINT", "localhost:9002"),
+		MinIOAccessKey: getEnv("MINIO_ACCESS_KEY", ""),
+		MinIOSecretKey: getEnv("MINIO_SECRET_KEY", ""),
+		MinIOBucket:    getEnv("MINIO_BUCKET", "widia-assets"),
+		MinIOUseSSL:    getBoolEnv("MINIO_USE_SSL", false),
 	}
 }
 
@@ -93,6 +103,13 @@ func getEnv(key, fallback string) string {
 }
 
 func isRedisEnabled() bool {
-	value := strings.TrimSpace(strings.ToLower(os.Getenv("REDIS_ENABLED")))
+	return getBoolEnv("REDIS_ENABLED", true)
+}
+
+func getBoolEnv(key string, fallback bool) bool {
+	value := strings.TrimSpace(strings.ToLower(os.Getenv(key)))
+	if value == "" {
+		return fallback
+	}
 	return value != "false" && value != "0" && value != "no"
 }
