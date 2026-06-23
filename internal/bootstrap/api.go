@@ -11,9 +11,11 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/database"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/security"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/server"
+	miniostorage "github.com/mohfakhria/api-widia-kencana/internal/infrastructure/storage/minio"
 	pg "github.com/mohfakhria/api-widia-kencana/internal/persistence/postgres"
 	redisstore "github.com/mohfakhria/api-widia-kencana/internal/persistence/redis"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -24,6 +26,7 @@ type ApiApp struct {
 	Config        config.Config
 	db            *sql.DB
 	redisClient   *redis.Client
+	objectStorage output.ObjectStorage
 	runner        *Service
 	services      []ServiceStartup
 }
@@ -52,6 +55,12 @@ func (a *ApiApp) initialize() error {
 		}
 		a.redisClient = client
 	}
+
+	objectStorage, err := miniostorage.NewStorage(a.Context, a.Config)
+	if err != nil {
+		return err
+	}
+	a.objectStorage = objectStorage
 
 	tokenSigner := security.NewJWTSigner(a.Config)
 	authUC := usecase.NewAuthUseCase(
