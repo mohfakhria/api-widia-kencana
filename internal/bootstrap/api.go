@@ -68,7 +68,10 @@ func (a *ApiApp) initialize() error {
 		redisstore.NewRefreshTokenStore(a.redisClient, a.Config.RedisEnabled),
 		tokenSigner,
 	)
-	purchaseOrderUC := usecase.NewPurchaseOrderUseCase(pg.NewPurchaseOrderRepository(a.db))
+	purchaseOrderUC := usecase.NewPurchaseOrderUseCase(
+		pg.NewPurchaseOrderRepository(a.db),
+		a.objectStorage,
+	)
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{

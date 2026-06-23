@@ -34,11 +34,62 @@
             "purchase-order-upsert"
           ]
         },
-        "description": "Upsert purchase order items by quotation id. Matching key is name + unit + price."
+        "description": "Upsert purchase order items by quotation id. Matching key is name + unit + price. To upload one asset in the same request, use multipart/form-data with fields: id, items, asset, and optional category."
       },
       "response": [
         {
           "name": "Upsert Purchase Order - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order upserted successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Upsert Purchase Order - Success With Asset",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "items",
+                  "value": "[{\"name\":\"Hosting Annual\",\"qty\":1,\"unit\":\"package\",\"price\":1500000}]",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "attachment",
+                  "type": "text"
+                },
+                {
+                  "key": "asset",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/purchase-order-upsert",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "purchase-order-upsert"
+              ]
+            }
+          },
           "status": "OK",
           "code": 200,
           "_postman_previewlanguage": "json",

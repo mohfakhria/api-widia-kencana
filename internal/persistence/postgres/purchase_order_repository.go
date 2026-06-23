@@ -19,10 +19,10 @@ func NewPurchaseOrderRepository(db *sql.DB) output.PurchaseOrderRepository {
 	return &PurchaseOrderRepository{db: db}
 }
 
-func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purchaseOrder *entity.PurchaseOrder) error {
+func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purchaseOrder *entity.PurchaseOrder, attachment *entity.PurchaseOrderAsset) (*entity.PurchaseOrder, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -30,24 +30,25 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purch
 	err = tx.QueryRowContext(ctx, `SELECT status FROM quotations WHERE id = $1 FOR UPDATE`, purchaseOrder.QuotationID).Scan(&quotationStatus)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return domain.NewError(domain.ErrNotFound, "quotation not found")
+			return nil, domain.NewError(domain.ErrNotFound, "quotation not found")
 		}
-		return err
+		return nil, err
 	}
 
 	headerID, err := r.findPurchaseOrderHeaderID(ctx, tx, purchaseOrder.QuotationID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(purchaseOrder.Items) == 0 {
 		if headerID != 0 {
 			if _, err := tx.ExecContext(ctx, `DELETE FROM purchase_order WHERE id = $1`, headerID); err != nil {
-				return err
+				return nil, err
 			}
 		}
 
-		return r.syncQuotationStatusAndCommit(ctx, tx, quotationStatus, purchaseOrder.QuotationID, false)
+		purchaseOrder.ID = 0
+		return purchaseOrder, r.syncQuotationStatusAndCommit(ctx, tx, quotationStatus, purchaseOrder.QuotationID, false)
 	}
 
 	if headerID == 0 {
@@ -57,9 +58,10 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purch
 			RETURNING id
 		`, purchaseOrder.QuotationID).Scan(&headerID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
+	purchaseOrder.ID = headerID
 
 	rows, err := tx.QueryContext(ctx, `
 		SELECT id, purchase_order_id, name, qty, unit, price, total
@@ -67,7 +69,7 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purch
 		WHERE purchase_order_id = $1
 	`, headerID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -75,12 +77,12 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purch
 	for rows.Next() {
 		var item entity.PurchaseOrderDetail
 		if err := rows.Scan(&item.ID, &item.PurchaseOrderID, &item.Name, &item.Qty, &item.Unit, &item.Price, &item.Total); err != nil {
-			return err
+			return nil, err
 		}
 		existingByKey[purchaseOrderItemKey(item.Name, item.Unit, item.Price)] = item
 	}
 	if err := rows.Err(); err != nil {
-		return err
+		return nil, err
 	}
 
 	incomingKeys := make(map[string]struct{}, len(purchaseOrder.Items))
@@ -94,7 +96,7 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purch
 				SET qty = $1, price = $2, total = $3
 				WHERE id = $4
 			`, item.Qty, item.Price, item.Total, existing.ID); err != nil {
-				return err
+				return nil, err
 			}
 			continue
 		}
@@ -103,7 +105,7 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purch
 			INSERT INTO purchase_order_detail (purchase_order_id, name, qty, unit, price, total)
 			VALUES ($1, $2, $3, $4, $5, $6)
 		`, headerID, item.Name, item.Qty, item.Unit, item.Price, item.Total); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -113,11 +115,17 @@ func (r *PurchaseOrderRepository) UpsertByQuotationID(ctx context.Context, purch
 		}
 
 		if _, err := tx.ExecContext(ctx, `DELETE FROM purchase_order_detail WHERE id = $1`, item.ID); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return r.syncQuotationStatusAndCommit(ctx, tx, quotationStatus, purchaseOrder.QuotationID, true)
+	if attachment != nil {
+		if err := r.createAssetAttachment(ctx, tx, headerID, attachment); err != nil {
+			return nil, err
+		}
+	}
+
+	return purchaseOrder, r.syncQuotationStatusAndCommit(ctx, tx, quotationStatus, purchaseOrder.QuotationID, true)
 }
 
 func (r *PurchaseOrderRepository) GetByQuotationID(ctx context.Context, quotationID int64) (*entity.PurchaseOrder, error) {
@@ -202,6 +210,35 @@ func (r *PurchaseOrderRepository) syncQuotationStatusAndCommit(ctx context.Conte
 	}
 
 	return tx.Commit()
+}
+
+func (r *PurchaseOrderRepository) createAssetAttachment(ctx context.Context, tx *sql.Tx, purchaseOrderID int64, attachment *entity.PurchaseOrderAsset) error {
+	if attachment.Asset == nil {
+		return nil
+	}
+
+	asset := attachment.Asset
+	err := tx.QueryRowContext(ctx, `
+		INSERT INTO assets (
+			bucket, object_name, original_filename, stored_filename, mime_type,
+			extension, size, etag, is_private, uploaded_by, created_at, updated_at
+		)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW())
+		RETURNING id, created_at, updated_at
+	`, asset.Bucket, asset.ObjectName, asset.OriginalFilename, asset.StoredFilename, asset.MimeType,
+		asset.Extension, asset.Size, asset.ETag, asset.IsPrivate, asset.UploadedBy).
+		Scan(&asset.ID, &asset.CreatedAt, &asset.UpdatedAt)
+	if err != nil {
+		return err
+	}
+
+	attachment.PurchaseOrderID = purchaseOrderID
+	attachment.AssetID = asset.ID
+	return tx.QueryRowContext(ctx, `
+		INSERT INTO purchase_order_assets (purchase_order_id, asset_id, category, created_at)
+		VALUES ($1, $2, $3, NOW())
+		RETURNING id, created_at
+	`, purchaseOrderID, asset.ID, attachment.Category).Scan(&attachment.ID, &attachment.CreatedAt)
 }
 
 func (r *PurchaseOrderRepository) quotationExists(ctx context.Context, querier interface {

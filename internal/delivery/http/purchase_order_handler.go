@@ -1,6 +1,8 @@
 package http
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -20,6 +22,11 @@ func NewPurchaseOrderHandler(purchaseOrder input.PurchaseOrderUseCase) *Purchase
 }
 
 func (h *PurchaseOrderHandler) Upsert(c *gin.Context) {
+	if c.ContentType() == "multipart/form-data" {
+		h.upsertMultipart(c)
+		return
+	}
+
 	var req dto.UpsertPurchaseOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
@@ -27,6 +34,64 @@ func (h *PurchaseOrderHandler) Upsert(c *gin.Context) {
 	}
 
 	if err := h.purchaseOrder.Upsert(c.Request.Context(), req.ToUpsertPurchaseOrderCommand()); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Purchase order upserted successfully", nil)
+}
+
+func (h *PurchaseOrderHandler) upsertMultipart(c *gin.Context) {
+	quotationID, err := strconv.ParseInt(c.PostForm("id"), 10, 64)
+	if err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid quotation id")
+		return
+	}
+
+	var items []dto.PurchaseOrderItemRequest
+	if rawItems := c.PostForm("items"); rawItems != "" {
+		if err := json.Unmarshal([]byte(rawItems), &items); err != nil {
+			dto.Error(c, http.StatusBadRequest, "Invalid items payload")
+			return
+		}
+	}
+
+	req := dto.UpsertPurchaseOrderRequest{
+		QuotationID: quotationID,
+		Items:       items,
+	}
+	cmd := req.ToUpsertPurchaseOrderCommand()
+
+	fileHeader, err := c.FormFile("asset")
+	if err != nil && !errors.Is(err, http.ErrMissingFile) {
+		dto.Error(c, http.StatusBadRequest, "Invalid asset file")
+		return
+	}
+	if fileHeader != nil {
+		file, err := fileHeader.Open()
+		if err != nil {
+			dto.Error(c, http.StatusBadRequest, "Invalid asset file")
+			return
+		}
+		defer file.Close()
+
+		userID := c.GetInt64("userIDInt")
+		var uploadedBy *int64
+		if userID != 0 {
+			uploadedBy = &userID
+		}
+
+		cmd.Asset = &input.PurchaseOrderAssetUploadCommand{
+			Reader:           file,
+			Size:             fileHeader.Size,
+			OriginalFilename: fileHeader.Filename,
+			ContentType:      fileHeader.Header.Get("Content-Type"),
+			Category:         c.DefaultPostForm("category", "attachment"),
+			UploadedBy:       uploadedBy,
+		}
+	}
+
+	if err := h.purchaseOrder.Upsert(c.Request.Context(), cmd); err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}

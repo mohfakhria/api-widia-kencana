@@ -291,7 +291,7 @@
                             "mode": "raw",
                             "raw": "{\n  \"id\": 1,\n  \"items\": [\n    {\n      \"name\": \"Hosting Annual\",\n      \"qty\": 1,\n      \"unit\": \"package\",\n      \"price\": 1500000\n    },\n    {\n      \"name\": \"Domain Renewal\",\n      \"qty\": 1,\n      \"unit\": \"year\",\n      \"price\": 250000\n    }\n  ]\n}"
                         },
-                        "description": "Upsert purchase order items by quotation id. Matching key is name + unit + price.",
+                        "description": "Upsert purchase order items by quotation id. Matching key is name + unit + price. To upload one asset in the same request, use multipart/form-data with fields: id, items, asset, and optional category.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -320,6 +320,57 @@
                             "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order upserted successfully\",\n  \"data\": null\n}",
                             "code": 200,
                             "name": "Upsert Purchase Order - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order upserted successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "name": "Upsert Purchase Order - Success With Asset",
+                            "originalRequest": {
+                                "body": {
+                                    "formdata": [
+                                        {
+                                            "key": "id",
+                                            "type": "text",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "key": "items",
+                                            "type": "text",
+                                            "value": "[{\"name\":\"Hosting Annual\",\"qty\":1,\"unit\":\"package\",\"price\":1500000}]"
+                                        },
+                                        {
+                                            "key": "category",
+                                            "type": "text",
+                                            "value": "attachment"
+                                        },
+                                        {
+                                            "key": "asset",
+                                            "src": [],
+                                            "type": "file"
+                                        }
+                                    ],
+                                    "mode": "formdata"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "purchase-order-upsert"
+                                    ],
+                                    "raw": "{{base_url}}/api/purchase-order-upsert"
+                                }
+                            },
                             "status": "OK"
                         },
                         {

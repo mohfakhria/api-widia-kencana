@@ -1,6 +1,9 @@
 package input
 
-import "context"
+import (
+	"context"
+	"io"
+)
 
 type PurchaseOrderUseCase interface {
 	Upsert(ctx context.Context, cmd UpsertPurchaseOrderCommand) error
@@ -10,6 +13,16 @@ type PurchaseOrderUseCase interface {
 type UpsertPurchaseOrderCommand struct {
 	QuotationID int64
 	Items       []PurchaseOrderItemCommand
+	Asset       *PurchaseOrderAssetUploadCommand
+}
+
+type PurchaseOrderAssetUploadCommand struct {
+	Reader           io.Reader
+	Size             int64
+	OriginalFilename string
+	ContentType      string
+	Category         string
+	UploadedBy       *int64
 }
 
 type PurchaseOrderItemCommand struct {
