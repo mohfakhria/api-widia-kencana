@@ -276,7 +276,8 @@ project-root/
 │   ├── quotation_items.sql
 │   ├── quotation_details.sql
 │   ├── purchase_order.sql
-│   └── purchase_order_detail.sql
+│   ├── purchase_order_detail.sql
+│   └── assets.sql
 │
 ├── go.mod
 ├── go.sum
