@@ -22,26 +22,6 @@ func NewPurchaseOrderHandler(purchaseOrder input.PurchaseOrderUseCase) *Purchase
 }
 
 func (h *PurchaseOrderHandler) Upsert(c *gin.Context) {
-	if c.ContentType() == "multipart/form-data" {
-		h.upsertMultipart(c)
-		return
-	}
-
-	var req dto.UpsertPurchaseOrderRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
-
-	if err := h.purchaseOrder.Upsert(c.Request.Context(), req.ToUpsertPurchaseOrderCommand()); err != nil {
-		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
-		return
-	}
-
-	dto.Success(c, "Purchase order upserted successfully", nil)
-}
-
-func (h *PurchaseOrderHandler) upsertMultipart(c *gin.Context) {
 	quotationID, err := strconv.ParseInt(c.PostForm("id"), 10, 64)
 	if err != nil {
 		dto.Error(c, http.StatusBadRequest, "Invalid quotation id")

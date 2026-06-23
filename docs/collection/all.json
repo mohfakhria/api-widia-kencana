@@ -288,18 +288,35 @@
                     "name": "Upsert Purchase Order",
                     "request": {
                         "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"id\": 1,\n  \"items\": [\n    {\n      \"name\": \"Hosting Annual\",\n      \"qty\": 1,\n      \"unit\": \"package\",\n      \"price\": 1500000\n    },\n    {\n      \"name\": \"Domain Renewal\",\n      \"qty\": 1,\n      \"unit\": \"year\",\n      \"price\": 250000\n    }\n  ]\n}"
+                            "formdata": [
+                                {
+                                    "key": "id",
+                                    "type": "text",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "items",
+                                    "type": "text",
+                                    "value": "[{\"name\":\"Hosting Annual\",\"qty\":1,\"unit\":\"package\",\"price\":1500000},{\"name\":\"Domain Renewal\",\"qty\":1,\"unit\":\"year\",\"price\":250000}]"
+                                },
+                                {
+                                    "key": "category",
+                                    "type": "text",
+                                    "value": "attachment"
+                                },
+                                {
+                                    "key": "asset",
+                                    "src": [],
+                                    "type": "file"
+                                }
+                            ],
+                            "mode": "formdata"
                         },
-                        "description": "Upsert purchase order items by quotation id. Matching key is name + unit + price. To upload one asset in the same request, use multipart/form-data with fields: id, items, asset, and optional category.",
+                        "description": "Upsert purchase order items by quotation id and optionally upload one asset. Matching key is name + unit + price. The items field must be a JSON string when using multipart/form-data.",
                         "header": [
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
                             }
                         ],
                         "method": "POST",
@@ -380,17 +397,24 @@
                             "name": "Upsert Purchase Order - Clear All Items",
                             "originalRequest": {
                                 "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"id\": 1,\n  \"items\": []\n}"
+                                    "formdata": [
+                                        {
+                                            "key": "id",
+                                            "type": "text",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "key": "items",
+                                            "type": "text",
+                                            "value": "[]"
+                                        }
+                                    ],
+                                    "mode": "formdata"
                                 },
                                 "header": [
                                     {
                                         "key": "Authorization",
                                         "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
                                     }
                                 ],
                                 "method": "POST",
@@ -414,17 +438,24 @@
                             "name": "Upsert Purchase Order - Validation Error",
                             "originalRequest": {
                                 "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"id\": 1,\n  \"items\": [\n    {\n      \"name\": \"\",\n      \"qty\": 0,\n      \"unit\": \"package\",\n      \"price\": -1\n    }\n  ]\n}"
+                                    "formdata": [
+                                        {
+                                            "key": "id",
+                                            "type": "text",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "key": "items",
+                                            "type": "text",
+                                            "value": "[{\"name\":\"\",\"qty\":0,\"unit\":\"package\",\"price\":-1}]"
+                                        }
+                                    ],
+                                    "mode": "formdata"
                                 },
                                 "header": [
                                     {
                                         "key": "Authorization",
                                         "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
                                     }
                                 ],
                                 "method": "POST",

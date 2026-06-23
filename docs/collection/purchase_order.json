@@ -14,15 +14,32 @@
           {
             "key": "Authorization",
             "value": "Bearer {{token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
           }
         ],
         "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": 1,\n  \"items\": [\n    {\n      \"name\": \"Hosting Annual\",\n      \"qty\": 1,\n      \"unit\": \"package\",\n      \"price\": 1500000\n    },\n    {\n      \"name\": \"Domain Renewal\",\n      \"qty\": 1,\n      \"unit\": \"year\",\n      \"price\": 250000\n    }\n  ]\n}"
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "id",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "items",
+              "value": "[{\"name\":\"Hosting Annual\",\"qty\":1,\"unit\":\"package\",\"price\":1500000},{\"name\":\"Domain Renewal\",\"qty\":1,\"unit\":\"year\",\"price\":250000}]",
+              "type": "text"
+            },
+            {
+              "key": "category",
+              "value": "attachment",
+              "type": "text"
+            },
+            {
+              "key": "asset",
+              "type": "file",
+              "src": []
+            }
+          ]
         },
         "url": {
           "raw": "{{base_url}}/api/purchase-order-upsert",
@@ -34,7 +51,7 @@
             "purchase-order-upsert"
           ]
         },
-        "description": "Upsert purchase order items by quotation id. Matching key is name + unit + price. To upload one asset in the same request, use multipart/form-data with fields: id, items, asset, and optional category."
+        "description": "Upsert purchase order items by quotation id and optionally upload one asset. Matching key is name + unit + price. The items field must be a JSON string when using multipart/form-data."
       },
       "response": [
         {
@@ -103,15 +120,22 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 1,\n  \"items\": []\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "items",
+                  "value": "[]",
+                  "type": "text"
+                }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/api/purchase-order-upsert",
@@ -137,15 +161,22 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": 1,\n  \"items\": [\n    {\n      \"name\": \"\",\n      \"qty\": 0,\n      \"unit\": \"package\",\n      \"price\": -1\n    }\n  ]\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "items",
+                  "value": "[{\"name\":\"\",\"qty\":0,\"unit\":\"package\",\"price\":-1}]",
+                  "type": "text"
+                }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/api/purchase-order-upsert",

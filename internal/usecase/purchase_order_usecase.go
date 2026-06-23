@@ -69,7 +69,7 @@ func (uc *purchaseOrderUseCase) Upsert(ctx context.Context, cmd input.UpsertPurc
 	var uploadedObjectName string
 	if cmd.Asset != nil {
 		var err error
-		attachment, uploadedObjectName, err = uc.buildUploadedAssetAttachment(ctx, cmd.QuotationID, cmd.Asset)
+		attachment, uploadedObjectName, err = uc.buildUploadedAssetAttachment(ctx, cmd.Asset)
 		if err != nil {
 			return err
 		}
@@ -114,7 +114,7 @@ func purchaseOrderItemKey(name, unit string, price float64) string {
 	return fmt.Sprintf("%s|%s|%f", name, unit, price)
 }
 
-func (uc *purchaseOrderUseCase) buildUploadedAssetAttachment(ctx context.Context, quotationID int64, cmd *input.PurchaseOrderAssetUploadCommand) (*entity.PurchaseOrderAsset, string, error) {
+func (uc *purchaseOrderUseCase) buildUploadedAssetAttachment(ctx context.Context, cmd *input.PurchaseOrderAssetUploadCommand) (*entity.PurchaseOrderAsset, string, error) {
 	if uc.storage == nil {
 		return nil, "", domain.NewError(domain.ErrUnavailable, "asset storage is unavailable")
 	}
@@ -139,7 +139,7 @@ func (uc *purchaseOrderUseCase) buildUploadedAssetAttachment(ctx context.Context
 	}
 
 	storedFilename := buildStoredAssetFilename(cmd.OriginalFilename)
-	objectName := fmt.Sprintf("purchase-orders/%d/%s", quotationID, storedFilename)
+	objectName := fmt.Sprintf("purchase-orders/%s", storedFilename)
 	stored, err := uc.storage.Upload(ctx, output.UploadObject{
 		ObjectName:  objectName,
 		Reader:      cmd.Reader,
