@@ -37,7 +37,7 @@
                     "request": {
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"email\": \"fakhri@widiakencana.com\",\n  \"password\": \"Cihanjuang180\"\n}"
+                            "raw": "{\n  \"email\": \"fahmi@widiakencana.com\",\n  \"password\": \"Cihanjuang180\"\n}"
                         },
                         "description": "Login with email and password. On success, returns access_token and sets refresh_token HttpOnly cookie.",
                         "header": [
