@@ -1,6 +1,16 @@
 package dto
 
-import "github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
+import (
+	"fmt"
+	"net/url"
+	"regexp"
+	"sort"
+	"strconv"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
+)
+
+var purchaseOrderItemFieldPattern = regexp.MustCompile(`^items\[(\d+)]\.(name|qty|unit|price)$`)
 
 type UpsertPurchaseOrderRequest struct {
 	QuotationID int64                      `json:"id"`
@@ -26,6 +36,68 @@ type PurchaseOrderItemResponse struct {
 	Unit  string  `json:"unit"`
 	Price float64 `json:"price"`
 	Total float64 `json:"total"`
+}
+
+func NewUpsertPurchaseOrderRequest(values url.Values) (UpsertPurchaseOrderRequest, error) {
+	quotationID, err := strconv.ParseInt(values.Get("id"), 10, 64)
+	if err != nil {
+		return UpsertPurchaseOrderRequest{}, fmt.Errorf("invalid quotation id")
+	}
+
+	itemsByIndex := make(map[int]*PurchaseOrderItemRequest)
+	for key, fieldValues := range values {
+		matches := purchaseOrderItemFieldPattern.FindStringSubmatch(key)
+		if len(matches) == 0 || len(fieldValues) == 0 {
+			continue
+		}
+
+		index, _ := strconv.Atoi(matches[1])
+		item := itemsByIndex[index]
+		if item == nil {
+			item = &PurchaseOrderItemRequest{}
+			itemsByIndex[index] = item
+		}
+
+		if err := setPurchaseOrderItemField(item, matches[2], fieldValues[0]); err != nil {
+			return UpsertPurchaseOrderRequest{}, fmt.Errorf("invalid %s", key)
+		}
+	}
+
+	indexes := make([]int, 0, len(itemsByIndex))
+	for index := range itemsByIndex {
+		indexes = append(indexes, index)
+	}
+	sort.Ints(indexes)
+
+	items := make([]PurchaseOrderItemRequest, 0, len(indexes))
+	for _, index := range indexes {
+		items = append(items, *itemsByIndex[index])
+	}
+
+	return UpsertPurchaseOrderRequest{QuotationID: quotationID, Items: items}, nil
+}
+
+func setPurchaseOrderItemField(item *PurchaseOrderItemRequest, field, value string) error {
+	switch field {
+	case "name":
+		item.Name = value
+	case "unit":
+		item.Unit = value
+	case "qty":
+		qty, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return err
+		}
+		item.Qty = qty
+	case "price":
+		price, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return err
+		}
+		item.Price = price
+	}
+
+	return nil
 }
 
 func (r UpsertPurchaseOrderRequest) ToUpsertPurchaseOrderCommand() input.UpsertPurchaseOrderCommand {

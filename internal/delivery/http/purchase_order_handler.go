@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -22,23 +21,16 @@ func NewPurchaseOrderHandler(purchaseOrder input.PurchaseOrderUseCase) *Purchase
 }
 
 func (h *PurchaseOrderHandler) Upsert(c *gin.Context) {
-	quotationID, err := strconv.ParseInt(c.PostForm("id"), 10, 64)
+	form, err := c.MultipartForm()
 	if err != nil {
-		dto.Error(c, http.StatusBadRequest, "Invalid quotation id")
+		dto.Error(c, http.StatusBadRequest, "Invalid multipart payload")
 		return
 	}
 
-	var items []dto.PurchaseOrderItemRequest
-	if rawItems := c.PostForm("items"); rawItems != "" {
-		if err := json.Unmarshal([]byte(rawItems), &items); err != nil {
-			dto.Error(c, http.StatusBadRequest, "Invalid items payload")
-			return
-		}
-	}
-
-	req := dto.UpsertPurchaseOrderRequest{
-		QuotationID: quotationID,
-		Items:       items,
+	req, err := dto.NewUpsertPurchaseOrderRequest(form.Value)
+	if err != nil {
+		dto.Error(c, http.StatusBadRequest, err.Error())
+		return
 	}
 	cmd := req.ToUpsertPurchaseOrderCommand()
 
@@ -66,7 +58,7 @@ func (h *PurchaseOrderHandler) Upsert(c *gin.Context) {
 			Size:             fileHeader.Size,
 			OriginalFilename: fileHeader.Filename,
 			ContentType:      fileHeader.Header.Get("Content-Type"),
-			Category:         c.DefaultPostForm("category", "attachment"),
+			Category:         "attachment",
 			UploadedBy:       uploadedBy,
 		}
 	}

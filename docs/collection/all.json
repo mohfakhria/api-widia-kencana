@@ -295,14 +295,44 @@
                                     "value": "1"
                                 },
                                 {
-                                    "key": "items",
+                                    "key": "items[0].name",
                                     "type": "text",
-                                    "value": "[{\"name\":\"Hosting Annual\",\"qty\":1,\"unit\":\"package\",\"price\":1500000},{\"name\":\"Domain Renewal\",\"qty\":1,\"unit\":\"year\",\"price\":250000}]"
+                                    "value": "Hosting Annual"
                                 },
                                 {
-                                    "key": "category",
+                                    "key": "items[0].qty",
                                     "type": "text",
-                                    "value": "attachment"
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "items[0].unit",
+                                    "type": "text",
+                                    "value": "package"
+                                },
+                                {
+                                    "key": "items[0].price",
+                                    "type": "text",
+                                    "value": "1500000"
+                                },
+                                {
+                                    "key": "items[1].name",
+                                    "type": "text",
+                                    "value": "Domain Renewal"
+                                },
+                                {
+                                    "key": "items[1].qty",
+                                    "type": "text",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "items[1].unit",
+                                    "type": "text",
+                                    "value": "year"
+                                },
+                                {
+                                    "key": "items[1].price",
+                                    "type": "text",
+                                    "value": "250000"
                                 },
                                 {
                                     "key": "asset",
@@ -312,7 +342,7 @@
                             ],
                             "mode": "formdata"
                         },
-                        "description": "Upsert purchase order items by quotation id and optionally upload one asset. Matching key is name + unit + price. The items field must be a JSON string when using multipart/form-data.",
+                        "description": "Upsert purchase order items by quotation id and optionally upload one asset. Send item fields with indexed multipart keys such as items[0].name, items[0].qty, items[0].unit, and items[0].price.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -353,14 +383,24 @@
                                             "value": "1"
                                         },
                                         {
-                                            "key": "items",
+                                            "key": "items[0].name",
                                             "type": "text",
-                                            "value": "[{\"name\":\"Hosting Annual\",\"qty\":1,\"unit\":\"package\",\"price\":1500000}]"
+                                            "value": "Hosting Annual"
                                         },
                                         {
-                                            "key": "category",
+                                            "key": "items[0].qty",
                                             "type": "text",
-                                            "value": "attachment"
+                                            "value": "1"
+                                        },
+                                        {
+                                            "key": "items[0].unit",
+                                            "type": "text",
+                                            "value": "package"
+                                        },
+                                        {
+                                            "key": "items[0].price",
+                                            "type": "text",
+                                            "value": "1500000"
                                         },
                                         {
                                             "key": "asset",
@@ -402,11 +442,6 @@
                                             "key": "id",
                                             "type": "text",
                                             "value": "1"
-                                        },
-                                        {
-                                            "key": "items",
-                                            "type": "text",
-                                            "value": "[]"
                                         }
                                     ],
                                     "mode": "formdata"
@@ -445,9 +480,24 @@
                                             "value": "1"
                                         },
                                         {
-                                            "key": "items",
+                                            "key": "items[0].name",
                                             "type": "text",
-                                            "value": "[{\"name\":\"\",\"qty\":0,\"unit\":\"package\",\"price\":-1}]"
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "items[0].qty",
+                                            "type": "text",
+                                            "value": "0"
+                                        },
+                                        {
+                                            "key": "items[0].unit",
+                                            "type": "text",
+                                            "value": "package"
+                                        },
+                                        {
+                                            "key": "items[0].price",
+                                            "type": "text",
+                                            "value": "-1"
                                         }
                                     ],
                                     "mode": "formdata"
