@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	accessTokenTTL  = 15 * time.Minute
+	accessTokenTTL  = 10 * time.Minute
 	refreshTokenTTL = 7 * 24 * time.Hour
 )
 
@@ -111,6 +111,7 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshComman
 
 	return &input.RefreshResult{
 		AccessToken:     newAccess,
+		AccessExpiredAt: time.Now().Add(accessTokenTTL).Unix(),
 		RefreshToken:    newRefresh,
 		RefreshTokenTTL: refreshTokenTTL,
 	}, nil

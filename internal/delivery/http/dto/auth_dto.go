@@ -14,6 +14,7 @@ type LoginResponse struct {
 
 type RefreshTokenResponse struct {
 	AccessToken string `json:"access_token"`
+	ExpiredAt   int64  `json:"expired_at"`
 }
 
 type ProfileResponse struct {
@@ -32,6 +33,7 @@ func NewLoginResponse(result *input.LoginResult) LoginResponse {
 func NewRefreshTokenResponse(result *input.RefreshResult) RefreshTokenResponse {
 	return RefreshTokenResponse{
 		AccessToken: result.AccessToken,
+		ExpiredAt:   result.AccessExpiredAt,
 	}
 }
 

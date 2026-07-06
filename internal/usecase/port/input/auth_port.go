@@ -30,6 +30,7 @@ type RefreshCommand struct {
 
 type RefreshResult struct {
 	AccessToken     string
+	AccessExpiredAt int64
 	RefreshToken    string
 	RefreshTokenTTL time.Duration
 }

@@ -182,7 +182,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Token refreshed successfully\",\n  \"data\": {\n    \"access_token\": \"\u003cnew_jwt_access_token\u003e\"\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Token refreshed successfully\",\n  \"data\": {\n    \"access_token\": \"\u003cnew_jwt_access_token\u003e\",\n    \"expired_at\": 1783325760\n  }\n}",
                             "code": 200,
                             "name": "Refresh Token - Success",
                             "originalRequest": {
