@@ -1054,567 +1054,582 @@
         {
             "item": [
                 {
-                    "name": "List Workflows",
-                    "request": {
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "GET",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-list"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-list"
-                        }
-                    },
-                    "response": [
+                    "item": [
                         {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
-                            "code": 200,
-                            "name": "List Workflows - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "Get Workflow Detail",
-                    "request": {
-                        "description": "Replace last path segment with workflow id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "GET",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-detail",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-detail/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
-                            "code": 200,
-                            "name": "Get Workflow Detail - Success",
-                            "status": "OK"
-                        },
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"workflow not found\"\n}",
-                            "code": 404,
-                            "name": "Get Workflow Detail - Not Found",
-                            "status": "Not Found"
-                        }
-                    ]
-                },
-                {
-                    "name": "Create Workflow",
-                    "request": {
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Standard Project Flow\",\n  \"status\": \"active\"\n}"
-                        },
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
+                            "name": "List Workflows",
+                            "request": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-list"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-list"
+                                }
                             },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "method": "POST",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-add"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-add"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
-                            "code": 200,
-                            "name": "Create Workflow - Success",
-                            "status": "OK"
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                                    "code": 200,
+                                    "name": "List Workflows - Success",
+                                    "status": "OK"
+                                }
+                            ]
                         },
                         {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid workflow status\"\n}",
-                            "code": 400,
-                            "name": "Create Workflow - Invalid Status",
-                            "status": "Bad Request"
-                        }
-                    ]
-                },
-                {
-                    "name": "Update Workflow",
-                    "request": {
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Standard Project Flow V2\",\n  \"status\": \"inactive\"\n}"
-                        },
-                        "description": "Replace last path segment with workflow id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
+                            "name": "Get Workflow Detail",
+                            "request": {
+                                "description": "Replace last path segment with workflow id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-detail",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-detail/1"
+                                }
                             },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "method": "PUT",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-update",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-update/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow updated successfully\"\n}",
-                            "code": 200,
-                            "name": "Update Workflow - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "Delete Workflow",
-                    "request": {
-                        "description": "Soft delete workflow by setting status to deleted.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "DELETE",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-delete",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-delete/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow deleted successfully\"\n}",
-                            "code": 200,
-                            "name": "Delete Workflow - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "List Workflow Stages",
-                    "request": {
-                        "description": "Replace last path segment with workflow id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "GET",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-stage-list",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-stage-list/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
-                            "code": 200,
-                            "name": "List Workflow Stages - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "Get Workflow Stage Detail",
-                    "request": {
-                        "description": "Replace last path segment with workflow stage id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "GET",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-stage-detail",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-stage-detail/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
-                            "code": 200,
-                            "name": "Get Workflow Stage Detail - Success",
-                            "status": "OK"
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "code": 200,
+                                    "name": "Get Workflow Detail - Success",
+                                    "status": "OK"
+                                },
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"error\",\n  \"message\": \"workflow not found\"\n}",
+                                    "code": 404,
+                                    "name": "Get Workflow Detail - Not Found",
+                                    "status": "Not Found"
+                                }
+                            ]
                         },
                         {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"workflow stage not found\"\n}",
-                            "code": 404,
-                            "name": "Get Workflow Stage Detail - Not Found",
-                            "status": "Not Found"
-                        }
-                    ]
-                },
-                {
-                    "name": "Create Workflow Stage",
-                    "request": {
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"workflow_id\": 1,\n  \"name\": \"Sales\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
-                        },
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
+                            "name": "Create Workflow",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Standard Project Flow\",\n  \"status\": \"active\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-add"
+                                }
                             },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "method": "POST",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-stage-add"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-stage-add"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
-                            "code": 200,
-                            "name": "Create Workflow Stage - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "Update Workflow Stage",
-                    "request": {
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"workflow_id\": 1,\n  \"name\": \"Sales Updated\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "code": 200,
+                                    "name": "Create Workflow - Success",
+                                    "status": "OK"
+                                },
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid workflow status\"\n}",
+                                    "code": 400,
+                                    "name": "Create Workflow - Invalid Status",
+                                    "status": "Bad Request"
+                                }
+                            ]
                         },
-                        "description": "Replace last path segment with workflow stage id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
+                        {
+                            "name": "Update Workflow",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Standard Project Flow V2\",\n  \"status\": \"inactive\"\n}"
+                                },
+                                "description": "Replace last path segment with workflow id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-update/1"
+                                }
                             },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "method": "PUT",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-stage-update",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-stage-update/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\"\n}",
-                            "code": 200,
-                            "name": "Update Workflow Stage - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "Delete Workflow Stage",
-                    "request": {
-                        "description": "Soft delete workflow stage by setting status to deleted.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "DELETE",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-stage-delete",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-stage-delete/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage deleted successfully\"\n}",
-                            "code": 200,
-                            "name": "Delete Workflow Stage - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "List Workflow Steps",
-                    "request": {
-                        "description": "Replace last path segment with workflow stage id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "GET",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-step-list",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-step-list/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
-                            "code": 200,
-                            "name": "List Workflow Steps - Success",
-                            "status": "OK"
-                        }
-                    ]
-                },
-                {
-                    "name": "Get Workflow Step Detail",
-                    "request": {
-                        "description": "Replace last path segment with workflow step id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "GET",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-step-detail",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-step-detail/1"
-                        }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
-                            "code": 200,
-                            "name": "Get Workflow Step Detail - Success",
-                            "status": "OK"
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow updated successfully\"\n}",
+                                    "code": 200,
+                                    "name": "Update Workflow - Success",
+                                    "status": "OK"
+                                }
+                            ]
                         },
                         {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"workflow step not found\"\n}",
-                            "code": 404,
-                            "name": "Get Workflow Step Detail - Not Found",
-                            "status": "Not Found"
-                        }
-                    ]
-                },
-                {
-                    "name": "Create Workflow Step",
-                    "request": {
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"workflow_stage_id\": 1,\n  \"name\": \"Quotation\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
-                        },
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
+                            "name": "Delete Workflow",
+                            "request": {
+                                "description": "Soft delete workflow by setting status to deleted.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-delete",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-delete/1"
+                                }
                             },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "method": "POST",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-step-add"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-step-add"
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow deleted successfully\"\n}",
+                                    "code": 200,
+                                    "name": "Delete Workflow - Success",
+                                    "status": "OK"
+                                }
+                            ]
                         }
-                    },
-                    "response": [
-                        {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
-                            "code": 200,
-                            "name": "Create Workflow Step - Success",
-                            "status": "OK"
-                        }
-                    ]
+                    ],
+                    "name": "Master"
                 },
                 {
-                    "name": "Update Workflow Step",
-                    "request": {
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"workflow_stage_id\": 1,\n  \"name\": \"Quotation Updated\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
-                        },
-                        "description": "Replace last path segment with workflow step id.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
+                    "item": [
+                        {
+                            "name": "List Workflow Stages",
+                            "request": {
+                                "description": "Replace last path segment with workflow id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-stage-list",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-stage-list/1"
+                                }
                             },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "method": "PUT",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-step-update",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-step-update/1"
-                        }
-                    },
-                    "response": [
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                                    "code": 200,
+                                    "name": "List Workflow Stages - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
                         {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\"\n}",
-                            "code": 200,
-                            "name": "Update Workflow Step - Success",
-                            "status": "OK"
+                            "name": "Get Workflow Stage Detail",
+                            "request": {
+                                "description": "Replace last path segment with workflow stage id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-stage-detail",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-stage-detail/1"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "code": 200,
+                                    "name": "Get Workflow Stage Detail - Success",
+                                    "status": "OK"
+                                },
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"error\",\n  \"message\": \"workflow stage not found\"\n}",
+                                    "code": 404,
+                                    "name": "Get Workflow Stage Detail - Not Found",
+                                    "status": "Not Found"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Create Workflow Stage",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"workflow_id\": 1,\n  \"name\": \"Sales\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-stage-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-stage-add"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "code": 200,
+                                    "name": "Create Workflow Stage - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Update Workflow Stage",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"workflow_id\": 1,\n  \"name\": \"Sales Updated\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Replace last path segment with workflow stage id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-stage-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-stage-update/1"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\"\n}",
+                                    "code": 200,
+                                    "name": "Update Workflow Stage - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Delete Workflow Stage",
+                            "request": {
+                                "description": "Soft delete workflow stage by setting status to deleted.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-stage-delete",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-stage-delete/1"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage deleted successfully\"\n}",
+                                    "code": 200,
+                                    "name": "Delete Workflow Stage - Success",
+                                    "status": "OK"
+                                }
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Stages"
                 },
                 {
-                    "name": "Delete Workflow Step",
-                    "request": {
-                        "description": "Soft delete workflow step by setting status to deleted.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "DELETE",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "workflow-step-delete",
-                                "1"
-                            ],
-                            "raw": "{{base_url}}/api/workflow-step-delete/1"
-                        }
-                    },
-                    "response": [
+                    "item": [
                         {
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step deleted successfully\"\n}",
-                            "code": 200,
-                            "name": "Delete Workflow Step - Success",
-                            "status": "OK"
+                            "name": "List Workflow Steps",
+                            "request": {
+                                "description": "Replace last path segment with workflow stage id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-step-list",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-step-list/1"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                                    "code": 200,
+                                    "name": "List Workflow Steps - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Workflow Step Detail",
+                            "request": {
+                                "description": "Replace last path segment with workflow step id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-step-detail",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-step-detail/1"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "code": 200,
+                                    "name": "Get Workflow Step Detail - Success",
+                                    "status": "OK"
+                                },
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"error\",\n  \"message\": \"workflow step not found\"\n}",
+                                    "code": 404,
+                                    "name": "Get Workflow Step Detail - Not Found",
+                                    "status": "Not Found"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Create Workflow Step",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"workflow_stage_id\": 1,\n  \"name\": \"Quotation\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-step-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-step-add"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "code": 200,
+                                    "name": "Create Workflow Step - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Update Workflow Step",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"workflow_stage_id\": 1,\n  \"name\": \"Quotation Updated\",\n  \"position\": 1,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Replace last path segment with workflow step id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-step-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-step-update/1"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\"\n}",
+                                    "code": 200,
+                                    "name": "Update Workflow Step - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Delete Workflow Step",
+                            "request": {
+                                "description": "Soft delete workflow step by setting status to deleted.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-step-delete",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-step-delete/1"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step deleted successfully\"\n}",
+                                    "code": 200,
+                                    "name": "Delete Workflow Step - Success",
+                                    "status": "OK"
+                                }
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Steps"
                 }
             ],
             "name": "Workflow"
