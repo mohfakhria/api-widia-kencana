@@ -9,9 +9,7 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	AccessToken string `json:"access_token"`
-	UserID      string `json:"userid"`
-	Name        string `json:"name"`
-	Role        string `json:"role"`
+	ExpiredAt   int64  `json:"expired_at"`
 }
 
 type RefreshTokenResponse struct {
@@ -27,9 +25,7 @@ type ProfileResponse struct {
 func NewLoginResponse(result *input.LoginResult) LoginResponse {
 	return LoginResponse{
 		AccessToken: result.AccessToken,
-		UserID:      result.UserID,
-		Name:        result.Name,
-		Role:        result.Role,
+		ExpiredAt:   result.AccessExpiredAt,
 	}
 }
 

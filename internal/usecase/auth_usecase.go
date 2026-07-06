@@ -44,8 +44,6 @@ func (uc *authUseCase) Login(ctx context.Context, cmd input.LoginCommand) (*inpu
 	userID := strconv.FormatInt(user.ID, 10)
 	accessToken, err := uc.tokenSigner.GenerateAccessToken(ctx, output.TokenClaims{
 		Subject: userID,
-		Name:    user.Name,
-		Role:    user.Role,
 	}, accessTokenTTL)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to generate access token")
@@ -64,10 +62,8 @@ func (uc *authUseCase) Login(ctx context.Context, cmd input.LoginCommand) (*inpu
 
 	return &input.LoginResult{
 		AccessToken:     accessToken,
+		AccessExpiredAt: time.Now().Add(accessTokenTTL).Unix(),
 		RefreshToken:    refreshToken,
-		UserID:          userID,
-		Name:            user.Name,
-		Role:            user.Role,
 		RefreshTokenTTL: refreshTokenTTL,
 	}, nil
 }
@@ -90,7 +86,7 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshComman
 		return nil, domain.NewError(domain.ErrUnauthorized, "Refresh token not valid or expired")
 	}
 
-	user, err := uc.userRepo.FindByID(ctx, claims.Subject)
+	_, err = uc.userRepo.FindByID(ctx, claims.Subject)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrUnauthorized, "User not found or deleted")
 	}
@@ -99,8 +95,6 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshComman
 
 	newAccess, err := uc.tokenSigner.GenerateAccessToken(ctx, output.TokenClaims{
 		Subject: claims.Subject,
-		Name:    user.Name,
-		Role:    user.Role,
 	}, accessTokenTTL)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to generate new access token")
@@ -135,14 +129,18 @@ func (uc *authUseCase) Logout(ctx context.Context, cmd input.LogoutCommand) erro
 	return uc.tokenStore.Delete(ctx, claims.Subject)
 }
 
-func (uc *authUseCase) GetProfile(_ context.Context, cmd input.GetProfileCommand) (*input.ProfileResult, error) {
+func (uc *authUseCase) GetProfile(ctx context.Context, cmd input.GetProfileCommand) (*input.ProfileResult, error) {
 	if cmd.UserID == "" {
 		return nil, domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
 	}
+	user, err := uc.userRepo.FindByID(ctx, cmd.UserID)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrUnauthorized, "User not found or deleted")
+	}
 
 	return &input.ProfileResult{
-		UserID: cmd.UserID,
-		Name:   cmd.Name,
-		Role:   cmd.Role,
+		UserID: strconv.FormatInt(user.ID, 10),
+		Name:   user.Name,
+		Role:   user.Role,
 	}, nil
 }

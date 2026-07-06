@@ -19,10 +19,8 @@ type LoginCommand struct {
 
 type LoginResult struct {
 	AccessToken     string
+	AccessExpiredAt int64
 	RefreshToken    string
-	UserID          string
-	Name            string
-	Role            string
 	RefreshTokenTTL time.Duration
 }
 
@@ -42,8 +40,6 @@ type LogoutCommand struct {
 
 type GetProfileCommand struct {
 	UserID string
-	Name   string
-	Role   string
 }
 
 type ProfileResult struct {

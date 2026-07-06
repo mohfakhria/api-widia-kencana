@@ -62,7 +62,10 @@ func (a *ApiApp) initialize() error {
 	}
 	a.objectStorage = objectStorage
 
-	tokenSigner := security.NewJWTSigner(a.Config)
+	tokenSigner, err := security.NewJWTSigner(a.Config)
+	if err != nil {
+		return err
+	}
 	authUC := usecase.NewAuthUseCase(
 		pg.NewUserRepository(a.db),
 		redisstore.NewRefreshTokenStore(a.redisClient, a.Config.RedisEnabled),

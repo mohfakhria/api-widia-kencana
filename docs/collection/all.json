@@ -61,7 +61,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Login success\",\n  \"data\": {\n    \"access_token\": \"\u003cjwt_access_token\u003e\",\n    \"userid\": \"1\",\n    \"name\": \"Admin\",\n    \"role\": \"admin\"\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Login success\",\n  \"data\": {\n    \"access_token\": \"\u003cjwt_access_token\u003e\",\n    \"expired_at\": 1783325700\n  }\n}",
                             "code": 200,
                             "header": [
                                 {
@@ -134,6 +134,30 @@
                     ]
                 },
                 {
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Refresh response has access token\", function () {",
+                                    "  var jsonData = pm.response.json();",
+                                    "  pm.expect(jsonData).to.have.property(\"data\");",
+                                    "  pm.expect(jsonData.data).to.have.property(\"access_token\");",
+                                    "});",
+                                    "",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData \u0026\u0026 jsonData.data \u0026\u0026 jsonData.data.access_token) {",
+                                    "  var accessToken = jsonData.data.access_token;",
+                                    "  pm.collectionVariables.set(\"token\", accessToken);",
+                                    "  if (pm.environment \u0026\u0026 pm.environment.name) {",
+                                    "    pm.environment.set(\"token\", accessToken);",
+                                    "  }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "name": "Refresh Token",
                     "request": {
                         "description": "Uses refresh_token from HttpOnly cookie to issue a new access token and rotate refresh token.",
@@ -141,10 +165,6 @@
                             {
                                 "key": "Content-Type",
                                 "value": "application/json"
-                            },
-                            {
-                                "key": "Cookie",
-                                "value": "refresh_token=\u003crefresh_token_cookie\u003e"
                             }
                         ],
                         "method": "POST",
@@ -166,12 +186,6 @@
                             "code": 200,
                             "name": "Refresh Token - Success",
                             "originalRequest": {
-                                "header": [
-                                    {
-                                        "key": "Cookie",
-                                        "value": "refresh_token=\u003crefresh_token_cookie\u003e"
-                                    }
-                                ],
                                 "method": "POST",
                                 "url": {
                                     "host": [
@@ -212,12 +226,6 @@
                     "name": "Logout",
                     "request": {
                         "description": "Invalidate refresh token in Redis and clear cookie.",
-                        "header": [
-                            {
-                                "key": "Cookie",
-                                "value": "refresh_token=\u003crefresh_token_cookie\u003e"
-                            }
-                        ],
                         "method": "POST",
                         "url": {
                             "host": [

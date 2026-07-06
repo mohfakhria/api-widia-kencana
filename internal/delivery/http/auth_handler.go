@@ -89,8 +89,6 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 func (h *AuthHandler) Me(c *gin.Context) {
 	result, err := h.auth.GetProfile(c.Request.Context(), input.GetProfileCommand{
 		UserID: c.GetString("userID"),
-		Name:   c.GetString("name"),
-		Role:   c.GetString("role"),
 	})
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())

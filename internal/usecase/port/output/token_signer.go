@@ -7,8 +7,6 @@ import (
 
 type TokenClaims struct {
 	Subject string
-	Name    string
-	Role    string
 }
 
 type TokenSigner interface {

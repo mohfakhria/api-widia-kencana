@@ -42,8 +42,6 @@ func AuthRequired(tokenSigner output.TokenSigner) gin.HandlerFunc {
 
 		c.Set("userID", claims.Subject)
 		c.Set("userIDInt", userID)
-		c.Set("name", claims.Name)
-		c.Set("role", claims.Role)
 		c.Next()
 	}
 }
