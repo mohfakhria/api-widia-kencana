@@ -316,7 +316,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"projects\": [\n      {\n        \"id\": 1,\n        \"name\": \"Website Revamp\",\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}",
                             "code": 200,
                             "name": "List Projects - Success",
                             "status": "OK"
@@ -443,7 +443,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project updated successfully\"\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project updated successfully\",\n  \"data\": null\n}",
                             "code": 200,
                             "name": "Update Project - Success",
                             "status": "OK"
@@ -476,7 +476,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project deleted successfully\"\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project deleted successfully\",\n  \"data\": null\n}",
                             "code": 200,
                             "name": "Delete Project - Success",
                             "status": "OK"
@@ -824,7 +824,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"status\": \"new:po\",\n      \"total\": 12000000\n    }\n  ]\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"quotations\": [\n      {\n        \"id\": 1,\n        \"quotation_no\": \"Q-2026-0001\",\n        \"client_name\": \"PT Contoh\",\n        \"project\": \"Website Revamp\",\n        \"status\": \"new:po\",\n        \"total\": 12000000\n      }\n    ]\n  }\n}",
                             "code": 200,
                             "name": "List Quotations - Success",
                             "status": "OK"
@@ -1079,7 +1079,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"workflows\": [\n      {\n        \"id\": 1,\n        \"name\": \"Standard Project Flow\",\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}",
                                     "code": 200,
                                     "name": "List Workflows - Success",
                                     "status": "OK"
@@ -1206,7 +1206,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow updated successfully\"\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow updated successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Update Workflow - Success",
                                     "status": "OK"
@@ -1239,7 +1239,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow deleted successfully\"\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow deleted successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Delete Workflow - Success",
                                     "status": "OK"
@@ -1277,7 +1277,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"stages\": [\n      {\n        \"id\": 1,\n        \"workflow_id\": 1,\n        \"name\": \"Sales\",\n        \"position\": 1,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}",
                                     "code": 200,
                                     "name": "List Workflow Stages - Success",
                                     "status": "OK"
@@ -1397,7 +1397,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\"\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Update Workflow Stage - Success",
                                     "status": "OK"
@@ -1430,7 +1430,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage deleted successfully\"\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage deleted successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Delete Workflow Stage - Success",
                                     "status": "OK"
@@ -1468,7 +1468,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"steps\": [\n      {\n        \"id\": 1,\n        \"workflow_stage_id\": 1,\n        \"name\": \"Quotation\",\n        \"position\": 1,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}",
                                     "code": 200,
                                     "name": "List Workflow Steps - Success",
                                     "status": "OK"
@@ -1588,7 +1588,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\"\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Update Workflow Step - Success",
                                     "status": "OK"
@@ -1621,7 +1621,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step deleted successfully\"\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step deleted successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Delete Workflow Step - Success",
                                     "status": "OK"

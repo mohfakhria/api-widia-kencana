@@ -24,6 +24,10 @@ type WorkflowStepResponse struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 }
 
+type WorkflowStepListResponse struct {
+	Steps []WorkflowStepResponse `json:"steps"`
+}
+
 func (r WorkflowStepRequest) ToCreateWorkflowStepCommand() input.CreateWorkflowStepCommand {
 	return input.CreateWorkflowStepCommand{
 		WorkflowStageID: r.WorkflowStageID,
@@ -49,10 +53,12 @@ func NewWorkflowStepResponse(step *entity.WorkflowStep) WorkflowStepResponse {
 	}
 }
 
-func NewWorkflowStepListResponses(steps []entity.WorkflowStep) []WorkflowStepResponse {
-	responses := make([]WorkflowStepResponse, 0, len(steps))
+func NewWorkflowStepListResponses(steps []entity.WorkflowStep) WorkflowStepListResponse {
+	responses := WorkflowStepListResponse{
+		Steps: make([]WorkflowStepResponse, 0, len(steps)),
+	}
 	for _, step := range steps {
-		responses = append(responses, NewWorkflowStepResponse(&step))
+		responses.Steps = append(responses.Steps, NewWorkflowStepResponse(&step))
 	}
 
 	return responses

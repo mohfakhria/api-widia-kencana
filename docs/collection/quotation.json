@@ -46,7 +46,7 @@
           "status": "OK",
           "code": 200,
           "_postman_previewlanguage": "json",
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"status\": \"new:po\",\n      \"total\": 12000000\n    }\n  ]\n}"
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"quotations\": [\n      {\n        \"id\": 1,\n        \"quotation_no\": \"Q-2026-0001\",\n        \"client_name\": \"PT Contoh\",\n        \"project\": \"Website Revamp\",\n        \"status\": \"new:po\",\n        \"total\": 12000000\n      }\n    ]\n  }\n}"
         },
         {
           "name": "List Quotations - Unauthorized",

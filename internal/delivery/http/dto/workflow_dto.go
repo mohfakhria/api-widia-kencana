@@ -20,6 +20,10 @@ type WorkflowResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type WorkflowListResponse struct {
+	Workflows []WorkflowResponse `json:"workflows"`
+}
+
 func (r WorkflowRequest) ToCreateWorkflowCommand() input.CreateWorkflowCommand {
 	return input.CreateWorkflowCommand{
 		Name:   r.Name,
@@ -41,10 +45,12 @@ func NewWorkflowResponse(workflow *entity.Workflow) WorkflowResponse {
 	}
 }
 
-func NewWorkflowListResponses(workflows []entity.Workflow) []WorkflowResponse {
-	responses := make([]WorkflowResponse, 0, len(workflows))
+func NewWorkflowListResponses(workflows []entity.Workflow) WorkflowListResponse {
+	responses := WorkflowListResponse{
+		Workflows: make([]WorkflowResponse, 0, len(workflows)),
+	}
 	for _, workflow := range workflows {
-		responses = append(responses, NewWorkflowResponse(&workflow))
+		responses.Workflows = append(responses.Workflows, NewWorkflowResponse(&workflow))
 	}
 
 	return responses

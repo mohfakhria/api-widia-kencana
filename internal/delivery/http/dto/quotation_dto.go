@@ -57,6 +57,10 @@ type QuotationListResponse struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type QuotationListDataResponse struct {
+	Quotations []QuotationListResponse `json:"quotations"`
+}
+
 type QuotationDetailResponse struct {
 	ID            int64                      `json:"id"`
 	QuotationNo   string                     `json:"quotation_no"`
@@ -155,10 +159,12 @@ func (r QuotationListFilterRequest) ToListQuotationQuery() input.ListQuotationQu
 	}
 }
 
-func NewQuotationListResponses(quotations []entity.Quotation) []QuotationListResponse {
-	responses := make([]QuotationListResponse, 0, len(quotations))
+func NewQuotationListResponses(quotations []entity.Quotation) QuotationListDataResponse {
+	responses := QuotationListDataResponse{
+		Quotations: make([]QuotationListResponse, 0, len(quotations)),
+	}
 	for _, quotation := range quotations {
-		responses = append(responses, QuotationListResponse{
+		responses.Quotations = append(responses.Quotations, QuotationListResponse{
 			ID:          quotation.ID,
 			QuotationNo: quotation.QuotationNo,
 			ClientName:  quotation.ClientName,

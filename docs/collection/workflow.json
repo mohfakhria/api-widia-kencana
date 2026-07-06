@@ -36,7 +36,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"workflows\": [\n      {\n        \"id\": 1,\n        \"name\": \"Standard Project Flow\",\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}"
             }
           ]
         },
@@ -163,7 +163,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow updated successfully\"\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow updated successfully\",\n  \"data\": null\n}"
             }
           ]
         },
@@ -196,7 +196,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow deleted successfully\"\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow deleted successfully\",\n  \"data\": null\n}"
             }
           ]
         }
@@ -234,7 +234,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"stages\": [\n      {\n        \"id\": 1,\n        \"workflow_id\": 1,\n        \"name\": \"Sales\",\n        \"position\": 1,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}"
             }
           ]
         },
@@ -354,7 +354,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\"\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\",\n  \"data\": null\n}"
             }
           ]
         },
@@ -387,7 +387,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage deleted successfully\"\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage deleted successfully\",\n  \"data\": null\n}"
             }
           ]
         }
@@ -425,7 +425,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"steps\": [\n      {\n        \"id\": 1,\n        \"workflow_stage_id\": 1,\n        \"name\": \"Quotation\",\n        \"position\": 1,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}"
             }
           ]
         },
@@ -545,7 +545,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\"\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\",\n  \"data\": null\n}"
             }
           ]
         },
@@ -578,7 +578,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step deleted successfully\"\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step deleted successfully\",\n  \"data\": null\n}"
             }
           ]
         }

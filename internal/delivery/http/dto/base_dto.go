@@ -9,7 +9,12 @@ import (
 type APIResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
+	Data    any    `json:"data"`
+}
+
+type APIErrorResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
 func Success(c *gin.Context, message string, data any) {
@@ -21,7 +26,7 @@ func Success(c *gin.Context, message string, data any) {
 }
 
 func Error(c *gin.Context, statusCode int, message string) {
-	c.JSON(statusCode, APIResponse{
+	c.JSON(statusCode, APIErrorResponse{
 		Status:  "error",
 		Message: message,
 	})

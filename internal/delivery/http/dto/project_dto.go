@@ -20,6 +20,10 @@ type ProjectResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type ProjectListResponse struct {
+	Projects []ProjectResponse `json:"projects"`
+}
+
 func (r ProjectRequest) ToCreateProjectCommand() input.CreateProjectCommand {
 	return input.CreateProjectCommand{
 		Name:   r.Name,
@@ -41,10 +45,12 @@ func NewProjectResponse(project *entity.Project) ProjectResponse {
 	}
 }
 
-func NewProjectListResponses(projects []entity.Project) []ProjectResponse {
-	responses := make([]ProjectResponse, 0, len(projects))
+func NewProjectListResponses(projects []entity.Project) ProjectListResponse {
+	responses := ProjectListResponse{
+		Projects: make([]ProjectResponse, 0, len(projects)),
+	}
 	for _, project := range projects {
-		responses = append(responses, NewProjectResponse(&project))
+		responses.Projects = append(responses.Projects, NewProjectResponse(&project))
 	}
 
 	return responses
