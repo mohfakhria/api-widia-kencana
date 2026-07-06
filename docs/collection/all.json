@@ -293,6 +293,202 @@
         {
             "item": [
                 {
+                    "name": "List Projects",
+                    "request": {
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-list"
+                            ],
+                            "raw": "{{base_url}}/api/project-list"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}",
+                            "code": 200,
+                            "name": "List Projects - Success",
+                            "status": "OK"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Project Detail",
+                    "request": {
+                        "description": "Replace last path segment with project id.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-detail",
+                                "1"
+                            ],
+                            "raw": "{{base_url}}/api/project-detail/1"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Website Revamp\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                            "code": 200,
+                            "name": "Get Project Detail - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}",
+                            "code": 404,
+                            "name": "Get Project Detail - Not Found",
+                            "status": "Not Found"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Project",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\"\n}"
+                        },
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-add"
+                            ],
+                            "raw": "{{base_url}}/api/project-add"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Website Revamp\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                            "code": 200,
+                            "name": "Create Project - Success",
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project status\"\n}",
+                            "code": 400,
+                            "name": "Create Project - Invalid Status",
+                            "status": "Bad Request"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Project",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                        },
+                        "description": "Replace last path segment with project id.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-update",
+                                "1"
+                            ],
+                            "raw": "{{base_url}}/api/project-update/1"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project updated successfully\"\n}",
+                            "code": 200,
+                            "name": "Update Project - Success",
+                            "status": "OK"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Project",
+                    "request": {
+                        "description": "Soft delete project by setting status to deleted.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-delete",
+                                "1"
+                            ],
+                            "raw": "{{base_url}}/api/project-delete/1"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project deleted successfully\"\n}",
+                            "code": 200,
+                            "name": "Delete Project - Success",
+                            "status": "OK"
+                        }
+                    ]
+                }
+            ],
+            "name": "Project"
+        },
+        {
+            "item": [
+                {
                     "name": "Upsert Purchase Order",
                     "request": {
                         "body": {

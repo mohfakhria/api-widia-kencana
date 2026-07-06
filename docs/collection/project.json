@@ -1,0 +1,211 @@
+{
+  "info": {
+    "_postman_id": "3f5a8e5c-1c71-4d41-bdaa-841ac9103dc3",
+    "name": "Widia Kencana - Project",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Project endpoints for Widia Kencana API. Rule: 1 route = 1 endpoint item."
+  },
+  "item": [
+    {
+      "name": "List Projects",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-list",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-list"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "List Projects - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Project Detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-detail/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-detail",
+            "1"
+          ]
+        },
+        "description": "Replace last path segment with project id."
+      },
+      "response": [
+        {
+          "name": "Get Project Detail - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Website Revamp\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+        },
+        {
+          "name": "Get Project Detail - Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Project",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/project-add",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-add"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Project - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Website Revamp\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+        },
+        {
+          "name": "Create Project - Invalid Status",
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project status\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Project",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/project-update/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-update",
+            "1"
+          ]
+        },
+        "description": "Replace last path segment with project id."
+      },
+      "response": [
+        {
+          "name": "Update Project - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project updated successfully\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Project",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-delete/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-delete",
+            "1"
+          ]
+        },
+        "description": "Soft delete project by setting status to deleted."
+      },
+      "response": [
+        {
+          "name": "Delete Project - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project deleted successfully\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

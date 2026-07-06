@@ -75,12 +75,14 @@ func (a *ApiApp) initialize() error {
 		pg.NewPurchaseOrderRepository(a.db),
 		a.objectStorage,
 	)
+	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
 		Config:               a.Config,
 		TokenSigner:          tokenSigner,
 		AuthHandler:          deliveryhttp.NewAuthHandler(authUC, a.Config),
+		ProjectHandler:       deliveryhttp.NewProjectHandler(projectUC),
 		PurchaseOrderHandler: deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
 		QuotationHandler:     deliveryhttp.NewQuotationHandler(quotationUC),
 	})

@@ -15,6 +15,7 @@ type RouterDeps struct {
 	Config               config.Config
 	TokenSigner          output.TokenSigner
 	AuthHandler          *AuthHandler
+	ProjectHandler       *ProjectHandler
 	PurchaseOrderHandler *PurchaseOrderHandler
 	QuotationHandler     *QuotationHandler
 }
@@ -38,6 +39,11 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	protected.Use(middleware.AuthRequired(deps.TokenSigner))
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
+		protected.GET("/project-list", deps.ProjectHandler.List)
+		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
+		protected.POST("/project-add", deps.ProjectHandler.Create)
+		protected.PUT("/project-update/:id", deps.ProjectHandler.Update)
+		protected.DELETE("/project-delete/:id", deps.ProjectHandler.Delete)
 		protected.POST("/purchase-order-upsert", deps.PurchaseOrderHandler.Upsert)
 		protected.GET("/purchase-order/:quotationID", deps.PurchaseOrderHandler.GetByQuotationID)
 		protected.GET("/quotation-list", deps.QuotationHandler.List)
