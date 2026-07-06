@@ -19,6 +19,8 @@ type RouterDeps struct {
 	PurchaseOrderHandler *PurchaseOrderHandler
 	QuotationHandler     *QuotationHandler
 	WorkflowHandler      *WorkflowHandler
+	WorkflowStageHandler *WorkflowStageHandler
+	WorkflowStepHandler  *WorkflowStepHandler
 }
 
 func NewRouter(deps RouterDeps) *gin.Engine {
@@ -50,6 +52,16 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/workflow-add", deps.WorkflowHandler.Create)
 		protected.PUT("/workflow-update/:id", deps.WorkflowHandler.Update)
 		protected.DELETE("/workflow-delete/:id", deps.WorkflowHandler.Delete)
+		protected.GET("/workflow-stage-list/:workflowID", deps.WorkflowStageHandler.ListByWorkflowID)
+		protected.GET("/workflow-stage-detail/:id", deps.WorkflowStageHandler.Get)
+		protected.POST("/workflow-stage-add", deps.WorkflowStageHandler.Create)
+		protected.PUT("/workflow-stage-update/:id", deps.WorkflowStageHandler.Update)
+		protected.DELETE("/workflow-stage-delete/:id", deps.WorkflowStageHandler.Delete)
+		protected.GET("/workflow-step-list/:workflowStageID", deps.WorkflowStepHandler.ListByWorkflowStageID)
+		protected.GET("/workflow-step-detail/:id", deps.WorkflowStepHandler.Get)
+		protected.POST("/workflow-step-add", deps.WorkflowStepHandler.Create)
+		protected.PUT("/workflow-step-update/:id", deps.WorkflowStepHandler.Update)
+		protected.DELETE("/workflow-step-delete/:id", deps.WorkflowStepHandler.Delete)
 		protected.POST("/purchase-order-upsert", deps.PurchaseOrderHandler.Upsert)
 		protected.GET("/purchase-order/:quotationID", deps.PurchaseOrderHandler.GetByQuotationID)
 		protected.GET("/quotation-list", deps.QuotationHandler.List)

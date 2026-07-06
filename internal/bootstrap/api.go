@@ -78,6 +78,8 @@ func (a *ApiApp) initialize() error {
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
+	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))
+	workflowStepUC := usecase.NewWorkflowStepUseCase(pg.NewWorkflowStepRepository(a.db))
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
 		Config:               a.Config,
@@ -87,6 +89,8 @@ func (a *ApiApp) initialize() error {
 		PurchaseOrderHandler: deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
 		QuotationHandler:     deliveryhttp.NewQuotationHandler(quotationUC),
 		WorkflowHandler:      deliveryhttp.NewWorkflowHandler(workflowUC),
+		WorkflowStageHandler: deliveryhttp.NewWorkflowStageHandler(workflowStageUC),
+		WorkflowStepHandler:  deliveryhttp.NewWorkflowStepHandler(workflowStepUC),
 	})
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),
