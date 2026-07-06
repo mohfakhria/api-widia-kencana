@@ -1,0 +1,211 @@
+{
+  "info": {
+    "_postman_id": "79d005d0-5ef3-4b98-8e24-d1b3d8fca24e",
+    "name": "Widia Kencana - Workflow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Workflow master endpoints for Widia Kencana API. Rule: 1 route = 1 endpoint item."
+  },
+  "item": [
+    {
+      "name": "List Workflows",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/workflow-list",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "workflow-list"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "List Workflows - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Workflow Detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/workflow-detail/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "workflow-detail",
+            "1"
+          ]
+        },
+        "description": "Replace last path segment with workflow id."
+      },
+      "response": [
+        {
+          "name": "Get Workflow Detail - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+        },
+        {
+          "name": "Get Workflow Detail - Not Found",
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"workflow not found\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Workflow",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Standard Project Flow\",\n  \"status\": \"active\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/workflow-add",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "workflow-add"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Workflow - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+        },
+        {
+          "name": "Create Workflow - Invalid Status",
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid workflow status\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Workflow",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Standard Project Flow V2\",\n  \"status\": \"inactive\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/workflow-update/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "workflow-update",
+            "1"
+          ]
+        },
+        "description": "Replace last path segment with workflow id."
+      },
+      "response": [
+        {
+          "name": "Update Workflow - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow updated successfully\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Workflow",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/workflow-delete/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "workflow-delete",
+            "1"
+          ]
+        },
+        "description": "Soft delete workflow by setting status to deleted."
+      },
+      "response": [
+        {
+          "name": "Delete Workflow - Success",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow deleted successfully\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

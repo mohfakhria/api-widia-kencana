@@ -18,6 +18,7 @@ type RouterDeps struct {
 	ProjectHandler       *ProjectHandler
 	PurchaseOrderHandler *PurchaseOrderHandler
 	QuotationHandler     *QuotationHandler
+	WorkflowHandler      *WorkflowHandler
 }
 
 func NewRouter(deps RouterDeps) *gin.Engine {
@@ -44,6 +45,11 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/project-add", deps.ProjectHandler.Create)
 		protected.PUT("/project-update/:id", deps.ProjectHandler.Update)
 		protected.DELETE("/project-delete/:id", deps.ProjectHandler.Delete)
+		protected.GET("/workflow-list", deps.WorkflowHandler.List)
+		protected.GET("/workflow-detail/:id", deps.WorkflowHandler.Get)
+		protected.POST("/workflow-add", deps.WorkflowHandler.Create)
+		protected.PUT("/workflow-update/:id", deps.WorkflowHandler.Update)
+		protected.DELETE("/workflow-delete/:id", deps.WorkflowHandler.Delete)
 		protected.POST("/purchase-order-upsert", deps.PurchaseOrderHandler.Upsert)
 		protected.GET("/purchase-order/:quotationID", deps.PurchaseOrderHandler.GetByQuotationID)
 		protected.GET("/quotation-list", deps.QuotationHandler.List)
