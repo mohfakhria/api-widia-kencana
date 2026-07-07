@@ -23,7 +23,7 @@ func AuthRequired(tokenSigner output.TokenSigner) gin.HandlerFunc {
 
 		tokenStr := strings.TrimPrefix(header, "Bearer ")
 		claims, err := tokenSigner.ParseToken(c.Request.Context(), tokenStr)
-		if err != nil {
+		if err != nil || claims.TokenType != output.TokenTypeAccess {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"status":  "error",
 				"message": "Invalid or expired token",

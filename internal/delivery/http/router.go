@@ -42,6 +42,7 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	protected.Use(middleware.AuthRequired(deps.TokenSigner))
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
+		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)

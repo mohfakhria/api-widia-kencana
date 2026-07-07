@@ -9,6 +9,7 @@ type AuthUseCase interface {
 	Login(ctx context.Context, cmd LoginCommand) (*LoginResult, error)
 	RefreshToken(ctx context.Context, cmd RefreshCommand) (*RefreshResult, error)
 	Logout(ctx context.Context, cmd LogoutCommand) error
+	LogoutAll(ctx context.Context, cmd LogoutAllCommand) error
 	GetProfile(ctx context.Context, cmd GetProfileCommand) (*ProfileResult, error)
 }
 
@@ -37,6 +38,10 @@ type RefreshResult struct {
 
 type LogoutCommand struct {
 	RefreshToken string
+}
+
+type LogoutAllCommand struct {
+	UserID string
 }
 
 type GetProfileCommand struct {

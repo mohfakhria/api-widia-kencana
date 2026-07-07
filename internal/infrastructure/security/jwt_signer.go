@@ -9,9 +9,12 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type jwtClaims struct {
+	SessionID string `json:"sid,omitempty"`
+	TokenType string `json:"typ"`
 	jwt.RegisteredClaims
 }
 
@@ -39,6 +42,8 @@ func (s *JWTSigner) GenerateAccessToken(_ context.Context, claims output.TokenCl
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims{
+		SessionID: claims.SessionID,
+		TokenType: output.TokenTypeAccess,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   encryptedSubject,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -49,15 +54,18 @@ func (s *JWTSigner) GenerateAccessToken(_ context.Context, claims output.TokenCl
 	return token.SignedString(s.secret)
 }
 
-func (s *JWTSigner) GenerateRefreshToken(_ context.Context, userID string, ttl time.Duration) (string, error) {
-	encryptedSubject, err := s.subjectCipher.Encrypt(userID)
+func (s *JWTSigner) GenerateRefreshToken(_ context.Context, claims output.TokenClaims, ttl time.Duration) (string, error) {
+	encryptedSubject, err := s.subjectCipher.Encrypt(claims.Subject)
 	if err != nil {
 		return "", err
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims{
+		SessionID: claims.SessionID,
+		TokenType: output.TokenTypeRefresh,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   encryptedSubject,
+			ID:        uuid.NewString(),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
@@ -81,6 +89,8 @@ func (s *JWTSigner) ParseToken(_ context.Context, token string) (*output.TokenCl
 	}
 
 	return &output.TokenClaims{
-		Subject: subject,
+		Subject:   subject,
+		SessionID: claims.SessionID,
+		TokenType: claims.TokenType,
 	}, nil
 }

@@ -225,7 +225,7 @@
                 {
                     "name": "Logout",
                     "request": {
-                        "description": "Invalidate refresh token in Redis and clear cookie.",
+                        "description": "Invalidate the current device refresh session in Redis and clear its cookie. Other devices remain signed in.",
                         "method": "POST",
                         "url": {
                             "host": [
@@ -244,6 +244,38 @@
                             "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Logout successful\",\n  \"data\": null\n}",
                             "code": 200,
                             "name": "Logout - Success",
+                            "status": "OK"
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout All Devices",
+                    "request": {
+                        "description": "Invalidate every refresh session owned by the authenticated user and clear the current device cookie. Existing access tokens remain valid until they expire.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "logout-all"
+                            ],
+                            "raw": "{{base_url}}/api/logout-all"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Logged out from all devices successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "name": "Logout All Devices - Success",
                             "status": "OK"
                         }
                     ]

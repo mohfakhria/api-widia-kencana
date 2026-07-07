@@ -78,12 +78,27 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	cookie, _ := c.Cookie("refresh_token")
-	_ = h.auth.Logout(c.Request.Context(), input.LogoutCommand{
+	if err := h.auth.Logout(c.Request.Context(), input.LogoutCommand{
 		RefreshToken: cookie,
-	})
+	}); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
 
 	c.SetCookie("refresh_token", "", -1, "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
 	dto.Success(c, "Logout successful", nil)
+}
+
+func (h *AuthHandler) LogoutAll(c *gin.Context) {
+	if err := h.auth.LogoutAll(c.Request.Context(), input.LogoutAllCommand{
+		UserID: c.GetString("userID"),
+	}); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	c.SetCookie("refresh_token", "", -1, "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
+	dto.Success(c, "Logged out from all devices successfully", nil)
 }
 
 func (h *AuthHandler) Me(c *gin.Context) {
