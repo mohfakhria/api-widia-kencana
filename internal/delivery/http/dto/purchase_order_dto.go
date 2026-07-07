@@ -29,6 +29,10 @@ type PurchaseOrderResponse struct {
 	Items       []PurchaseOrderItemResponse `json:"items"`
 }
 
+type PurchaseOrderDataResponse struct {
+	PurchaseOrder PurchaseOrderResponse `json:"purchase_order"`
+}
+
 type PurchaseOrderItemResponse struct {
 	ID    int64   `json:"id"`
 	Name  string  `json:"name"`
@@ -118,14 +122,16 @@ func (r UpsertPurchaseOrderRequest) ToUpsertPurchaseOrderCommand() input.UpsertP
 	return cmd
 }
 
-func NewPurchaseOrderResponse(quotationID int64, items []input.PurchaseOrderItemResult) PurchaseOrderResponse {
-	response := PurchaseOrderResponse{
-		QuotationID: quotationID,
-		Items:       make([]PurchaseOrderItemResponse, 0, len(items)),
+func NewPurchaseOrderResponse(quotationID int64, items []input.PurchaseOrderItemResult) PurchaseOrderDataResponse {
+	response := PurchaseOrderDataResponse{
+		PurchaseOrder: PurchaseOrderResponse{
+			QuotationID: quotationID,
+			Items:       make([]PurchaseOrderItemResponse, 0, len(items)),
+		},
 	}
 
 	for _, item := range items {
-		response.Items = append(response.Items, PurchaseOrderItemResponse{
+		response.PurchaseOrder.Items = append(response.PurchaseOrder.Items, PurchaseOrderItemResponse{
 			ID:    item.ID,
 			Name:  item.Name,
 			Qty:   item.Qty,

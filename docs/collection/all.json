@@ -17,12 +17,12 @@
                                     "pm.test(\"Login response has access token\", function () {",
                                     "  var jsonData = pm.response.json();",
                                     "  pm.expect(jsonData).to.have.property(\"data\");",
-                                    "  pm.expect(jsonData.data).to.have.property(\"access_token\");",
+                                    "  pm.expect(jsonData.data.auth).to.have.property(\"access_token\");",
                                     "});",
                                     "",
                                     "var jsonData = pm.response.json();",
-                                    "if (jsonData \u0026\u0026 jsonData.data \u0026\u0026 jsonData.data.access_token) {",
-                                    "  var accessToken = jsonData.data.access_token;",
+                                    "if (jsonData \u0026\u0026 jsonData.data \u0026\u0026 jsonData.data.auth \u0026\u0026 jsonData.data.auth.access_token) {",
+                                    "  var accessToken = jsonData.data.auth.access_token;",
                                     "  pm.collectionVariables.set(\"token\", accessToken);",
                                     "  if (pm.environment \u0026\u0026 pm.environment.name) {",
                                     "    pm.environment.set(\"token\", accessToken);",
@@ -39,7 +39,7 @@
                             "mode": "raw",
                             "raw": "{\n  \"email\": \"fahmi@widiakencana.com\",\n  \"password\": \"Cihanjuang180\"\n}"
                         },
-                        "description": "Login with email and password. On success, returns access_token and sets refresh_token HttpOnly cookie.",
+                        "description": "Login with email and password. On success, returns auth.access_token and sets refresh_token HttpOnly cookie.",
                         "header": [
                             {
                                 "key": "Content-Type",
@@ -61,7 +61,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Login success\",\n  \"data\": {\n    \"access_token\": \"\u003cjwt_access_token\u003e\",\n    \"expired_at\": 1783325700\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Login success\",\n  \"data\": {\n    \"auth\": {\n      \"access_token\": \"\u003cjwt_access_token\u003e\",\n      \"expired_at\": 1783325700\n    }\n  }\n}",
                             "code": 200,
                             "header": [
                                 {
@@ -142,12 +142,12 @@
                                     "pm.test(\"Refresh response has access token\", function () {",
                                     "  var jsonData = pm.response.json();",
                                     "  pm.expect(jsonData).to.have.property(\"data\");",
-                                    "  pm.expect(jsonData.data).to.have.property(\"access_token\");",
+                                    "  pm.expect(jsonData.data.auth).to.have.property(\"access_token\");",
                                     "});",
                                     "",
                                     "var jsonData = pm.response.json();",
-                                    "if (jsonData \u0026\u0026 jsonData.data \u0026\u0026 jsonData.data.access_token) {",
-                                    "  var accessToken = jsonData.data.access_token;",
+                                    "if (jsonData \u0026\u0026 jsonData.data \u0026\u0026 jsonData.data.auth \u0026\u0026 jsonData.data.auth.access_token) {",
+                                    "  var accessToken = jsonData.data.auth.access_token;",
                                     "  pm.collectionVariables.set(\"token\", accessToken);",
                                     "  if (pm.environment \u0026\u0026 pm.environment.name) {",
                                     "    pm.environment.set(\"token\", accessToken);",
@@ -182,7 +182,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Token refreshed successfully\",\n  \"data\": {\n    \"access_token\": \"\u003cnew_jwt_access_token\u003e\",\n    \"expired_at\": 1783325760\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Token refreshed successfully\",\n  \"data\": {\n    \"auth\": {\n      \"access_token\": \"\u003cnew_jwt_access_token\u003e\",\n      \"expired_at\": 1783325760\n    }\n  }\n}",
                             "code": 200,
                             "name": "Refresh Token - Success",
                             "originalRequest": {
@@ -273,7 +273,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"User profile\",\n  \"data\": {\n    \"userID\": \"1\",\n    \"name\": \"Admin\",\n    \"role\": \"admin\"\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"User profile\",\n  \"data\": {\n    \"user\": {\n      \"userID\": \"1\",\n      \"name\": \"Admin\",\n      \"role\": \"admin\"\n    }\n  }\n}",
                             "code": 200,
                             "name": "Me - Success",
                             "status": "OK"
@@ -349,7 +349,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Website Revamp\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                             "code": 200,
                             "name": "Get Project Detail - Success",
                             "status": "OK"
@@ -395,7 +395,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Website Revamp\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project created successfully\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                             "code": 200,
                             "name": "Create Project - Success",
                             "status": "OK"
@@ -761,7 +761,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order\",\n  \"data\": {\n    \"id\": 1,\n    \"items\": [\n      {\n        \"id\": 10,\n        \"name\": \"Hosting Annual\",\n        \"qty\": 1,\n        \"unit\": \"package\",\n        \"price\": 1500000,\n        \"total\": 1500000\n      },\n      {\n        \"id\": 11,\n        \"name\": \"Domain Renewal\",\n        \"qty\": 1,\n        \"unit\": \"year\",\n        \"price\": 250000,\n        \"total\": 250000\n      }\n    ]\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order\",\n  \"data\": {\n    \"purchase_order\": {\n      \"id\": 1,\n      \"items\": [\n        {\n          \"id\": 10,\n          \"name\": \"Hosting Annual\",\n          \"qty\": 1,\n          \"unit\": \"package\",\n          \"price\": 1500000,\n          \"total\": 1500000\n        },\n        {\n          \"id\": 11,\n          \"name\": \"Domain Renewal\",\n          \"qty\": 1,\n          \"unit\": \"year\",\n          \"price\": 250000,\n          \"total\": 250000\n        }\n      ]\n    }\n  }\n}",
                             "code": 200,
                             "name": "Get Purchase Order - Success",
                             "status": "OK"
@@ -864,7 +864,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"quotation_no\": \"Q-2026-0001\",\n    \"client_name\": \"PT Contoh\",\n    \"project\": \"Website Revamp\",\n    \"sections\": []\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"quotation\": {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"sections\": []\n    }\n  }\n}",
                             "code": 200,
                             "name": "Get Quotation Detail - Success",
                             "status": "OK"
@@ -904,7 +904,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation created successfully\",\n  \"data\": {\n    \"quotationNo\": \"Q-2026-0001\"\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation created successfully\",\n  \"data\": {\n    \"quotation\": {\n      \"quotationNo\": \"Q-2026-0001\"\n    }\n  }\n}",
                             "code": 200,
                             "name": "Create Quotation - Success (Full Payload)",
                             "originalRequest": {
@@ -1112,7 +1112,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"workflow\": {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\",\n      \"stages\": [\n        {\n          \"id\": 1,\n          \"workflow_id\": 1,\n          \"name\": \"Sales\",\n          \"position\": 1,\n          \"status\": \"active\",\n          \"created_at\": \"2026-07-06T10:00:00Z\",\n          \"updated_at\": \"2026-07-06T10:00:00Z\",\n          \"steps\": [\n            {\n              \"id\": 1,\n              \"workflow_stage_id\": 1,\n              \"name\": \"Quotation\",\n              \"position\": 1,\n              \"status\": \"active\",\n              \"created_at\": \"2026-07-06T10:00:00Z\",\n              \"updated_at\": \"2026-07-06T10:00:00Z\"\n            },\n            {\n              \"id\": 2,\n              \"workflow_stage_id\": 1,\n              \"name\": \"Purchase Order\",\n              \"position\": 2,\n              \"status\": \"active\",\n              \"created_at\": \"2026-07-06T10:00:00Z\",\n              \"updated_at\": \"2026-07-06T10:00:00Z\"\n            }\n          ]\n        }\n      ]\n    }\n  }\n}",
                                     "code": 200,
                                     "name": "Get Workflow Detail - Success",
                                     "status": "OK"
@@ -1158,7 +1158,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow created successfully\",\n  \"data\": {\n    \"workflow\": {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                                     "code": 200,
                                     "name": "Create Workflow - Success",
                                     "status": "OK"
@@ -1310,7 +1310,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"stage\": {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                                     "code": 200,
                                     "name": "Get Workflow Stage Detail - Success",
                                     "status": "OK"
@@ -1356,7 +1356,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage created successfully\",\n  \"data\": {\n    \"stage\": {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                                     "code": 200,
                                     "name": "Create Workflow Stage - Success",
                                     "status": "OK"
@@ -1400,6 +1400,46 @@
                                     "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Update Workflow Stage - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Sort Workflow Stages",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"workflow_id\": 1,\n  \"stages\": [\n    {\n      \"id\": 3,\n      \"position\": 1\n    },\n    {\n      \"id\": 1,\n      \"position\": 2\n    },\n    {\n      \"id\": 2,\n      \"position\": 3\n    }\n  ]\n}"
+                                },
+                                "description": "Bulk update stage position for one workflow. All stage ids must belong to workflow_id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-stage-sort"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-stage-sort"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage sorted successfully\",\n  \"data\": null\n}",
+                                    "code": 200,
+                                    "name": "Sort Workflow Stages - Success",
                                     "status": "OK"
                                 }
                             ]
@@ -1501,7 +1541,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"step\": {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                                     "code": 200,
                                     "name": "Get Workflow Step Detail - Success",
                                     "status": "OK"
@@ -1547,7 +1587,7 @@
                             "response": [
                                 {
                                     "_postman_previewlanguage": "json",
-                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step created successfully\",\n  \"data\": {\n    \"step\": {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                                     "code": 200,
                                     "name": "Create Workflow Step - Success",
                                     "status": "OK"
@@ -1591,6 +1631,46 @@
                                     "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\",\n  \"data\": null\n}",
                                     "code": 200,
                                     "name": "Update Workflow Step - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Sort Workflow Steps",
+                            "request": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"workflow_stage_id\": 1,\n  \"steps\": [\n    {\n      \"id\": 5,\n      \"position\": 1\n    },\n    {\n      \"id\": 4,\n      \"position\": 2\n    },\n    {\n      \"id\": 6,\n      \"position\": 3\n    }\n  ]\n}"
+                                },
+                                "description": "Bulk update step position for one workflow stage. All step ids must belong to workflow_stage_id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "workflow-step-sort"
+                                    ],
+                                    "raw": "{{base_url}}/api/workflow-step-sort"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step sorted successfully\",\n  \"data\": null\n}",
+                                    "code": 200,
+                                    "name": "Sort Workflow Steps - Success",
                                     "status": "OK"
                                 }
                             ]

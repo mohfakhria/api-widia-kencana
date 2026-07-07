@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/lib/pq"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
@@ -95,6 +96,44 @@ func (r *WorkflowStepRepository) Update(ctx context.Context, id int64, step *ent
 	}
 
 	return nil
+}
+
+func (r *WorkflowStepRepository) Sort(ctx context.Context, workflowStageID int64, items []entity.WorkflowStep) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	ids := make([]int64, 0, len(items))
+	for _, item := range items {
+		ids = append(ids, item.ID)
+	}
+
+	var matched int
+	if err := tx.QueryRowContext(ctx, `
+		SELECT COUNT(*)
+		FROM workflow_steps
+		WHERE workflow_stage_id = $1
+		  AND id = ANY($2)
+	`, workflowStageID, pq.Array(ids)).Scan(&matched); err != nil {
+		return err
+	}
+	if matched != len(items) {
+		return domain.NewError(domain.ErrInvalidInput, "all workflow steps must belong to workflow stage")
+	}
+
+	for _, item := range items {
+		if _, err := tx.ExecContext(ctx, `
+			UPDATE workflow_steps
+			SET position = $1, updated_at = NOW()
+			WHERE workflow_stage_id = $2 AND id = $3
+		`, item.Position, workflowStageID, item.ID); err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (r *WorkflowStepRepository) Delete(ctx context.Context, id int64) error {

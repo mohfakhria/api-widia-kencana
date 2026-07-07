@@ -69,7 +69,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"workflow\": {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\",\n      \"stages\": [\n        {\n          \"id\": 1,\n          \"workflow_id\": 1,\n          \"name\": \"Sales\",\n          \"position\": 1,\n          \"status\": \"active\",\n          \"created_at\": \"2026-07-06T10:00:00Z\",\n          \"updated_at\": \"2026-07-06T10:00:00Z\",\n          \"steps\": [\n            {\n              \"id\": 1,\n              \"workflow_stage_id\": 1,\n              \"name\": \"Quotation\",\n              \"position\": 1,\n              \"status\": \"active\",\n              \"created_at\": \"2026-07-06T10:00:00Z\",\n              \"updated_at\": \"2026-07-06T10:00:00Z\"\n            },\n            {\n              \"id\": 2,\n              \"workflow_stage_id\": 1,\n              \"name\": \"Purchase Order\",\n              \"position\": 2,\n              \"status\": \"active\",\n              \"created_at\": \"2026-07-06T10:00:00Z\",\n              \"updated_at\": \"2026-07-06T10:00:00Z\"\n            }\n          ]\n        }\n      ]\n    }\n  }\n}"
             },
             {
               "name": "Get Workflow Detail - Not Found",
@@ -115,7 +115,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Standard Project Flow\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow created successfully\",\n  \"data\": {\n    \"workflow\": {\n      \"id\": 1,\n      \"name\": \"Standard Project Flow\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}"
             },
             {
               "name": "Create Workflow - Invalid Status",
@@ -267,7 +267,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"stage\": {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}"
             },
             {
               "name": "Get Workflow Stage Detail - Not Found",
@@ -313,7 +313,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_id\": 1,\n    \"name\": \"Sales\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage created successfully\",\n  \"data\": {\n    \"stage\": {\n      \"id\": 1,\n      \"workflow_id\": 1,\n      \"name\": \"Sales\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}"
             }
           ]
         },
@@ -355,6 +355,46 @@
               "code": 200,
               "_postman_previewlanguage": "json",
               "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage updated successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sort Workflow Stages",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workflow_id\": 1,\n  \"stages\": [\n    {\n      \"id\": 3,\n      \"position\": 1\n    },\n    {\n      \"id\": 1,\n      \"position\": 2\n    },\n    {\n      \"id\": 2,\n      \"position\": 3\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/workflow-stage-sort",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "workflow-stage-sort"
+              ]
+            },
+            "description": "Bulk update stage position for one workflow. All stage ids must belong to workflow_id."
+          },
+          "response": [
+            {
+              "name": "Sort Workflow Stages - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow stage sorted successfully\",\n  \"data\": null\n}"
             }
           ]
         },
@@ -458,7 +498,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"step\": {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}"
             },
             {
               "name": "Get Workflow Step Detail - Not Found",
@@ -504,7 +544,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"workflow_stage_id\": 1,\n    \"name\": \"Quotation\",\n    \"position\": 1,\n    \"status\": \"active\",\n    \"created_at\": \"2026-07-06T10:00:00Z\",\n    \"updated_at\": \"2026-07-06T10:00:00Z\"\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step created successfully\",\n  \"data\": {\n    \"step\": {\n      \"id\": 1,\n      \"workflow_stage_id\": 1,\n      \"name\": \"Quotation\",\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}"
             }
           ]
         },
@@ -546,6 +586,46 @@
               "code": 200,
               "_postman_previewlanguage": "json",
               "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step updated successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sort Workflow Steps",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workflow_stage_id\": 1,\n  \"steps\": [\n    {\n      \"id\": 5,\n      \"position\": 1\n    },\n    {\n      \"id\": 4,\n      \"position\": 2\n    },\n    {\n      \"id\": 6,\n      \"position\": 3\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/workflow-step-sort",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "workflow-step-sort"
+              ]
+            },
+            "description": "Bulk update step position for one workflow stage. All step ids must belong to workflow_stage_id."
+          },
+          "response": [
+            {
+              "name": "Sort Workflow Steps - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Workflow step sorted successfully\",\n  \"data\": null\n}"
             }
           ]
         },

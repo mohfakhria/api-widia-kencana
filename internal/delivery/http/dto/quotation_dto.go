@@ -79,6 +79,10 @@ type QuotationDetailResponse struct {
 	Sections      []QuotationSectionResponse `json:"sections"`
 }
 
+type QuotationDetailDataResponse struct {
+	Quotation QuotationDetailResponse `json:"quotation"`
+}
+
 type QuotationSectionResponse struct {
 	ID       int64                            `json:"id"`
 	Title    string                           `json:"title"`
@@ -104,6 +108,10 @@ type QuotationSectionDetailResponse struct {
 
 type QuotationCreatedResponse struct {
 	QuotationNo string `json:"quotationNo"`
+}
+
+type QuotationCreatedDataResponse struct {
+	Quotation QuotationCreatedResponse `json:"quotation"`
 }
 
 func (r QuotationRequest) ToCreateQuotationCommand() input.CreateQuotationCommand {
@@ -179,22 +187,24 @@ func NewQuotationListResponses(quotations []entity.Quotation) QuotationListDataR
 	return responses
 }
 
-func NewQuotationDetailResponse(quotation *entity.Quotation) QuotationDetailResponse {
-	response := QuotationDetailResponse{
-		ID:            quotation.ID,
-		QuotationNo:   quotation.QuotationNo,
-		ClientName:    quotation.ClientName,
-		AttnName:      quotation.AttnName,
-		AttnPosition:  quotation.AttnPosition,
-		Address:       quotation.Address,
-		Project:       quotation.Project,
-		DiscountType:  quotation.DiscountType,
-		DiscountValue: quotation.DiscountValue,
-		SubTotal:      quotation.SubTotal,
-		Total:         quotation.Total,
-		Notes:         quotation.Notes,
-		CreatedAt:     quotation.CreatedAt,
-		UpdatedAt:     quotation.UpdatedAt,
+func NewQuotationDetailResponse(quotation *entity.Quotation) QuotationDetailDataResponse {
+	response := QuotationDetailDataResponse{
+		Quotation: QuotationDetailResponse{
+			ID:            quotation.ID,
+			QuotationNo:   quotation.QuotationNo,
+			ClientName:    quotation.ClientName,
+			AttnName:      quotation.AttnName,
+			AttnPosition:  quotation.AttnPosition,
+			Address:       quotation.Address,
+			Project:       quotation.Project,
+			DiscountType:  quotation.DiscountType,
+			DiscountValue: quotation.DiscountValue,
+			SubTotal:      quotation.SubTotal,
+			Total:         quotation.Total,
+			Notes:         quotation.Notes,
+			CreatedAt:     quotation.CreatedAt,
+			UpdatedAt:     quotation.UpdatedAt,
+		},
 	}
 
 	for _, section := range quotation.Sections {
@@ -223,12 +233,14 @@ func NewQuotationDetailResponse(quotation *entity.Quotation) QuotationDetailResp
 			})
 		}
 
-		response.Sections = append(response.Sections, mappedSection)
+		response.Quotation.Sections = append(response.Quotation.Sections, mappedSection)
 	}
 
 	return response
 }
 
-func NewQuotationCreatedResponse(quotationNo string) QuotationCreatedResponse {
-	return QuotationCreatedResponse{QuotationNo: quotationNo}
+func NewQuotationCreatedResponse(quotationNo string) QuotationCreatedDataResponse {
+	return QuotationCreatedDataResponse{
+		Quotation: QuotationCreatedResponse{QuotationNo: quotationNo},
+	}
 }

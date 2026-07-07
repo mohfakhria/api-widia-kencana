@@ -86,7 +86,7 @@
           "status": "OK",
           "code": 200,
           "_postman_previewlanguage": "json",
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"id\": 1,\n    \"quotation_no\": \"Q-2026-0001\",\n    \"client_name\": \"PT Contoh\",\n    \"project\": \"Website Revamp\",\n    \"sections\": []\n  }\n}"
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"quotation\": {\n      \"id\": 1,\n      \"quotation_no\": \"Q-2026-0001\",\n      \"client_name\": \"PT Contoh\",\n      \"project\": \"Website Revamp\",\n      \"sections\": []\n    }\n  }\n}"
         }
       ]
     },
@@ -153,7 +153,7 @@
           "status": "OK",
           "code": 200,
           "_postman_previewlanguage": "json",
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation created successfully\",\n  \"data\": {\n    \"quotationNo\": \"Q-2026-0001\"\n  }\n}"
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Quotation created successfully\",\n  \"data\": {\n    \"quotation\": {\n      \"quotationNo\": \"Q-2026-0001\"\n    }\n  }\n}"
         },
         {
           "name": "Create Quotation - Validation Error (Minimal Invalid Payload)",

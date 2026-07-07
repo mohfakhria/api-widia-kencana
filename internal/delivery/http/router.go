@@ -28,7 +28,7 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	r.Use(corsMiddleware(deps.Config))
 
 	r.GET("/health", func(c *gin.Context) {
-		dto.Success(c, "ok", gin.H{"env": deps.Config.AppEnv})
+		dto.Success(c, "ok", gin.H{"health": gin.H{"env": deps.Config.AppEnv}})
 	})
 
 	api := r.Group("/api")
@@ -56,11 +56,13 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.GET("/workflow-stage-detail/:id", deps.WorkflowStageHandler.Get)
 		protected.POST("/workflow-stage-add", deps.WorkflowStageHandler.Create)
 		protected.PUT("/workflow-stage-update/:id", deps.WorkflowStageHandler.Update)
+		protected.PUT("/workflow-stage-sort", deps.WorkflowStageHandler.Sort)
 		protected.DELETE("/workflow-stage-delete/:id", deps.WorkflowStageHandler.Delete)
 		protected.GET("/workflow-step-list/:workflowStageID", deps.WorkflowStepHandler.ListByWorkflowStageID)
 		protected.GET("/workflow-step-detail/:id", deps.WorkflowStepHandler.Get)
 		protected.POST("/workflow-step-add", deps.WorkflowStepHandler.Create)
 		protected.PUT("/workflow-step-update/:id", deps.WorkflowStepHandler.Update)
+		protected.PUT("/workflow-step-sort", deps.WorkflowStepHandler.Sort)
 		protected.DELETE("/workflow-step-delete/:id", deps.WorkflowStepHandler.Delete)
 		protected.POST("/purchase-order-upsert", deps.PurchaseOrderHandler.Upsert)
 		protected.GET("/purchase-order/:quotationID", deps.PurchaseOrderHandler.GetByQuotationID)

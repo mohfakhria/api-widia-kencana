@@ -58,7 +58,75 @@ func (r *WorkflowRepository) GetByID(ctx context.Context, id int64) (*entity.Wor
 		return nil, err
 	}
 
+	stages, err := r.workflowStages(ctx, workflow.ID)
+	if err != nil {
+		return nil, err
+	}
+	workflow.Stages = stages
+
 	return &workflow, nil
+}
+
+func (r *WorkflowRepository) workflowStages(ctx context.Context, workflowID int64) ([]entity.WorkflowStage, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, workflow_id, name, position, status, created_at, updated_at
+		FROM workflow_stages
+		WHERE workflow_id = $1
+		ORDER BY position ASC, id ASC
+	`, workflowID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stages := make([]entity.WorkflowStage, 0)
+	for rows.Next() {
+		var stage entity.WorkflowStage
+		if err := rows.Scan(&stage.ID, &stage.WorkflowID, &stage.Name, &stage.Position, &stage.Status, &stage.CreatedAt, &stage.UpdatedAt); err != nil {
+			return nil, err
+		}
+		stages = append(stages, stage)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	for i := range stages {
+		steps, err := r.workflowSteps(ctx, stages[i].ID)
+		if err != nil {
+			return nil, err
+		}
+		stages[i].Steps = steps
+	}
+
+	return stages, nil
+}
+
+func (r *WorkflowRepository) workflowSteps(ctx context.Context, workflowStageID int64) ([]entity.WorkflowStep, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, workflow_stage_id, name, position, status, created_at, updated_at
+		FROM workflow_steps
+		WHERE workflow_stage_id = $1
+		ORDER BY position ASC, id ASC
+	`, workflowStageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	steps := make([]entity.WorkflowStep, 0)
+	for rows.Next() {
+		var step entity.WorkflowStep
+		if err := rows.Scan(&step.ID, &step.WorkflowStageID, &step.Name, &step.Position, &step.Status, &step.CreatedAt, &step.UpdatedAt); err != nil {
+			return nil, err
+		}
+		steps = append(steps, step)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return steps, nil
 }
 
 func (r *WorkflowRepository) Create(ctx context.Context, workflow *entity.Workflow) (*entity.Workflow, error) {

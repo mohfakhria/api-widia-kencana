@@ -8,16 +8,23 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiredAt   int64  `json:"expired_at"`
+	Auth AuthTokenResponse `json:"auth"`
 }
 
 type RefreshTokenResponse struct {
+	Auth AuthTokenResponse `json:"auth"`
+}
+
+type AuthTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiredAt   int64  `json:"expired_at"`
 }
 
 type ProfileResponse struct {
+	User UserResponse `json:"user"`
+}
+
+type UserResponse struct {
 	UserID string `json:"userID"`
 	Name   string `json:"name"`
 	Role   string `json:"role"`
@@ -25,22 +32,28 @@ type ProfileResponse struct {
 
 func NewLoginResponse(result *input.LoginResult) LoginResponse {
 	return LoginResponse{
-		AccessToken: result.AccessToken,
-		ExpiredAt:   result.AccessExpiredAt,
+		Auth: AuthTokenResponse{
+			AccessToken: result.AccessToken,
+			ExpiredAt:   result.AccessExpiredAt,
+		},
 	}
 }
 
 func NewRefreshTokenResponse(result *input.RefreshResult) RefreshTokenResponse {
 	return RefreshTokenResponse{
-		AccessToken: result.AccessToken,
-		ExpiredAt:   result.AccessExpiredAt,
+		Auth: AuthTokenResponse{
+			AccessToken: result.AccessToken,
+			ExpiredAt:   result.AccessExpiredAt,
+		},
 	}
 }
 
 func NewProfileResponse(result *input.ProfileResult) ProfileResponse {
 	return ProfileResponse{
-		UserID: result.UserID,
-		Name:   result.Name,
-		Role:   result.Role,
+		User: UserResponse{
+			UserID: result.UserID,
+			Name:   result.Name,
+			Role:   result.Role,
+		},
 	}
 }

@@ -14,6 +14,16 @@ type WorkflowStepRequest struct {
 	Status          string `json:"status"`
 }
 
+type SortWorkflowStepRequest struct {
+	WorkflowStageID int64                         `json:"workflow_stage_id"`
+	Steps           []SortWorkflowStepItemRequest `json:"steps"`
+}
+
+type SortWorkflowStepItemRequest struct {
+	ID       int64 `json:"id"`
+	Position int   `json:"position"`
+}
+
 type WorkflowStepResponse struct {
 	ID              int64     `json:"id"`
 	WorkflowStageID int64     `json:"workflow_stage_id"`
@@ -22,6 +32,10 @@ type WorkflowStepResponse struct {
 	Status          string    `json:"status"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+type WorkflowStepDataResponse struct {
+	Step WorkflowStepResponse `json:"step"`
 }
 
 type WorkflowStepListResponse struct {
@@ -41,6 +55,21 @@ func (r WorkflowStepRequest) ToUpdateWorkflowStepCommand() input.UpdateWorkflowS
 	return input.UpdateWorkflowStepCommand(r.ToCreateWorkflowStepCommand())
 }
 
+func (r SortWorkflowStepRequest) ToSortWorkflowStepCommand() input.SortWorkflowStepCommand {
+	cmd := input.SortWorkflowStepCommand{
+		WorkflowStageID: r.WorkflowStageID,
+		Steps:           make([]input.SortWorkflowStepItemCommand, 0, len(r.Steps)),
+	}
+	for _, step := range r.Steps {
+		cmd.Steps = append(cmd.Steps, input.SortWorkflowStepItemCommand{
+			ID:       step.ID,
+			Position: step.Position,
+		})
+	}
+
+	return cmd
+}
+
 func NewWorkflowStepResponse(step *entity.WorkflowStep) WorkflowStepResponse {
 	return WorkflowStepResponse{
 		ID:              step.ID,
@@ -51,6 +80,10 @@ func NewWorkflowStepResponse(step *entity.WorkflowStep) WorkflowStepResponse {
 		CreatedAt:       step.CreatedAt,
 		UpdatedAt:       step.UpdatedAt,
 	}
+}
+
+func NewWorkflowStepDataResponse(step *entity.WorkflowStep) WorkflowStepDataResponse {
+	return WorkflowStepDataResponse{Step: NewWorkflowStepResponse(step)}
 }
 
 func NewWorkflowStepListResponses(steps []entity.WorkflowStep) WorkflowStepListResponse {

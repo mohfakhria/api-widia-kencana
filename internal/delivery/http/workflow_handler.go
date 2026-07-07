@@ -35,7 +35,7 @@ func (h *WorkflowHandler) Get(c *gin.Context) {
 		return
 	}
 
-	dto.Success(c, "Success", dto.NewWorkflowResponse(workflow))
+	dto.Success(c, "Success", dto.NewWorkflowDetailResponse(workflow))
 }
 
 func (h *WorkflowHandler) Create(c *gin.Context) {
@@ -51,7 +51,7 @@ func (h *WorkflowHandler) Create(c *gin.Context) {
 		return
 	}
 
-	dto.Success(c, "Workflow created successfully", dto.NewWorkflowResponse(workflow))
+	dto.Success(c, "Workflow created successfully", dto.NewWorkflowDataResponse(workflow))
 }
 
 func (h *WorkflowHandler) Update(c *gin.Context) {

@@ -35,7 +35,7 @@ func (h *WorkflowStageHandler) Get(c *gin.Context) {
 		return
 	}
 
-	dto.Success(c, "Success", dto.NewWorkflowStageResponse(stage))
+	dto.Success(c, "Success", dto.NewWorkflowStageDataResponse(stage))
 }
 
 func (h *WorkflowStageHandler) Create(c *gin.Context) {
@@ -51,7 +51,7 @@ func (h *WorkflowStageHandler) Create(c *gin.Context) {
 		return
 	}
 
-	dto.Success(c, "Workflow stage created successfully", dto.NewWorkflowStageResponse(stage))
+	dto.Success(c, "Workflow stage created successfully", dto.NewWorkflowStageDataResponse(stage))
 }
 
 func (h *WorkflowStageHandler) Update(c *gin.Context) {
@@ -67,6 +67,21 @@ func (h *WorkflowStageHandler) Update(c *gin.Context) {
 	}
 
 	dto.Success(c, "Workflow stage updated successfully", nil)
+}
+
+func (h *WorkflowStageHandler) Sort(c *gin.Context) {
+	var req dto.SortWorkflowStageRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid payload")
+		return
+	}
+
+	if err := h.stage.Sort(c.Request.Context(), req.ToSortWorkflowStageCommand()); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Workflow stage sorted successfully", nil)
 }
 
 func (h *WorkflowStageHandler) Delete(c *gin.Context) {

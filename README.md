@@ -213,7 +213,9 @@ Success response selalu memakai shape:
 {
   "status": "ok",
   "message": "Success",
-  "data": {}
+  "data": {
+    "entity_key": {}
+  }
 }
 ```
 
@@ -227,7 +229,22 @@ Jika tidak ada payload response:
 }
 ```
 
-List response tidak mengembalikan array langsung pada `data`, tetapi dibungkus object sesuai entity:
+Payload response tidak meletakkan object atau array langsung pada `data`, tetapi selalu dibungkus dengan key entity:
+
+```json
+{
+  "status": "ok",
+  "message": "Success",
+  "data": {
+    "workflow": {
+      "id": 1,
+      "name": "Standard Project Flow"
+    }
+  }
+}
+```
+
+List response juga memakai key entity plural:
 
 ```json
 {

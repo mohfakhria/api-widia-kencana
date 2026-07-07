@@ -282,7 +282,7 @@
           "status": "OK",
           "code": 200,
           "_postman_previewlanguage": "json",
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order\",\n  \"data\": {\n    \"id\": 1,\n    \"items\": [\n      {\n        \"id\": 10,\n        \"name\": \"Hosting Annual\",\n        \"qty\": 1,\n        \"unit\": \"package\",\n        \"price\": 1500000,\n        \"total\": 1500000\n      },\n      {\n        \"id\": 11,\n        \"name\": \"Domain Renewal\",\n        \"qty\": 1,\n        \"unit\": \"year\",\n        \"price\": 250000,\n        \"total\": 250000\n      }\n    ]\n  }\n}"
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Purchase order\",\n  \"data\": {\n    \"purchase_order\": {\n      \"id\": 1,\n      \"items\": [\n        {\n          \"id\": 10,\n          \"name\": \"Hosting Annual\",\n          \"qty\": 1,\n          \"unit\": \"package\",\n          \"price\": 1500000,\n          \"total\": 1500000\n        },\n        {\n          \"id\": 11,\n          \"name\": \"Domain Renewal\",\n          \"qty\": 1,\n          \"unit\": \"year\",\n          \"price\": 250000,\n          \"total\": 250000\n        }\n      ]\n    }\n  }\n}"
         },
         {
           "name": "Get Purchase Order - Invalid Quotation ID",

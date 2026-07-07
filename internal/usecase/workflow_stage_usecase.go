@@ -60,6 +60,15 @@ func (uc *workflowStageUseCase) Update(ctx context.Context, id string, cmd input
 	return uc.repo.Update(ctx, stageID, stage)
 }
 
+func (uc *workflowStageUseCase) Sort(ctx context.Context, cmd input.SortWorkflowStageCommand) error {
+	items, err := mapAndValidateSortWorkflowStages(cmd)
+	if err != nil {
+		return err
+	}
+
+	return uc.repo.Sort(ctx, cmd.WorkflowID, items)
+}
+
 func (uc *workflowStageUseCase) Delete(ctx context.Context, id string) error {
 	stageID, err := parseWorkflowStageID(id)
 	if err != nil {
@@ -98,6 +107,43 @@ func validateWorkflowStage(stage *entity.WorkflowStage) error {
 	}
 
 	return nil
+}
+
+func mapAndValidateSortWorkflowStages(cmd input.SortWorkflowStageCommand) ([]entity.WorkflowStage, error) {
+	if cmd.WorkflowID <= 0 {
+		return nil, domain.NewError(domain.ErrInvalidInput, "workflow id must be greater than 0")
+	}
+	if len(cmd.Stages) == 0 {
+		return nil, domain.NewError(domain.ErrInvalidInput, "at least one workflow stage is required")
+	}
+
+	seenID := make(map[int64]struct{}, len(cmd.Stages))
+	seenPosition := make(map[int]struct{}, len(cmd.Stages))
+	items := make([]entity.WorkflowStage, 0, len(cmd.Stages))
+	for _, item := range cmd.Stages {
+		if item.ID <= 0 {
+			return nil, domain.NewError(domain.ErrInvalidInput, "workflow stage id must be greater than 0")
+		}
+		if item.Position <= 0 {
+			return nil, domain.NewError(domain.ErrInvalidInput, "workflow stage position must be greater than 0")
+		}
+		if _, ok := seenID[item.ID]; ok {
+			return nil, domain.NewError(domain.ErrInvalidInput, "duplicate workflow stage id")
+		}
+		if _, ok := seenPosition[item.Position]; ok {
+			return nil, domain.NewError(domain.ErrInvalidInput, "duplicate workflow stage position")
+		}
+
+		seenID[item.ID] = struct{}{}
+		seenPosition[item.Position] = struct{}{}
+		items = append(items, entity.WorkflowStage{
+			ID:         item.ID,
+			WorkflowID: cmd.WorkflowID,
+			Position:   item.Position,
+		})
+	}
+
+	return items, nil
 }
 
 func parseWorkflowStageID(raw string) (int64, error) {

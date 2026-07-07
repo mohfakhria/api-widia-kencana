@@ -35,7 +35,7 @@ func (h *ProjectHandler) Get(c *gin.Context) {
 		return
 	}
 
-	dto.Success(c, "Success", dto.NewProjectResponse(project))
+	dto.Success(c, "Success", dto.NewProjectDataResponse(project))
 }
 
 func (h *ProjectHandler) Create(c *gin.Context) {
@@ -51,7 +51,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		return
 	}
 
-	dto.Success(c, "Project created successfully", dto.NewProjectResponse(project))
+	dto.Success(c, "Project created successfully", dto.NewProjectDataResponse(project))
 }
 
 func (h *ProjectHandler) Update(c *gin.Context) {

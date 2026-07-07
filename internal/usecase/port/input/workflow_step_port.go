@@ -11,6 +11,7 @@ type WorkflowStepUseCase interface {
 	GetByID(ctx context.Context, id string) (*entity.WorkflowStep, error)
 	Create(ctx context.Context, cmd CreateWorkflowStepCommand) (*entity.WorkflowStep, error)
 	Update(ctx context.Context, id string, cmd UpdateWorkflowStepCommand) error
+	Sort(ctx context.Context, cmd SortWorkflowStepCommand) error
 	Delete(ctx context.Context, id string) error
 }
 
@@ -22,3 +23,13 @@ type CreateWorkflowStepCommand struct {
 }
 
 type UpdateWorkflowStepCommand = CreateWorkflowStepCommand
+
+type SortWorkflowStepCommand struct {
+	WorkflowStageID int64
+	Steps           []SortWorkflowStepItemCommand
+}
+
+type SortWorkflowStepItemCommand struct {
+	ID       int64
+	Position int
+}

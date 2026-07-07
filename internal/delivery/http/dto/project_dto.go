@@ -20,6 +20,10 @@ type ProjectResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type ProjectDataResponse struct {
+	Project ProjectResponse `json:"project"`
+}
+
 type ProjectListResponse struct {
 	Projects []ProjectResponse `json:"projects"`
 }
@@ -43,6 +47,10 @@ func NewProjectResponse(project *entity.Project) ProjectResponse {
 		CreatedAt: project.CreatedAt,
 		UpdatedAt: project.UpdatedAt,
 	}
+}
+
+func NewProjectDataResponse(project *entity.Project) ProjectDataResponse {
+	return ProjectDataResponse{Project: NewProjectResponse(project)}
 }
 
 func NewProjectListResponses(projects []entity.Project) ProjectListResponse {

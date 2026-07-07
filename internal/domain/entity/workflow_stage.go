@@ -10,4 +10,5 @@ type WorkflowStage struct {
 	Status     string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
+	Steps      []WorkflowStep
 }
