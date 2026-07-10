@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	accessTokenTTL  = 30 * time.Second
+	accessTokenTTL  = 10 * time.Minute
 	refreshTokenTTL = 7 * 24 * time.Hour
 )
 
@@ -92,7 +92,7 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshComman
 	if err != nil {
 		return nil, domain.NewError(domain.ErrUnauthorized, "Invalid refresh token")
 	}
-	if claims.TokenType != output.TokenTypeRefresh || claims.SessionID == "" {
+	if claims.SessionID == "" {
 		return nil, domain.NewError(domain.ErrUnauthorized, "Invalid refresh token")
 	}
 
@@ -146,7 +146,7 @@ func (uc *authUseCase) Logout(ctx context.Context, cmd input.LogoutCommand) erro
 	if err != nil {
 		return nil
 	}
-	if claims.TokenType != output.TokenTypeRefresh || claims.SessionID == "" {
+	if claims.SessionID == "" {
 		return nil
 	}
 
