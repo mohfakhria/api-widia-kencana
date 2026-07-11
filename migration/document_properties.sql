@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS document_properties (
     -- Values: string, number, boolean, json
 
     input_type TEXT NOT NULL DEFAULT 'text',
-    -- Values: text, number, select, switch, color, textarea
+    -- Values: text, number, select, switch, color, textarea, grid-columns
 
     default_value TEXT NOT NULL DEFAULT '',
     -- Stored as text; application layer parses according to data_type
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS document_properties (
         CHECK (data_type IN ('string', 'number', 'boolean', 'json')),
 
     CONSTRAINT document_properties_input_type_chk
-        CHECK (input_type IN ('text', 'number', 'select', 'switch', 'color', 'textarea')),
+        CHECK (input_type IN ('text', 'number', 'select', 'switch', 'color', 'textarea', 'grid-columns')),
 
     CONSTRAINT document_properties_status_chk
         CHECK (status IN ('active', 'inactive'))
@@ -64,6 +64,7 @@ INSERT INTO document_properties (
     ('width', 'Width', 'string', 'text', 'auto', '', 'active'),
     ('height', 'Height', 'string', 'text', 'auto', '', 'active'),
     ('display', 'Display', 'string', 'select', 'block', '', 'active'),
+    ('grid-template-columns', 'Grid Template Columns', 'json', 'grid-columns', '[100]', '%', 'active'),
     ('flex-direction', 'Flex Direction', 'string', 'select', 'row', '', 'active'),
     ('justify-content', 'Justify Content', 'string', 'select', 'flex-start', '', 'active'),
     ('align-items', 'Align Items', 'string', 'select', 'stretch', '', 'active'),

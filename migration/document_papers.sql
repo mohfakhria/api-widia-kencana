@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS document_papers (
     -- Example: A4, Letter, F4, Continuous Form
 
     media_type TEXT NOT NULL DEFAULT 'sheet',
-    -- Values: sheet, continuous
+    -- Values: sheet, continuous, thermal
 
     width NUMERIC(10,3) NOT NULL,
     -- Base portrait width
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS document_papers (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT document_papers_media_type_chk
-        CHECK (media_type IN ('sheet', 'continuous')),
+        CHECK (media_type IN ('sheet', 'continuous', 'thermal')),
 
     CONSTRAINT document_papers_unit_chk
         CHECK (unit IN ('mm', 'in', 'cm', 'pt', 'px', 'm')),

@@ -100,7 +100,22 @@ FROM (
         ('list-style-type', 'disc', 'Bulleted', 1, 'active'),
         ('list-style-type', 'decimal', 'Numbered', 2, 'active'),
         ('list-style-type', 'lower-alpha', 'Alphabet', 3, 'active'),
-        ('list-style-type', 'none', 'None', 4, 'active')
+        ('list-style-type', 'none', 'None', 4, 'active'),
+
+        -- Color palette
+        ('color', '#2563EB', 'Primary', 1, 'active'),
+        ('color', '#64748B', 'Secondary', 2, 'active'),
+        ('color', '#7C3AED', 'Accent', 3, 'active'),
+        ('background-color', '#2563EB', 'Primary', 1, 'active'),
+        ('background-color', '#64748B', 'Secondary', 2, 'active'),
+        ('background-color', '#7C3AED', 'Accent', 3, 'active'),
+
+        -- Grid template columns
+        ('grid-template-columns', '[100]', 'Single', 1, 'active'),
+        ('grid-template-columns', '[50,50]', 'Half', 2, 'active'),
+        ('grid-template-columns', '[30,70]', 'Left', 3, 'active'),
+        ('grid-template-columns', '[70,30]', 'Right', 4, 'active'),
+        ('grid-template-columns', '[33,33,34]', 'Thirds', 5, 'active')
 ) AS seed_options (
     property_code,
     value,
