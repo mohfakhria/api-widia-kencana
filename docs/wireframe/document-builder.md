@@ -41,10 +41,14 @@ Section **Layer** berada di bawah Elements dan hanya menampilkan struktur dari h
 │                              │          │                                  │        │                          │
 │ Page 1                 [+]   │          │                                  │        │                          │
 │                              │          │                                  │        │                          │
-│ ├─ ⠿ Grid ◀        [⧉] [🗑]  │          │                                  │        │                          │
-│ │  ├─ ⠿ Text       [⧉] [🗑]  │          │                                  │        │                          │
-│ │  └─ ⠿ Text       [⧉] [🗑]  │          │                                  │        │                          │
-│ └─ ⠿ Text          [⧉] [🗑]  │          │                                  │        │                          │
+│ ├─ Header                    │          │                                  │        │                          │
+│ │  └─ ⠿ Grid ◀    [⧉] [🗑]  │          │                                  │        │                          │
+│ │     ├─ ⠿ Image  [⧉] [🗑]  │          │                                  │        │                          │
+│ │     └─ ⠿ Text   [⧉] [🗑]  │          │                                  │        │                          │
+│ ├─ Body                      │          │                                  │        │                          │
+│ │  └─ ⠿ Text      [⧉] [🗑]  │          │                                  │        │                          │
+│ └─ Footer                    │          │                                  │        │                          │
+│    └─ ⠿ Text      [⧉] [🗑]  │          │                                  │        │                          │
 │                              │          └──────────────────────────────────┘        │                          │
 │                              │                                                      │                          │
 │                              │                 [‹]   1 / 3   [›]                    │                          │
@@ -83,9 +87,12 @@ Section **Layer** berada di bawah Elements dan hanya menampilkan struktur dari h
 │                              │          │                                  │        │                          │
 │ Page 2                 [+]   │          │                                  │        │                          │
 │                              │          │                                  │        │                          │
-│ ├─ ⠿ Text          [⧉] [🗑]  │          │                                  │        │                          │
-│ ├─ ⠿ Divider       [⧉] [🗑]  │          │                                  │        │                          │
-│ └─ ⠿ Table ◀       [⧉] [🗑]  │          │                                  │        │                          │
+│ ├─ Header                    │          │                                  │        │                          │
+│ ├─ Body                      │          │                                  │        │                          │
+│ │  ├─ ⠿ Text      [⧉] [🗑]  │          │                                  │        │                          │
+│ │  ├─ ⠿ Divider   [⧉] [🗑]  │          │                                  │        │                          │
+│ │  └─ ⠿ Table ◀   [⧉] [🗑]  │          │                                  │        │                          │
+│ └─ Footer                    │          │                                  │        │                          │
 │                              │          └──────────────────────────────────┘        │                          │
 │                              │                                                      │                          │
 │                              │                 [‹]   2 / 3   [›]                    │                          │
@@ -114,14 +121,19 @@ Section **Layer** berada di bawah Elements dan hanya menampilkan struktur dari h
 ◀   Element aktif
 ```
 
-Grid ditampilkan sebagai parent. Elemen di dalam Grid ditampilkan sebagai child.
+Header, Body, dan Footer ditampilkan sebagai region halaman. Grid ditampilkan sebagai parent. Elemen di dalam Grid ditampilkan sebagai child.
 
 ```text
 Page 1
-├─ Grid
+├─ Header
+│  └─ Grid
+│     ├─ Image
+│     └─ Text
+├─ Body
 │  ├─ Text
-│  └─ Text
-└─ Text
+│  └─ Table
+└─ Footer
+   └─ Text
 ```
 
 ### Hover Grid
@@ -169,6 +181,124 @@ Selection berjalan dua arah:
 - Klik item di Layer akan mengaktifkan elemen terkait di Live Preview.
 - Properties selalu menampilkan konfigurasi elemen yang aktif.
 - Selection tetap aktif sampai pengguna memilih elemen lain.
+
+### Properties Panel
+
+Properties ditampilkan sebagai inspector panel yang compact dan dikelompokkan berdasarkan intent, bukan sekadar daftar field mentah.
+
+Data tetap berasal dari metadata backend:
+
+- `document_element_properties` menentukan property apa saja yang tampil untuk element aktif.
+- `document_properties` menentukan `code`, `name`, `data_type`, `input_type`, `default_value`, dan `unit`.
+- `document_property_options` menyediakan preset seperti select option, color palette, dan grid column cards.
+
+Contoh inspector ketika Grid dipilih:
+
+```text
+PROPERTIES
+┌──────────────────────────────┐
+│ Grid                         │
+│ Type: Layout                 │
+│ [Duplicate] [Delete]         │
+├──────────────────────────────┤
+│ Layout                       │
+│ Columns                      │
+│ ┌───────┐ ┌───────┐          │
+│ │Single │ │Half ◀│          │
+│ │100    │ │50/50 │          │
+│ └───────┘ └───────┘          │
+│ ┌───────┐ ┌───────┐          │
+│ │Left   │ │Right  │          │
+│ │30/70  │ │70/30  │          │
+│ └───────┘ └───────┘          │
+│ ┌───────┐ ┌───────┐          │
+│ │Thirds │ │Custom │          │
+│ │33/33/ │ │Manual │          │
+│ │34     │ │%      │          │
+│ └───────┘ └───────┘          │
+│ Gap                          │
+│ [ 12                    ] px │
+├──────────────────────────────┤
+│ Size                         │
+│ Width          Height        │
+│ [ auto     ]   [ auto     ]  │
+├──────────────────────────────┤
+│ Spacing                      │
+│ Margin         Padding       │
+│ [ 0       ] px [ 0       ] px│
+├──────────────────────────────┤
+│ Appearance                   │
+│ Background                   │
+│ [Primary] [Secondary]        │
+│ [Accent]  [Custom Color]     │
+│ Border         Radius        │
+│ [ 0       ] px [ 0       ] px│
+├──────────────────────────────┤
+│ Alignment                    │
+│ Horizontal                   │
+│ [Start] [Center] [End]       │
+│ Vertical                     │
+│ [Start] [Center] [End]       │
+└──────────────────────────────┘
+```
+
+Contoh inspector ketika Text dipilih:
+
+```text
+PROPERTIES
+┌──────────────────────────────┐
+│ Text                         │
+│ Type: Content                │
+│ [Duplicate] [Delete]         │
+├──────────────────────────────┤
+│ Content                      │
+│ [ Payment Details          ] │
+├──────────────────────────────┤
+│ Typography                   │
+│ Font                         │
+│ [ Arial                  v ] │
+│ Size           Weight        │
+│ [ 16     ] px  [Regular  v ] │
+│ Line Height                  │
+│ [ 1.5                   ]    │
+├──────────────────────────────┤
+│ Color                        │
+│ Text Color                   │
+│ [Primary] [Secondary]        │
+│ [Accent]  [Custom Color]     │
+├──────────────────────────────┤
+│ Alignment                    │
+│ [Left] [Center] [Right]      │
+│ [Justify]                    │
+├──────────────────────────────┤
+│ Spacing                      │
+│ Margin                       │
+│ [ 0                     ] px │
+└──────────────────────────────┘
+```
+
+Rule rendering input:
+
+```text
+input_type = text         → text input
+input_type = number       → number input + unit label
+input_type = select       → dropdown / segmented button dari options
+input_type = color        → color picker + palette options
+input_type = textarea     → multiline input
+input_type = switch       → boolean toggle
+input_type = grid-columns → preset cards + custom percentage input
+```
+
+Untuk `grid-columns`, value disimpan sebagai array persen.
+
+```text
+Single  → [100]
+Half    → [50,50]
+Left    → [30,70]
+Right   → [70,30]
+Thirds  → [33,33,34]
+Custom  → user input manual, total maksimal 100%
+```
 
 ### Drag Element
 
