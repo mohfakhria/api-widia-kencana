@@ -18,14 +18,54 @@ func NewDocumentHandler(document input.DocumentUseCase) *DocumentHandler {
 	return &DocumentHandler{document: document}
 }
 
-func (h *DocumentHandler) GetMetadata(c *gin.Context) {
-	metadata, err := h.document.GetMetadata(c.Request.Context())
+func (h *DocumentHandler) ListPapers(c *gin.Context) {
+	papers, err := h.document.ListPapers(c.Request.Context())
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}
 
-	dto.Success(c, "Success", dto.NewDocumentMetadataDataResponse(metadata))
+	dto.Success(c, "Success", dto.NewDocumentPapersDataResponse(papers))
+}
+
+func (h *DocumentHandler) ListElements(c *gin.Context) {
+	elements, err := h.document.ListElements(c.Request.Context())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Success", dto.NewDocumentElementsDataResponse(elements))
+}
+
+func (h *DocumentHandler) ListProperties(c *gin.Context) {
+	properties, err := h.document.ListProperties(c.Request.Context())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Success", dto.NewDocumentPropertiesDataResponse(properties))
+}
+
+func (h *DocumentHandler) ListPropertyOptions(c *gin.Context) {
+	options, err := h.document.ListPropertyOptions(c.Request.Context())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Success", dto.NewDocumentPropertyOptionsDataResponse(options))
+}
+
+func (h *DocumentHandler) ListElementProperties(c *gin.Context) {
+	elementProperties, err := h.document.ListElementProperties(c.Request.Context())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Success", dto.NewDocumentElementPropertiesDataResponse(elementProperties))
 }
 
 func (h *DocumentHandler) List(c *gin.Context) {

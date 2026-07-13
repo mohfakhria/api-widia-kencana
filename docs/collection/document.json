@@ -7,10 +7,10 @@
     },
     "item": [
         {
-            "name": "Metadata",
+            "name": "Master Data",
             "item": [
                 {
-                    "name": "Get Document Metadata",
+                    "name": "List Document Papers",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -20,24 +20,157 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/document-metadata",
+                            "raw": "{{base_url}}/api/document-master/papers",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
-                                "document-metadata"
+                                "document-master",
+                                "papers"
                             ]
                         },
-                        "description": "Read-only metadata for document document UI. Frontend uses tokens, not numeric IDs."
+                        "description": "Read active paper/media options for document setup."
                     },
                     "response": [
                         {
-                            "name": "Get Document Metadata - Success",
+                            "name": "List Document Papers - Success",
                             "status": "OK",
                             "code": 200,
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document_metadata\": {\n      \"papers\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000001\",\n          \"name\": \"A4\",\n          \"media_type\": \"sheet\",\n          \"width\": 210,\n          \"height\": 297,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\"\n        }\n      ],\n      \"elements\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000101\",\n          \"code\": \"grid\",\n          \"name\": \"Grid\",\n          \"renderer_type\": \"html\",\n          \"renderer_tag\": \"div\",\n          \"content_type\": \"none\",\n          \"is_container\": true,\n          \"status\": \"active\",\n          \"properties\": [\n            {\n              \"token\": \"00000000-0000-0000-0000-000000000201\",\n              \"property_token\": \"00000000-0000-0000-0000-000000000301\",\n              \"code\": \"grid-template-columns\",\n              \"name\": \"Grid Template Columns\",\n              \"data_type\": \"json\",\n              \"input_type\": \"grid-columns\",\n              \"default_value\": \"[100]\",\n              \"unit\": \"%\",\n              \"position\": 2,\n              \"options\": [\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000401\",\n                  \"value\": \"[100]\",\n                  \"label\": \"Single\",\n                  \"position\": 1\n                },\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000402\",\n                  \"value\": \"[50,50]\",\n                  \"label\": \"Half\",\n                  \"position\": 2\n                }\n              ]\n            }\n          ]\n        }\n      ]\n    }\n  }\n}"
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": [\n      {\n        \"token\": \"aaf4ba17-92aa-4b5b-ad69-c034456dd396\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      {\n        \"token\": \"8a4cabd8-f983-4f71-9918-33d20bbe0b01\",\n        \"name\": \"Thermal Paper\",\n        \"media_type\": \"thermal\",\n        \"width\": 58,\n        \"height\": 100,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": false,\n        \"status\": \"active\"\n      }\n    ]\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "List Document Elements",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-master/elements",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-master",
+                                "elements"
+                            ]
+                        },
+                        "description": "Read active element palette options for document layers."
+                    },
+                    "response": [
+                        {
+                            "name": "List Document Elements - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"elements\": [\n      {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      {\n        \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n        \"code\": \"text\",\n        \"name\": \"Text\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"p\",\n        \"content_type\": \"text\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      }\n    ]\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "List Document Properties",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-master/properties",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-master",
+                                "properties"
+                            ]
+                        },
+                        "description": "Read active reusable property definitions."
+                    },
+                    "response": [
+                        {
+                            "name": "List Document Properties - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"properties\": [\n      {\n        \"token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"code\": \"display\",\n        \"name\": \"Display\",\n        \"data_type\": \"string\",\n        \"input_type\": \"select\",\n        \"default_value\": \"block\",\n        \"unit\": \"\",\n        \"status\": \"active\"\n      },\n      {\n        \"token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"code\": \"grid-template-columns\",\n        \"name\": \"Grid Template Columns\",\n        \"data_type\": \"json\",\n        \"input_type\": \"grid-columns\",\n        \"default_value\": \"[100]\",\n        \"unit\": \"%\",\n        \"status\": \"active\"\n      }\n    ]\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "List Document Property Options",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-master/property-options",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-master",
+                                "property-options"
+                            ]
+                        },
+                        "description": "Read active selectable options for document properties."
+                    },
+                    "response": [
+                        {
+                            "name": "List Document Property Options - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"property_options\": [\n      {\n        \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n        \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"property_code\": \"display\",\n        \"value\": \"grid\",\n        \"label\": \"Grid\",\n        \"position\": 3,\n        \"status\": \"active\"\n      },\n      {\n        \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n        \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"property_code\": \"grid-template-columns\",\n        \"value\": \"[50,50]\",\n        \"label\": \"Half\",\n        \"position\": 2,\n        \"status\": \"active\"\n      }\n    ]\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "List Document Element Properties",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-master/element-properties",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-master",
+                                "element-properties"
+                            ]
+                        },
+                        "description": "Read active mapping between elements and editable properties."
+                    },
+                    "response": [
+                        {
+                            "name": "List Document Element Properties - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"element_properties\": [\n      {\n        \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n        \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"element_code\": \"grid\",\n        \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"property_code\": \"display\",\n        \"default_value\": \"grid\",\n        \"position\": 1,\n        \"status\": \"active\",\n        \"property\": {\n          \"token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n          \"code\": \"display\",\n          \"name\": \"Display\",\n          \"data_type\": \"string\",\n          \"input_type\": \"select\",\n          \"default_value\": \"block\",\n          \"unit\": \"\",\n          \"status\": \"active\"\n        }\n      },\n      {\n        \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n        \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"element_code\": \"grid\",\n        \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"property_code\": \"grid-template-columns\",\n        \"default_value\": \"[100]\",\n        \"position\": 2,\n        \"status\": \"active\",\n        \"property\": {\n          \"token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n          \"code\": \"grid-template-columns\",\n          \"name\": \"Grid Template Columns\",\n          \"data_type\": \"json\",\n          \"input_type\": \"grid-columns\",\n          \"default_value\": \"[100]\",\n          \"unit\": \"%\",\n          \"status\": \"active\"\n        }\n      }\n    ]\n  }\n}"
                         }
                     ]
                 }

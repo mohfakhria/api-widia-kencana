@@ -141,11 +141,23 @@ func (r *DocumentRepository) ListProperties(ctx context.Context) ([]entity.Docum
 
 func (r *DocumentRepository) ListPropertyOptions(ctx context.Context) ([]entity.DocumentPropertyOption, error) {
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, token::text, document_property_id, value, label,
-			position, status, created_at, updated_at
-		FROM document_property_options
-		WHERE status = 'active'
-		ORDER BY document_property_id, position, id
+		SELECT
+			option.id,
+			option.token::text,
+			option.document_property_id,
+			property.token::text,
+			property.code,
+			option.value,
+			option.label,
+			option.position,
+			option.status,
+			option.created_at,
+			option.updated_at
+		FROM document_property_options option
+		JOIN document_properties property ON property.id = option.document_property_id
+		WHERE option.status = 'active'
+			AND property.status = 'active'
+		ORDER BY option.document_property_id, option.position, option.id
 	`)
 	if err != nil {
 		return nil, err
@@ -159,6 +171,8 @@ func (r *DocumentRepository) ListPropertyOptions(ctx context.Context) ([]entity.
 			&option.ID,
 			&option.Token,
 			&option.DocumentPropertyID,
+			&option.PropertyToken,
+			&option.PropertyCode,
 			&option.Value,
 			&option.Label,
 			&option.Position,
@@ -179,11 +193,23 @@ func (r *DocumentRepository) ListPropertyOptions(ctx context.Context) ([]entity.
 
 func (r *DocumentRepository) ListElementProperties(ctx context.Context) ([]entity.DocumentElementProperty, error) {
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, token::text, document_element_id, document_property_id,
-			default_value, position, status, created_at, updated_at
-		FROM document_element_properties
-		WHERE status = 'active'
-		ORDER BY document_element_id, position, id
+		SELECT
+			element_property.id,
+			element_property.token::text,
+			element_property.document_element_id,
+			element.token::text,
+			element.code,
+			element_property.document_property_id,
+			element_property.default_value,
+			element_property.position,
+			element_property.status,
+			element_property.created_at,
+			element_property.updated_at
+		FROM document_element_properties element_property
+		JOIN document_elements element ON element.id = element_property.document_element_id
+		WHERE element_property.status = 'active'
+			AND element.status = 'active'
+		ORDER BY element_property.document_element_id, element_property.position, element_property.id
 	`)
 	if err != nil {
 		return nil, err
@@ -197,6 +223,8 @@ func (r *DocumentRepository) ListElementProperties(ctx context.Context) ([]entit
 			&elementProperty.ID,
 			&elementProperty.Token,
 			&elementProperty.DocumentElementID,
+			&elementProperty.ElementToken,
+			&elementProperty.ElementCode,
 			&elementProperty.DocumentPropertyID,
 			&elementProperty.DefaultValue,
 			&elementProperty.Position,

@@ -2,13 +2,24 @@ package dto
 
 import "github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 
-type DocumentMetadataDataResponse struct {
-	DocumentMetadata DocumentMetadataResponse `json:"document_metadata"`
+type DocumentPapersDataResponse struct {
+	Papers []DocumentPaperResponse `json:"papers"`
 }
 
-type DocumentMetadataResponse struct {
-	Papers   []DocumentPaperResponse   `json:"papers"`
+type DocumentElementsDataResponse struct {
 	Elements []DocumentElementResponse `json:"elements"`
+}
+
+type DocumentPropertiesDataResponse struct {
+	Properties []DocumentPropertyResponse `json:"properties"`
+}
+
+type DocumentPropertyOptionsDataResponse struct {
+	PropertyOptions []DocumentPropertyOptionDetailResponse `json:"property_options"`
+}
+
+type DocumentElementPropertiesDataResponse struct {
+	ElementProperties []DocumentElementPropertyDetailResponse `json:"element_properties"`
 }
 
 type DocumentPaperResponse struct {
@@ -48,6 +59,17 @@ type DocumentElementPropertyResponse struct {
 	Options       []DocumentPropertyOptionResponse `json:"options"`
 }
 
+type DocumentPropertyResponse struct {
+	Token        string `json:"token"`
+	Code         string `json:"code"`
+	Name         string `json:"name"`
+	DataType     string `json:"data_type"`
+	InputType    string `json:"input_type"`
+	DefaultValue string `json:"default_value"`
+	Unit         string `json:"unit"`
+	Status       string `json:"status"`
+}
+
 type DocumentPropertyOptionResponse struct {
 	Token    string `json:"token"`
 	Value    string `json:"value"`
@@ -55,27 +77,85 @@ type DocumentPropertyOptionResponse struct {
 	Position int    `json:"position"`
 }
 
-func NewDocumentMetadataDataResponse(
-	metadata *entity.DocumentMetadata,
-) DocumentMetadataDataResponse {
-	return DocumentMetadataDataResponse{
-		DocumentMetadata: NewDocumentMetadataResponse(metadata),
-	}
+type DocumentPropertyOptionDetailResponse struct {
+	Token         string `json:"token"`
+	PropertyToken string `json:"property_token"`
+	PropertyCode  string `json:"property_code"`
+	Value         string `json:"value"`
+	Label         string `json:"label"`
+	Position      int    `json:"position"`
+	Status        string `json:"status"`
 }
 
-func NewDocumentMetadataResponse(
-	metadata *entity.DocumentMetadata,
-) DocumentMetadataResponse {
-	response := DocumentMetadataResponse{
-		Papers:   make([]DocumentPaperResponse, 0, len(metadata.Papers)),
-		Elements: make([]DocumentElementResponse, 0, len(metadata.Elements)),
-	}
+type DocumentElementPropertyDetailResponse struct {
+	Token         string                   `json:"token"`
+	ElementToken  string                   `json:"element_token"`
+	ElementCode   string                   `json:"element_code"`
+	PropertyToken string                   `json:"property_token"`
+	PropertyCode  string                   `json:"property_code"`
+	DefaultValue  string                   `json:"default_value"`
+	Position      int                      `json:"position"`
+	Status        string                   `json:"status"`
+	Property      DocumentPropertyResponse `json:"property"`
+}
 
-	for _, paper := range metadata.Papers {
+func NewDocumentPapersDataResponse(papers []entity.DocumentPaper) DocumentPapersDataResponse {
+	response := DocumentPapersDataResponse{
+		Papers: make([]DocumentPaperResponse, 0, len(papers)),
+	}
+	for _, paper := range papers {
 		response.Papers = append(response.Papers, NewDocumentPaperResponse(paper))
 	}
-	for _, element := range metadata.Elements {
+
+	return response
+}
+
+func NewDocumentElementsDataResponse(elements []entity.DocumentElement) DocumentElementsDataResponse {
+	response := DocumentElementsDataResponse{
+		Elements: make([]DocumentElementResponse, 0, len(elements)),
+	}
+	for _, element := range elements {
 		response.Elements = append(response.Elements, NewDocumentElementResponse(element))
+	}
+
+	return response
+}
+
+func NewDocumentPropertiesDataResponse(properties []entity.DocumentProperty) DocumentPropertiesDataResponse {
+	response := DocumentPropertiesDataResponse{
+		Properties: make([]DocumentPropertyResponse, 0, len(properties)),
+	}
+	for _, property := range properties {
+		response.Properties = append(response.Properties, NewDocumentPropertyResponse(property))
+	}
+
+	return response
+}
+
+func NewDocumentPropertyOptionsDataResponse(
+	options []entity.DocumentPropertyOption,
+) DocumentPropertyOptionsDataResponse {
+	response := DocumentPropertyOptionsDataResponse{
+		PropertyOptions: make([]DocumentPropertyOptionDetailResponse, 0, len(options)),
+	}
+	for _, option := range options {
+		response.PropertyOptions = append(response.PropertyOptions, NewDocumentPropertyOptionDetailResponse(option))
+	}
+
+	return response
+}
+
+func NewDocumentElementPropertiesDataResponse(
+	elementProperties []entity.DocumentElementProperty,
+) DocumentElementPropertiesDataResponse {
+	response := DocumentElementPropertiesDataResponse{
+		ElementProperties: make([]DocumentElementPropertyDetailResponse, 0, len(elementProperties)),
+	}
+	for _, elementProperty := range elementProperties {
+		response.ElementProperties = append(
+			response.ElementProperties,
+			NewDocumentElementPropertyDetailResponse(elementProperty),
+		)
 	}
 
 	return response
@@ -92,6 +172,19 @@ func NewDocumentPaperResponse(paper entity.DocumentPaper) DocumentPaperResponse 
 		AllowPortrait:  paper.AllowPortrait,
 		AllowLandscape: paper.AllowLandscape,
 		Status:         paper.Status,
+	}
+}
+
+func NewDocumentPropertyResponse(property entity.DocumentProperty) DocumentPropertyResponse {
+	return DocumentPropertyResponse{
+		Token:        property.Token,
+		Code:         property.Code,
+		Name:         property.Name,
+		DataType:     property.DataType,
+		InputType:    property.InputType,
+		DefaultValue: property.DefaultValue,
+		Unit:         property.Unit,
+		Status:       property.Status,
 	}
 }
 
@@ -137,6 +230,37 @@ func NewDocumentElementPropertyResponse(
 	}
 
 	return response
+}
+
+func NewDocumentPropertyOptionDetailResponse(
+	option entity.DocumentPropertyOption,
+) DocumentPropertyOptionDetailResponse {
+	return DocumentPropertyOptionDetailResponse{
+		Token:         option.Token,
+		PropertyToken: option.PropertyToken,
+		PropertyCode:  option.PropertyCode,
+		Value:         option.Value,
+		Label:         option.Label,
+		Position:      option.Position,
+		Status:        option.Status,
+	}
+}
+
+func NewDocumentElementPropertyDetailResponse(
+	elementProperty entity.DocumentElementProperty,
+) DocumentElementPropertyDetailResponse {
+	property := elementProperty.Property
+	return DocumentElementPropertyDetailResponse{
+		Token:         elementProperty.Token,
+		ElementToken:  elementProperty.ElementToken,
+		ElementCode:   elementProperty.ElementCode,
+		PropertyToken: property.Token,
+		PropertyCode:  property.Code,
+		DefaultValue:  elementProperty.DefaultValue,
+		Position:      elementProperty.Position,
+		Status:        elementProperty.Status,
+		Property:      NewDocumentPropertyResponse(property),
+	}
 }
 
 func NewDocumentPropertyOptionResponse(option entity.DocumentPropertyOption) DocumentPropertyOptionResponse {

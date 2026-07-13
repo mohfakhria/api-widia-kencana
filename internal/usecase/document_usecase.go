@@ -31,17 +31,23 @@ func NewDocumentUseCase(repo output.DocumentRepository) input.DocumentUseCase {
 	return &documentUseCase{repo: repo}
 }
 
-func (uc *documentUseCase) GetMetadata(ctx context.Context) (*entity.DocumentMetadata, error) {
-	papers, err := uc.repo.ListPapers(ctx)
-	if err != nil {
-		return nil, err
-	}
+func (uc *documentUseCase) ListPapers(ctx context.Context) ([]entity.DocumentPaper, error) {
+	return uc.repo.ListPapers(ctx)
+}
 
-	elements, err := uc.repo.ListElements(ctx)
-	if err != nil {
-		return nil, err
-	}
+func (uc *documentUseCase) ListElements(ctx context.Context) ([]entity.DocumentElement, error) {
+	return uc.repo.ListElements(ctx)
+}
 
+func (uc *documentUseCase) ListProperties(ctx context.Context) ([]entity.DocumentProperty, error) {
+	return uc.repo.ListProperties(ctx)
+}
+
+func (uc *documentUseCase) ListPropertyOptions(ctx context.Context) ([]entity.DocumentPropertyOption, error) {
+	return uc.repo.ListPropertyOptions(ctx)
+}
+
+func (uc *documentUseCase) ListElementProperties(ctx context.Context) ([]entity.DocumentElementProperty, error) {
 	properties, err := uc.repo.ListProperties(ctx)
 	if err != nil {
 		return nil, err
@@ -58,12 +64,15 @@ func (uc *documentUseCase) GetMetadata(ctx context.Context) (*entity.DocumentMet
 	}
 
 	propertiesByID := mapPropertiesByID(properties, options)
-	elements = attachElementProperties(elements, elementProperties, propertiesByID)
+	for idx := range elementProperties {
+		property, ok := propertiesByID[elementProperties[idx].DocumentPropertyID]
+		if !ok {
+			continue
+		}
+		elementProperties[idx].Property = property
+	}
 
-	return &entity.DocumentMetadata{
-		Papers:   papers,
-		Elements: elements,
-	}, nil
+	return elementProperties, nil
 }
 
 func (uc *documentUseCase) List(ctx context.Context) ([]entity.Document, error) {

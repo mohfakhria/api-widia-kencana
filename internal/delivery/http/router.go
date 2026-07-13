@@ -44,7 +44,11 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
 		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)
-		protected.GET("/document-metadata", deps.DocumentHandler.GetMetadata)
+		protected.GET("/document-master/papers", deps.DocumentHandler.ListPapers)
+		protected.GET("/document-master/elements", deps.DocumentHandler.ListElements)
+		protected.GET("/document-master/properties", deps.DocumentHandler.ListProperties)
+		protected.GET("/document-master/property-options", deps.DocumentHandler.ListPropertyOptions)
+		protected.GET("/document-master/element-properties", deps.DocumentHandler.ListElementProperties)
 		protected.GET("/document-list", deps.DocumentHandler.List)
 		protected.GET("/document-detail/:token", deps.DocumentHandler.Get)
 		protected.POST("/document-add", deps.DocumentHandler.Create)

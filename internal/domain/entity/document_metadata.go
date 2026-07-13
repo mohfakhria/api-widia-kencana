@@ -2,11 +2,6 @@ package entity
 
 import "time"
 
-type DocumentMetadata struct {
-	Papers   []DocumentPaper
-	Elements []DocumentElement
-}
-
 type DocumentPaper struct {
 	ID             int64
 	Token          string
@@ -56,6 +51,8 @@ type DocumentPropertyOption struct {
 	ID                 int64
 	Token              string
 	DocumentPropertyID int64
+	PropertyToken      string
+	PropertyCode       string
 	Value              string
 	Label              string
 	Position           int
@@ -68,6 +65,8 @@ type DocumentElementProperty struct {
 	ID                 int64
 	Token              string
 	DocumentElementID  int64
+	ElementToken       string
+	ElementCode        string
 	DocumentPropertyID int64
 	DefaultValue       string
 	Position           int
