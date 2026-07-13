@@ -69,7 +69,13 @@ func (h *DocumentHandler) ListElementProperties(c *gin.Context) {
 }
 
 func (h *DocumentHandler) List(c *gin.Context) {
-	documents, err := h.document.List(c.Request.Context())
+	var req dto.DocumentListFilterRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	documents, err := h.document.List(c.Request.Context(), req.ToListDocumentQuery())
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
@@ -89,7 +95,7 @@ func (h *DocumentHandler) Get(c *gin.Context) {
 }
 
 func (h *DocumentHandler) Create(c *gin.Context) {
-	var req dto.DocumentRequest
+	var req dto.CreateDocumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
 		return
@@ -105,7 +111,7 @@ func (h *DocumentHandler) Create(c *gin.Context) {
 }
 
 func (h *DocumentHandler) Update(c *gin.Context) {
-	var req dto.DocumentRequest
+	var req dto.UpdateDocumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
 		return

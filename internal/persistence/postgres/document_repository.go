@@ -4,9 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
@@ -243,11 +246,27 @@ func (r *DocumentRepository) ListElementProperties(ctx context.Context) ([]entit
 	return elementProperties, nil
 }
 
-func (r *DocumentRepository) List(ctx context.Context) ([]entity.Document, error) {
-	rows, err := r.db.QueryContext(ctx, documentSelectQuery()+`
+func (r *DocumentRepository) List(ctx context.Context, query input.ListDocumentQuery) ([]entity.Document, error) {
+	builder := strings.Builder{}
+	builder.WriteString(documentSelectQuery())
+	builder.WriteString(`
 		WHERE d.status <> 'deleted'
+	`)
+
+	args := make([]any, 0)
+	if query.Name != "" {
+		args = append(args, "%"+query.Name+"%")
+		builder.WriteString(fmt.Sprintf(" AND d.name ILIKE $%d", len(args)))
+	}
+	if query.Token != "" {
+		args = append(args, query.Token)
+		builder.WriteString(fmt.Sprintf(" AND d.token = $%d::uuid", len(args)))
+	}
+	builder.WriteString(`
 		ORDER BY d.position ASC, d.created_at DESC
 	`)
+
+	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
 	if err != nil {
 		return nil, err
 	}

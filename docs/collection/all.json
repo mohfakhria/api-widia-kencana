@@ -499,6 +499,7 @@
                         {
                             "name": "List Documents",
                             "request": {
+                                "description": "List documents. Optional filters: name uses case-insensitive LIKE, token uses exact UUID match.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -514,7 +515,19 @@
                                         "api",
                                         "document-list"
                                     ],
-                                    "raw": "{{base_url}}/api/document-list"
+                                    "query": [
+                                        {
+                                            "description": "Optional. Case-insensitive LIKE filter for document name.",
+                                            "key": "name",
+                                            "value": "Quotation"
+                                        },
+                                        {
+                                            "description": "Optional. Exact document token filter.",
+                                            "key": "token",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/document-list?name=Quotation\u0026token="
                                 }
                             },
                             "response": [
@@ -572,8 +585,9 @@
                             "request": {
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"position\": 1,\n  \"status\": \"draft\"\n}"
+                                    "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
                                 },
+                                "description": "Create a document template. position is assigned by backend default and is not required on create. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -620,7 +634,7 @@
                                     "mode": "raw",
                                     "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"position\": 2,\n  \"status\": \"active\"\n}"
                                 },
-                                "description": "Replace last path segment with document token.",
+                                "description": "Replace last path segment with document token. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted.",
                                 "header": [
                                     {
                                         "key": "Authorization",

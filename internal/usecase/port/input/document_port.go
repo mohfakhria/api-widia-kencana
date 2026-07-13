@@ -12,11 +12,16 @@ type DocumentUseCase interface {
 	ListProperties(ctx context.Context) ([]entity.DocumentProperty, error)
 	ListPropertyOptions(ctx context.Context) ([]entity.DocumentPropertyOption, error)
 	ListElementProperties(ctx context.Context) ([]entity.DocumentElementProperty, error)
-	List(ctx context.Context) ([]entity.Document, error)
+	List(ctx context.Context, query ListDocumentQuery) ([]entity.Document, error)
 	GetByToken(ctx context.Context, token string) (*entity.Document, error)
 	Create(ctx context.Context, cmd CreateDocumentCommand) (*entity.Document, error)
 	Update(ctx context.Context, token string, cmd UpdateDocumentCommand) error
 	Delete(ctx context.Context, token string) error
+}
+
+type ListDocumentQuery struct {
+	Name  string
+	Token string
 }
 
 type CreateDocumentCommand struct {

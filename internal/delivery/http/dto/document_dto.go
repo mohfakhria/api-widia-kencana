@@ -1,19 +1,33 @@
 package dto
 
 import (
+	"strings"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 )
 
-type DocumentRequest struct {
+type CreateDocumentRequest struct {
+	DocumentPaperToken string `json:"document_paper_token"`
+	ParentToken        string `json:"parent_token"`
+	Name               string `json:"name"`
+	DocumentType       string `json:"document_type"`
+	Status             string `json:"status"`
+}
+
+type UpdateDocumentRequest struct {
 	DocumentPaperToken string `json:"document_paper_token"`
 	ParentToken        string `json:"parent_token"`
 	Name               string `json:"name"`
 	DocumentType       string `json:"document_type"`
 	Position           int    `json:"position"`
 	Status             string `json:"status"`
+}
+
+type DocumentListFilterRequest struct {
+	Name  string `form:"name"`
+	Token string `form:"token"`
 }
 
 type DocumentResponse struct {
@@ -36,8 +50,18 @@ type DocumentListResponse struct {
 	Documents []DocumentResponse `json:"documents"`
 }
 
-func (r DocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCommand {
+func (r CreateDocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCommand {
 	return input.CreateDocumentCommand{
+		DocumentPaperToken: r.DocumentPaperToken,
+		ParentToken:        r.ParentToken,
+		Name:               r.Name,
+		DocumentType:       r.DocumentType,
+		Status:             r.Status,
+	}
+}
+
+func (r UpdateDocumentRequest) ToUpdateDocumentCommand() input.UpdateDocumentCommand {
+	return input.UpdateDocumentCommand{
 		DocumentPaperToken: r.DocumentPaperToken,
 		ParentToken:        r.ParentToken,
 		Name:               r.Name,
@@ -47,8 +71,11 @@ func (r DocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCommand {
 	}
 }
 
-func (r DocumentRequest) ToUpdateDocumentCommand() input.UpdateDocumentCommand {
-	return input.UpdateDocumentCommand(r.ToCreateDocumentCommand())
+func (r DocumentListFilterRequest) ToListDocumentQuery() input.ListDocumentQuery {
+	return input.ListDocumentQuery{
+		Name:  strings.TrimSpace(r.Name),
+		Token: strings.TrimSpace(r.Token),
+	}
 }
 
 func NewDocumentResponse(document *entity.Document) DocumentResponse {

@@ -75,8 +75,14 @@ func (uc *documentUseCase) ListElementProperties(ctx context.Context) ([]entity.
 	return elementProperties, nil
 }
 
-func (uc *documentUseCase) List(ctx context.Context) ([]entity.Document, error) {
-	return uc.repo.List(ctx)
+func (uc *documentUseCase) List(ctx context.Context, query input.ListDocumentQuery) ([]entity.Document, error) {
+	query.Name = strings.TrimSpace(query.Name)
+	query.Token = strings.TrimSpace(query.Token)
+	if err := validateOptionalUUIDToken(query.Token, "document token"); err != nil {
+		return nil, err
+	}
+
+	return uc.repo.List(ctx, query)
 }
 
 func (uc *documentUseCase) GetByToken(ctx context.Context, token string) (*entity.Document, error) {

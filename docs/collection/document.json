@@ -190,15 +190,28 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/document-list",
+                            "raw": "{{base_url}}/api/document-list?name=Quotation&token=",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
                                 "document-list"
+                            ],
+                            "query": [
+                                {
+                                    "key": "name",
+                                    "value": "Quotation",
+                                    "description": "Optional. Case-insensitive LIKE filter for document name."
+                                },
+                                {
+                                    "key": "token",
+                                    "value": "",
+                                    "description": "Optional. Exact document token filter."
+                                }
                             ]
-                        }
+                        },
+                        "description": "List documents. Optional filters: name uses case-insensitive LIKE, token uses exact UUID match."
                     },
                     "response": [
                         {
@@ -266,7 +279,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"position\": 1,\n  \"status\": \"draft\"\n}"
+                            "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
                         },
                         "url": {
                             "raw": "{{base_url}}/api/document-add",
@@ -277,7 +290,8 @@
                                 "api",
                                 "document-add"
                             ]
-                        }
+                        },
+                        "description": "Create a document template. position is assigned by backend default and is not required on create. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted."
                     },
                     "response": [
                         {
@@ -325,7 +339,7 @@
                                 "00000000-0000-0000-0000-000000000501"
                             ]
                         },
-                        "description": "Replace last path segment with document token."
+                        "description": "Replace last path segment with document token. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted."
                     },
                     "response": [
                         {
