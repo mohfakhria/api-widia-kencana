@@ -12,15 +12,16 @@ import (
 )
 
 type RouterDeps struct {
-	Config               config.Config
-	TokenSigner          output.TokenSigner
-	AuthHandler          *AuthHandler
-	ProjectHandler       *ProjectHandler
-	PurchaseOrderHandler *PurchaseOrderHandler
-	QuotationHandler     *QuotationHandler
-	WorkflowHandler      *WorkflowHandler
-	WorkflowStageHandler *WorkflowStageHandler
-	WorkflowStepHandler  *WorkflowStepHandler
+	Config                         config.Config
+	TokenSigner                    output.TokenSigner
+	AuthHandler                    *AuthHandler
+	DocumentBuilderMetadataHandler *DocumentBuilderMetadataHandler
+	ProjectHandler                 *ProjectHandler
+	PurchaseOrderHandler           *PurchaseOrderHandler
+	QuotationHandler               *QuotationHandler
+	WorkflowHandler                *WorkflowHandler
+	WorkflowStageHandler           *WorkflowStageHandler
+	WorkflowStepHandler            *WorkflowStepHandler
 }
 
 func NewRouter(deps RouterDeps) *gin.Engine {
@@ -43,6 +44,7 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
 		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)
+		protected.GET("/document-builder-metadata", deps.DocumentBuilderMetadataHandler.Get)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)

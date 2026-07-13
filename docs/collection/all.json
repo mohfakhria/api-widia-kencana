@@ -325,6 +325,68 @@
         {
             "item": [
                 {
+                    "item": [
+                        {
+                            "name": "Get Document Builder Metadata",
+                            "request": {
+                                "description": "Read-only metadata for document builder UI. Frontend uses tokens, not numeric IDs.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-builder-metadata"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-builder-metadata"
+                                }
+                            },
+                            "response": [
+                                {
+                                    "_postman_previewlanguage": "json",
+                                    "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document_builder\": {\n      \"papers\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000001\",\n          \"name\": \"A4\",\n          \"media_type\": \"sheet\",\n          \"width\": 210,\n          \"height\": 297,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\"\n        }\n      ],\n      \"elements\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000101\",\n          \"code\": \"grid\",\n          \"name\": \"Grid\",\n          \"renderer_type\": \"html\",\n          \"renderer_tag\": \"div\",\n          \"content_type\": \"none\",\n          \"is_container\": true,\n          \"status\": \"active\",\n          \"properties\": [\n            {\n              \"token\": \"00000000-0000-0000-0000-000000000201\",\n              \"property_token\": \"00000000-0000-0000-0000-000000000301\",\n              \"code\": \"grid-template-columns\",\n              \"name\": \"Grid Template Columns\",\n              \"data_type\": \"json\",\n              \"input_type\": \"grid-columns\",\n              \"default_value\": \"[100]\",\n              \"unit\": \"%\",\n              \"position\": 2,\n              \"options\": [\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000401\",\n                  \"value\": \"[100]\",\n                  \"label\": \"Single\",\n                  \"position\": 1\n                },\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000402\",\n                  \"value\": \"[50,50]\",\n                  \"label\": \"Half\",\n                  \"position\": 2\n                }\n              ]\n            }\n          ]\n        }\n      ]\n    }\n  }\n}",
+                                    "code": 200,
+                                    "name": "Get Document Builder Metadata - Success",
+                                    "status": "OK"
+                                }
+                            ]
+                        }
+                    ],
+                    "name": "Metadata"
+                },
+                {
+                    "item": [],
+                    "name": "Documents"
+                },
+                {
+                    "item": [],
+                    "name": "Layers"
+                },
+                {
+                    "item": [],
+                    "name": "Properties"
+                },
+                {
+                    "item": [],
+                    "name": "Preview"
+                },
+                {
+                    "item": [],
+                    "name": "Export"
+                }
+            ],
+            "name": "Document"
+        },
+        {
+            "item": [
+                {
                     "name": "List Projects",
                     "request": {
                         "header": [
