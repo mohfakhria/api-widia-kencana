@@ -16,6 +16,7 @@ type RouterDeps struct {
 	TokenSigner          output.TokenSigner
 	AuthHandler          *AuthHandler
 	DocumentHandler      *DocumentHandler
+	DocumentLayerHandler *DocumentLayerHandler
 	ProjectHandler       *ProjectHandler
 	PurchaseOrderHandler *PurchaseOrderHandler
 	QuotationHandler     *QuotationHandler
@@ -54,6 +55,10 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/document-add", deps.DocumentHandler.Create)
 		protected.PUT("/document-update/:token", deps.DocumentHandler.Update)
 		protected.DELETE("/document-delete/:token", deps.DocumentHandler.Delete)
+		protected.POST("/document-layer-add", deps.DocumentLayerHandler.Create)
+		protected.PUT("/document-layer-update/:token", deps.DocumentLayerHandler.Update)
+		protected.PUT("/document-layer-sort", deps.DocumentLayerHandler.Sort)
+		protected.DELETE("/document-layer-delete/:token", deps.DocumentLayerHandler.Delete)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)

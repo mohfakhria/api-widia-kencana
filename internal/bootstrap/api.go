@@ -77,6 +77,7 @@ func (a *ApiApp) initialize() error {
 	)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	documentUC := usecase.NewDocumentUseCase(pg.NewDocumentRepository(a.db))
+	documentLayerUC := usecase.NewDocumentLayerUseCase(pg.NewDocumentLayerRepository(a.db))
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
 	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))
@@ -87,6 +88,7 @@ func (a *ApiApp) initialize() error {
 		TokenSigner:          tokenSigner,
 		AuthHandler:          deliveryhttp.NewAuthHandler(authUC, a.Config),
 		DocumentHandler:      deliveryhttp.NewDocumentHandler(documentUC),
+		DocumentLayerHandler: deliveryhttp.NewDocumentLayerHandler(documentLayerUC),
 		ProjectHandler:       deliveryhttp.NewProjectHandler(projectUC),
 		PurchaseOrderHandler: deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
 		QuotationHandler:     deliveryhttp.NewQuotationHandler(quotationUC),

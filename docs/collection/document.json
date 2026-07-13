@@ -402,7 +402,162 @@
         },
         {
             "name": "Layers",
-            "item": []
+            "item": [
+                {
+                    "name": "Create Document Layer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Main Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"gap\": \"16\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/document-layer-add",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-layer-add"
+                            ]
+                        },
+                        "description": "Create a document layer. Use document/parent/element tokens, not numeric IDs. parent_token is empty for root layer."
+                    },
+                    "response": [
+                        {
+                            "name": "Create Document Layer - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Main Grid\",\n      \"content\": {},\n      \"properties\": {\n        \"display\": \"grid\",\n        \"grid-template-columns\": \"[50,50]\",\n        \"gap\": \"16\"\n      },\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Document Layer",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Main Grid Updated\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"gap\": \"16\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/document-layer-update/00000000-0000-0000-0000-000000000601",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-layer-update",
+                                "00000000-0000-0000-0000-000000000601"
+                            ]
+                        },
+                        "description": "Update document layer by layer token. Request body uses the same shape as create."
+                    },
+                    "response": [
+                        {
+                            "name": "Update Document Layer - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer updated successfully\",\n  \"data\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Sort Document Layers",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"region\": \"body\",\n  \"layers\": [\n    {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"position\": 1\n    },\n    {\n      \"token\": \"00000000-0000-0000-0000-000000000602\",\n      \"position\": 2\n    }\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/document-layer-sort",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-layer-sort"
+                            ]
+                        },
+                        "description": "Sort sibling layers inside the same document, parent, and region group."
+                    },
+                    "response": [
+                        {
+                            "name": "Sort Document Layers - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer sorted successfully\",\n  \"data\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Document Layer",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-layer-delete/00000000-0000-0000-0000-000000000601",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-layer-delete",
+                                "00000000-0000-0000-0000-000000000601"
+                            ]
+                        },
+                        "description": "Soft delete document layer by token. Child layers are also soft deleted."
+                    },
+                    "response": [
+                        {
+                            "name": "Delete Document Layer - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer deleted successfully\",\n  \"data\": null\n}"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "Properties",

@@ -76,6 +76,15 @@ FROM (
         ('font-weight', '600', 'Semi Bold', 4, 'active'),
         ('font-weight', '700', 'Bold', 5, 'active'),
 
+        -- Font style
+        ('font-style', 'normal', 'Normal', 1, 'active'),
+        ('font-style', 'italic', 'Italic', 2, 'active'),
+
+        -- Text decoration
+        ('text-decoration', 'none', 'None', 1, 'active'),
+        ('text-decoration', 'underline', 'Underline', 2, 'active'),
+        ('text-decoration', 'line-through', 'Strike Through', 3, 'active'),
+
         -- Display
         ('display', 'block', 'Block', 1, 'active'),
         ('display', 'flex', 'Flex', 2, 'active'),
@@ -143,6 +152,11 @@ FROM (
         ('border', '0', 'None', 1, 'active'),
         ('border', '1', '1px', 2, 'active'),
         ('border', '2', '2px', 3, 'active'),
+        ('border-style', 'none', 'None', 1, 'active'),
+        ('border-style', 'solid', 'Solid', 2, 'active'),
+        ('border-style', 'dashed', 'Dashed', 3, 'active'),
+        ('border-style', 'dotted', 'Dotted', 4, 'active'),
+        ('border-style', 'double', 'Double', 5, 'active'),
         ('border-radius', '0', 'None', 1, 'active'),
         ('border-radius', '4', '4px', 2, 'active'),
         ('border-radius', '8', '8px', 3, 'active'),
