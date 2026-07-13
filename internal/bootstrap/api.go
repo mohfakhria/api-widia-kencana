@@ -76,25 +76,23 @@ func (a *ApiApp) initialize() error {
 		a.objectStorage,
 	)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
-	documentBuilderMetadataUC := usecase.NewDocumentBuilderMetadataUseCase(
-		pg.NewDocumentBuilderMetadataRepository(a.db),
-	)
+	documentUC := usecase.NewDocumentUseCase(pg.NewDocumentRepository(a.db))
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
 	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))
 	workflowStepUC := usecase.NewWorkflowStepUseCase(pg.NewWorkflowStepRepository(a.db))
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
-		Config:                         a.Config,
-		TokenSigner:                    tokenSigner,
-		AuthHandler:                    deliveryhttp.NewAuthHandler(authUC, a.Config),
-		DocumentBuilderMetadataHandler: deliveryhttp.NewDocumentBuilderMetadataHandler(documentBuilderMetadataUC),
-		ProjectHandler:                 deliveryhttp.NewProjectHandler(projectUC),
-		PurchaseOrderHandler:           deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
-		QuotationHandler:               deliveryhttp.NewQuotationHandler(quotationUC),
-		WorkflowHandler:                deliveryhttp.NewWorkflowHandler(workflowUC),
-		WorkflowStageHandler:           deliveryhttp.NewWorkflowStageHandler(workflowStageUC),
-		WorkflowStepHandler:            deliveryhttp.NewWorkflowStepHandler(workflowStepUC),
+		Config:               a.Config,
+		TokenSigner:          tokenSigner,
+		AuthHandler:          deliveryhttp.NewAuthHandler(authUC, a.Config),
+		DocumentHandler:      deliveryhttp.NewDocumentHandler(documentUC),
+		ProjectHandler:       deliveryhttp.NewProjectHandler(projectUC),
+		PurchaseOrderHandler: deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
+		QuotationHandler:     deliveryhttp.NewQuotationHandler(quotationUC),
+		WorkflowHandler:      deliveryhttp.NewWorkflowHandler(workflowUC),
+		WorkflowStageHandler: deliveryhttp.NewWorkflowStageHandler(workflowStageUC),
+		WorkflowStepHandler:  deliveryhttp.NewWorkflowStepHandler(workflowStepUC),
 	})
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),

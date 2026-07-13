@@ -10,7 +10,7 @@
             "name": "Metadata",
             "item": [
                 {
-                    "name": "Get Document Builder Metadata",
+                    "name": "Get Document Metadata",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -20,24 +20,24 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/document-builder-metadata",
+                            "raw": "{{base_url}}/api/document-metadata",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
-                                "document-builder-metadata"
+                                "document-metadata"
                             ]
                         },
-                        "description": "Read-only metadata for document builder UI. Frontend uses tokens, not numeric IDs."
+                        "description": "Read-only metadata for document document UI. Frontend uses tokens, not numeric IDs."
                     },
                     "response": [
                         {
-                            "name": "Get Document Builder Metadata - Success",
+                            "name": "Get Document Metadata - Success",
                             "status": "OK",
                             "code": 200,
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document_builder\": {\n      \"papers\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000001\",\n          \"name\": \"A4\",\n          \"media_type\": \"sheet\",\n          \"width\": 210,\n          \"height\": 297,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\"\n        }\n      ],\n      \"elements\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000101\",\n          \"code\": \"grid\",\n          \"name\": \"Grid\",\n          \"renderer_type\": \"html\",\n          \"renderer_tag\": \"div\",\n          \"content_type\": \"none\",\n          \"is_container\": true,\n          \"status\": \"active\",\n          \"properties\": [\n            {\n              \"token\": \"00000000-0000-0000-0000-000000000201\",\n              \"property_token\": \"00000000-0000-0000-0000-000000000301\",\n              \"code\": \"grid-template-columns\",\n              \"name\": \"Grid Template Columns\",\n              \"data_type\": \"json\",\n              \"input_type\": \"grid-columns\",\n              \"default_value\": \"[100]\",\n              \"unit\": \"%\",\n              \"position\": 2,\n              \"options\": [\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000401\",\n                  \"value\": \"[100]\",\n                  \"label\": \"Single\",\n                  \"position\": 1\n                },\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000402\",\n                  \"value\": \"[50,50]\",\n                  \"label\": \"Half\",\n                  \"position\": 2\n                }\n              ]\n            }\n          ]\n        }\n      ]\n    }\n  }\n}"
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document_metadata\": {\n      \"papers\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000001\",\n          \"name\": \"A4\",\n          \"media_type\": \"sheet\",\n          \"width\": 210,\n          \"height\": 297,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\"\n        }\n      ],\n      \"elements\": [\n        {\n          \"token\": \"00000000-0000-0000-0000-000000000101\",\n          \"code\": \"grid\",\n          \"name\": \"Grid\",\n          \"renderer_type\": \"html\",\n          \"renderer_tag\": \"div\",\n          \"content_type\": \"none\",\n          \"is_container\": true,\n          \"status\": \"active\",\n          \"properties\": [\n            {\n              \"token\": \"00000000-0000-0000-0000-000000000201\",\n              \"property_token\": \"00000000-0000-0000-0000-000000000301\",\n              \"code\": \"grid-template-columns\",\n              \"name\": \"Grid Template Columns\",\n              \"data_type\": \"json\",\n              \"input_type\": \"grid-columns\",\n              \"default_value\": \"[100]\",\n              \"unit\": \"%\",\n              \"position\": 2,\n              \"options\": [\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000401\",\n                  \"value\": \"[100]\",\n                  \"label\": \"Single\",\n                  \"position\": 1\n                },\n                {\n                  \"token\": \"00000000-0000-0000-0000-000000000402\",\n                  \"value\": \"[50,50]\",\n                  \"label\": \"Half\",\n                  \"position\": 2\n                }\n              ]\n            }\n          ]\n        }\n      ]\n    }\n  }\n}"
                         }
                     ]
                 }
@@ -45,7 +45,199 @@
         },
         {
             "name": "Documents",
-            "item": []
+            "item": [
+                {
+                    "name": "List Documents",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-list",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-list"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "List Documents - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": [\n      {\n        \"token\": \"00000000-0000-0000-0000-000000000501\",\n        \"parent_token\": \"\",\n        \"name\": \"Quotation Default\",\n        \"document_type\": \"quotation\",\n        \"position\": 1,\n        \"status\": \"draft\",\n        \"paper\": {\n          \"token\": \"00000000-0000-0000-0000-000000000001\",\n          \"name\": \"A4\",\n          \"media_type\": \"sheet\",\n          \"width\": 210,\n          \"height\": 297,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\"\n        },\n        \"created_at\": \"2026-07-13T10:00:00Z\",\n        \"updated_at\": \"2026-07-13T10:00:00Z\"\n      }\n    ]\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Document Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-detail/00000000-0000-0000-0000-000000000501",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-detail",
+                                "00000000-0000-0000-0000-000000000501"
+                            ]
+                        },
+                        "description": "Replace last path segment with document token."
+                    },
+                    "response": [
+                        {
+                            "name": "Get Document Detail - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+                        },
+                        {
+                            "name": "Get Document Detail - Not Found",
+                            "status": "Not Found",
+                            "code": 404,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"position\": 1,\n  \"status\": \"draft\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/document-add",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-add"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Create Document - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document created successfully\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+                        },
+                        {
+                            "name": "Create Document - Invalid Paper",
+                            "status": "Not Found",
+                            "code": 404,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document paper not found\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Document",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"position\": 2,\n  \"status\": \"active\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/document-update/00000000-0000-0000-0000-000000000501",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-update",
+                                "00000000-0000-0000-0000-000000000501"
+                            ]
+                        },
+                        "description": "Replace last path segment with document token."
+                    },
+                    "response": [
+                        {
+                            "name": "Update Document - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document updated successfully\",\n  \"data\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Document",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/document-delete/00000000-0000-0000-0000-000000000501",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-delete",
+                                "00000000-0000-0000-0000-000000000501"
+                            ]
+                        },
+                        "description": "Soft delete document by setting status to deleted."
+                    },
+                    "response": [
+                        {
+                            "name": "Delete Document - Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document deleted successfully\",\n  \"data\": null\n}"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "Layers",

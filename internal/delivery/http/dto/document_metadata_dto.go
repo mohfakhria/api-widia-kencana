@@ -2,11 +2,11 @@ package dto
 
 import "github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 
-type DocumentBuilderMetadataDataResponse struct {
-	DocumentBuilder DocumentBuilderMetadataResponse `json:"document_builder"`
+type DocumentMetadataDataResponse struct {
+	DocumentMetadata DocumentMetadataResponse `json:"document_metadata"`
 }
 
-type DocumentBuilderMetadataResponse struct {
+type DocumentMetadataResponse struct {
 	Papers   []DocumentPaperResponse   `json:"papers"`
 	Elements []DocumentElementResponse `json:"elements"`
 }
@@ -55,18 +55,18 @@ type DocumentPropertyOptionResponse struct {
 	Position int    `json:"position"`
 }
 
-func NewDocumentBuilderMetadataDataResponse(
-	metadata *entity.DocumentBuilderMetadata,
-) DocumentBuilderMetadataDataResponse {
-	return DocumentBuilderMetadataDataResponse{
-		DocumentBuilder: NewDocumentBuilderMetadataResponse(metadata),
+func NewDocumentMetadataDataResponse(
+	metadata *entity.DocumentMetadata,
+) DocumentMetadataDataResponse {
+	return DocumentMetadataDataResponse{
+		DocumentMetadata: NewDocumentMetadataResponse(metadata),
 	}
 }
 
-func NewDocumentBuilderMetadataResponse(
-	metadata *entity.DocumentBuilderMetadata,
-) DocumentBuilderMetadataResponse {
-	response := DocumentBuilderMetadataResponse{
+func NewDocumentMetadataResponse(
+	metadata *entity.DocumentMetadata,
+) DocumentMetadataResponse {
+	response := DocumentMetadataResponse{
 		Papers:   make([]DocumentPaperResponse, 0, len(metadata.Papers)),
 		Elements: make([]DocumentElementResponse, 0, len(metadata.Elements)),
 	}

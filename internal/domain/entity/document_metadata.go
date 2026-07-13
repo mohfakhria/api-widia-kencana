@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-type DocumentBuilderMetadata struct {
+type DocumentMetadata struct {
 	Papers   []DocumentPaper
 	Elements []DocumentElement
 }

@@ -12,16 +12,16 @@ import (
 )
 
 type RouterDeps struct {
-	Config                         config.Config
-	TokenSigner                    output.TokenSigner
-	AuthHandler                    *AuthHandler
-	DocumentBuilderMetadataHandler *DocumentBuilderMetadataHandler
-	ProjectHandler                 *ProjectHandler
-	PurchaseOrderHandler           *PurchaseOrderHandler
-	QuotationHandler               *QuotationHandler
-	WorkflowHandler                *WorkflowHandler
-	WorkflowStageHandler           *WorkflowStageHandler
-	WorkflowStepHandler            *WorkflowStepHandler
+	Config               config.Config
+	TokenSigner          output.TokenSigner
+	AuthHandler          *AuthHandler
+	DocumentHandler      *DocumentHandler
+	ProjectHandler       *ProjectHandler
+	PurchaseOrderHandler *PurchaseOrderHandler
+	QuotationHandler     *QuotationHandler
+	WorkflowHandler      *WorkflowHandler
+	WorkflowStageHandler *WorkflowStageHandler
+	WorkflowStepHandler  *WorkflowStepHandler
 }
 
 func NewRouter(deps RouterDeps) *gin.Engine {
@@ -44,7 +44,12 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
 		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)
-		protected.GET("/document-builder-metadata", deps.DocumentBuilderMetadataHandler.Get)
+		protected.GET("/document-metadata", deps.DocumentHandler.GetMetadata)
+		protected.GET("/document-list", deps.DocumentHandler.List)
+		protected.GET("/document-detail/:token", deps.DocumentHandler.Get)
+		protected.POST("/document-add", deps.DocumentHandler.Create)
+		protected.PUT("/document-update/:token", deps.DocumentHandler.Update)
+		protected.DELETE("/document-delete/:token", deps.DocumentHandler.Delete)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)
