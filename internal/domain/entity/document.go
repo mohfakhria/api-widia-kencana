@@ -15,4 +15,12 @@ type Document struct {
 	Status          string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	WithLayers      bool
+	Layers          DocumentLayerRegions
+}
+
+type DocumentLayerRegions struct {
+	Header []DocumentLayer
+	Body   []DocumentLayer
+	Footer []DocumentLayer
 }

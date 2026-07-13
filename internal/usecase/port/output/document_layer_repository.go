@@ -7,6 +7,7 @@ import (
 )
 
 type DocumentLayerRepository interface {
+	ListByDocumentToken(ctx context.Context, documentToken string) ([]entity.DocumentLayer, error)
 	Create(ctx context.Context, layer *entity.DocumentLayer) (*entity.DocumentLayer, error)
 	Update(ctx context.Context, token string, layer *entity.DocumentLayer) error
 	Sort(ctx context.Context, documentToken string, parentToken string, region string, layers []entity.DocumentLayer) error

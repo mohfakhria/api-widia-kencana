@@ -100,7 +100,17 @@ func (h *DocumentHandler) List(c *gin.Context) {
 }
 
 func (h *DocumentHandler) Get(c *gin.Context) {
-	document, err := h.document.GetByToken(c.Request.Context(), c.Param("token"))
+	var req dto.DocumentDetailQueryRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	document, err := h.document.GetByToken(
+		c.Request.Context(),
+		c.Param("token"),
+		req.ToGetDocumentQuery(),
+	)
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return

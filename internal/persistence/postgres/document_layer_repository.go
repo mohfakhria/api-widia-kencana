@@ -20,6 +20,40 @@ func NewDocumentLayerRepository(db *sql.DB) output.DocumentLayerRepository {
 	return &DocumentLayerRepository{db: db}
 }
 
+func (r *DocumentLayerRepository) ListByDocumentToken(
+	ctx context.Context,
+	documentToken string,
+) ([]entity.DocumentLayer, error) {
+	rows, err := r.db.QueryContext(ctx, documentLayerSelectQuery()+`
+		WHERE document.token = $1::uuid
+			AND document.status <> 'deleted'
+			AND layer.status <> 'deleted'
+		ORDER BY
+			layer.region ASC,
+			layer.parent_id NULLS FIRST,
+			layer.position ASC,
+			layer.id ASC
+	`, documentToken)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var layers []entity.DocumentLayer
+	for rows.Next() {
+		var layer entity.DocumentLayer
+		if err := scanDocumentLayer(rows, &layer); err != nil {
+			return nil, err
+		}
+		layers = append(layers, layer)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return layers, nil
+}
+
 func (r *DocumentLayerRepository) Create(
 	ctx context.Context,
 	layer *entity.DocumentLayer,

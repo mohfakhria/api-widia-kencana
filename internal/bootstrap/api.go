@@ -76,8 +76,9 @@ func (a *ApiApp) initialize() error {
 		a.objectStorage,
 	)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
-	documentUC := usecase.NewDocumentUseCase(pg.NewDocumentRepository(a.db))
-	documentLayerUC := usecase.NewDocumentLayerUseCase(pg.NewDocumentLayerRepository(a.db))
+	documentLayerRepo := pg.NewDocumentLayerRepository(a.db)
+	documentUC := usecase.NewDocumentUseCase(pg.NewDocumentRepository(a.db), documentLayerRepo)
+	documentLayerUC := usecase.NewDocumentLayerUseCase(documentLayerRepo)
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
 	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))
