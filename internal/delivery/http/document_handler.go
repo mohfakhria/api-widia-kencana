@@ -29,7 +29,13 @@ func (h *DocumentHandler) ListPapers(c *gin.Context) {
 }
 
 func (h *DocumentHandler) ListElements(c *gin.Context) {
-	elements, err := h.document.ListElements(c.Request.Context())
+	var req dto.DocumentElementFilterRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	elements, err := h.document.ListElements(c.Request.Context(), req.ToListDocumentElementQuery())
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
@@ -59,7 +65,16 @@ func (h *DocumentHandler) ListPropertyOptions(c *gin.Context) {
 }
 
 func (h *DocumentHandler) ListElementProperties(c *gin.Context) {
-	elementProperties, err := h.document.ListElementProperties(c.Request.Context())
+	var req dto.DocumentElementPropertyFilterRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	elementProperties, err := h.document.ListElementProperties(
+		c.Request.Context(),
+		req.ToListDocumentElementPropertyQuery(),
+	)
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return

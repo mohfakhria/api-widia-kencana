@@ -1,6 +1,9 @@
 package dto
 
-import "github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
+import (
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
+)
 
 type DocumentPapersDataResponse struct {
 	Papers []DocumentPaperResponse `json:"papers"`
@@ -8,6 +11,10 @@ type DocumentPapersDataResponse struct {
 
 type DocumentElementsDataResponse struct {
 	Elements []DocumentElementResponse `json:"elements"`
+}
+
+type DocumentElementFilterRequest struct {
+	Code string `form:"code"`
 }
 
 type DocumentPropertiesDataResponse struct {
@@ -20,6 +27,22 @@ type DocumentPropertyOptionsDataResponse struct {
 
 type DocumentElementPropertiesDataResponse struct {
 	ElementProperties []DocumentElementPropertyDetailResponse `json:"element_properties"`
+}
+
+type DocumentElementPropertyFilterRequest struct {
+	ElementCode string `form:"element_code"`
+}
+
+func (r DocumentElementPropertyFilterRequest) ToListDocumentElementPropertyQuery() input.ListDocumentElementPropertyQuery {
+	return input.ListDocumentElementPropertyQuery{
+		ElementCode: r.ElementCode,
+	}
+}
+
+func (r DocumentElementFilterRequest) ToListDocumentElementQuery() input.ListDocumentElementQuery {
+	return input.ListDocumentElementQuery{
+		Code: r.Code,
+	}
 }
 
 type DocumentPaperResponse struct {
@@ -60,14 +83,15 @@ type DocumentElementPropertyResponse struct {
 }
 
 type DocumentPropertyResponse struct {
-	Token        string `json:"token"`
-	Code         string `json:"code"`
-	Name         string `json:"name"`
-	DataType     string `json:"data_type"`
-	InputType    string `json:"input_type"`
-	DefaultValue string `json:"default_value"`
-	Unit         string `json:"unit"`
-	Status       string `json:"status"`
+	Token        string                           `json:"token"`
+	Code         string                           `json:"code"`
+	Name         string                           `json:"name"`
+	DataType     string                           `json:"data_type"`
+	InputType    string                           `json:"input_type"`
+	DefaultValue string                           `json:"default_value"`
+	Unit         string                           `json:"unit"`
+	Status       string                           `json:"status"`
+	Options      []DocumentPropertyOptionResponse `json:"options"`
 }
 
 type DocumentPropertyOptionResponse struct {
@@ -176,7 +200,7 @@ func NewDocumentPaperResponse(paper entity.DocumentPaper) DocumentPaperResponse 
 }
 
 func NewDocumentPropertyResponse(property entity.DocumentProperty) DocumentPropertyResponse {
-	return DocumentPropertyResponse{
+	response := DocumentPropertyResponse{
 		Token:        property.Token,
 		Code:         property.Code,
 		Name:         property.Name,
@@ -185,7 +209,13 @@ func NewDocumentPropertyResponse(property entity.DocumentProperty) DocumentPrope
 		DefaultValue: property.DefaultValue,
 		Unit:         property.Unit,
 		Status:       property.Status,
+		Options:      make([]DocumentPropertyOptionResponse, 0, len(property.Options)),
 	}
+	for _, option := range property.Options {
+		response.Options = append(response.Options, NewDocumentPropertyOptionResponse(option))
+	}
+
+	return response
 }
 
 func NewDocumentElementResponse(element entity.DocumentElement) DocumentElementResponse {

@@ -62,14 +62,28 @@ func (r *DocumentRepository) ListPapers(ctx context.Context) ([]entity.DocumentP
 	return papers, nil
 }
 
-func (r *DocumentRepository) ListElements(ctx context.Context) ([]entity.DocumentElement, error) {
-	rows, err := r.db.QueryContext(ctx, `
+func (r *DocumentRepository) ListElements(
+	ctx context.Context,
+	query input.ListDocumentElementQuery,
+) ([]entity.DocumentElement, error) {
+	builder := strings.Builder{}
+	builder.WriteString(`
 		SELECT id, token::text, code, name, renderer_type, renderer_tag,
 			content_type, is_container, status, created_at, updated_at
 		FROM document_elements
 		WHERE status = 'active'
+	`)
+
+	args := make([]any, 0)
+	if query.Code != "" && query.Code != "all" {
+		args = append(args, query.Code)
+		builder.WriteString(fmt.Sprintf(" AND code = $%d", len(args)))
+	}
+	builder.WriteString(`
 		ORDER BY id
 	`)
+
+	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +208,12 @@ func (r *DocumentRepository) ListPropertyOptions(ctx context.Context) ([]entity.
 	return options, nil
 }
 
-func (r *DocumentRepository) ListElementProperties(ctx context.Context) ([]entity.DocumentElementProperty, error) {
-	rows, err := r.db.QueryContext(ctx, `
+func (r *DocumentRepository) ListElementProperties(
+	ctx context.Context,
+	query input.ListDocumentElementPropertyQuery,
+) ([]entity.DocumentElementProperty, error) {
+	builder := strings.Builder{}
+	builder.WriteString(`
 		SELECT
 			element_property.id,
 			element_property.token::text,
@@ -212,8 +230,18 @@ func (r *DocumentRepository) ListElementProperties(ctx context.Context) ([]entit
 		JOIN document_elements element ON element.id = element_property.document_element_id
 		WHERE element_property.status = 'active'
 			AND element.status = 'active'
+	`)
+
+	args := make([]any, 0)
+	if query.ElementCode != "" {
+		args = append(args, query.ElementCode)
+		builder.WriteString(fmt.Sprintf(" AND element.code = $%d", len(args)))
+	}
+	builder.WriteString(`
 		ORDER BY element_property.document_element_id, element_property.position, element_property.id
 	`)
+
+	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
 	if err != nil {
 		return nil, err
 	}

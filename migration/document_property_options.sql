@@ -118,6 +118,47 @@ FROM (
         ('background-color', '#64748B', 'Secondary', 2, 'active'),
         ('background-color', '#7C3AED', 'Accent', 3, 'active'),
 
+        -- Size presets
+        ('width', 'auto', 'Auto', 1, 'active'),
+        ('width', '100%', 'Full', 2, 'active'),
+        ('width', '50%', 'Half', 3, 'active'),
+        ('height', 'auto', 'Auto', 1, 'active'),
+        ('height', '100%', 'Full', 2, 'active'),
+
+        -- Spacing presets
+        ('gap', '0', '0px', 1, 'active'),
+        ('gap', '8', '8px', 2, 'active'),
+        ('gap', '16', '16px', 3, 'active'),
+        ('gap', '24', '24px', 4, 'active'),
+        ('padding', '0', '0px', 1, 'active'),
+        ('padding', '8', '8px', 2, 'active'),
+        ('padding', '16', '16px', 3, 'active'),
+        ('padding', '24', '24px', 4, 'active'),
+        ('margin', '0', '0px', 1, 'active'),
+        ('margin', '8', '8px', 2, 'active'),
+        ('margin', '16', '16px', 3, 'active'),
+        ('margin', '24', '24px', 4, 'active'),
+
+        -- Border presets
+        ('border', '0', 'None', 1, 'active'),
+        ('border', '1', '1px', 2, 'active'),
+        ('border', '2', '2px', 3, 'active'),
+        ('border-radius', '0', 'None', 1, 'active'),
+        ('border-radius', '4', '4px', 2, 'active'),
+        ('border-radius', '8', '8px', 3, 'active'),
+        ('border-radius', '16', '16px', 4, 'active'),
+
+        -- Typography presets
+        ('font-size', '12', '12px', 1, 'active'),
+        ('font-size', '14', '14px', 2, 'active'),
+        ('font-size', '16', '16px', 3, 'active'),
+        ('font-size', '20', '20px', 4, 'active'),
+        ('font-size', '24', '24px', 5, 'active'),
+        ('line-height', '1', 'Tight', 1, 'active'),
+        ('line-height', '1.25', 'Compact', 2, 'active'),
+        ('line-height', '1.5', 'Normal', 3, 'active'),
+        ('line-height', '2', 'Relaxed', 4, 'active'),
+
         -- Grid template columns
         ('grid-template-columns', '[100]', 'Single', 1, 'active'),
         ('grid-template-columns', '[50,50]', 'Half', 2, 'active'),

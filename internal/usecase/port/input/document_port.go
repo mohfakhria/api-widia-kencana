@@ -8,10 +8,10 @@ import (
 
 type DocumentUseCase interface {
 	ListPapers(ctx context.Context) ([]entity.DocumentPaper, error)
-	ListElements(ctx context.Context) ([]entity.DocumentElement, error)
+	ListElements(ctx context.Context, query ListDocumentElementQuery) ([]entity.DocumentElement, error)
 	ListProperties(ctx context.Context) ([]entity.DocumentProperty, error)
 	ListPropertyOptions(ctx context.Context) ([]entity.DocumentPropertyOption, error)
-	ListElementProperties(ctx context.Context) ([]entity.DocumentElementProperty, error)
+	ListElementProperties(ctx context.Context, query ListDocumentElementPropertyQuery) ([]entity.DocumentElementProperty, error)
 	List(ctx context.Context, query ListDocumentQuery) ([]entity.Document, error)
 	GetByToken(ctx context.Context, token string) (*entity.Document, error)
 	Create(ctx context.Context, cmd CreateDocumentCommand) (*entity.Document, error)
@@ -22,6 +22,14 @@ type DocumentUseCase interface {
 type ListDocumentQuery struct {
 	Name  string
 	Token string
+}
+
+type ListDocumentElementQuery struct {
+	Code string
+}
+
+type ListDocumentElementPropertyQuery struct {
+	ElementCode string
 }
 
 type CreateDocumentCommand struct {

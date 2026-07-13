@@ -35,8 +35,31 @@ func (uc *documentUseCase) ListPapers(ctx context.Context) ([]entity.DocumentPap
 	return uc.repo.ListPapers(ctx)
 }
 
-func (uc *documentUseCase) ListElements(ctx context.Context) ([]entity.DocumentElement, error) {
-	return uc.repo.ListElements(ctx)
+func (uc *documentUseCase) ListElements(
+	ctx context.Context,
+	query input.ListDocumentElementQuery,
+) ([]entity.DocumentElement, error) {
+	query.Code = strings.TrimSpace(query.Code)
+
+	elements, err := uc.repo.ListElements(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	if query.Code == "" {
+		return elements, nil
+	}
+
+	elementPropertyQuery := input.ListDocumentElementPropertyQuery{}
+	if query.Code != "all" {
+		elementPropertyQuery.ElementCode = query.Code
+	}
+
+	elementProperties, err := uc.ListElementProperties(ctx, elementPropertyQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	return attachElementPropertiesByElement(elements, elementProperties), nil
 }
 
 func (uc *documentUseCase) ListProperties(ctx context.Context) ([]entity.DocumentProperty, error) {
@@ -47,7 +70,12 @@ func (uc *documentUseCase) ListPropertyOptions(ctx context.Context) ([]entity.Do
 	return uc.repo.ListPropertyOptions(ctx)
 }
 
-func (uc *documentUseCase) ListElementProperties(ctx context.Context) ([]entity.DocumentElementProperty, error) {
+func (uc *documentUseCase) ListElementProperties(
+	ctx context.Context,
+	query input.ListDocumentElementPropertyQuery,
+) ([]entity.DocumentElementProperty, error) {
+	query.ElementCode = strings.TrimSpace(query.ElementCode)
+
 	properties, err := uc.repo.ListProperties(ctx)
 	if err != nil {
 		return nil, err
@@ -58,7 +86,7 @@ func (uc *documentUseCase) ListElementProperties(ctx context.Context) ([]entity.
 		return nil, err
 	}
 
-	elementProperties, err := uc.repo.ListElementProperties(ctx)
+	elementProperties, err := uc.repo.ListElementProperties(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -218,6 +246,25 @@ func attachElementProperties(
 			continue
 		}
 		elementProperty.Property = property
+		propertiesByElementID[elementProperty.DocumentElementID] = append(
+			propertiesByElementID[elementProperty.DocumentElementID],
+			elementProperty,
+		)
+	}
+
+	for idx := range elements {
+		elements[idx].Properties = propertiesByElementID[elements[idx].ID]
+	}
+
+	return elements
+}
+
+func attachElementPropertiesByElement(
+	elements []entity.DocumentElement,
+	elementProperties []entity.DocumentElementProperty,
+) []entity.DocumentElement {
+	propertiesByElementID := make(map[int64][]entity.DocumentElementProperty)
+	for _, elementProperty := range elementProperties {
 		propertiesByElementID[elementProperty.DocumentElementID] = append(
 			propertiesByElementID[elementProperty.DocumentElementID],
 			elementProperty,
