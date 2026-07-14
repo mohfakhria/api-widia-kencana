@@ -89,15 +89,16 @@ FROM (
 
         -- List
         ('list', 'list-style-type', 'disc', 1, 'active'),
-        ('list', 'font-family', 'Arial', 2, 'active'),
-        ('list', 'font-size', '16', 3, 'active'),
-        ('list', 'font-weight', '400', 4, 'active'),
-        ('list', 'font-style', 'normal', 5, 'active'),
-        ('list', 'text-decoration', 'none', 6, 'active'),
-        ('list', 'line-height', '1.5', 7, 'active'),
-        ('list', 'color', '#000000', 8, 'active'),
-        ('list', 'margin', '0', 9, 'active'),
-        ('list', 'padding', '0', 10, 'active'),
+        ('list', 'list-style-position', 'inside', 2, 'active'),
+        ('list', 'font-family', 'Arial', 3, 'active'),
+        ('list', 'font-size', '16', 4, 'active'),
+        ('list', 'font-weight', '400', 5, 'active'),
+        ('list', 'font-style', 'normal', 6, 'active'),
+        ('list', 'text-decoration', 'none', 7, 'active'),
+        ('list', 'line-height', '1.5', 8, 'active'),
+        ('list', 'color', '#000000', 9, 'active'),
+        ('list', 'margin', '0', 10, 'active'),
+        ('list', 'padding', '0', 11, 'active'),
 
         -- Table
         ('table', 'width', '100%', 1, 'active'),

@@ -114,10 +114,17 @@ FROM (
         ('align-items', 'baseline', 'Baseline', 5, 'active'),
 
         -- List style type
-        ('list-style-type', 'disc', 'Bulleted', 1, 'active'),
-        ('list-style-type', 'decimal', 'Numbered', 2, 'active'),
-        ('list-style-type', 'lower-alpha', 'Alphabet', 3, 'active'),
-        ('list-style-type', 'none', 'None', 4, 'active'),
+        ('list-style-type', 'disc', 'Disc', 1, 'active'),
+        ('list-style-type', 'circle', 'Circle', 2, 'active'),
+        ('list-style-type', 'square', 'Square', 3, 'active'),
+        ('list-style-type', 'decimal', 'Decimal', 4, 'active'),
+        ('list-style-type', 'lower-alpha', 'Lower Alpha', 5, 'active'),
+        ('list-style-type', 'upper-alpha', 'Upper Alpha', 6, 'active'),
+        ('list-style-type', 'none', 'None', 7, 'active'),
+
+        -- List style position
+        ('list-style-position', 'inside', 'Inside', 1, 'active'),
+        ('list-style-position', 'outside', 'Outside', 2, 'active'),
 
         -- Color palette
         ('color', '#2563EB', 'Primary', 1, 'active'),
@@ -188,4 +195,8 @@ FROM (
 )
 JOIN document_properties
     ON document_properties.code = seed_options.property_code
-ON CONFLICT (document_property_id, value) DO NOTHING;
+ON CONFLICT (document_property_id, value) DO UPDATE
+SET label = EXCLUDED.label,
+    position = EXCLUDED.position,
+    status = EXCLUDED.status,
+    updated_at = NOW();

@@ -80,6 +80,7 @@ INSERT INTO document_properties (
     ('justify-content', 'Justify Content', 'string', 'select', 'flex-start', '', 'active'),
     ('align-items', 'Align Items', 'string', 'select', 'stretch', '', 'active'),
     ('list-style-type', 'List Style Type', 'string', 'select', 'disc', '', 'active'),
+    ('list-style-position', 'List Style Position', 'string', 'select', 'inside', '', 'active'),
     ('border-radius', 'Border Radius', 'number', 'number', '0', 'px', 'active'),
     ('background-color', 'Background Color', 'string', 'color', '#FFFFFF', '', 'active'),
     ('background-image', 'Background Image', 'string', 'text', '', '', 'active')
