@@ -337,28 +337,52 @@ func buildDocumentLayerTree(layers []entity.DocumentLayer) entity.DocumentLayerR
 		Footer: []entity.DocumentLayer{},
 	}
 
-	layerByID := make(map[int64]*entity.DocumentLayer, len(layers))
-	for idx := range layers {
-		layers[idx].Children = []entity.DocumentLayer{}
-		layerByID[layers[idx].ID] = &layers[idx]
+	type layerNode struct {
+		layer    entity.DocumentLayer
+		children []*layerNode
 	}
 
-	for idx := range layers {
-		layer := &layers[idx]
-		if layer.ParentID != nil {
-			if parent, ok := layerByID[*layer.ParentID]; ok {
-				parent.Children = append(parent.Children, *layer)
+	layerByID := make(map[int64]*layerNode, len(layers))
+	orderedNodes := make([]*layerNode, 0, len(layers))
+	for _, layer := range layers {
+		layer.Children = []entity.DocumentLayer{}
+		node := &layerNode{layer: layer, children: []*layerNode{}}
+		layerByID[layer.ID] = node
+		orderedNodes = append(orderedNodes, node)
+	}
+
+	rootNodes := make([]*layerNode, 0, len(layers))
+	for _, node := range orderedNodes {
+		if node.layer.ParentID != nil {
+			if parent, ok := layerByID[*node.layer.ParentID]; ok {
+				parent.children = append(parent.children, node)
 				continue
 			}
 		}
 
+		rootNodes = append(rootNodes, node)
+	}
+
+	var mapNodeToLayer func(*layerNode) entity.DocumentLayer
+	mapNodeToLayer = func(node *layerNode) entity.DocumentLayer {
+		layer := node.layer
+		layer.Children = make([]entity.DocumentLayer, 0, len(node.children))
+		for _, child := range node.children {
+			layer.Children = append(layer.Children, mapNodeToLayer(child))
+		}
+
+		return layer
+	}
+
+	for _, node := range rootNodes {
+		layer := mapNodeToLayer(node)
 		switch layer.Region {
 		case "header":
-			regions.Header = append(regions.Header, *layer)
+			regions.Header = append(regions.Header, layer)
 		case "footer":
-			regions.Footer = append(regions.Footer, *layer)
+			regions.Footer = append(regions.Footer, layer)
 		default:
-			regions.Body = append(regions.Body, *layer)
+			regions.Body = append(regions.Body, layer)
 		}
 	}
 

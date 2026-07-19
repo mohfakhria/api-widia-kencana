@@ -85,7 +85,6 @@ FROM (
         ('image', 'height', 'auto', 2, 'active'),
         ('image', 'margin', '0', 3, 'active'),
         ('image', 'border-radius', '0', 4, 'active'),
-        ('image', 'background-image', '', 5, 'active'),
 
         -- List
         ('list', 'list-style-type', 'disc', 1, 'active'),
@@ -113,6 +112,7 @@ FROM (
         ('divider', 'height', '1', 2, 'active'),
         ('divider', 'background-color', '#000000', 3, 'active'),
         ('divider', 'margin', '0', 4, 'active'),
+        ('divider', 'padding', '0', 5, 'active'),
 
         -- Spacer
         ('spacer', 'height', '24', 1, 'active'),
