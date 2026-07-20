@@ -79,6 +79,7 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | `color` | Color | `string` | `color` | `#000000` |  | CSS `color` |
 | `width` | Width | `string` | `text` | `auto` |  | CSS `width` |
 | `height` | Height | `string` | `text` | `auto` |  | CSS `height` |
+| `object-fit` | Object Fit | `string` | `select` | `contain` |  | CSS `object-fit` |
 | `display` | Display | `string` | `select` | `block` |  | CSS `display` |
 | `grid-template-columns` | Grid Template Columns | `json` | `grid-columns` | `[100]` | `%` | CSS grid template columns from percentage array |
 | `flex-direction` | Flex Direction | `string` | `select` | `row` |  | CSS `flex-direction` |
@@ -224,6 +225,7 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | `auto` | Auto |
 | `100%` | Full |
 | `50%` | Half |
+| `custom` | Custom |
 
 ### `height`
 
@@ -231,6 +233,17 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | --- | --- |
 | `auto` | Auto |
 | `100%` | Full |
+| `custom` | Custom |
+
+`custom` adalah mode UI untuk membuka input manual. Saat disimpan ke layer properties, frontend sebaiknya menyimpan value final CSS, contoh `75%`, `320px`, atau `fit-content`, bukan menyimpan `custom` sebagai ukuran final.
+
+### `object-fit`
+
+| Value | Label | Native CSS |
+| --- | --- | --- |
+| `contain` | Contain | Yes |
+| `cover` | Cover | Yes |
+| `fill` | Fill | Yes |
 
 ### `gap`
 
@@ -355,8 +368,9 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | --- | --- | --- |
 | 1 | `width` | `auto` |
 | 2 | `height` | `auto` |
-| 3 | `margin` | `0` |
-| 4 | `border-radius` | `0` |
+| 3 | `object-fit` | `contain` |
+| 4 | `margin` | `0` |
+| 5 | `border-radius` | `0` |
 
 ### `list`
 

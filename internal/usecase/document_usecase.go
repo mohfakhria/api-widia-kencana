@@ -224,9 +224,18 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 		ParentToken:  strings.TrimSpace(cmd.ParentToken),
 		Name:         strings.TrimSpace(cmd.Name),
 		DocumentType: documentType,
+		Settings:     normalizeDocumentSettings(cmd.Settings),
 		Position:     cmd.Position,
 		Status:       status,
 	}
+}
+
+func normalizeDocumentSettings(settings map[string]any) map[string]any {
+	if settings == nil {
+		return map[string]any{}
+	}
+
+	return settings
 }
 
 func validateDocument(document *entity.Document) error {

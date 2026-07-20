@@ -32,6 +32,20 @@ func main() {
 	sort.Strings(filtered)
 
 	mergedItems := make([]map[string]any, 0, len(filtered))
+	mergedVariables := []map[string]any{
+		{
+			"key":   "base_url",
+			"value": "http://localhost:8081",
+		},
+		{
+			"key":   "token",
+			"value": "",
+		},
+	}
+	seenVariables := map[string]struct{}{
+		"base_url": {},
+		"token":    {},
+	}
 
 	for _, file := range filtered {
 		raw, err := os.ReadFile(file)
@@ -60,6 +74,7 @@ func main() {
 
 		featureFolderName := deriveFeatureFolderName(file, decoded)
 		featureItems := normalizeFeatureItems(items)
+		mergedVariables = appendCollectionVariables(mergedVariables, seenVariables, decoded)
 
 		mergedItems = append(mergedItems, map[string]any{
 			"name": featureFolderName,
@@ -74,17 +89,8 @@ func main() {
 			"schema":      "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 			"description": "Unified Postman collection for Widia Kencana API endpoints.",
 		},
-		"item": mergedItems,
-			"variable": []map[string]any{
-				{
-					"key":   "base_url",
-					"value": "http://localhost:8081",
-				},
-			{
-				"key":   "token",
-				"value": "",
-			},
-		},
+		"item":     mergedItems,
+		"variable": mergedVariables,
 	}
 
 	out, err := json.MarshalIndent(allCollection, "", "    ")
@@ -99,6 +105,37 @@ func main() {
 	}
 
 	fmt.Printf("merged %d file(s) into %s\n", len(filtered), targetFile)
+}
+
+func appendCollectionVariables(
+	mergedVariables []map[string]any,
+	seenVariables map[string]struct{},
+	collection map[string]any,
+) []map[string]any {
+	variables, ok := collection["variable"].([]any)
+	if !ok {
+		return mergedVariables
+	}
+
+	for _, variableAny := range variables {
+		variable, ok := variableAny.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		key, ok := variable["key"].(string)
+		if !ok || strings.TrimSpace(key) == "" {
+			continue
+		}
+		if _, exists := seenVariables[key]; exists {
+			continue
+		}
+
+		mergedVariables = append(mergedVariables, variable)
+		seenVariables[key] = struct{}{}
+	}
+
+	return mergedVariables
 }
 
 func deriveFeatureFolderName(file string, collection map[string]any) string {

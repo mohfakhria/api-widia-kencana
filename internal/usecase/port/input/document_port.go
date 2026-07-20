@@ -41,6 +41,7 @@ type CreateDocumentCommand struct {
 	ParentToken        string
 	Name               string
 	DocumentType       string
+	Settings           map[string]any
 	Position           int
 	Status             string
 }

@@ -83,8 +83,9 @@ FROM (
         -- Image
         ('image', 'width', 'auto', 1, 'active'),
         ('image', 'height', 'auto', 2, 'active'),
-        ('image', 'margin', '0', 3, 'active'),
-        ('image', 'border-radius', '0', 4, 'active'),
+        ('image', 'object-fit', 'contain', 3, 'active'),
+        ('image', 'margin', '0', 4, 'active'),
+        ('image', 'border-radius', '0', 5, 'active'),
 
         -- List
         ('list', 'list-style-type', 'disc', 1, 'active'),

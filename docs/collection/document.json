@@ -1,1085 +1,1109 @@
 {
-    "info": {
-        "_postman_id": "a861a4b3-3d24-4b78-8b94-6f3f6f80d2ad",
-        "name": "Widia Kencana - Document",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-        "description": "Document endpoints for Widia Kencana API. Rule: 1 route = 1 endpoint item."
+  "info": {
+    "_postman_id": "a861a4b3-3d24-4b78-8b94-6f3f6f80d2ad",
+    "name": "Widia Kencana - Document",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Document endpoints for Widia Kencana API. Rule: 1 route = 1 endpoint item."
+  },
+  "item": [
+    {
+      "name": "Master Data",
+      "item": [
+        {
+          "name": "List Document Papers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-master/papers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-master",
+                "papers"
+              ]
+            },
+            "description": "Read active paper/media options for document setup."
+          },
+          "response": [
+            {
+              "name": "List Document Papers - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": [\n      {\n        \"token\": \"aaf4ba17-92aa-4b5b-ad69-c034456dd396\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      {\n        \"token\": \"8a4cabd8-f983-4f71-9918-33d20bbe0b01\",\n        \"name\": \"Thermal Paper\",\n        \"media_type\": \"thermal\",\n        \"width\": 58,\n        \"height\": 100,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": false,\n        \"status\": \"active\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Document Elements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-master/elements?code=all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-master",
+                "elements"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "all",
+                  "description": "Optional. Use all to include every element with properties and options, or use a specific code such as grid."
+                }
+              ]
+            },
+            "description": "Read active element palette options. Without code, response is lightweight. With code=all, response includes each element properties and property options."
+          },
+          "response": [
+            {
+              "name": "List Document Elements - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"elements\": [\n      {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": [\n          {\n            \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n            \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n            \"code\": \"display\",\n            \"name\": \"Display\",\n            \"data_type\": \"string\",\n            \"input_type\": \"select\",\n            \"default_value\": \"grid\",\n            \"unit\": \"\",\n            \"position\": 1,\n            \"options\": [\n              {\n                \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n                \"value\": \"block\",\n                \"label\": \"Block\",\n                \"position\": 1\n              },\n              {\n                \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n                \"value\": \"flex\",\n                \"label\": \"Flex\",\n                \"position\": 2\n              },\n              {\n                \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n                \"value\": \"grid\",\n                \"label\": \"Grid\",\n                \"position\": 3\n              }\n            ]\n          },\n          {\n            \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n            \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n            \"code\": \"grid-template-columns\",\n            \"name\": \"Grid Template Columns\",\n            \"data_type\": \"json\",\n            \"input_type\": \"grid-columns\",\n            \"default_value\": \"[100]\",\n            \"unit\": \"%\",\n            \"position\": 2,\n            \"options\": [\n              {\n                \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n                \"value\": \"[100]\",\n                \"label\": \"Single\",\n                \"position\": 1\n              },\n              {\n                \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n                \"value\": \"[50,50]\",\n                \"label\": \"Half\",\n                \"position\": 2\n              },\n              {\n                \"token\": \"9aad4497-ecb2-487c-a142-c6bc5a3e9e23\",\n                \"value\": \"[30,70]\",\n                \"label\": \"Left\",\n                \"position\": 3\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n        \"code\": \"text\",\n        \"name\": \"Text\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"p\",\n        \"content_type\": \"text\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": [\n          {\n            \"token\": \"e3bf4c9b-4d53-4be9-b2ad-2f5de70be684\",\n            \"property_token\": \"4ea1db9b-b6f7-4e57-92a5-430597101492\",\n            \"code\": \"font-size\",\n            \"name\": \"Font Size\",\n            \"data_type\": \"string\",\n            \"input_type\": \"text\",\n            \"default_value\": \"16\",\n            \"unit\": \"px\",\n            \"position\": 2,\n            \"options\": []\n          }\n        ]\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Document Properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-master/properties",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-master",
+                "properties"
+              ]
+            },
+            "description": "Read active reusable property definitions."
+          },
+          "response": [
+            {
+              "name": "List Document Properties - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"properties\": [\n      {\n        \"token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"code\": \"display\",\n        \"name\": \"Display\",\n        \"data_type\": \"string\",\n        \"input_type\": \"select\",\n        \"default_value\": \"block\",\n        \"unit\": \"\",\n        \"status\": \"active\",\n        \"options\": []\n      },\n      {\n        \"token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"code\": \"grid-template-columns\",\n        \"name\": \"Grid Template Columns\",\n        \"data_type\": \"json\",\n        \"input_type\": \"grid-columns\",\n        \"default_value\": \"[100]\",\n        \"unit\": \"%\",\n        \"status\": \"active\",\n        \"options\": []\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Document Property Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-master/property-options",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-master",
+                "property-options"
+              ]
+            },
+            "description": "Read active selectable options for document properties."
+          },
+          "response": [
+            {
+              "name": "List Document Property Options - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"property_options\": [\n      {\n        \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n        \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"property_code\": \"display\",\n        \"value\": \"grid\",\n        \"label\": \"Grid\",\n        \"position\": 3,\n        \"status\": \"active\"\n      },\n      {\n        \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n        \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"property_code\": \"grid-template-columns\",\n        \"value\": \"[50,50]\",\n        \"label\": \"Half\",\n        \"position\": 2,\n        \"status\": \"active\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Document Element Properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-master/element-properties?element_code=grid",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-master",
+                "element-properties"
+              ],
+              "query": [
+                {
+                  "key": "element_code",
+                  "value": "grid",
+                  "description": "Optional. Exact element code filter, for example grid, text, image, table."
+                }
+              ]
+            },
+            "description": "Read active mapping between selected element and editable properties. Optional element_code filter returns only properties for one element and includes property options."
+          },
+          "response": [
+            {
+              "name": "List Document Element Properties - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"element_properties\": [\n      {\n        \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n        \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"element_code\": \"grid\",\n        \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"property_code\": \"display\",\n        \"default_value\": \"grid\",\n        \"position\": 1,\n        \"status\": \"active\",\n        \"property\": {\n          \"token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n          \"code\": \"display\",\n          \"name\": \"Display\",\n          \"data_type\": \"string\",\n          \"input_type\": \"select\",\n          \"default_value\": \"block\",\n          \"unit\": \"\",\n          \"status\": \"active\",\n          \"options\": [\n            {\n              \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n              \"value\": \"block\",\n              \"label\": \"Block\",\n              \"position\": 1\n            },\n            {\n              \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n              \"value\": \"flex\",\n              \"label\": \"Flex\",\n              \"position\": 2\n            },\n            {\n              \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n              \"value\": \"grid\",\n              \"label\": \"Grid\",\n              \"position\": 3\n            }\n          ]\n        }\n      },\n      {\n        \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n        \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"element_code\": \"grid\",\n        \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"property_code\": \"grid-template-columns\",\n        \"default_value\": \"[100]\",\n        \"position\": 2,\n        \"status\": \"active\",\n        \"property\": {\n          \"token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n          \"code\": \"grid-template-columns\",\n          \"name\": \"Grid Template Columns\",\n          \"data_type\": \"json\",\n          \"input_type\": \"grid-columns\",\n          \"default_value\": \"[100]\",\n          \"unit\": \"%\",\n          \"status\": \"active\",\n          \"options\": [\n            {\n              \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n              \"value\": \"[100]\",\n              \"label\": \"Single\",\n              \"position\": 1\n            },\n            {\n              \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n              \"value\": \"[50,50]\",\n              \"label\": \"Half\",\n              \"position\": 2\n            },\n            {\n              \"token\": \"9aad4497-ecb2-487c-a142-c6bc5a3e9e23\",\n              \"value\": \"[30,70]\",\n              \"label\": \"Left\",\n              \"position\": 3\n            },\n            {\n              \"token\": \"d61dede0-dd95-493e-a624-39f316d6de53\",\n              \"value\": \"[70,30]\",\n              \"label\": \"Right\",\n              \"position\": 4\n            },\n            {\n              \"token\": \"254f9df8-3a58-4c6e-84c2-5c61b8bb89c2\",\n              \"value\": \"[33,33,34]\",\n              \"label\": \"Thirds\",\n              \"position\": 5\n            }\n          ]\n        }\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
     },
-    "item": [
+    {
+      "name": "Documents",
+      "item": [
         {
-            "name": "Master Data",
-            "item": [
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-list?name=Quotation&token=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-list"
+              ],
+              "query": [
                 {
-                    "name": "List Document Papers",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-master/papers",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-master",
-                                "papers"
-                            ]
-                        },
-                        "description": "Read active paper/media options for document setup."
-                    },
-                    "response": [
-                        {
-                            "name": "List Document Papers - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": [\n      {\n        \"token\": \"aaf4ba17-92aa-4b5b-ad69-c034456dd396\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      {\n        \"token\": \"8a4cabd8-f983-4f71-9918-33d20bbe0b01\",\n        \"name\": \"Thermal Paper\",\n        \"media_type\": \"thermal\",\n        \"width\": 58,\n        \"height\": 100,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": false,\n        \"status\": \"active\"\n      }\n    ]\n  }\n}"
-                        }
-                    ]
+                  "key": "name",
+                  "value": "Quotation",
+                  "description": "Optional. Case-insensitive LIKE filter for document name."
                 },
                 {
-                    "name": "List Document Elements",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-master/elements?code=all",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-master",
-                                "elements"
-                            ],
-                            "query": [
-                                {
-                                    "key": "code",
-                                    "value": "all",
-                                    "description": "Optional. Use all to include every element with properties and options, or use a specific code such as grid."
-                                }
-                            ]
-                        },
-                        "description": "Read active element palette options. Without code, response is lightweight. With code=all, response includes each element properties and property options."
-                    },
-                    "response": [
-                        {
-                            "name": "List Document Elements - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"elements\": [\n      {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": [\n          {\n            \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n            \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n            \"code\": \"display\",\n            \"name\": \"Display\",\n            \"data_type\": \"string\",\n            \"input_type\": \"select\",\n            \"default_value\": \"grid\",\n            \"unit\": \"\",\n            \"position\": 1,\n            \"options\": [\n              {\n                \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n                \"value\": \"block\",\n                \"label\": \"Block\",\n                \"position\": 1\n              },\n              {\n                \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n                \"value\": \"flex\",\n                \"label\": \"Flex\",\n                \"position\": 2\n              },\n              {\n                \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n                \"value\": \"grid\",\n                \"label\": \"Grid\",\n                \"position\": 3\n              }\n            ]\n          },\n          {\n            \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n            \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n            \"code\": \"grid-template-columns\",\n            \"name\": \"Grid Template Columns\",\n            \"data_type\": \"json\",\n            \"input_type\": \"grid-columns\",\n            \"default_value\": \"[100]\",\n            \"unit\": \"%\",\n            \"position\": 2,\n            \"options\": [\n              {\n                \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n                \"value\": \"[100]\",\n                \"label\": \"Single\",\n                \"position\": 1\n              },\n              {\n                \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n                \"value\": \"[50,50]\",\n                \"label\": \"Half\",\n                \"position\": 2\n              },\n              {\n                \"token\": \"9aad4497-ecb2-487c-a142-c6bc5a3e9e23\",\n                \"value\": \"[30,70]\",\n                \"label\": \"Left\",\n                \"position\": 3\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n        \"code\": \"text\",\n        \"name\": \"Text\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"p\",\n        \"content_type\": \"text\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": [\n          {\n            \"token\": \"e3bf4c9b-4d53-4be9-b2ad-2f5de70be684\",\n            \"property_token\": \"4ea1db9b-b6f7-4e57-92a5-430597101492\",\n            \"code\": \"font-size\",\n            \"name\": \"Font Size\",\n            \"data_type\": \"string\",\n            \"input_type\": \"text\",\n            \"default_value\": \"16\",\n            \"unit\": \"px\",\n            \"position\": 2,\n            \"options\": []\n          }\n        ]\n      }\n    ]\n  }\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "List Document Properties",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-master/properties",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-master",
-                                "properties"
-                            ]
-                        },
-                        "description": "Read active reusable property definitions."
-                    },
-                    "response": [
-                        {
-                            "name": "List Document Properties - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"properties\": [\n      {\n        \"token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"code\": \"display\",\n        \"name\": \"Display\",\n        \"data_type\": \"string\",\n        \"input_type\": \"select\",\n        \"default_value\": \"block\",\n        \"unit\": \"\",\n        \"status\": \"active\",\n        \"options\": []\n      },\n      {\n        \"token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"code\": \"grid-template-columns\",\n        \"name\": \"Grid Template Columns\",\n        \"data_type\": \"json\",\n        \"input_type\": \"grid-columns\",\n        \"default_value\": \"[100]\",\n        \"unit\": \"%\",\n        \"status\": \"active\",\n        \"options\": []\n      }\n    ]\n  }\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "List Document Property Options",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-master/property-options",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-master",
-                                "property-options"
-                            ]
-                        },
-                        "description": "Read active selectable options for document properties."
-                    },
-                    "response": [
-                        {
-                            "name": "List Document Property Options - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"property_options\": [\n      {\n        \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n        \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"property_code\": \"display\",\n        \"value\": \"grid\",\n        \"label\": \"Grid\",\n        \"position\": 3,\n        \"status\": \"active\"\n      },\n      {\n        \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n        \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"property_code\": \"grid-template-columns\",\n        \"value\": \"[50,50]\",\n        \"label\": \"Half\",\n        \"position\": 2,\n        \"status\": \"active\"\n      }\n    ]\n  }\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "List Document Element Properties",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-master/element-properties?element_code=grid",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-master",
-                                "element-properties"
-                            ],
-                            "query": [
-                                {
-                                    "key": "element_code",
-                                    "value": "grid",
-                                    "description": "Optional. Exact element code filter, for example grid, text, image, table."
-                                }
-                            ]
-                        },
-                        "description": "Read active mapping between selected element and editable properties. Optional element_code filter returns only properties for one element and includes property options."
-                    },
-                    "response": [
-                        {
-                            "name": "List Document Element Properties - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"element_properties\": [\n      {\n        \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n        \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"element_code\": \"grid\",\n        \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n        \"property_code\": \"display\",\n        \"default_value\": \"grid\",\n        \"position\": 1,\n        \"status\": \"active\",\n        \"property\": {\n          \"token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n          \"code\": \"display\",\n          \"name\": \"Display\",\n          \"data_type\": \"string\",\n          \"input_type\": \"select\",\n          \"default_value\": \"block\",\n          \"unit\": \"\",\n          \"status\": \"active\",\n          \"options\": [\n            {\n              \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n              \"value\": \"block\",\n              \"label\": \"Block\",\n              \"position\": 1\n            },\n            {\n              \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n              \"value\": \"flex\",\n              \"label\": \"Flex\",\n              \"position\": 2\n            },\n            {\n              \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n              \"value\": \"grid\",\n              \"label\": \"Grid\",\n              \"position\": 3\n            }\n          ]\n        }\n      },\n      {\n        \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n        \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"element_code\": \"grid\",\n        \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n        \"property_code\": \"grid-template-columns\",\n        \"default_value\": \"[100]\",\n        \"position\": 2,\n        \"status\": \"active\",\n        \"property\": {\n          \"token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n          \"code\": \"grid-template-columns\",\n          \"name\": \"Grid Template Columns\",\n          \"data_type\": \"json\",\n          \"input_type\": \"grid-columns\",\n          \"default_value\": \"[100]\",\n          \"unit\": \"%\",\n          \"status\": \"active\",\n          \"options\": [\n            {\n              \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n              \"value\": \"[100]\",\n              \"label\": \"Single\",\n              \"position\": 1\n            },\n            {\n              \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n              \"value\": \"[50,50]\",\n              \"label\": \"Half\",\n              \"position\": 2\n            },\n            {\n              \"token\": \"9aad4497-ecb2-487c-a142-c6bc5a3e9e23\",\n              \"value\": \"[30,70]\",\n              \"label\": \"Left\",\n              \"position\": 3\n            },\n            {\n              \"token\": \"d61dede0-dd95-493e-a624-39f316d6de53\",\n              \"value\": \"[70,30]\",\n              \"label\": \"Right\",\n              \"position\": 4\n            },\n            {\n              \"token\": \"254f9df8-3a58-4c6e-84c2-5c61b8bb89c2\",\n              \"value\": \"[33,33,34]\",\n              \"label\": \"Thirds\",\n              \"position\": 5\n            }\n          ]\n        }\n      }\n    ]\n  }\n}"
-                        }
-                    ]
+                  "key": "token",
+                  "value": "",
+                  "description": "Optional. Exact document token filter."
                 }
-            ]
+              ]
+            },
+            "description": "List documents. Optional filters: name uses case-insensitive LIKE, token uses exact UUID match."
+          },
+          "response": [
+            {
+              "name": "List Documents - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": [\n      {\n        \"token\": \"00000000-0000-0000-0000-000000000501\",\n        \"parent_token\": \"\",\n        \"name\": \"Quotation Default\",\n        \"document_type\": \"quotation\",\n        \"position\": 1,\n        \"status\": \"draft\",\n        \"paper\": {\n          \"token\": \"00000000-0000-0000-0000-000000000001\",\n          \"name\": \"A4\",\n          \"media_type\": \"sheet\",\n          \"width\": 210,\n          \"height\": 297,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\"\n        },\n        \"created_at\": \"2026-07-13T10:00:00Z\",\n        \"updated_at\": \"2026-07-13T10:00:00Z\",\n        \"settings\": {\n          \"orientation\": \"portrait\",\n          \"margin\": {\n            \"top\": 24,\n            \"right\": 24,\n            \"bottom\": 24,\n            \"left\": 24,\n            \"unit\": \"px\"\n          }\n        }\n      }\n    ]\n  }\n}"
+            }
+          ]
         },
         {
-            "name": "Documents",
-            "item": [
+          "name": "Get Document Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-detail/{{document_token}}?with_layer=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-detail",
+                "{{document_token}}"
+              ],
+              "query": [
                 {
-                    "name": "List Documents",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-list?name=Quotation&token=",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-list"
-                            ],
-                            "query": [
-                                {
-                                    "key": "name",
-                                    "value": "Quotation",
-                                    "description": "Optional. Case-insensitive LIKE filter for document name."
-                                },
-                                {
-                                    "key": "token",
-                                    "value": "",
-                                    "description": "Optional. Exact document token filter."
-                                }
-                            ]
-                        },
-                        "description": "List documents. Optional filters: name uses case-insensitive LIKE, token uses exact UUID match."
-                    },
-                    "response": [
-                        {
-                            "name": "List Documents - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": [\n      {\n        \"token\": \"00000000-0000-0000-0000-000000000501\",\n        \"parent_token\": \"\",\n        \"name\": \"Quotation Default\",\n        \"document_type\": \"quotation\",\n        \"position\": 1,\n        \"status\": \"draft\",\n        \"paper\": {\n          \"token\": \"00000000-0000-0000-0000-000000000001\",\n          \"name\": \"A4\",\n          \"media_type\": \"sheet\",\n          \"width\": 210,\n          \"height\": 297,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\"\n        },\n        \"created_at\": \"2026-07-13T10:00:00Z\",\n        \"updated_at\": \"2026-07-13T10:00:00Z\"\n      }\n    ]\n  }\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Get Document Detail",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-detail/00000000-0000-0000-0000-000000000501?with_layer=true",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-detail",
-                                "00000000-0000-0000-0000-000000000501"
-                            ],
-                            "query": [
-                                {
-                                    "key": "with_layer",
-                                    "value": "true",
-                                    "description": "Optional. Set true to include document layer tree grouped by header, body, and footer."
-                                }
-                            ]
-                        },
-                        "description": "Replace last path segment with document token. Use with_layer=true to include layer tree with element properties and options."
-                    },
-                    "response": [
-                        {
-                            "name": "Get Document Detail - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\",\n      \"layers\": {\n        \"header\": [],\n        \"body\": [\n          {\n            \"token\": \"00000000-0000-0000-0000-000000000601\",\n            \"parent_token\": \"\",\n            \"element\": {\n              \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n              \"code\": \"grid\",\n              \"name\": \"Grid\",\n              \"renderer_type\": \"html\",\n              \"renderer_tag\": \"div\",\n              \"content_type\": \"none\",\n              \"is_container\": true,\n              \"status\": \"active\",\n              \"properties\": [\n                {\n                  \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n                  \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n                  \"code\": \"display\",\n                  \"name\": \"Display\",\n                  \"data_type\": \"string\",\n                  \"input_type\": \"select\",\n                  \"default_value\": \"grid\",\n                  \"unit\": \"\",\n                  \"position\": 1,\n                  \"options\": [\n                    {\n                      \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n                      \"value\": \"block\",\n                      \"label\": \"Block\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n                      \"value\": \"flex\",\n                      \"label\": \"Flex\",\n                      \"position\": 2\n                    },\n                    {\n                      \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n                      \"value\": \"grid\",\n                      \"label\": \"Grid\",\n                      \"position\": 3\n                    }\n                  ]\n                },\n                {\n                  \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n                  \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n                  \"code\": \"grid-template-columns\",\n                  \"name\": \"Grid Template Columns\",\n                  \"data_type\": \"json\",\n                  \"input_type\": \"grid-columns\",\n                  \"default_value\": \"[100]\",\n                  \"unit\": \"%\",\n                  \"position\": 2,\n                  \"options\": [\n                    {\n                      \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n                      \"value\": \"[100]\",\n                      \"label\": \"Single\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n                      \"value\": \"[50,50]\",\n                      \"label\": \"Half\",\n                      \"position\": 2\n                    }\n                  ]\n                }\n              ]\n            },\n            \"region\": \"body\",\n            \"name\": \"Main Grid\",\n            \"content\": {},\n            \"properties\": {\n              \"display\": \"grid\",\n              \"grid-template-columns\": \"[50,50]\",\n              \"gap\": \"16\"\n            },\n            \"position\": 1,\n            \"status\": \"active\",\n            \"created_at\": \"2026-07-13T10:00:00Z\",\n            \"updated_at\": \"2026-07-13T10:00:00Z\",\n            \"children\": [\n              {\n                \"token\": \"00000000-0000-0000-0000-000000000602\",\n                \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n                \"element\": {\n                  \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n                  \"code\": \"text\",\n                  \"name\": \"Text\",\n                  \"renderer_type\": \"html\",\n                  \"renderer_tag\": \"p\",\n                  \"content_type\": \"text\",\n                  \"is_container\": false,\n                  \"status\": \"active\",\n                  \"properties\": [\n                    {\n                      \"token\": \"e3bf4c9b-4d53-4be9-b2ad-2f5de70be684\",\n                      \"property_token\": \"4ea1db9b-b6f7-4e57-92a5-430597101492\",\n                      \"code\": \"font-size\",\n                      \"name\": \"Font Size\",\n                      \"data_type\": \"number\",\n                      \"input_type\": \"number\",\n                      \"default_value\": \"16\",\n                      \"unit\": \"px\",\n                      \"position\": 2,\n                      \"options\": [\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000701\",\n                          \"value\": \"14\",\n                          \"label\": \"14px\",\n                          \"position\": 2\n                        },\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000702\",\n                          \"value\": \"16\",\n                          \"label\": \"16px\",\n                          \"position\": 3\n                        }\n                      ]\n                    }\n                  ]\n                },\n                \"region\": \"body\",\n                \"name\": \"Title Text\",\n                \"content\": {\n                  \"text\": \"Document Title\"\n                },\n                \"properties\": {\n                  \"font-size\": \"16\",\n                  \"color\": \"#000000\"\n                },\n                \"position\": 1,\n                \"status\": \"active\",\n                \"created_at\": \"2026-07-13T10:00:00Z\",\n                \"updated_at\": \"2026-07-13T10:00:00Z\",\n                \"children\": []\n              }\n            ]\n          }\n        ],\n        \"footer\": []\n      }\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Get Document Detail - Not Found",
-                            "status": "Not Found",
-                            "code": 404,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Create Document",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/document-add",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-add"
-                            ]
-                        },
-                        "description": "Create a document template. position is assigned by backend default and is not required on create. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted."
-                    },
-                    "response": [
-                        {
-                            "name": "Create Document - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document created successfully\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Document - Invalid Paper",
-                            "status": "Not Found",
-                            "code": 404,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document paper not found\"\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Update Document",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"position\": 2,\n  \"status\": \"active\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/document-update/00000000-0000-0000-0000-000000000501",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-update",
-                                "00000000-0000-0000-0000-000000000501"
-                            ]
-                        },
-                        "description": "Replace last path segment with document token. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted."
-                    },
-                    "response": [
-                        {
-                            "name": "Update Document - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document updated successfully\",\n  \"data\": null\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Delete Document",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-delete/00000000-0000-0000-0000-000000000501",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-delete",
-                                "00000000-0000-0000-0000-000000000501"
-                            ]
-                        },
-                        "description": "Soft delete document by setting status to deleted."
-                    },
-                    "response": [
-                        {
-                            "name": "Delete Document - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document deleted successfully\",\n  \"data\": null\n}"
-                        }
-                    ]
+                  "key": "with_layer",
+                  "value": "true",
+                  "description": "Optional. Set true to include document layer tree grouped by header, body, and footer."
                 }
-            ]
+              ]
+            },
+            "description": "Replace last path segment with document token. Use with_layer=true to include layer tree with element properties and options."
+          },
+          "response": [
+            {
+              "name": "Get Document Detail - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\",\n      \"layers\": {\n        \"header\": [],\n        \"body\": [\n          {\n            \"token\": \"00000000-0000-0000-0000-000000000601\",\n            \"parent_token\": \"\",\n            \"element\": {\n              \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n              \"code\": \"grid\",\n              \"name\": \"Grid\",\n              \"renderer_type\": \"html\",\n              \"renderer_tag\": \"div\",\n              \"content_type\": \"none\",\n              \"is_container\": true,\n              \"status\": \"active\",\n              \"properties\": [\n                {\n                  \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n                  \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n                  \"code\": \"display\",\n                  \"name\": \"Display\",\n                  \"data_type\": \"string\",\n                  \"input_type\": \"select\",\n                  \"default_value\": \"grid\",\n                  \"unit\": \"\",\n                  \"position\": 1,\n                  \"options\": [\n                    {\n                      \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n                      \"value\": \"block\",\n                      \"label\": \"Block\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n                      \"value\": \"flex\",\n                      \"label\": \"Flex\",\n                      \"position\": 2\n                    },\n                    {\n                      \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n                      \"value\": \"grid\",\n                      \"label\": \"Grid\",\n                      \"position\": 3\n                    }\n                  ]\n                },\n                {\n                  \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n                  \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n                  \"code\": \"grid-template-columns\",\n                  \"name\": \"Grid Template Columns\",\n                  \"data_type\": \"json\",\n                  \"input_type\": \"grid-columns\",\n                  \"default_value\": \"[100]\",\n                  \"unit\": \"%\",\n                  \"position\": 2,\n                  \"options\": [\n                    {\n                      \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n                      \"value\": \"[100]\",\n                      \"label\": \"Single\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n                      \"value\": \"[50,50]\",\n                      \"label\": \"Half\",\n                      \"position\": 2\n                    }\n                  ]\n                }\n              ]\n            },\n            \"region\": \"body\",\n            \"name\": \"Main Grid\",\n            \"content\": {},\n            \"properties\": {\n              \"display\": \"grid\",\n              \"grid-template-columns\": \"[50,50]\",\n              \"gap\": \"16\"\n            },\n            \"position\": 1,\n            \"status\": \"active\",\n            \"created_at\": \"2026-07-13T10:00:00Z\",\n            \"updated_at\": \"2026-07-13T10:00:00Z\",\n            \"children\": [\n              {\n                \"token\": \"00000000-0000-0000-0000-000000000602\",\n                \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n                \"element\": {\n                  \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n                  \"code\": \"text\",\n                  \"name\": \"Text\",\n                  \"renderer_type\": \"html\",\n                  \"renderer_tag\": \"p\",\n                  \"content_type\": \"text\",\n                  \"is_container\": false,\n                  \"status\": \"active\",\n                  \"properties\": [\n                    {\n                      \"token\": \"e3bf4c9b-4d53-4be9-b2ad-2f5de70be684\",\n                      \"property_token\": \"4ea1db9b-b6f7-4e57-92a5-430597101492\",\n                      \"code\": \"font-size\",\n                      \"name\": \"Font Size\",\n                      \"data_type\": \"number\",\n                      \"input_type\": \"number\",\n                      \"default_value\": \"16\",\n                      \"unit\": \"px\",\n                      \"position\": 2,\n                      \"options\": [\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000701\",\n                          \"value\": \"14\",\n                          \"label\": \"14px\",\n                          \"position\": 2\n                        },\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000702\",\n                          \"value\": \"16\",\n                          \"label\": \"16px\",\n                          \"position\": 3\n                        }\n                      ]\n                    }\n                  ]\n                },\n                \"region\": \"body\",\n                \"name\": \"Title Text\",\n                \"content\": {\n                  \"text\": \"Document Title\"\n                },\n                \"properties\": {\n                  \"font-size\": \"16\",\n                  \"color\": \"#000000\"\n                },\n                \"position\": 1,\n                \"status\": \"active\",\n                \"created_at\": \"2026-07-13T10:00:00Z\",\n                \"updated_at\": \"2026-07-13T10:00:00Z\",\n                \"children\": []\n              }\n            ]\n          }\n        ],\n        \"footer\": []\n      },\n      \"settings\": {\n        \"orientation\": \"portrait\",\n        \"margin\": {\n          \"top\": 24,\n          \"right\": 24,\n          \"bottom\": 24,\n          \"left\": 24,\n          \"unit\": \"px\"\n        }\n      }\n    }\n  }\n}"
+            },
+            {
+              "name": "Get Document Detail - Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+            }
+          ]
         },
         {
-            "name": "Layers",
-            "item": [
-                {
-                    "name": "Create Document Layer",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"width\": \"100%\",\n    \"height\": \"auto\",\n    \"gap\": \"16\",\n    \"padding\": \"16\",\n    \"margin\": \"0\",\n    \"background-color\": \"#FFFFFF\",\n    \"border\": \"0\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\",\n    \"justify-content\": \"flex-start\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/document-layer-add",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-layer-add"
-                            ]
-                        },
-                        "description": "Create a document layer. Use document/parent/element tokens, not numeric IDs. parent_token is empty for root layer. Replace element_token with token from GET /api/document-master/elements?code=all in your database. Request samples are available in this request examples list."
-                    },
-                    "response": [
-                        {
-                            "name": "Create Grid Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"width\": \"100%\",\n    \"height\": \"auto\",\n    \"gap\": \"16\",\n    \"padding\": \"16\",\n    \"margin\": \"0\",\n    \"background-color\": \"#FFFFFF\",\n    \"border\": \"0\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\",\n    \"justify-content\": \"flex-start\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Two Column Grid\",\n      \"content\": {},\n      \"properties\": {\n        \"display\": \"grid\",\n        \"grid-template-columns\": \"[50,50]\",\n        \"width\": \"100%\",\n        \"height\": \"auto\",\n        \"gap\": \"16\",\n        \"padding\": \"16\",\n        \"margin\": \"0\",\n        \"background-color\": \"#FFFFFF\",\n        \"border\": \"0\",\n        \"border-style\": \"solid\",\n        \"border-radius\": \"0\",\n        \"justify-content\": \"flex-start\",\n        \"align-items\": \"stretch\"\n      },\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Text Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n  \"element_token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n  \"region\": \"body\",\n  \"name\": \"Title Text\",\n  \"content\": {\n    \"text\": \"Quotation Proposal\"\n  },\n  \"properties\": {\n    \"font-family\": \"Arial\",\n    \"font-size\": \"20\",\n    \"font-weight\": \"700\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"line-height\": \"1.5\",\n    \"color\": \"#000000\",\n    \"text-align\": \"left\",\n    \"margin\": \"0\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000602\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n      \"element\": {\n        \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n        \"code\": \"text\",\n        \"name\": \"Text\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"p\",\n        \"content_type\": \"text\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Title Text\",\n      \"content\": {\n        \"text\": \"Quotation Proposal\"\n      },\n      \"properties\": {\n        \"font-family\": \"Arial\",\n        \"font-size\": \"20\",\n        \"font-weight\": \"700\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"line-height\": \"1.5\",\n        \"color\": \"#000000\",\n        \"text-align\": \"left\",\n        \"margin\": \"0\"\n      },\n      \"position\": 2,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Image Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"18c67e7f-3b26-49bd-a1a1-678de981b218\",\n  \"region\": \"body\",\n  \"name\": \"Company Logo\",\n  \"content\": {\n    \"src\": \"assets/company-logo.png\",\n    \"alt\": \"Company Logo\"\n  },\n  \"properties\": {\n    \"width\": \"auto\",\n    \"height\": \"auto\",\n    \"margin\": \"0\",\n    \"border-radius\": \"0\"\n  },\n  \"position\": 3,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000603\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"18c67e7f-3b26-49bd-a1a1-678de981b218\",\n        \"code\": \"image\",\n        \"name\": \"Image\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"img\",\n        \"content_type\": \"image\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Company Logo\",\n      \"content\": {\n        \"src\": \"assets/company-logo.png\",\n        \"alt\": \"Company Logo\"\n      },\n      \"properties\": {\n        \"width\": \"auto\",\n        \"height\": \"auto\",\n        \"margin\": \"0\",\n        \"border-radius\": \"0\"\n      },\n      \"position\": 3,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create List Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"3f6a52ce-0cd3-4e97-9d24-2f97e3f9469d\",\n  \"region\": \"body\",\n  \"name\": \"Scope List\",\n  \"content\": {\n    \"items\": [\n      \"Supply equipment\",\n      \"Installation\",\n      \"Testing and commissioning\"\n    ]\n  },\n  \"properties\": {\n    \"list-style-type\": \"disc\",\n    \"list-style-position\": \"inside\",\n    \"font-family\": \"Arial\",\n    \"font-size\": \"16\",\n    \"font-weight\": \"400\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"line-height\": \"1.5\",\n    \"color\": \"#000000\",\n    \"margin\": \"0\",\n    \"padding\": \"16\"\n  },\n  \"position\": 4,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000604\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"3f6a52ce-0cd3-4e97-9d24-2f97e3f9469d\",\n        \"code\": \"list\",\n        \"name\": \"List\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"ul\",\n        \"content_type\": \"list\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Scope List\",\n      \"content\": {\n        \"items\": [\n          \"Supply equipment\",\n          \"Installation\",\n          \"Testing and commissioning\"\n        ]\n      },\n      \"properties\": {\n        \"list-style-type\": \"disc\",\n        \"list-style-position\": \"inside\",\n        \"font-family\": \"Arial\",\n        \"font-size\": \"16\",\n        \"font-weight\": \"400\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"line-height\": \"1.5\",\n        \"color\": \"#000000\",\n        \"margin\": \"0\",\n        \"padding\": \"16\"\n      },\n      \"position\": 4,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Table Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"c0338a78-058b-4f6f-bc13-78d6dc4ab471\",\n  \"region\": \"body\",\n  \"name\": \"Item Table\",\n  \"content\": {\n    \"columns\": [\n      {\n        \"key\": \"description\",\n        \"label\": \"Description\"\n      },\n      {\n        \"key\": \"qty\",\n        \"label\": \"Qty\"\n      },\n      {\n        \"key\": \"price\",\n        \"label\": \"Price\"\n      }\n    ],\n    \"rows\": [\n      {\n        \"description\": \"Panel Installation\",\n        \"qty\": 1,\n        \"price\": 1500000\n      }\n    ]\n  },\n  \"properties\": {\n    \"width\": \"100%\",\n    \"font-size\": \"14\",\n    \"color\": \"#000000\",\n    \"border\": \"1\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\"\n  },\n  \"position\": 5,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000605\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"c0338a78-058b-4f6f-bc13-78d6dc4ab471\",\n        \"code\": \"table\",\n        \"name\": \"Table\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"table\",\n        \"content_type\": \"table\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Item Table\",\n      \"content\": {\n        \"columns\": [\n          {\n            \"key\": \"description\",\n            \"label\": \"Description\"\n          },\n          {\n            \"key\": \"qty\",\n            \"label\": \"Qty\"\n          },\n          {\n            \"key\": \"price\",\n            \"label\": \"Price\"\n          }\n        ],\n        \"rows\": [\n          {\n            \"description\": \"Panel Installation\",\n            \"qty\": 1,\n            \"price\": 1500000\n          }\n        ]\n      },\n      \"properties\": {\n        \"width\": \"100%\",\n        \"font-size\": \"14\",\n        \"color\": \"#000000\",\n        \"border\": \"1\",\n        \"border-style\": \"solid\",\n        \"border-radius\": \"0\"\n      },\n      \"position\": 5,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Divider Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"4e9082d4-0c1e-45c6-a991-2b78ed5d0342\",\n  \"region\": \"body\",\n  \"name\": \"Section Divider\",\n  \"content\": {},\n  \"properties\": {\n    \"width\": \"100%\",\n    \"height\": \"1\",\n    \"background-color\": \"#000000\",\n    \"margin\": \"16\"\n  },\n  \"position\": 6,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000606\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"4e9082d4-0c1e-45c6-a991-2b78ed5d0342\",\n        \"code\": \"divider\",\n        \"name\": \"Divider\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"hr\",\n        \"content_type\": \"none\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Section Divider\",\n      \"content\": {},\n      \"properties\": {\n        \"width\": \"100%\",\n        \"height\": \"1\",\n        \"background-color\": \"#000000\",\n        \"margin\": \"16\"\n      },\n      \"position\": 6,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Spacer Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"f1061611-cf5e-4a9f-9d8a-73fc8941db8e\",\n  \"region\": \"body\",\n  \"name\": \"Vertical Spacer\",\n  \"content\": {},\n  \"properties\": {\n    \"height\": \"24\"\n  },\n  \"position\": 7,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000607\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"f1061611-cf5e-4a9f-9d8a-73fc8941db8e\",\n        \"code\": \"spacer\",\n        \"name\": \"Spacer\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Vertical Spacer\",\n      \"content\": {},\n      \"properties\": {\n        \"height\": \"24\"\n      },\n      \"position\": 7,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Signature Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"d4d8a5df-40bf-45f2-835d-a06f63a9c6c2\",\n  \"region\": \"body\",\n  \"name\": \"Approval Signature\",\n  \"content\": {\n    \"name\": \"Authorized Person\",\n    \"title\": \"Director\",\n    \"image_url\": \"\"\n  },\n  \"properties\": {\n    \"width\": \"240\",\n    \"height\": \"96\",\n    \"margin\": \"0\",\n    \"padding\": \"0\",\n    \"border\": \"0\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\",\n    \"text-align\": \"center\",\n    \"font-family\": \"Arial\",\n    \"font-size\": \"14\",\n    \"font-weight\": \"400\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"color\": \"#000000\"\n  },\n  \"position\": 8,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000608\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"d4d8a5df-40bf-45f2-835d-a06f63a9c6c2\",\n        \"code\": \"signature\",\n        \"name\": \"Signature\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"signature\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Approval Signature\",\n      \"content\": {\n        \"name\": \"Authorized Person\",\n        \"title\": \"Director\",\n        \"image_url\": \"\"\n      },\n      \"properties\": {\n        \"width\": \"240\",\n        \"height\": \"96\",\n        \"margin\": \"0\",\n        \"padding\": \"0\",\n        \"border\": \"0\",\n        \"border-style\": \"solid\",\n        \"border-radius\": \"0\",\n        \"text-align\": \"center\",\n        \"font-family\": \"Arial\",\n        \"font-size\": \"14\",\n        \"font-weight\": \"400\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"color\": \"#000000\"\n      },\n      \"position\": 8,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create QR Code Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"70f61a57-e139-43d2-b9ff-31e20108e2e1\",\n  \"region\": \"body\",\n  \"name\": \"Verification QR\",\n  \"content\": {\n    \"value\": \"https://widia-kencana.example/documents/quotation-default\"\n  },\n  \"properties\": {\n    \"width\": \"120\",\n    \"height\": \"120\",\n    \"margin\": \"0\",\n    \"padding\": \"0\",\n    \"background-color\": \"#FFFFFF\"\n  },\n  \"position\": 9,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000609\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"70f61a57-e139-43d2-b9ff-31e20108e2e1\",\n        \"code\": \"qr-code\",\n        \"name\": \"QR Code\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"code\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Verification QR\",\n      \"content\": {\n        \"value\": \"https://widia-kencana.example/documents/quotation-default\"\n      },\n      \"properties\": {\n        \"width\": \"120\",\n        \"height\": \"120\",\n        \"margin\": \"0\",\n        \"padding\": \"0\",\n        \"background-color\": \"#FFFFFF\"\n      },\n      \"position\": 9,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Barcode Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"e2c0cb09-e9a8-49d0-ad0c-6ad1918329d5\",\n  \"region\": \"body\",\n  \"name\": \"Document Barcode\",\n  \"content\": {\n    \"value\": \"Q-2026-0001\",\n    \"format\": \"CODE128\"\n  },\n  \"properties\": {\n    \"width\": \"240\",\n    \"height\": \"80\",\n    \"margin\": \"0\",\n    \"background-color\": \"#FFFFFF\"\n  },\n  \"position\": 10,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000610\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"e2c0cb09-e9a8-49d0-ad0c-6ad1918329d5\",\n        \"code\": \"barcode\",\n        \"name\": \"Barcode\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"code\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Document Barcode\",\n      \"content\": {\n        \"value\": \"Q-2026-0001\",\n        \"format\": \"CODE128\"\n      },\n      \"properties\": {\n        \"width\": \"240\",\n        \"height\": \"80\",\n        \"margin\": \"0\",\n        \"background-color\": \"#FFFFFF\"\n      },\n      \"position\": 10,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        },
-                        {
-                            "name": "Create Page Break Layer - Success",
-                            "originalRequest": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"2e1a5d19-dae9-4f30-991a-47d557d66d7a\",\n  \"region\": \"body\",\n  \"name\": \"Page Break\",\n  \"content\": {\n    \"type\": \"page-break\"\n  },\n  \"properties\": {},\n  \"position\": 11,\n  \"status\": \"active\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                },
-                                "url": {
-                                    "raw": "{{base_url}}/api/document-layer-add",
-                                    "host": [
-                                        "{{base_url}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "document-layer-add"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json"
-                                }
-                            ],
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000611\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"2e1a5d19-dae9-4f30-991a-47d557d66d7a\",\n        \"code\": \"page-break\",\n        \"name\": \"Page Break\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"instruction\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Page Break\",\n      \"content\": {\n        \"type\": \"page-break\"\n      },\n      \"properties\": {},\n      \"position\": 11,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Update Document Layer",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Main Grid Updated\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"gap\": \"16\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/document-layer-update/00000000-0000-0000-0000-000000000601",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-layer-update",
-                                "00000000-0000-0000-0000-000000000601"
-                            ]
-                        },
-                        "description": "Update document layer by layer token. Request body uses the same shape as create."
-                    },
-                    "response": [
-                        {
-                            "name": "Update Document Layer - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer updated successfully\",\n  \"data\": null\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Sort Document Layers",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n  \"parent_token\": \"\",\n  \"region\": \"body\",\n  \"layers\": [\n    {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"position\": 1\n    },\n    {\n      \"token\": \"00000000-0000-0000-0000-000000000602\",\n      \"position\": 2\n    }\n  ]\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/document-layer-sort",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-layer-sort"
-                            ]
-                        },
-                        "description": "Sort sibling layers inside the same document, parent, and region group."
-                    },
-                    "response": [
-                        {
-                            "name": "Sort Document Layers - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer sorted successfully\",\n  \"data\": null\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Delete Document Layer",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/document-layer-delete/00000000-0000-0000-0000-000000000601",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "document-layer-delete",
-                                "00000000-0000-0000-0000-000000000601"
-                            ]
-                        },
-                        "description": "Soft delete document layer by token. Child layers are also soft deleted."
-                    },
-                    "response": [
-                        {
-                            "name": "Delete Document Layer - Success",
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer deleted successfully\",\n  \"data\": null\n}"
-                        }
-                    ]
+          "name": "Create Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"settings\": {\n    \"orientation\": \"portrait\",\n    \"margin\": {\n      \"top\": 24,\n      \"right\": 24,\n      \"bottom\": 24,\n      \"left\": 24,\n      \"unit\": \"px\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
-            ]
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-add"
+              ]
+            },
+            "description": "Create a document template. position is assigned by backend default and is not required on create. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted. settings is a flexible JSON object for document-level configuration."
+          },
+          "response": [
+            {
+              "name": "Create Document - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document created successfully\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\",\n      \"settings\": {\n        \"orientation\": \"portrait\",\n        \"margin\": {\n          \"top\": 24,\n          \"right\": 24,\n          \"bottom\": 24,\n          \"left\": 24,\n          \"unit\": \"px\"\n        }\n      }\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Document - Invalid Paper",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"document paper not found\"\n}"
+            }
+          ]
         },
         {
-            "name": "Properties",
-            "item": []
+          "name": "Update Document",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_paper_token\": \"00000000-0000-0000-0000-000000000001\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"position\": 2,\n  \"status\": \"active\",\n  \"settings\": {\n    \"orientation\": \"portrait\",\n    \"margin\": {\n      \"top\": 24,\n      \"right\": 24,\n      \"bottom\": 24,\n      \"left\": 24,\n      \"unit\": \"px\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-update/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-update",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Replace last path segment with document token. document_type options: quotation, purchase-order, invoice, service-report, custom. If document_type is empty, backend defaults it to custom. status options: draft, active, inactive, archived, deleted. settings is a flexible JSON object for document-level configuration."
+          },
+          "response": [
+            {
+              "name": "Update Document - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document updated successfully\",\n  \"data\": null\n}"
+            }
+          ]
         },
         {
-            "name": "Preview",
-            "item": []
-        },
-        {
-            "name": "Export",
-            "item": []
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-delete/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-delete",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Soft delete document by setting status to deleted."
+          },
+          "response": [
+            {
+              "name": "Delete Document - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
         }
-    ],
-    "variable": [
+      ]
+    },
+    {
+      "name": "Layers",
+      "item": [
         {
-            "key": "base_url",
-            "value": "http://localhost:8081"
+          "name": "Create Document Layer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"width\": \"100%\",\n    \"height\": \"auto\",\n    \"gap\": \"16\",\n    \"padding\": \"16\",\n    \"margin\": \"0\",\n    \"background-color\": \"#FFFFFF\",\n    \"border\": \"0\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\",\n    \"justify-content\": \"flex-start\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-layer-add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-layer-add"
+              ]
+            },
+            "description": "Create a document layer. Use document/parent/element tokens, not numeric IDs. parent_token is empty for root layer. Replace element_token with token from GET /api/document-master/elements?code=all in your database. Request samples are available in this request examples list."
+          },
+          "response": [
+            {
+              "name": "Create Grid Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"width\": \"100%\",\n    \"height\": \"auto\",\n    \"gap\": \"16\",\n    \"padding\": \"16\",\n    \"margin\": \"0\",\n    \"background-color\": \"#FFFFFF\",\n    \"border\": \"0\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\",\n    \"justify-content\": \"flex-start\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Two Column Grid\",\n      \"content\": {},\n      \"properties\": {\n        \"display\": \"grid\",\n        \"grid-template-columns\": \"[50,50]\",\n        \"width\": \"100%\",\n        \"height\": \"auto\",\n        \"gap\": \"16\",\n        \"padding\": \"16\",\n        \"margin\": \"0\",\n        \"background-color\": \"#FFFFFF\",\n        \"border\": \"0\",\n        \"border-style\": \"solid\",\n        \"border-radius\": \"0\",\n        \"justify-content\": \"flex-start\",\n        \"align-items\": \"stretch\"\n      },\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Text Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n  \"element_token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n  \"region\": \"body\",\n  \"name\": \"Title Text\",\n  \"content\": {\n    \"text\": \"Quotation Proposal\"\n  },\n  \"properties\": {\n    \"font-family\": \"Arial\",\n    \"font-size\": \"20\",\n    \"font-weight\": \"700\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"line-height\": \"1.5\",\n    \"color\": \"#000000\",\n    \"text-align\": \"left\",\n    \"margin\": \"0\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000602\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n      \"element\": {\n        \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n        \"code\": \"text\",\n        \"name\": \"Text\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"p\",\n        \"content_type\": \"text\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Title Text\",\n      \"content\": {\n        \"text\": \"Quotation Proposal\"\n      },\n      \"properties\": {\n        \"font-family\": \"Arial\",\n        \"font-size\": \"20\",\n        \"font-weight\": \"700\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"line-height\": \"1.5\",\n        \"color\": \"#000000\",\n        \"text-align\": \"left\",\n        \"margin\": \"0\"\n      },\n      \"position\": 2,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Image Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"18c67e7f-3b26-49bd-a1a1-678de981b218\",\n  \"region\": \"body\",\n  \"name\": \"Company Logo\",\n  \"content\": {\n    \"src\": \"assets/company-logo.png\",\n    \"alt\": \"Company Logo\"\n  },\n  \"properties\": {\n    \"width\": \"auto\",\n    \"height\": \"auto\",\n    \"object-fit\": \"contain\",\n    \"margin\": \"0\",\n    \"border-radius\": \"0\"\n  },\n  \"position\": 3,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000603\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"18c67e7f-3b26-49bd-a1a1-678de981b218\",\n        \"code\": \"image\",\n        \"name\": \"Image\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"img\",\n        \"content_type\": \"image\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Company Logo\",\n      \"content\": {\n        \"src\": \"assets/company-logo.png\",\n        \"alt\": \"Company Logo\"\n      },\n      \"properties\": {\n        \"width\": \"auto\",\n        \"height\": \"auto\",\n        \"object-fit\": \"contain\",\n        \"margin\": \"0\",\n        \"border-radius\": \"0\"\n      },\n      \"position\": 3,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create List Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"3f6a52ce-0cd3-4e97-9d24-2f97e3f9469d\",\n  \"region\": \"body\",\n  \"name\": \"Scope List\",\n  \"content\": {\n    \"items\": [\n      \"Supply equipment\",\n      \"Installation\",\n      \"Testing and commissioning\"\n    ]\n  },\n  \"properties\": {\n    \"list-style-type\": \"disc\",\n    \"list-style-position\": \"inside\",\n    \"font-family\": \"Arial\",\n    \"font-size\": \"16\",\n    \"font-weight\": \"400\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"line-height\": \"1.5\",\n    \"color\": \"#000000\",\n    \"margin\": \"0\",\n    \"padding\": \"16\"\n  },\n  \"position\": 4,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000604\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"3f6a52ce-0cd3-4e97-9d24-2f97e3f9469d\",\n        \"code\": \"list\",\n        \"name\": \"List\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"ul\",\n        \"content_type\": \"list\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Scope List\",\n      \"content\": {\n        \"items\": [\n          \"Supply equipment\",\n          \"Installation\",\n          \"Testing and commissioning\"\n        ]\n      },\n      \"properties\": {\n        \"list-style-type\": \"disc\",\n        \"list-style-position\": \"inside\",\n        \"font-family\": \"Arial\",\n        \"font-size\": \"16\",\n        \"font-weight\": \"400\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"line-height\": \"1.5\",\n        \"color\": \"#000000\",\n        \"margin\": \"0\",\n        \"padding\": \"16\"\n      },\n      \"position\": 4,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Table Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"c0338a78-058b-4f6f-bc13-78d6dc4ab471\",\n  \"region\": \"body\",\n  \"name\": \"Item Table\",\n  \"content\": {\n    \"columns\": [\n      {\n        \"key\": \"description\",\n        \"label\": \"Description\"\n      },\n      {\n        \"key\": \"qty\",\n        \"label\": \"Qty\"\n      },\n      {\n        \"key\": \"price\",\n        \"label\": \"Price\"\n      }\n    ],\n    \"rows\": [\n      {\n        \"description\": \"Panel Installation\",\n        \"qty\": 1,\n        \"price\": 1500000\n      }\n    ]\n  },\n  \"properties\": {\n    \"width\": \"100%\",\n    \"font-size\": \"14\",\n    \"color\": \"#000000\",\n    \"border\": \"1\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\"\n  },\n  \"position\": 5,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000605\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"c0338a78-058b-4f6f-bc13-78d6dc4ab471\",\n        \"code\": \"table\",\n        \"name\": \"Table\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"table\",\n        \"content_type\": \"table\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Item Table\",\n      \"content\": {\n        \"columns\": [\n          {\n            \"key\": \"description\",\n            \"label\": \"Description\"\n          },\n          {\n            \"key\": \"qty\",\n            \"label\": \"Qty\"\n          },\n          {\n            \"key\": \"price\",\n            \"label\": \"Price\"\n          }\n        ],\n        \"rows\": [\n          {\n            \"description\": \"Panel Installation\",\n            \"qty\": 1,\n            \"price\": 1500000\n          }\n        ]\n      },\n      \"properties\": {\n        \"width\": \"100%\",\n        \"font-size\": \"14\",\n        \"color\": \"#000000\",\n        \"border\": \"1\",\n        \"border-style\": \"solid\",\n        \"border-radius\": \"0\"\n      },\n      \"position\": 5,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Divider Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"4e9082d4-0c1e-45c6-a991-2b78ed5d0342\",\n  \"region\": \"body\",\n  \"name\": \"Section Divider\",\n  \"content\": {},\n  \"properties\": {\n    \"width\": \"100%\",\n    \"height\": \"1\",\n    \"background-color\": \"#000000\",\n    \"margin\": \"16\"\n  },\n  \"position\": 6,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000606\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"4e9082d4-0c1e-45c6-a991-2b78ed5d0342\",\n        \"code\": \"divider\",\n        \"name\": \"Divider\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"hr\",\n        \"content_type\": \"none\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Section Divider\",\n      \"content\": {},\n      \"properties\": {\n        \"width\": \"100%\",\n        \"height\": \"1\",\n        \"background-color\": \"#000000\",\n        \"margin\": \"16\"\n      },\n      \"position\": 6,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Spacer Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"f1061611-cf5e-4a9f-9d8a-73fc8941db8e\",\n  \"region\": \"body\",\n  \"name\": \"Vertical Spacer\",\n  \"content\": {},\n  \"properties\": {\n    \"height\": \"24\"\n  },\n  \"position\": 7,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000607\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"f1061611-cf5e-4a9f-9d8a-73fc8941db8e\",\n        \"code\": \"spacer\",\n        \"name\": \"Spacer\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Vertical Spacer\",\n      \"content\": {},\n      \"properties\": {\n        \"height\": \"24\"\n      },\n      \"position\": 7,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Signature Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"d4d8a5df-40bf-45f2-835d-a06f63a9c6c2\",\n  \"region\": \"body\",\n  \"name\": \"Approval Signature\",\n  \"content\": {\n    \"name\": \"Authorized Person\",\n    \"title\": \"Director\",\n    \"image_url\": \"\"\n  },\n  \"properties\": {\n    \"width\": \"240\",\n    \"height\": \"96\",\n    \"margin\": \"0\",\n    \"padding\": \"0\",\n    \"border\": \"0\",\n    \"border-style\": \"solid\",\n    \"border-radius\": \"0\",\n    \"text-align\": \"center\",\n    \"font-family\": \"Arial\",\n    \"font-size\": \"14\",\n    \"font-weight\": \"400\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"color\": \"#000000\"\n  },\n  \"position\": 8,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000608\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"d4d8a5df-40bf-45f2-835d-a06f63a9c6c2\",\n        \"code\": \"signature\",\n        \"name\": \"Signature\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"signature\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Approval Signature\",\n      \"content\": {\n        \"name\": \"Authorized Person\",\n        \"title\": \"Director\",\n        \"image_url\": \"\"\n      },\n      \"properties\": {\n        \"width\": \"240\",\n        \"height\": \"96\",\n        \"margin\": \"0\",\n        \"padding\": \"0\",\n        \"border\": \"0\",\n        \"border-style\": \"solid\",\n        \"border-radius\": \"0\",\n        \"text-align\": \"center\",\n        \"font-family\": \"Arial\",\n        \"font-size\": \"14\",\n        \"font-weight\": \"400\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"color\": \"#000000\"\n      },\n      \"position\": 8,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create QR Code Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"70f61a57-e139-43d2-b9ff-31e20108e2e1\",\n  \"region\": \"body\",\n  \"name\": \"Verification QR\",\n  \"content\": {\n    \"value\": \"https://widia-kencana.example/documents/quotation-default\"\n  },\n  \"properties\": {\n    \"width\": \"120\",\n    \"height\": \"120\",\n    \"margin\": \"0\",\n    \"padding\": \"0\",\n    \"background-color\": \"#FFFFFF\"\n  },\n  \"position\": 9,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000609\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"70f61a57-e139-43d2-b9ff-31e20108e2e1\",\n        \"code\": \"qr-code\",\n        \"name\": \"QR Code\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"code\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Verification QR\",\n      \"content\": {\n        \"value\": \"https://widia-kencana.example/documents/quotation-default\"\n      },\n      \"properties\": {\n        \"width\": \"120\",\n        \"height\": \"120\",\n        \"margin\": \"0\",\n        \"padding\": \"0\",\n        \"background-color\": \"#FFFFFF\"\n      },\n      \"position\": 9,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Barcode Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"e2c0cb09-e9a8-49d0-ad0c-6ad1918329d5\",\n  \"region\": \"body\",\n  \"name\": \"Document Barcode\",\n  \"content\": {\n    \"value\": \"Q-2026-0001\",\n    \"format\": \"CODE128\"\n  },\n  \"properties\": {\n    \"width\": \"240\",\n    \"height\": \"80\",\n    \"margin\": \"0\",\n    \"background-color\": \"#FFFFFF\"\n  },\n  \"position\": 10,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000610\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"e2c0cb09-e9a8-49d0-ad0c-6ad1918329d5\",\n        \"code\": \"barcode\",\n        \"name\": \"Barcode\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"code\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Document Barcode\",\n      \"content\": {\n        \"value\": \"Q-2026-0001\",\n        \"format\": \"CODE128\"\n      },\n      \"properties\": {\n        \"width\": \"240\",\n        \"height\": \"80\",\n        \"margin\": \"0\",\n        \"background-color\": \"#FFFFFF\"\n      },\n      \"position\": 10,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Create Page Break Layer - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"2e1a5d19-dae9-4f30-991a-47d557d66d7a\",\n  \"region\": \"body\",\n  \"name\": \"Page Break\",\n  \"content\": {\n    \"type\": \"page-break\"\n  },\n  \"properties\": {},\n  \"position\": 11,\n  \"status\": \"active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/document-layer-add",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "document-layer-add"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000611\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"2e1a5d19-dae9-4f30-991a-47d557d66d7a\",\n        \"code\": \"page-break\",\n        \"name\": \"Page Break\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"instruction\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Page Break\",\n      \"content\": {\n        \"type\": \"page-break\"\n      },\n      \"properties\": {},\n      \"position\": 11,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
-            "key": "token",
-            "value": ""
+          "name": "Update Document Layer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Main Grid Updated\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"gap\": \"16\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-layer-update/00000000-0000-0000-0000-000000000601",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-layer-update",
+                "00000000-0000-0000-0000-000000000601"
+              ]
+            },
+            "description": "Update document layer by layer token. Request body uses the same shape as create."
+          },
+          "response": [
+            {
+              "name": "Update Document Layer - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer updated successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sort Document Layers",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"region\": \"body\",\n  \"layers\": [\n    {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"position\": 1\n    },\n    {\n      \"token\": \"00000000-0000-0000-0000-000000000602\",\n      \"position\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-layer-sort",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-layer-sort"
+              ]
+            },
+            "description": "Sort sibling layers inside the same document, parent, and region group."
+          },
+          "response": [
+            {
+              "name": "Sort Document Layers - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer sorted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Document Layer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-layer-delete/00000000-0000-0000-0000-000000000601",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-layer-delete",
+                "00000000-0000-0000-0000-000000000601"
+              ]
+            },
+            "description": "Soft delete document layer by token. Child layers are also soft deleted."
+          },
+          "response": [
+            {
+              "name": "Delete Document Layer - Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
         }
-    ]
+      ]
+    },
+    {
+      "name": "Properties",
+      "item": []
+    },
+    {
+      "name": "Preview",
+      "item": []
+    },
+    {
+      "name": "Export",
+      "item": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "document_token",
+      "value": "00000000-0000-0000-0000-000000000501"
+    }
+  ]
 }

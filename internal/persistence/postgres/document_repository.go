@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -329,6 +330,10 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 	if err != nil {
 		return nil, err
 	}
+	settings, err := json.Marshal(normalizeJSONMap(document.Settings))
+	if err != nil {
+		return nil, err
+	}
 
 	var createdToken string
 	err = r.db.QueryRowContext(ctx, `
@@ -337,13 +342,14 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 			parent_id,
 			name,
 			document_type,
+			settings,
 			position,
 			status,
 			created_at,
 			updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, NOW(), NOW())
 		RETURNING token::text
-	`, paperID, parentID, document.Name, document.DocumentType, document.Position, document.Status).Scan(&createdToken)
+	`, paperID, parentID, document.Name, document.DocumentType, string(settings), document.Position, document.Status).Scan(&createdToken)
 	if err != nil {
 		return nil, err
 	}
@@ -361,6 +367,10 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 	if err != nil {
 		return err
 	}
+	settings, err := json.Marshal(normalizeJSONMap(document.Settings))
+	if err != nil {
+		return err
+	}
 
 	result, err := r.db.ExecContext(ctx, `
 		UPDATE documents
@@ -368,12 +378,13 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 			parent_id = $2,
 			name = $3,
 			document_type = $4,
-			position = $5,
-			status = $6,
+			settings = $5::jsonb,
+			position = $6,
+			status = $7,
 			updated_at = NOW()
-		WHERE token = $7::uuid
+		WHERE token = $8::uuid
 			AND status <> 'deleted'
-	`, paperID, parentID, document.Name, document.DocumentType, document.Position, document.Status, token)
+	`, paperID, parentID, document.Name, document.DocumentType, string(settings), document.Position, document.Status, token)
 	if err != nil {
 		return err
 	}
@@ -446,6 +457,7 @@ func documentSelectQuery() string {
 			COALESCE(parent.token::text, ''),
 			d.name,
 			d.document_type,
+			d.settings::text,
 			d.position,
 			d.status,
 			d.created_at,
@@ -490,6 +502,7 @@ type rowScanner interface {
 
 func scanDocument(row rowScanner, document *entity.Document) error {
 	var parentID sql.NullInt64
+	var settingsRaw string
 
 	err := row.Scan(
 		&document.ID,
@@ -499,6 +512,7 @@ func scanDocument(row rowScanner, document *entity.Document) error {
 		&document.ParentToken,
 		&document.Name,
 		&document.DocumentType,
+		&settingsRaw,
 		&document.Position,
 		&document.Status,
 		&document.CreatedAt,
@@ -519,12 +533,24 @@ func scanDocument(row rowScanner, document *entity.Document) error {
 	if err != nil {
 		return err
 	}
+	if err := json.Unmarshal([]byte(settingsRaw), &document.Settings); err != nil {
+		return err
+	}
+	document.Settings = normalizeJSONMap(document.Settings)
 
 	if parentID.Valid {
 		document.ParentID = &parentID.Int64
 	}
 
 	return nil
+}
+
+func normalizeJSONMap(value map[string]any) map[string]any {
+	if value == nil {
+		return map[string]any{}
+	}
+
+	return value
 }
 
 func ensureAffected(result sql.Result, notFoundMessage string) error {

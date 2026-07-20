@@ -11,6 +11,7 @@ type Document struct {
 	Paper           DocumentPaper
 	Name            string
 	DocumentType    string
+	Settings        map[string]any
 	Position        int
 	Status          string
 	CreatedAt       time.Time

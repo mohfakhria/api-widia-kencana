@@ -138,8 +138,15 @@ FROM (
         ('width', 'auto', 'Auto', 1, 'active'),
         ('width', '100%', 'Full', 2, 'active'),
         ('width', '50%', 'Half', 3, 'active'),
+        ('width', 'custom', 'Custom', 4, 'active'),
         ('height', 'auto', 'Auto', 1, 'active'),
         ('height', '100%', 'Full', 2, 'active'),
+        ('height', 'custom', 'Custom', 3, 'active'),
+
+        -- Object fit
+        ('object-fit', 'contain', 'Contain', 1, 'active'),
+        ('object-fit', 'cover', 'Cover', 2, 'active'),
+        ('object-fit', 'fill', 'Fill', 3, 'active'),
 
         -- Spacing presets
         ('gap', '0', '0px', 1, 'active'),

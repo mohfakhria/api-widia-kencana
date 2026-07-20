@@ -74,6 +74,7 @@ INSERT INTO document_properties (
     ('color', 'Color', 'string', 'color', '#000000', '', 'active'),
     ('width', 'Width', 'string', 'text', 'auto', '', 'active'),
     ('height', 'Height', 'string', 'text', 'auto', '', 'active'),
+    ('object-fit', 'Object Fit', 'string', 'select', 'contain', '', 'active'),
     ('display', 'Display', 'string', 'select', 'block', '', 'active'),
     ('grid-template-columns', 'Grid Template Columns', 'json', 'grid-columns', '[100]', '%', 'active'),
     ('flex-direction', 'Flex Direction', 'string', 'select', 'row', '', 'active'),

@@ -9,20 +9,22 @@ import (
 )
 
 type CreateDocumentRequest struct {
-	DocumentPaperToken string `json:"document_paper_token"`
-	ParentToken        string `json:"parent_token"`
-	Name               string `json:"name"`
-	DocumentType       string `json:"document_type"`
-	Status             string `json:"status"`
+	DocumentPaperToken string         `json:"document_paper_token"`
+	ParentToken        string         `json:"parent_token"`
+	Name               string         `json:"name"`
+	DocumentType       string         `json:"document_type"`
+	Settings           map[string]any `json:"settings"`
+	Status             string         `json:"status"`
 }
 
 type UpdateDocumentRequest struct {
-	DocumentPaperToken string `json:"document_paper_token"`
-	ParentToken        string `json:"parent_token"`
-	Name               string `json:"name"`
-	DocumentType       string `json:"document_type"`
-	Position           int    `json:"position"`
-	Status             string `json:"status"`
+	DocumentPaperToken string         `json:"document_paper_token"`
+	ParentToken        string         `json:"parent_token"`
+	Name               string         `json:"name"`
+	DocumentType       string         `json:"document_type"`
+	Settings           map[string]any `json:"settings"`
+	Position           int            `json:"position"`
+	Status             string         `json:"status"`
 }
 
 type DocumentListFilterRequest struct {
@@ -39,6 +41,7 @@ type DocumentResponse struct {
 	ParentToken  string                        `json:"parent_token"`
 	Name         string                        `json:"name"`
 	DocumentType string                        `json:"document_type"`
+	Settings     map[string]any                `json:"settings"`
 	Position     int                           `json:"position"`
 	Status       string                        `json:"status"`
 	Paper        DocumentPaperResponse         `json:"paper"`
@@ -82,6 +85,7 @@ func (r CreateDocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCom
 		ParentToken:        r.ParentToken,
 		Name:               r.Name,
 		DocumentType:       r.DocumentType,
+		Settings:           r.Settings,
 		Status:             r.Status,
 	}
 }
@@ -92,6 +96,7 @@ func (r UpdateDocumentRequest) ToUpdateDocumentCommand() input.UpdateDocumentCom
 		ParentToken:        r.ParentToken,
 		Name:               r.Name,
 		DocumentType:       r.DocumentType,
+		Settings:           r.Settings,
 		Position:           r.Position,
 		Status:             r.Status,
 	}
@@ -116,6 +121,7 @@ func NewDocumentResponse(document *entity.Document) DocumentResponse {
 		ParentToken:  document.ParentToken,
 		Name:         document.Name,
 		DocumentType: document.DocumentType,
+		Settings:     document.Settings,
 		Position:     document.Position,
 		Status:       document.Status,
 		Paper:        NewDocumentPaperResponse(document.Paper),

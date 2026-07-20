@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS documents (
     document_type TEXT NOT NULL DEFAULT 'custom',
     -- Example: quotation, purchase-order, invoice, service-report, custom
 
+    settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+    -- Flexible document-level settings, for example page/margin/header/footer config
+
     position INTEGER NOT NULL DEFAULT 0,
 
     status TEXT NOT NULL DEFAULT 'draft',
