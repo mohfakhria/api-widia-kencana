@@ -337,6 +337,9 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | `[30,70]` | Left | 2 columns, 30% / 70% |
 | `[70,30]` | Right | 2 columns, 70% / 30% |
 | `[33,33,34]` | Thirds | 3 columns, total 100% |
+| `custom` | Custom | UI mode for manual percentage columns |
+
+`custom` adalah mode UI untuk membuka editor manual. Saat disimpan ke layer properties, frontend sebaiknya menyimpan value final JSON array persen, contoh `[25,25,50]`, bukan menyimpan `custom`.
 
 ## Element Property Mapping
 
@@ -346,18 +349,12 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | --- | --- | --- |
 | 1 | `display` | `grid` |
 | 2 | `grid-template-columns` | `[100]` |
-| 3 | `width` | `auto` |
-| 4 | `height` | `auto` |
-| 5 | `gap` | `0` |
-| 6 | `padding` | `0` |
-| 7 | `margin` | `0` |
-| 8 | `background-color` | `#FFFFFF` |
-| 9 | `border` | `0` |
-| 10 | `border-style` | `solid` |
-| 11 | `border-radius` | `0` |
-| 12 | `justify-content` | `flex-start` |
-| 13 | `justify-items` | `stretch` |
-| 14 | `align-items` | `stretch` |
+| 3 | `gap` | `0` |
+| 4 | `padding` | `0` |
+| 5 | `background-color` | `#FFFFFF` |
+| 6 | `justify-content` | `flex-start` |
+| 7 | `justify-items` | `stretch` |
+| 8 | `align-items` | `stretch` |
 
 ### `text`
 
@@ -371,7 +368,6 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | 6 | `line-height` | `1.5` |
 | 7 | `color` | `#000000` |
 | 8 | `text-align` | `left` |
-| 9 | `margin` | `0` |
 
 ### `image`
 
@@ -380,8 +376,7 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | 1 | `width` | `auto` |
 | 2 | `height` | `auto` |
 | 3 | `object-fit` | `contain` |
-| 4 | `margin` | `0` |
-| 5 | `border-radius` | `0` |
+| 4 | `border-radius` | `0` |
 
 ### `list`
 
@@ -396,8 +391,6 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | 7 | `text-decoration` | `none` |
 | 8 | `line-height` | `1.5` |
 | 9 | `color` | `#000000` |
-| 10 | `margin` | `0` |
-| 11 | `padding` | `0` |
 
 ### `table`
 
@@ -408,7 +401,6 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | 3 | `color` | `#000000` |
 | 4 | `border` | `1` |
 | 5 | `border-style` | `solid` |
-| 6 | `border-radius` | `0` |
 
 ### `divider`
 
@@ -418,7 +410,6 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | 2 | `height` | `1` |
 | 3 | `background-color` | `#000000` |
 | 4 | `margin` | `0` |
-| 5 | `padding` | `0` |
 
 ### `spacer`
 
@@ -432,18 +423,10 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | --- | --- | --- |
 | 1 | `width` | `240` |
 | 2 | `height` | `96` |
-| 3 | `margin` | `0` |
-| 4 | `padding` | `0` |
-| 5 | `border` | `0` |
-| 6 | `border-style` | `solid` |
-| 7 | `border-radius` | `0` |
-| 8 | `text-align` | `center` |
-| 9 | `font-family` | `Arial` |
-| 10 | `font-size` | `14` |
-| 11 | `font-weight` | `400` |
-| 12 | `font-style` | `normal` |
-| 13 | `text-decoration` | `none` |
-| 14 | `color` | `#000000` |
+| 3 | `text-align` | `center` |
+| 4 | `font-family` | `Arial` |
+| 5 | `font-size` | `14` |
+| 6 | `color` | `#000000` |
 
 ### `qr-code`
 
@@ -451,9 +434,7 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | --- | --- | --- |
 | 1 | `width` | `120` |
 | 2 | `height` | `120` |
-| 3 | `margin` | `0` |
-| 4 | `padding` | `0` |
-| 5 | `background-color` | `#FFFFFF` |
+| 3 | `background-color` | `#FFFFFF` |
 
 ### `barcode`
 
@@ -461,8 +442,7 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | --- | --- | --- |
 | 1 | `width` | `240` |
 | 2 | `height` | `80` |
-| 3 | `margin` | `0` |
-| 4 | `background-color` | `#FFFFFF` |
+| 3 | `background-color` | `#FFFFFF` |
 
 ## Frontend Rendering Notes
 

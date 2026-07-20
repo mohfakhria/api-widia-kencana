@@ -198,7 +198,8 @@ FROM (
         ('grid-template-columns', '[50,50]', 'Half', 2, 'active'),
         ('grid-template-columns', '[30,70]', 'Left', 3, 'active'),
         ('grid-template-columns', '[70,30]', 'Right', 4, 'active'),
-        ('grid-template-columns', '[33,33,34]', 'Thirds', 5, 'active')
+        ('grid-template-columns', '[33,33,34]', 'Thirds', 5, 'active'),
+        ('grid-template-columns', 'custom', 'Custom', 6, 'active')
 ) AS seed_options (
     property_code,
     value,
