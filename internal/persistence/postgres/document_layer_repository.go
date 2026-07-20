@@ -236,23 +236,8 @@ func (r *DocumentLayerRepository) Delete(ctx context.Context, token string) erro
 	defer tx.Rollback()
 
 	result, err := tx.ExecContext(ctx, `
-		WITH RECURSIVE layer_tree AS (
-			SELECT id
-			FROM document_layers
-			WHERE token = $1::uuid
-				AND status <> 'deleted'
-
-			UNION ALL
-
-			SELECT child.id
-			FROM document_layers child
-			JOIN layer_tree parent ON parent.id = child.parent_id
-			WHERE child.status <> 'deleted'
-		)
-		UPDATE document_layers
-		SET status = 'deleted',
-			updated_at = NOW()
-		WHERE id IN (SELECT id FROM layer_tree)
+		DELETE FROM document_layers
+		WHERE token = $1::uuid
 	`, token)
 	if err != nil {
 		return err

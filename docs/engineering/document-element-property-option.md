@@ -84,6 +84,7 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | `grid-template-columns` | Grid Template Columns | `json` | `grid-columns` | `[100]` | `%` | CSS grid template columns from percentage array |
 | `flex-direction` | Flex Direction | `string` | `select` | `row` |  | CSS `flex-direction` |
 | `justify-content` | Justify Content | `string` | `select` | `flex-start` |  | CSS `justify-content` |
+| `justify-items` | Justify Items | `string` | `select` | `stretch` |  | CSS `justify-items` |
 | `align-items` | Align Items | `string` | `select` | `stretch` |  | CSS `align-items` |
 | `list-style-type` | List Style Type | `string` | `select` | `disc` |  | CSS `list-style-type` |
 | `list-style-position` | List Style Position | `string` | `select` | `inside` |  | CSS `list-style-position` |
@@ -182,6 +183,15 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | `center` | Center |
 | `flex-end` | Flex End |
 | `baseline` | Baseline |
+
+### `justify-items`
+
+| Value | Label | Native CSS |
+| --- | --- | --- |
+| `stretch` | Stretch | Yes |
+| `start` | Start | Yes |
+| `center` | Center | Yes |
+| `end` | End | Yes |
 
 ### `list-style-type`
 
@@ -346,7 +356,8 @@ Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Front
 | 10 | `border-style` | `solid` |
 | 11 | `border-radius` | `0` |
 | 12 | `justify-content` | `flex-start` |
-| 13 | `align-items` | `stretch` |
+| 13 | `justify-items` | `stretch` |
+| 14 | `align-items` | `stretch` |
 
 ### `text`
 

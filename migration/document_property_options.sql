@@ -106,6 +106,12 @@ FROM (
         ('justify-content', 'space-around', 'Space Around', 5, 'active'),
         ('justify-content', 'space-evenly', 'Space Evenly', 6, 'active'),
 
+        -- Justify items
+        ('justify-items', 'stretch', 'Stretch', 1, 'active'),
+        ('justify-items', 'start', 'Start', 2, 'active'),
+        ('justify-items', 'center', 'Center', 3, 'active'),
+        ('justify-items', 'end', 'End', 4, 'active'),
+
         -- Align items
         ('align-items', 'stretch', 'Stretch', 1, 'active'),
         ('align-items', 'flex-start', 'Flex Start', 2, 'active'),

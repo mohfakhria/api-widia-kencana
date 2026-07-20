@@ -67,7 +67,8 @@ FROM (
         ('grid', 'border-style', 'solid', 10, 'active'),
         ('grid', 'border-radius', '0', 11, 'active'),
         ('grid', 'justify-content', 'flex-start', 12, 'active'),
-        ('grid', 'align-items', 'stretch', 13, 'active'),
+        ('grid', 'justify-items', 'stretch', 13, 'active'),
+        ('grid', 'align-items', 'stretch', 14, 'active'),
 
         -- Text
         ('text', 'font-family', 'Arial', 1, 'active'),

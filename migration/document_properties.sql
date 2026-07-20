@@ -79,6 +79,7 @@ INSERT INTO document_properties (
     ('grid-template-columns', 'Grid Template Columns', 'json', 'grid-columns', '[100]', '%', 'active'),
     ('flex-direction', 'Flex Direction', 'string', 'select', 'row', '', 'active'),
     ('justify-content', 'Justify Content', 'string', 'select', 'flex-start', '', 'active'),
+    ('justify-items', 'Justify Items', 'string', 'select', 'stretch', '', 'active'),
     ('align-items', 'Align Items', 'string', 'select', 'stretch', '', 'active'),
     ('list-style-type', 'List Style Type', 'string', 'select', 'disc', '', 'active'),
     ('list-style-position', 'List Style Position', 'string', 'select', 'inside', '', 'active'),
