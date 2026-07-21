@@ -23,18 +23,17 @@ Section **Layer** berada di bawah Elements dan hanya menampilkan struktur dari h
 │   + Grid                     │   │  −    72%    +    ▣    ↗     │                  │ Grid                     │
 │   + Divider                  │   └───────────────────────────────┘                  │                          │
 │   + Spacer                   │                                                      │ LAYOUT                   │
-│   + Page Break               │          ┌──────────────────────────────────┐        │ Columns    : 2           │
-│                              │          │                                  │        │ Gap        : 12 px       │
+│                              │          ┌──────────────────────────────────┐        │ Columns    : 2           │
+│                              │          │                                  │        │ Padding    : 12 px       │
 │ CONTENT                      │          │   ⠿ ┌────────────────────────┐   │        │ Width      : Auto        │
 │   + Text                     │          │     │ GRID                   │   │        │ Height     : Auto        │
 │   + Image                    │          │     │                        │   │        │                          │
-│   + List                     │          │     │ ⠿ ┌────────┬────────┐  │   │        │ SPACING                  │
 │   + Table                    │          │     │   │ Text   │ Text   │  │   │        │ Margin     : 0 px        │
 │                              │          │     │   │        │        │  │   │        │ Padding    : 0 px        │
-│ BUSINESS                     │          │     │   └────────┴────────┘  │   │        │                          │
-│   + Signature                │          │     └────────────────────────┘   │        │ ALIGNMENT                │
-│   + QR Code                  │          │                                  │        │ Horizontal : Start       │
-│   + Barcode                  │          │   ⠿ Text                         │        │ Vertical   : Start       │
+│                              │          │     │   └────────┴────────┘  │   │        │                          │
+│                              │          │     └────────────────────────┘   │        │ ALIGNMENT                │
+│                              │          │                                  │        │ Horizontal : Start       │
+│                              │          │   ⠿ Text                         │        │ Vertical   : Start       │
 │                              │          │                                  │        │                          │
 ├──────────────────────────────┤          │                                  │        │                          │
 │ LAYER                        │          │                                  │        │                          │
@@ -69,18 +68,18 @@ Section **Layer** berada di bawah Elements dan hanya menampilkan struktur dari h
 │   + Grid                     │   │  −    72%    +    ▣    ↗     │                  │ Table                    │
 │   + Divider                  │   └───────────────────────────────┘                  │                          │
 │   + Spacer                   │                                                      │ TABLE                    │
-│   + Page Break               │          ┌──────────────────────────────────┐        │ Columns    : 4           │
+│                              │          ┌──────────────────────────────────┐        │ Columns    : 4           │
 │                              │          │                                  │        │ Rows       : 3           │
 │ CONTENT                      │          │   ⠿ Text                         │        │ Width      : Auto        │
 │   + Text                     │          │   “Payment Details”              │        │ Height     : Auto        │
 │   + Image                    │          │                                  │        │                          │
-│   + List                     │          │   ⠿ ──────────────────────────   │        │ SPACING                  │
 │   + Table                    │          │                                  │        │ Margin     : 0 px        │
-│                              │          │   ⠿ ┌────────────────────────┐   │        │ Padding    : 0 px        │
-│ BUSINESS                     │          │     │ TABLE                  │   │        │                          │
-│   + Signature                │          │     │                        │   │        │ ALIGNMENT                │
-│   + QR Code                  │          │     │ Item  Qty  Price Total │   │        │ Horizontal : Start       │
-│   + Barcode                  │          │     │                        │   │        │ Vertical   : Start       │
+│                              │          │   ⠿ ──────────────────────────   │        │ SPACING                  │
+│                              │          │                                  │        │ Padding    : 0 px        │
+│                              │          │   ⠿ ┌────────────────────────┐   │        │                          │
+│                              │          │     │ TABLE                  │   │        │ ALIGNMENT                │
+│                              │          │     │                        │   │        │ Horizontal : Start       │
+│                              │          │     │ Item  Qty  Price Total │   │        │ Vertical   : Start       │
 │                              │          │     └────────────────────────┘   │        │                          │
 ├──────────────────────────────┤          │                                  │        │                          │
 │ LAYER                        │          │                                  │        │                          │
@@ -216,9 +215,6 @@ PROPERTIES
 │ │33/33/ │ │Manual │          │
 │ │34     │ │%      │          │
 │ └───────┘ └───────┘          │
-│ Gap                          │
-│ [ 12                    ] px │
-├──────────────────────────────┤
 │ Size                         │
 │ Width          Height        │
 │ [ auto     ]   [ auto     ]  │

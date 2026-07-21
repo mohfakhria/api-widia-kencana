@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS document_elements (
     -- Public identifier for frontend communication
 
     code TEXT NOT NULL,
-    -- Example: grid, text, image, list
+    -- Example: grid, text, image, table
 
     name TEXT NOT NULL,
     -- Example: Grid, Text, Image, List
@@ -16,10 +16,10 @@ CREATE TABLE IF NOT EXISTS document_elements (
     -- Values: html
 
     renderer_tag TEXT NOT NULL,
-    -- Example: div, p, img, ul, table, hr
+    -- Example: div, p, img, table, hr
 
     content_type TEXT NOT NULL DEFAULT 'none',
-    -- Values: none, text, image, list, table, signature, code, instruction
+    -- Values: none, text, image, table
 
     is_container BOOLEAN NOT NULL DEFAULT FALSE,
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS document_elements (
         CHECK (renderer_type IN ('html')),
 
     CONSTRAINT document_elements_content_type_chk
-        CHECK (content_type IN ('none', 'text', 'image', 'list', 'table', 'signature', 'code', 'instruction')),
+        CHECK (content_type IN ('none', 'text', 'image', 'table')),
 
     CONSTRAINT document_elements_status_chk
         CHECK (status IN ('active', 'inactive'))
@@ -60,12 +60,7 @@ INSERT INTO document_elements (
     ('grid', 'Grid', 'html', 'div', 'none', TRUE, 'active'),
     ('text', 'Text', 'html', 'p', 'text', FALSE, 'active'),
     ('image', 'Image', 'html', 'img', 'image', FALSE, 'active'),
-    ('list', 'List', 'html', 'ul', 'list', FALSE, 'active'),
     ('table', 'Table', 'html', 'table', 'table', FALSE, 'active'),
     ('divider', 'Divider', 'html', 'hr', 'none', FALSE, 'active'),
-    ('spacer', 'Spacer', 'html', 'div', 'none', FALSE, 'active'),
-    ('signature', 'Signature', 'html', 'div', 'signature', FALSE, 'active'),
-    ('qr-code', 'QR Code', 'html', 'div', 'code', FALSE, 'active'),
-    ('barcode', 'Barcode', 'html', 'div', 'code', FALSE, 'active'),
-    ('page-break', 'Page Break', 'html', 'div', 'instruction', FALSE, 'active')
+    ('spacer', 'Spacer', 'html', 'div', 'none', FALSE, 'active')
 ON CONFLICT (code) DO NOTHING;

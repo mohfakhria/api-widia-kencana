@@ -57,12 +57,9 @@ FROM (
         -- Grid
         ('grid', 'display', 'grid', 1, 'active'),
         ('grid', 'grid-template-columns', '[100]', 2, 'active'),
-        ('grid', 'gap', '0', 3, 'active'),
-        ('grid', 'padding', '0', 4, 'active'),
-        ('grid', 'background-color', '#FFFFFF', 5, 'active'),
-        ('grid', 'justify-content', 'flex-start', 6, 'active'),
-        ('grid', 'justify-items', 'stretch', 7, 'active'),
-        ('grid', 'align-items', 'stretch', 8, 'active'),
+        ('grid', 'padding', '0', 3, 'active'),
+        ('grid', 'justify-items', 'stretch', 4, 'active'),
+        ('grid', 'align-items', 'stretch', 5, 'active'),
 
         -- Text
         ('text', 'font-family', 'Arial', 1, 'active'),
@@ -73,23 +70,14 @@ FROM (
         ('text', 'line-height', '1.5', 6, 'active'),
         ('text', 'color', '#000000', 7, 'active'),
         ('text', 'text-align', 'left', 8, 'active'),
+        ('text', 'padding', '0', 9, 'active'),
+        ('text', 'margin', '0', 10, 'active'),
 
         -- Image
         ('image', 'width', 'auto', 1, 'active'),
         ('image', 'height', 'auto', 2, 'active'),
         ('image', 'object-fit', 'contain', 3, 'active'),
         ('image', 'border-radius', '0', 4, 'active'),
-
-        -- List
-        ('list', 'list-style-type', 'disc', 1, 'active'),
-        ('list', 'list-style-position', 'inside', 2, 'active'),
-        ('list', 'font-family', 'Arial', 3, 'active'),
-        ('list', 'font-size', '16', 4, 'active'),
-        ('list', 'font-weight', '400', 5, 'active'),
-        ('list', 'font-style', 'normal', 6, 'active'),
-        ('list', 'text-decoration', 'none', 7, 'active'),
-        ('list', 'line-height', '1.5', 8, 'active'),
-        ('list', 'color', '#000000', 9, 'active'),
 
         -- Table
         ('table', 'width', '100%', 1, 'active'),
@@ -105,25 +93,7 @@ FROM (
         ('divider', 'margin', '0', 4, 'active'),
 
         -- Spacer
-        ('spacer', 'height', '24', 1, 'active'),
-
-        -- Signature
-        ('signature', 'width', '240', 1, 'active'),
-        ('signature', 'height', '96', 2, 'active'),
-        ('signature', 'text-align', 'center', 3, 'active'),
-        ('signature', 'font-family', 'Arial', 4, 'active'),
-        ('signature', 'font-size', '14', 5, 'active'),
-        ('signature', 'color', '#000000', 6, 'active'),
-
-        -- QR Code
-        ('qr-code', 'width', '120', 1, 'active'),
-        ('qr-code', 'height', '120', 2, 'active'),
-        ('qr-code', 'background-color', '#FFFFFF', 3, 'active'),
-
-        -- Barcode
-        ('barcode', 'width', '240', 1, 'active'),
-        ('barcode', 'height', '80', 2, 'active'),
-        ('barcode', 'background-color', '#FFFFFF', 3, 'active')
+        ('spacer', 'height', '24', 1, 'active')
 ) AS seed_mappings (
     element_code,
     property_code,

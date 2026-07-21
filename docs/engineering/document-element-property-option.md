@@ -10,7 +10,7 @@ Tujuannya agar frontend dapat melakukan sinkronisasi render, form editor, dan de
 
 ## Sync Rules
 
-- `property.code` adalah flag CSS/native rendering yang dipakai frontend, contoh `font-size`, `list-style-type`, `grid-template-columns`.
+- `property.code` adalah flag CSS/native rendering yang dipakai frontend, contoh `font-size`, `padding`, `grid-template-columns`.
 - `property.input_type` menentukan tipe control editor di frontend.
 - `property.data_type` menentukan cara parsing value sebelum dirender.
 - `property.default_value` adalah fallback global property.
@@ -107,34 +107,27 @@ Default shape saat `settings` tidak dikirim:
 
 | Code | Name | Data Type | Input Type | Default | Unit | FE Usage |
 | --- | --- | --- | --- | --- | --- | --- |
-| `text-align` | Text Align | `string` | `select` | `left` |  | CSS `text-align` |
-| `vertical-align` | Vertical Align | `string` | `select` | `top` |  | CSS `vertical-align` atau table/content alignment |
-| `font-family` | Font Family | `string` | `select` | `Arial` |  | CSS `font-family` |
-| `font-size` | Font Size | `number` | `number` | `16` | `px` | CSS `font-size` |
-| `margin` | Margin | `number` | `number` | `24` | `px` | CSS `margin` |
+| `display` | Display | `string` | `select` | `inline` |  | CSS `display` |
+| `grid-template-columns` | Grid Template Columns | `string` | `text` | `[50,50]` |  | CSS grid template columns/preset value |
 | `padding` | Padding | `number` | `number` | `0` | `px` | CSS `padding` |
-| `border` | Border | `number` | `number` | `1` | `px` | CSS border width |
-| `border-style` | Border Style | `string` | `select` | `solid` |  | CSS `border-style` |
-| `gap` | Gap | `number` | `number` | `0` | `px` | CSS `gap` |
+| `justify-items` | Justify Items | `string` | `select` | `legacy` |  | CSS `justify-items` |
+| `align-items` | Align Items | `string` | `select` | `normal` |  | CSS `align-items` |
+| `font-family` | Font Family | `string` | `select` | `initial` |  | CSS `font-family` |
+| `font-size` | Font Size | `string` | `text` | `medium` |  | CSS `font-size` |
 | `font-weight` | Font Weight | `string` | `select` | `400` |  | CSS `font-weight` |
 | `font-style` | Font Style | `string` | `select` | `normal` |  | CSS `font-style` |
 | `text-decoration` | Text Decoration | `string` | `select` | `none` |  | CSS `text-decoration` |
-| `line-height` | Line Height | `number` | `number` | `1.5` |  | CSS `line-height` |
-| `color` | Color | `string` | `color` | `#000000` |  | CSS `color` |
+| `line-height` | Line Height | `string` | `text` | `normal` |  | CSS `line-height` |
+| `color` | Color | `string` | `color` | `canvastext` |  | CSS `color` |
+| `text-align` | Text Align | `string` | `select` | `start` |  | CSS `text-align` |
+| `margin` | Margin | `number` | `number` | `0` | `px` | CSS `margin` |
 | `width` | Width | `string` | `text` | `auto` |  | CSS `width` |
 | `height` | Height | `string` | `text` | `auto` |  | CSS `height` |
-| `object-fit` | Object Fit | `string` | `select` | `contain` |  | CSS `object-fit` |
-| `display` | Display | `string` | `select` | `block` |  | CSS `display` |
-| `grid-template-columns` | Grid Template Columns | `json` | `grid-columns` | `[100]` | `%` | CSS grid template columns from percentage array |
-| `flex-direction` | Flex Direction | `string` | `select` | `row` |  | CSS `flex-direction` |
-| `justify-content` | Justify Content | `string` | `select` | `flex-start` |  | CSS `justify-content` |
-| `justify-items` | Justify Items | `string` | `select` | `stretch` |  | CSS `justify-items` |
-| `align-items` | Align Items | `string` | `select` | `stretch` |  | CSS `align-items` |
-| `list-style-type` | List Style Type | `string` | `select` | `disc` |  | CSS `list-style-type` |
-| `list-style-position` | List Style Position | `string` | `select` | `inside` |  | CSS `list-style-position` |
+| `object-fit` | Object Fit | `string` | `select` | `fill` |  | CSS `object-fit` |
 | `border-radius` | Border Radius | `number` | `number` | `0` | `px` | CSS `border-radius` |
-| `background-color` | Background Color | `string` | `color` | `#FFFFFF` |  | CSS `background-color` |
-| `background-image` | Background Image | `string` | `text` |  |  | CSS `background-image` |
+| `border` | Border | `number` | `number` | `0` | `px` | CSS border width |
+| `border-style` | Border Style | `string` | `select` | `none` |  | CSS `border-style` |
+| `background-color` | Background Color | `string` | `color` | `transparent` |  | CSS `background-color` |
 
 ## Select Options
 
@@ -142,23 +135,17 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label |
 | --- | --- |
+| `start` | Start |
 | `left` | Left |
 | `center` | Center |
 | `right` | Right |
 | `justify` | Justify |
 
-### `vertical-align`
-
-| Value | Label |
-| --- | --- |
-| `top` | Top |
-| `middle` | Middle |
-| `bottom` | Bottom |
-
 ### `font-family`
 
 | Value | Label |
 | --- | --- |
+| `initial` | Initial |
 | `Arial` | Arial |
 | `Times New Roman` | Times New Roman |
 | `Calibri` | Calibri |
@@ -167,7 +154,7 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label |
 | --- | --- |
-| `300` | Light |
+| `normal` | Normal |
 | `400` | Regular |
 | `500` | Medium |
 | `600` | Semi Bold |
@@ -192,36 +179,17 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label |
 | --- | --- |
+| `inline` | Inline |
 | `block` | Block |
-| `flex` | Flex |
 | `grid` | Grid |
 | `inline-block` | Inline Block |
 | `none` | None |
-
-### `flex-direction`
-
-| Value | Label |
-| --- | --- |
-| `row` | Row |
-| `column` | Column |
-| `row-reverse` | Row Reverse |
-| `column-reverse` | Column Reverse |
-
-### `justify-content`
-
-| Value | Label |
-| --- | --- |
-| `flex-start` | Flex Start |
-| `center` | Center |
-| `flex-end` | Flex End |
-| `space-between` | Space Between |
-| `space-around` | Space Around |
-| `space-evenly` | Space Evenly |
 
 ### `align-items`
 
 | Value | Label |
 | --- | --- |
+| `normal` | Normal |
 | `stretch` | Stretch |
 | `flex-start` | Flex Start |
 | `center` | Center |
@@ -232,34 +200,18 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label | Native CSS |
 | --- | --- | --- |
+| `legacy` | Legacy | Yes |
 | `stretch` | Stretch | Yes |
 | `start` | Start | Yes |
 | `center` | Center | Yes |
 | `end` | End | Yes |
 
-### `list-style-type`
-
-| Value | Label | Native CSS |
-| --- | --- | --- |
-| `disc` | Disc | Yes |
-| `circle` | Circle | Yes |
-| `square` | Square | Yes |
-| `decimal` | Decimal | Yes |
-| `lower-alpha` | Lower Alpha | Yes |
-| `upper-alpha` | Upper Alpha | Yes |
-| `none` | None | Yes |
-
-### `list-style-position`
-
-| Value | Label | Native CSS |
-| --- | --- | --- |
-| `inside` | Inside | Yes |
-| `outside` | Outside | Yes |
-
 ### `color`
 
 | Value | Label |
 | --- | --- |
+| `canvastext` | Canvas Text |
+| `#000000` | Black |
 | `#2563EB` | Primary |
 | `#64748B` | Secondary |
 | `#7C3AED` | Accent |
@@ -268,6 +220,8 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label |
 | --- | --- |
+| `transparent` | Transparent |
+| `#FFFFFF` | White |
 | `#2563EB` | Primary |
 | `#64748B` | Secondary |
 | `#7C3AED` | Accent |
@@ -295,18 +249,9 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label | Native CSS |
 | --- | --- | --- |
+| `fill` | Fill | Yes |
 | `contain` | Contain | Yes |
 | `cover` | Cover | Yes |
-| `fill` | Fill | Yes |
-
-### `gap`
-
-| Value | Label |
-| --- | --- |
-| `0` | 0px |
-| `8` | 8px |
-| `16` | 16px |
-| `24` | 24px |
 
 ### `padding`
 
@@ -357,6 +302,7 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label |
 | --- | --- |
+| `medium` | Medium |
 | `12` | 12px |
 | `14` | 14px |
 | `16` | 16px |
@@ -367,15 +313,17 @@ Default shape saat `settings` tidak dikirim:
 
 | Value | Label |
 | --- | --- |
+| `normal` | Normal |
 | `1` | Tight |
 | `1.25` | Compact |
-| `1.5` | Normal |
+| `1.5` | Readable |
 | `2` | Relaxed |
 
 ### `grid-template-columns`
 
 | Value | Label | Meaning |
 | --- | --- | --- |
+| `none` | None | Native CSS initial value |
 | `[100]` | Single | 1 column, 100% |
 | `[50,50]` | Half | 2 columns, 50% / 50% |
 | `[30,70]` | Left | 2 columns, 30% / 70% |
@@ -393,12 +341,9 @@ Default shape saat `settings` tidak dikirim:
 | --- | --- | --- |
 | 1 | `display` | `grid` |
 | 2 | `grid-template-columns` | `[100]` |
-| 3 | `gap` | `0` |
-| 4 | `padding` | `0` |
-| 5 | `background-color` | `#FFFFFF` |
-| 6 | `justify-content` | `flex-start` |
-| 7 | `justify-items` | `stretch` |
-| 8 | `align-items` | `stretch` |
+| 3 | `padding` | `0` |
+| 4 | `justify-items` | `stretch` |
+| 5 | `align-items` | `stretch` |
 
 ### `text`
 
@@ -412,6 +357,8 @@ Default shape saat `settings` tidak dikirim:
 | 6 | `line-height` | `1.5` |
 | 7 | `color` | `#000000` |
 | 8 | `text-align` | `left` |
+| 9 | `padding` | `0` |
+| 10 | `margin` | `0` |
 
 ### `image`
 
@@ -421,20 +368,6 @@ Default shape saat `settings` tidak dikirim:
 | 2 | `height` | `auto` |
 | 3 | `object-fit` | `contain` |
 | 4 | `border-radius` | `0` |
-
-### `list`
-
-| Position | Property Code | Default |
-| --- | --- | --- |
-| 1 | `list-style-type` | `disc` |
-| 2 | `list-style-position` | `inside` |
-| 3 | `font-family` | `Arial` |
-| 4 | `font-size` | `16` |
-| 5 | `font-weight` | `400` |
-| 6 | `font-style` | `normal` |
-| 7 | `text-decoration` | `none` |
-| 8 | `line-height` | `1.5` |
-| 9 | `color` | `#000000` |
 
 ### `table`
 
@@ -460,33 +393,6 @@ Default shape saat `settings` tidak dikirim:
 | Position | Property Code | Default |
 | --- | --- | --- |
 | 1 | `height` | `24` |
-
-### `signature`
-
-| Position | Property Code | Default |
-| --- | --- | --- |
-| 1 | `width` | `240` |
-| 2 | `height` | `96` |
-| 3 | `text-align` | `center` |
-| 4 | `font-family` | `Arial` |
-| 5 | `font-size` | `14` |
-| 6 | `color` | `#000000` |
-
-### `qr-code`
-
-| Position | Property Code | Default |
-| --- | --- | --- |
-| 1 | `width` | `120` |
-| 2 | `height` | `120` |
-| 3 | `background-color` | `#FFFFFF` |
-
-### `barcode`
-
-| Position | Property Code | Default |
-| --- | --- | --- |
-| 1 | `width` | `240` |
-| 2 | `height` | `80` |
-| 3 | `background-color` | `#FFFFFF` |
 
 ## Frontend Rendering Notes
 
@@ -516,28 +422,3 @@ Frontend dapat mengubahnya menjadi:
 ```css
 grid-template-columns: 50% 50%;
 ```
-
-### List Rendering
-
-Untuk list, frontend sebaiknya melakukan reset native spacing agar hasil canvas konsisten:
-
-```css
-.document-layer ul,
-.document-layer ol {
-  margin: 0;
-  padding: 0;
-}
-```
-
-Lalu apply property:
-
-```ts
-const style = {
-  listStyleType: properties["list-style-type"] ?? "disc",
-  listStylePosition: properties["list-style-position"] ?? "inside",
-  padding: cssValue(properties.padding ?? "0", "px"),
-  margin: cssValue(properties.margin ?? "0", "px"),
-};
-```
-
-Jika nantinya perlu mengatur indent list secara lebih presisi, property baru yang disarankan adalah `padding-left`, bukan `gap-list`, karena lebih native CSS dan mudah dipahami.

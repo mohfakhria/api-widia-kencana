@@ -273,7 +273,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\",\n      \"layers\": {\n        \"header\": [],\n        \"body\": [\n          {\n            \"token\": \"00000000-0000-0000-0000-000000000601\",\n            \"parent_token\": \"\",\n            \"element\": {\n              \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n              \"code\": \"grid\",\n              \"name\": \"Grid\",\n              \"renderer_type\": \"html\",\n              \"renderer_tag\": \"div\",\n              \"content_type\": \"none\",\n              \"is_container\": true,\n              \"status\": \"active\",\n              \"properties\": [\n                {\n                  \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n                  \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n                  \"code\": \"display\",\n                  \"name\": \"Display\",\n                  \"data_type\": \"string\",\n                  \"input_type\": \"select\",\n                  \"default_value\": \"grid\",\n                  \"unit\": \"\",\n                  \"position\": 1,\n                  \"options\": [\n                    {\n                      \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n                      \"value\": \"block\",\n                      \"label\": \"Block\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n                      \"value\": \"flex\",\n                      \"label\": \"Flex\",\n                      \"position\": 2\n                    },\n                    {\n                      \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n                      \"value\": \"grid\",\n                      \"label\": \"Grid\",\n                      \"position\": 3\n                    }\n                  ]\n                },\n                {\n                  \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n                  \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n                  \"code\": \"grid-template-columns\",\n                  \"name\": \"Grid Template Columns\",\n                  \"data_type\": \"json\",\n                  \"input_type\": \"grid-columns\",\n                  \"default_value\": \"[100]\",\n                  \"unit\": \"%\",\n                  \"position\": 2,\n                  \"options\": [\n                    {\n                      \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n                      \"value\": \"[100]\",\n                      \"label\": \"Single\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n                      \"value\": \"[50,50]\",\n                      \"label\": \"Half\",\n                      \"position\": 2\n                    }\n                  ]\n                }\n              ]\n            },\n            \"region\": \"body\",\n            \"name\": \"Main Grid\",\n            \"content\": {},\n            \"properties\": {\n              \"display\": \"grid\",\n              \"grid-template-columns\": \"[50,50]\",\n              \"gap\": \"16\"\n            },\n            \"position\": 1,\n            \"status\": \"active\",\n            \"created_at\": \"2026-07-13T10:00:00Z\",\n            \"updated_at\": \"2026-07-13T10:00:00Z\",\n            \"children\": [\n              {\n                \"token\": \"00000000-0000-0000-0000-000000000602\",\n                \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n                \"element\": {\n                  \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n                  \"code\": \"text\",\n                  \"name\": \"Text\",\n                  \"renderer_type\": \"html\",\n                  \"renderer_tag\": \"p\",\n                  \"content_type\": \"text\",\n                  \"is_container\": false,\n                  \"status\": \"active\",\n                  \"properties\": [\n                    {\n                      \"token\": \"e3bf4c9b-4d53-4be9-b2ad-2f5de70be684\",\n                      \"property_token\": \"4ea1db9b-b6f7-4e57-92a5-430597101492\",\n                      \"code\": \"font-size\",\n                      \"name\": \"Font Size\",\n                      \"data_type\": \"number\",\n                      \"input_type\": \"number\",\n                      \"default_value\": \"16\",\n                      \"unit\": \"px\",\n                      \"position\": 2,\n                      \"options\": [\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000701\",\n                          \"value\": \"14\",\n                          \"label\": \"14px\",\n                          \"position\": 2\n                        },\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000702\",\n                          \"value\": \"16\",\n                          \"label\": \"16px\",\n                          \"position\": 3\n                        }\n                      ]\n                    }\n                  ]\n                },\n                \"region\": \"body\",\n                \"name\": \"Title Text\",\n                \"content\": {\n                  \"text\": \"Document Title\"\n                },\n                \"properties\": {\n                  \"font-size\": \"16\",\n                  \"color\": \"#000000\"\n                },\n                \"position\": 1,\n                \"status\": \"active\",\n                \"created_at\": \"2026-07-13T10:00:00Z\",\n                \"updated_at\": \"2026-07-13T10:00:00Z\",\n                \"children\": []\n              }\n            ]\n          }\n        ],\n        \"footer\": []\n      },\n      \"settings\": {\n        \"page\": {\n          \"orientation\": \"portrait\",\n          \"margin\": {\n            \"top\": 24,\n            \"right\": 24,\n            \"bottom\": 24,\n            \"left\": 24,\n            \"unit\": \"px\"\n          }\n        },\n        \"regions\": {\n          \"header\": {\n            \"height\": 96,\n            \"unit\": \"px\",\n            \"watermark\": null\n          },\n          \"body\": {\n            \"height\": null,\n            \"unit\": \"auto\",\n            \"watermark\": null\n          },\n          \"footer\": {\n            \"height\": 72,\n            \"unit\": \"px\",\n            \"watermark\": null\n          }\n        }\n      }\n    }\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"position\": 1,\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"00000000-0000-0000-0000-000000000001\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\",\n      \"layers\": {\n        \"header\": [],\n        \"body\": [\n          {\n            \"token\": \"00000000-0000-0000-0000-000000000601\",\n            \"parent_token\": \"\",\n            \"element\": {\n              \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n              \"code\": \"grid\",\n              \"name\": \"Grid\",\n              \"renderer_type\": \"html\",\n              \"renderer_tag\": \"div\",\n              \"content_type\": \"none\",\n              \"is_container\": true,\n              \"status\": \"active\",\n              \"properties\": [\n                {\n                  \"token\": \"aa0415a8-ee45-497a-8aae-88f2c90d884b\",\n                  \"property_token\": \"7ac917dd-4c57-4b3e-97c7-949298f5e6d4\",\n                  \"code\": \"display\",\n                  \"name\": \"Display\",\n                  \"data_type\": \"string\",\n                  \"input_type\": \"select\",\n                  \"default_value\": \"grid\",\n                  \"unit\": \"\",\n                  \"position\": 1,\n                  \"options\": [\n                    {\n                      \"token\": \"44fa15a9-988b-4ed0-a91c-2ab41bcdce94\",\n                      \"value\": \"block\",\n                      \"label\": \"Block\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"8b96c6a2-db83-4226-a281-bf9939c3eaea\",\n                      \"value\": \"flex\",\n                      \"label\": \"Flex\",\n                      \"position\": 2\n                    },\n                    {\n                      \"token\": \"acc2eec4-05a7-415c-9daf-6693f087d2e0\",\n                      \"value\": \"grid\",\n                      \"label\": \"Grid\",\n                      \"position\": 3\n                    }\n                  ]\n                },\n                {\n                  \"token\": \"517c0f80-f95e-49df-98d0-168f5efe8cbe\",\n                  \"property_token\": \"d9ffc803-a037-4f43-9e5e-c3e757c92494\",\n                  \"code\": \"grid-template-columns\",\n                  \"name\": \"Grid Template Columns\",\n                  \"data_type\": \"json\",\n                  \"input_type\": \"grid-columns\",\n                  \"default_value\": \"[100]\",\n                  \"unit\": \"%\",\n                  \"position\": 2,\n                  \"options\": [\n                    {\n                      \"token\": \"0ee68f97-d9ff-4286-99e1-6c0738842e37\",\n                      \"value\": \"[100]\",\n                      \"label\": \"Single\",\n                      \"position\": 1\n                    },\n                    {\n                      \"token\": \"605ea5e0-9428-4f85-aba4-f26a67a19837\",\n                      \"value\": \"[50,50]\",\n                      \"label\": \"Half\",\n                      \"position\": 2\n                    }\n                  ]\n                }\n              ]\n            },\n            \"region\": \"body\",\n            \"name\": \"Main Grid\",\n            \"content\": {},\n            \"properties\": {\n              \"display\": \"grid\",\n              \"grid-template-columns\": \"[50,50]\",\n              \"padding\": \"16\",\n              \"justify-items\": \"stretch\",\n              \"align-items\": \"stretch\"\n            },\n            \"position\": 1,\n            \"status\": \"active\",\n            \"created_at\": \"2026-07-13T10:00:00Z\",\n            \"updated_at\": \"2026-07-13T10:00:00Z\",\n            \"children\": [\n              {\n                \"token\": \"00000000-0000-0000-0000-000000000602\",\n                \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n                \"element\": {\n                  \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n                  \"code\": \"text\",\n                  \"name\": \"Text\",\n                  \"renderer_type\": \"html\",\n                  \"renderer_tag\": \"p\",\n                  \"content_type\": \"text\",\n                  \"is_container\": false,\n                  \"status\": \"active\",\n                  \"properties\": [\n                    {\n                      \"token\": \"e3bf4c9b-4d53-4be9-b2ad-2f5de70be684\",\n                      \"property_token\": \"4ea1db9b-b6f7-4e57-92a5-430597101492\",\n                      \"code\": \"font-size\",\n                      \"name\": \"Font Size\",\n                      \"data_type\": \"number\",\n                      \"input_type\": \"number\",\n                      \"default_value\": \"16\",\n                      \"unit\": \"px\",\n                      \"position\": 2,\n                      \"options\": [\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000701\",\n                          \"value\": \"14\",\n                          \"label\": \"14px\",\n                          \"position\": 2\n                        },\n                        {\n                          \"token\": \"00000000-0000-0000-0000-000000000702\",\n                          \"value\": \"16\",\n                          \"label\": \"16px\",\n                          \"position\": 3\n                        }\n                      ]\n                    }\n                  ]\n                },\n                \"region\": \"body\",\n                \"name\": \"Title Text\",\n                \"content\": {\n                  \"text\": \"Document Title\"\n                },\n                \"properties\": {\n                  \"font-family\": \"Arial\",\n                  \"font-size\": \"16\",\n                  \"font-weight\": \"700\",\n                  \"font-style\": \"normal\",\n                  \"text-decoration\": \"none\",\n                  \"line-height\": \"1.5\",\n                  \"color\": \"#000000\",\n                  \"text-align\": \"left\",\n                  \"padding\": \"0\",\n                  \"margin\": \"0\"\n                },\n                \"position\": 1,\n                \"status\": \"active\",\n                \"created_at\": \"2026-07-13T10:00:00Z\",\n                \"updated_at\": \"2026-07-13T10:00:00Z\",\n                \"children\": []\n              }\n            ]\n          }\n        ],\n        \"footer\": []\n      },\n      \"settings\": {\n        \"page\": {\n          \"orientation\": \"portrait\",\n          \"margin\": {\n            \"top\": 24,\n            \"right\": 24,\n            \"bottom\": 24,\n            \"left\": 24,\n            \"unit\": \"px\"\n          }\n        },\n        \"regions\": {\n          \"header\": {\n            \"height\": 96,\n            \"unit\": \"px\",\n            \"watermark\": null\n          },\n          \"body\": {\n            \"height\": null,\n            \"unit\": \"auto\",\n            \"watermark\": null\n          },\n          \"footer\": {\n            \"height\": 72,\n            \"unit\": \"px\",\n            \"watermark\": null\n          }\n        }\n      }\n    }\n  }\n}"
             },
             {
               "name": "Get Document Detail - Not Found",
@@ -436,7 +436,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"gap\": \"16\",\n    \"padding\": \"16\",\n    \"background-color\": \"#FFFFFF\",\n    \"justify-content\": \"flex-start\",\n    \"justify-items\": \"stretch\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
+              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"padding\": \"16\",\n    \"justify-items\": \"stretch\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -453,7 +453,7 @@
                 "document-layer-add"
               ]
             },
-            "description": "Create a document layer. Use document/parent/element tokens, not numeric IDs. parent_token is empty for root layer. Replace element_token with token from GET /api/document-master/elements?code=all in your database. Request samples are available in this request examples list."
+            "description": "Create a document layer. V1 supported elements: grid, text, image, table, divider, spacer. Use document/parent/element tokens, not numeric IDs. parent_token is empty for root layer. Replace element_token with token from GET /api/document-master/elements?code=all in your database."
           },
           "response": [
             {
@@ -472,7 +472,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"gap\": \"16\",\n    \"padding\": \"16\",\n    \"background-color\": \"#FFFFFF\",\n    \"justify-content\": \"flex-start\",\n    \"justify-items\": \"stretch\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Two Column Grid\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"padding\": \"16\",\n    \"justify-items\": \"stretch\",\n    \"align-items\": \"stretch\"\n  },\n  \"position\": 1,\n  \"status\": \"active\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -499,7 +499,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Two Column Grid\",\n      \"content\": {},\n      \"properties\": {\n        \"display\": \"grid\",\n        \"grid-template-columns\": \"[50,50]\",\n        \"gap\": \"16\",\n        \"padding\": \"16\",\n        \"background-color\": \"#FFFFFF\",\n        \"justify-content\": \"flex-start\",\n        \"justify-items\": \"stretch\",\n        \"align-items\": \"stretch\"\n      },\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000601\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n        \"code\": \"grid\",\n        \"name\": \"Grid\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": true,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Two Column Grid\",\n      \"content\": {},\n      \"properties\": {\n        \"display\": \"grid\",\n        \"grid-template-columns\": \"[50,50]\",\n        \"padding\": \"16\",\n        \"justify-items\": \"stretch\",\n        \"align-items\": \"stretch\"\n      },\n      \"position\": 1,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
             },
             {
               "name": "Create Text Layer - Success",
@@ -517,7 +517,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n  \"element_token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n  \"region\": \"body\",\n  \"name\": \"Title Text\",\n  \"content\": {\n    \"text\": \"Quotation Proposal\"\n  },\n  \"properties\": {\n    \"font-family\": \"Arial\",\n    \"font-size\": \"20\",\n    \"font-weight\": \"700\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"line-height\": \"1.5\",\n    \"color\": \"#000000\",\n    \"text-align\": \"left\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}",
+                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n  \"element_token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n  \"region\": \"body\",\n  \"name\": \"Title Text\",\n  \"content\": {\n    \"text\": \"Quotation Proposal\"\n  },\n  \"properties\": {\n    \"font-family\": \"Arial\",\n    \"font-size\": \"20\",\n    \"font-weight\": \"700\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"line-height\": \"1.5\",\n    \"color\": \"#000000\",\n    \"text-align\": \"left\",\n    \"padding\": \"0\",\n    \"margin\": \"0\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -544,7 +544,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000602\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n      \"element\": {\n        \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n        \"code\": \"text\",\n        \"name\": \"Text\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"p\",\n        \"content_type\": \"text\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Title Text\",\n      \"content\": {\n        \"text\": \"Quotation Proposal\"\n      },\n      \"properties\": {\n        \"font-family\": \"Arial\",\n        \"font-size\": \"20\",\n        \"font-weight\": \"700\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"line-height\": \"1.5\",\n        \"color\": \"#000000\",\n        \"text-align\": \"left\"\n      },\n      \"position\": 2,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000602\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"00000000-0000-0000-0000-000000000601\",\n      \"element\": {\n        \"token\": \"72b9cd08-2d36-492b-9d31-e4e62c19694b\",\n        \"code\": \"text\",\n        \"name\": \"Text\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"p\",\n        \"content_type\": \"text\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Title Text\",\n      \"content\": {\n        \"text\": \"Quotation Proposal\"\n      },\n      \"properties\": {\n        \"font-family\": \"Arial\",\n        \"font-size\": \"20\",\n        \"font-weight\": \"700\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"line-height\": \"1.5\",\n        \"color\": \"#000000\",\n        \"text-align\": \"left\",\n        \"padding\": \"0\",\n        \"margin\": \"0\"\n      },\n      \"position\": 2,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
             },
             {
               "name": "Create Image Layer - Success",
@@ -590,51 +590,6 @@
                 }
               ],
               "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000603\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"18c67e7f-3b26-49bd-a1a1-678de981b218\",\n        \"code\": \"image\",\n        \"name\": \"Image\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"img\",\n        \"content_type\": \"image\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Company Logo\",\n      \"content\": {\n        \"src\": \"assets/company-logo.png\",\n        \"alt\": \"Company Logo\"\n      },\n      \"properties\": {\n        \"width\": \"auto\",\n        \"height\": \"auto\",\n        \"object-fit\": \"contain\",\n        \"border-radius\": \"0\"\n      },\n      \"position\": 3,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-            },
-            {
-              "name": "Create List Layer - Success",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"3f6a52ce-0cd3-4e97-9d24-2f97e3f9469d\",\n  \"region\": \"body\",\n  \"name\": \"Scope List\",\n  \"content\": {\n    \"items\": [\n      \"Supply equipment\",\n      \"Installation\",\n      \"Testing and commissioning\"\n    ]\n  },\n  \"properties\": {\n    \"list-style-type\": \"disc\",\n    \"list-style-position\": \"inside\",\n    \"font-family\": \"Arial\",\n    \"font-size\": \"16\",\n    \"font-weight\": \"400\",\n    \"font-style\": \"normal\",\n    \"text-decoration\": \"none\",\n    \"line-height\": \"1.5\",\n    \"color\": \"#000000\"\n  },\n  \"position\": 4,\n  \"status\": \"active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{base_url}}/api/document-layer-add",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "api",
-                    "document-layer-add"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000604\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"3f6a52ce-0cd3-4e97-9d24-2f97e3f9469d\",\n        \"code\": \"list\",\n        \"name\": \"List\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"ul\",\n        \"content_type\": \"list\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Scope List\",\n      \"content\": {\n        \"items\": [\n          \"Supply equipment\",\n          \"Installation\",\n          \"Testing and commissioning\"\n        ]\n      },\n      \"properties\": {\n        \"list-style-type\": \"disc\",\n        \"list-style-position\": \"inside\",\n        \"font-family\": \"Arial\",\n        \"font-size\": \"16\",\n        \"font-weight\": \"400\",\n        \"font-style\": \"normal\",\n        \"text-decoration\": \"none\",\n        \"line-height\": \"1.5\",\n        \"color\": \"#000000\"\n      },\n      \"position\": 4,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
             },
             {
               "name": "Create Table Layer - Success",
@@ -770,186 +725,6 @@
                 }
               ],
               "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000607\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"f1061611-cf5e-4a9f-9d8a-73fc8941db8e\",\n        \"code\": \"spacer\",\n        \"name\": \"Spacer\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"none\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Vertical Spacer\",\n      \"content\": {},\n      \"properties\": {\n        \"height\": \"24\"\n      },\n      \"position\": 7,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-            },
-            {
-              "name": "Create Signature Layer - Success",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"d4d8a5df-40bf-45f2-835d-a06f63a9c6c2\",\n  \"region\": \"body\",\n  \"name\": \"Approval Signature\",\n  \"content\": {\n    \"name\": \"Authorized Person\",\n    \"title\": \"Director\",\n    \"image_url\": \"\"\n  },\n  \"properties\": {\n    \"width\": \"240\",\n    \"height\": \"96\",\n    \"text-align\": \"center\",\n    \"font-family\": \"Arial\",\n    \"font-size\": \"14\",\n    \"color\": \"#000000\"\n  },\n  \"position\": 8,\n  \"status\": \"active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{base_url}}/api/document-layer-add",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "api",
-                    "document-layer-add"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000608\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"d4d8a5df-40bf-45f2-835d-a06f63a9c6c2\",\n        \"code\": \"signature\",\n        \"name\": \"Signature\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"signature\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Approval Signature\",\n      \"content\": {\n        \"name\": \"Authorized Person\",\n        \"title\": \"Director\",\n        \"image_url\": \"\"\n      },\n      \"properties\": {\n        \"width\": \"240\",\n        \"height\": \"96\",\n        \"text-align\": \"center\",\n        \"font-family\": \"Arial\",\n        \"font-size\": \"14\",\n        \"color\": \"#000000\"\n      },\n      \"position\": 8,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-            },
-            {
-              "name": "Create QR Code Layer - Success",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"70f61a57-e139-43d2-b9ff-31e20108e2e1\",\n  \"region\": \"body\",\n  \"name\": \"Verification QR\",\n  \"content\": {\n    \"value\": \"https://widia-kencana.example/documents/quotation-default\"\n  },\n  \"properties\": {\n    \"width\": \"120\",\n    \"height\": \"120\",\n    \"background-color\": \"#FFFFFF\"\n  },\n  \"position\": 9,\n  \"status\": \"active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{base_url}}/api/document-layer-add",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "api",
-                    "document-layer-add"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000609\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"70f61a57-e139-43d2-b9ff-31e20108e2e1\",\n        \"code\": \"qr-code\",\n        \"name\": \"QR Code\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"code\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Verification QR\",\n      \"content\": {\n        \"value\": \"https://widia-kencana.example/documents/quotation-default\"\n      },\n      \"properties\": {\n        \"width\": \"120\",\n        \"height\": \"120\",\n        \"background-color\": \"#FFFFFF\"\n      },\n      \"position\": 9,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-            },
-            {
-              "name": "Create Barcode Layer - Success",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"e2c0cb09-e9a8-49d0-ad0c-6ad1918329d5\",\n  \"region\": \"body\",\n  \"name\": \"Document Barcode\",\n  \"content\": {\n    \"value\": \"Q-2026-0001\",\n    \"format\": \"CODE128\"\n  },\n  \"properties\": {\n    \"width\": \"240\",\n    \"height\": \"80\",\n    \"background-color\": \"#FFFFFF\"\n  },\n  \"position\": 10,\n  \"status\": \"active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{base_url}}/api/document-layer-add",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "api",
-                    "document-layer-add"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000610\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"e2c0cb09-e9a8-49d0-ad0c-6ad1918329d5\",\n        \"code\": \"barcode\",\n        \"name\": \"Barcode\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"code\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Document Barcode\",\n      \"content\": {\n        \"value\": \"Q-2026-0001\",\n        \"format\": \"CODE128\"\n      },\n      \"properties\": {\n        \"width\": \"240\",\n        \"height\": \"80\",\n        \"background-color\": \"#FFFFFF\"\n      },\n      \"position\": 10,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
-            },
-            {
-              "name": "Create Page Break Layer - Success",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{token}}"
-                  },
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"2e1a5d19-dae9-4f30-991a-47d557d66d7a\",\n  \"region\": \"body\",\n  \"name\": \"Page Break\",\n  \"content\": {\n    \"type\": \"page-break\"\n  },\n  \"properties\": {},\n  \"position\": 11,\n  \"status\": \"active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{base_url}}/api/document-layer-add",
-                  "host": [
-                    "{{base_url}}"
-                  ],
-                  "path": [
-                    "api",
-                    "document-layer-add"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document layer created successfully\",\n  \"data\": {\n    \"layer\": {\n      \"token\": \"00000000-0000-0000-0000-000000000611\",\n      \"document_token\": \"00000000-0000-0000-0000-000000000501\",\n      \"parent_token\": \"\",\n      \"element\": {\n        \"token\": \"2e1a5d19-dae9-4f30-991a-47d557d66d7a\",\n        \"code\": \"page-break\",\n        \"name\": \"Page Break\",\n        \"renderer_type\": \"html\",\n        \"renderer_tag\": \"div\",\n        \"content_type\": \"instruction\",\n        \"is_container\": false,\n        \"status\": \"active\",\n        \"properties\": []\n      },\n      \"region\": \"body\",\n      \"name\": \"Page Break\",\n      \"content\": {\n        \"type\": \"page-break\"\n      },\n      \"properties\": {},\n      \"position\": 11,\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-13T10:00:00Z\",\n      \"updated_at\": \"2026-07-13T10:00:00Z\"\n    }\n  }\n}"
             }
           ]
         },
@@ -969,7 +744,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Main Grid Updated\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\",\n    \"gap\": \"16\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}",
+              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"parent_token\": \"\",\n  \"element_token\": \"55bc433b-c5b4-41e6-be8b-d964d343bc42\",\n  \"region\": \"body\",\n  \"name\": \"Main Grid Updated\",\n  \"content\": {},\n  \"properties\": {\n    \"display\": \"grid\",\n    \"grid-template-columns\": \"[50,50]\"\n  },\n  \"position\": 2,\n  \"status\": \"active\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

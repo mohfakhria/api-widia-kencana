@@ -54,23 +54,20 @@ SELECT
 FROM (
     VALUES
         -- Text align
-        ('text-align', 'left', 'Left', 1, 'active'),
-        ('text-align', 'center', 'Center', 2, 'active'),
-        ('text-align', 'right', 'Right', 3, 'active'),
-        ('text-align', 'justify', 'Justify', 4, 'active'),
-
-        -- Vertical align
-        ('vertical-align', 'top', 'Top', 1, 'active'),
-        ('vertical-align', 'middle', 'Middle', 2, 'active'),
-        ('vertical-align', 'bottom', 'Bottom', 3, 'active'),
+        ('text-align', 'start', 'Start', 1, 'active'),
+        ('text-align', 'left', 'Left', 2, 'active'),
+        ('text-align', 'center', 'Center', 3, 'active'),
+        ('text-align', 'right', 'Right', 4, 'active'),
+        ('text-align', 'justify', 'Justify', 5, 'active'),
 
         -- Font family
-        ('font-family', 'Arial', 'Arial', 1, 'active'),
-        ('font-family', 'Times New Roman', 'Times New Roman', 2, 'active'),
-        ('font-family', 'Calibri', 'Calibri', 3, 'active'),
+        ('font-family', 'initial', 'Initial', 1, 'active'),
+        ('font-family', 'Arial', 'Arial', 2, 'active'),
+        ('font-family', 'Times New Roman', 'Times New Roman', 3, 'active'),
+        ('font-family', 'Calibri', 'Calibri', 4, 'active'),
 
         -- Font weight
-        ('font-weight', '300', 'Light', 1, 'active'),
+        ('font-weight', 'normal', 'Normal', 1, 'active'),
         ('font-weight', '400', 'Regular', 2, 'active'),
         ('font-weight', '500', 'Medium', 3, 'active'),
         ('font-weight', '600', 'Semi Bold', 4, 'active'),
@@ -86,59 +83,38 @@ FROM (
         ('text-decoration', 'line-through', 'Strike Through', 3, 'active'),
 
         -- Display
-        ('display', 'block', 'Block', 1, 'active'),
-        ('display', 'flex', 'Flex', 2, 'active'),
+        ('display', 'inline', 'Inline', 1, 'active'),
+        ('display', 'block', 'Block', 2, 'active'),
         ('display', 'grid', 'Grid', 3, 'active'),
         ('display', 'inline-block', 'Inline Block', 4, 'active'),
         ('display', 'none', 'None', 5, 'active'),
 
-        -- Flex direction
-        ('flex-direction', 'row', 'Row', 1, 'active'),
-        ('flex-direction', 'column', 'Column', 2, 'active'),
-        ('flex-direction', 'row-reverse', 'Row Reverse', 3, 'active'),
-        ('flex-direction', 'column-reverse', 'Column Reverse', 4, 'active'),
-
-        -- Justify content
-        ('justify-content', 'flex-start', 'Flex Start', 1, 'active'),
-        ('justify-content', 'center', 'Center', 2, 'active'),
-        ('justify-content', 'flex-end', 'Flex End', 3, 'active'),
-        ('justify-content', 'space-between', 'Space Between', 4, 'active'),
-        ('justify-content', 'space-around', 'Space Around', 5, 'active'),
-        ('justify-content', 'space-evenly', 'Space Evenly', 6, 'active'),
-
         -- Justify items
-        ('justify-items', 'stretch', 'Stretch', 1, 'active'),
-        ('justify-items', 'start', 'Start', 2, 'active'),
-        ('justify-items', 'center', 'Center', 3, 'active'),
-        ('justify-items', 'end', 'End', 4, 'active'),
+        ('justify-items', 'legacy', 'Legacy', 1, 'active'),
+        ('justify-items', 'stretch', 'Stretch', 2, 'active'),
+        ('justify-items', 'start', 'Start', 3, 'active'),
+        ('justify-items', 'center', 'Center', 4, 'active'),
+        ('justify-items', 'end', 'End', 5, 'active'),
 
         -- Align items
-        ('align-items', 'stretch', 'Stretch', 1, 'active'),
-        ('align-items', 'flex-start', 'Flex Start', 2, 'active'),
-        ('align-items', 'center', 'Center', 3, 'active'),
-        ('align-items', 'flex-end', 'Flex End', 4, 'active'),
-        ('align-items', 'baseline', 'Baseline', 5, 'active'),
-
-        -- List style type
-        ('list-style-type', 'disc', 'Disc', 1, 'active'),
-        ('list-style-type', 'circle', 'Circle', 2, 'active'),
-        ('list-style-type', 'square', 'Square', 3, 'active'),
-        ('list-style-type', 'decimal', 'Decimal', 4, 'active'),
-        ('list-style-type', 'lower-alpha', 'Lower Alpha', 5, 'active'),
-        ('list-style-type', 'upper-alpha', 'Upper Alpha', 6, 'active'),
-        ('list-style-type', 'none', 'None', 7, 'active'),
-
-        -- List style position
-        ('list-style-position', 'inside', 'Inside', 1, 'active'),
-        ('list-style-position', 'outside', 'Outside', 2, 'active'),
+        ('align-items', 'normal', 'Normal', 1, 'active'),
+        ('align-items', 'stretch', 'Stretch', 2, 'active'),
+        ('align-items', 'flex-start', 'Flex Start', 3, 'active'),
+        ('align-items', 'center', 'Center', 4, 'active'),
+        ('align-items', 'flex-end', 'Flex End', 5, 'active'),
+        ('align-items', 'baseline', 'Baseline', 6, 'active'),
 
         -- Color palette
-        ('color', '#2563EB', 'Primary', 1, 'active'),
-        ('color', '#64748B', 'Secondary', 2, 'active'),
-        ('color', '#7C3AED', 'Accent', 3, 'active'),
-        ('background-color', '#2563EB', 'Primary', 1, 'active'),
-        ('background-color', '#64748B', 'Secondary', 2, 'active'),
-        ('background-color', '#7C3AED', 'Accent', 3, 'active'),
+        ('color', 'canvastext', 'Canvas Text', 1, 'active'),
+        ('color', '#000000', 'Black', 2, 'active'),
+        ('color', '#2563EB', 'Primary', 3, 'active'),
+        ('color', '#64748B', 'Secondary', 4, 'active'),
+        ('color', '#7C3AED', 'Accent', 5, 'active'),
+        ('background-color', 'transparent', 'Transparent', 1, 'active'),
+        ('background-color', '#FFFFFF', 'White', 2, 'active'),
+        ('background-color', '#2563EB', 'Primary', 3, 'active'),
+        ('background-color', '#64748B', 'Secondary', 4, 'active'),
+        ('background-color', '#7C3AED', 'Accent', 5, 'active'),
 
         -- Size presets
         ('width', 'auto', 'Auto', 1, 'active'),
@@ -150,15 +126,11 @@ FROM (
         ('height', 'custom', 'Custom', 3, 'active'),
 
         -- Object fit
-        ('object-fit', 'contain', 'Contain', 1, 'active'),
-        ('object-fit', 'cover', 'Cover', 2, 'active'),
-        ('object-fit', 'fill', 'Fill', 3, 'active'),
+        ('object-fit', 'fill', 'Fill', 1, 'active'),
+        ('object-fit', 'contain', 'Contain', 2, 'active'),
+        ('object-fit', 'cover', 'Cover', 3, 'active'),
 
         -- Spacing presets
-        ('gap', '0', '0px', 1, 'active'),
-        ('gap', '8', '8px', 2, 'active'),
-        ('gap', '16', '16px', 3, 'active'),
-        ('gap', '24', '24px', 4, 'active'),
         ('padding', '0', '0px', 1, 'active'),
         ('padding', '8', '8px', 2, 'active'),
         ('padding', '16', '16px', 3, 'active'),
@@ -183,23 +155,26 @@ FROM (
         ('border-radius', '16', '16px', 4, 'active'),
 
         -- Typography presets
-        ('font-size', '12', '12px', 1, 'active'),
-        ('font-size', '14', '14px', 2, 'active'),
-        ('font-size', '16', '16px', 3, 'active'),
-        ('font-size', '20', '20px', 4, 'active'),
-        ('font-size', '24', '24px', 5, 'active'),
-        ('line-height', '1', 'Tight', 1, 'active'),
-        ('line-height', '1.25', 'Compact', 2, 'active'),
-        ('line-height', '1.5', 'Normal', 3, 'active'),
-        ('line-height', '2', 'Relaxed', 4, 'active'),
+        ('font-size', 'medium', 'Medium', 1, 'active'),
+        ('font-size', '12', '12px', 2, 'active'),
+        ('font-size', '14', '14px', 3, 'active'),
+        ('font-size', '16', '16px', 4, 'active'),
+        ('font-size', '20', '20px', 5, 'active'),
+        ('font-size', '24', '24px', 6, 'active'),
+        ('line-height', 'normal', 'Normal', 1, 'active'),
+        ('line-height', '1', 'Tight', 2, 'active'),
+        ('line-height', '1.25', 'Compact', 3, 'active'),
+        ('line-height', '1.5', 'Readable', 4, 'active'),
+        ('line-height', '2', 'Relaxed', 5, 'active'),
 
         -- Grid template columns
-        ('grid-template-columns', '[100]', 'Single', 1, 'active'),
-        ('grid-template-columns', '[50,50]', 'Half', 2, 'active'),
-        ('grid-template-columns', '[30,70]', 'Left', 3, 'active'),
-        ('grid-template-columns', '[70,30]', 'Right', 4, 'active'),
-        ('grid-template-columns', '[33,33,34]', 'Thirds', 5, 'active'),
-        ('grid-template-columns', 'custom', 'Custom', 6, 'active')
+        ('grid-template-columns', 'none', 'None', 1, 'active'),
+        ('grid-template-columns', '[100]', 'Single', 2, 'active'),
+        ('grid-template-columns', '[50,50]', 'Half', 3, 'active'),
+        ('grid-template-columns', '[30,70]', 'Left', 4, 'active'),
+        ('grid-template-columns', '[70,30]', 'Right', 5, 'active'),
+        ('grid-template-columns', '[33,33,34]', 'Thirds', 6, 'active'),
+        ('grid-template-columns', 'custom', 'Custom', 7, 'active')
 ) AS seed_options (
     property_code,
     value,
