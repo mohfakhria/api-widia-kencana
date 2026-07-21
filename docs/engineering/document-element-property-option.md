@@ -59,6 +59,50 @@ Contoh value yang valid untuk frontend renderer:
 
 Options `width` dan `height` di seed hanya berfungsi sebagai preset cepat. Frontend tetap boleh mengirim custom value di `layer.properties.width` dan `layer.properties.height`.
 
+## Document Settings
+
+`documents.settings` dipakai untuk konfigurasi level dokumen dan region, bukan untuk styling element. Styling element tetap berada di `document_layers.properties`.
+
+Default shape saat `settings` tidak dikirim:
+
+```json
+{
+  "page": {
+    "orientation": "portrait",
+    "margin": {
+      "top": 24,
+      "right": 24,
+      "bottom": 24,
+      "left": 24,
+      "unit": "px"
+    }
+  },
+  "regions": {
+    "header": {
+      "height": 96,
+      "unit": "px",
+      "watermark": null
+    },
+    "body": {
+      "height": null,
+      "unit": "auto",
+      "watermark": null
+    },
+    "footer": {
+      "height": 72,
+      "unit": "px",
+      "watermark": null
+    }
+  }
+}
+```
+
+- `document_layers.region` menentukan layer masuk ke `header`, `body`, atau `footer`.
+- `documents.settings.regions.*.height` menentukan tinggi area region.
+- `height = 0` dengan unit ukuran berarti region tidak dipakai.
+- `height = null` dan `unit = auto` berarti tinggi mengikuti content/area render.
+- `watermark = null` berarti region belum memiliki watermark.
+
 ## Property Master
 
 | Code | Name | Data Type | Input Type | Default | Unit | FE Usage |
