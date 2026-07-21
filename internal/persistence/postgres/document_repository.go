@@ -330,7 +330,7 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 	if err != nil {
 		return nil, err
 	}
-	settings, err := json.Marshal(normalizeJSONMap(document.Settings))
+	settings, err := encodeDocumentSettings(document.Settings)
 	if err != nil {
 		return nil, err
 	}
@@ -349,7 +349,7 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 			updated_at
 		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, NOW(), NOW())
 		RETURNING token::text
-	`, paperID, parentID, document.Name, document.DocumentType, string(settings), document.Position, document.Status).Scan(&createdToken)
+	`, paperID, parentID, document.Name, document.DocumentType, settings, document.Position, document.Status).Scan(&createdToken)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +367,7 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 	if err != nil {
 		return err
 	}
-	settings, err := json.Marshal(normalizeJSONMap(document.Settings))
+	settings, err := encodeDocumentSettings(document.Settings)
 	if err != nil {
 		return err
 	}
@@ -384,7 +384,7 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 			updated_at = NOW()
 		WHERE token = $8::uuid
 			AND status <> 'deleted'
-	`, paperID, parentID, document.Name, document.DocumentType, string(settings), document.Position, document.Status, token)
+	`, paperID, parentID, document.Name, document.DocumentType, settings, document.Position, document.Status, token)
 	if err != nil {
 		return err
 	}
@@ -533,10 +533,11 @@ func scanDocument(row rowScanner, document *entity.Document) error {
 	if err != nil {
 		return err
 	}
-	if err := json.Unmarshal([]byte(settingsRaw), &document.Settings); err != nil {
+	settings, err := decodeDocumentSettings(settingsRaw)
+	if err != nil {
 		return err
 	}
-	document.Settings = normalizeJSONMap(document.Settings)
+	document.Settings = settings
 
 	if parentID.Valid {
 		document.ParentID = &parentID.Int64
@@ -545,12 +546,30 @@ func scanDocument(row rowScanner, document *entity.Document) error {
 	return nil
 }
 
-func normalizeJSONMap(value map[string]any) map[string]any {
-	if value == nil {
+func encodeDocumentSettings(settings map[string]any) (string, error) {
+	encoded, err := json.Marshal(normalizeDocumentSettingsMap(settings))
+	if err != nil {
+		return "", err
+	}
+
+	return string(encoded), nil
+}
+
+func decodeDocumentSettings(raw string) (map[string]any, error) {
+	var settings map[string]any
+	if err := json.Unmarshal([]byte(raw), &settings); err != nil {
+		return nil, err
+	}
+
+	return normalizeDocumentSettingsMap(settings), nil
+}
+
+func normalizeDocumentSettingsMap(settings map[string]any) map[string]any {
+	if settings == nil {
 		return map[string]any{}
 	}
 
-	return value
+	return settings
 }
 
 func ensureAffected(result sql.Result, notFoundMessage string) error {

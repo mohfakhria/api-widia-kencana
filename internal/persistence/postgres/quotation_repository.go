@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
@@ -41,10 +42,9 @@ func (r *QuotationRepository) Create(ctx context.Context, quotation *entity.Quot
 		return "", err
 	}
 
-	notesJSON := "[]"
-	if len(quotation.Notes) > 0 {
-		encoded, _ := json.Marshal(quotation.Notes)
-		notesJSON = string(encoded)
+	notesJSON, err := encodeQuotationNotes(quotation.Notes)
+	if err != nil {
+		return "", err
 	}
 
 	var quotationID int64
@@ -121,6 +121,9 @@ func (r *QuotationRepository) List(ctx context.Context, query input.ListQuotatio
 		}
 		quotations = append(quotations, q)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return quotations, nil
 }
@@ -140,7 +143,11 @@ func (r *QuotationRepository) GetByID(ctx context.Context, id string) (*entity.Q
 		return nil, err
 	}
 
-	_ = json.Unmarshal([]byte(notesRaw), &q.Notes)
+	notes, err := decodeQuotationNotes(notesRaw)
+	if err != nil {
+		return nil, err
+	}
+	q.Notes = notes
 
 	rows, err := r.db.QueryContext(ctx, `SELECT id, title, position FROM quotation_sections WHERE quotation_id=$1 ORDER BY position ASC`, q.ID)
 	if err != nil {
@@ -168,6 +175,9 @@ func (r *QuotationRepository) GetByID(ctx context.Context, id string) (*entity.Q
 			section.Items = append(section.Items, item)
 		}
 		itemRows.Close()
+		if err := itemRows.Err(); err != nil {
+			return nil, err
+		}
 
 		detailRows, err := r.db.QueryContext(ctx, `SELECT id, description, position FROM quotation_details WHERE section_id=$1 ORDER BY position`, section.ID)
 		if err != nil {
@@ -182,8 +192,14 @@ func (r *QuotationRepository) GetByID(ctx context.Context, id string) (*entity.Q
 			section.Details = append(section.Details, detail)
 		}
 		detailRows.Close()
+		if err := detailRows.Err(); err != nil {
+			return nil, err
+		}
 
 		q.Sections = append(q.Sections, section)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return &q, nil
@@ -196,7 +212,15 @@ func (r *QuotationRepository) Update(ctx context.Context, id string, quotation *
 	}
 	defer tx.Rollback()
 
-	notesJSON, _ := json.Marshal(quotation.Notes)
+	quotationID, err := parseQuotationID(id)
+	if err != nil {
+		return err
+	}
+
+	notesJSON, err := encodeQuotationNotes(quotation.Notes)
+	if err != nil {
+		return err
+	}
 
 	_, err = tx.ExecContext(ctx, `
 		UPDATE quotations SET
@@ -204,14 +228,16 @@ func (r *QuotationRepository) Update(ctx context.Context, id string, quotation *
 			project=$5, discount_type=$6, discount_value=$7,
 			subtotal=$8, total=$9, notes=$10, updated_at=NOW()
 		WHERE id=$11
-	`, quotation.ClientName, quotation.AttnName, quotation.AttnPosition, quotation.Address, quotation.Project, quotation.DiscountType, quotation.DiscountValue, quotation.SubTotal, quotation.Total, string(notesJSON), id)
+	`, quotation.ClientName, quotation.AttnName, quotation.AttnPosition, quotation.Address, quotation.Project, quotation.DiscountType, quotation.DiscountValue, quotation.SubTotal, quotation.Total, notesJSON, id)
 	if err != nil {
 		return err
 	}
 
-	_, _ = tx.ExecContext(ctx, `DELETE FROM quotation_sections WHERE quotation_id=$1`, id)
+	if _, err := tx.ExecContext(ctx, `DELETE FROM quotation_sections WHERE quotation_id=$1`, quotationID); err != nil {
+		return err
+	}
 
-	if err := insertSections(ctx, tx, mustParseInt64(id), quotation.Sections); err != nil {
+	if err := insertSections(ctx, tx, quotationID, quotation.Sections); err != nil {
 		return err
 	}
 
@@ -253,7 +279,37 @@ func insertSections(ctx context.Context, tx *sql.Tx, quotationID int64, sections
 	return nil
 }
 
-func mustParseInt64(raw string) int64 {
-	id, _ := strconv.ParseInt(raw, 10, 64)
-	return id
+func encodeQuotationNotes(notes []string) (string, error) {
+	if len(notes) == 0 {
+		return "[]", nil
+	}
+
+	encoded, err := json.Marshal(notes)
+	if err != nil {
+		return "", err
+	}
+
+	return string(encoded), nil
+}
+
+func decodeQuotationNotes(raw string) ([]string, error) {
+	if strings.TrimSpace(raw) == "" {
+		return []string{}, nil
+	}
+
+	var notes []string
+	if err := json.Unmarshal([]byte(raw), &notes); err != nil {
+		return nil, err
+	}
+
+	return notes, nil
+}
+
+func parseQuotationID(raw string) (int64, error) {
+	id, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return 0, domain.NewError(domain.ErrInvalidInput, "invalid quotation id")
+	}
+
+	return id, nil
 }

@@ -232,38 +232,10 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 
 func normalizeDocumentSettings(settings map[string]any) map[string]any {
 	if settings == nil {
-		return defaultDocumentSettings()
+		return entity.DefaultDocumentSettings()
 	}
 
 	return settings
-}
-
-func defaultDocumentSettings() map[string]any {
-	return map[string]any{
-		"page": map[string]any{
-			"orientation": "portrait",
-			"margin": map[string]any{
-				"top":    24,
-				"right":  24,
-				"bottom": 24,
-				"left":   24,
-				"unit":   "px",
-			},
-		},
-		"regions": map[string]any{
-			"header": defaultDocumentRegionSettings(96, "px"),
-			"body":   defaultDocumentRegionSettings(nil, "auto"),
-			"footer": defaultDocumentRegionSettings(72, "px"),
-		},
-	}
-}
-
-func defaultDocumentRegionSettings(height any, unit string) map[string]any {
-	return map[string]any{
-		"height":    height,
-		"unit":      unit,
-		"watermark": nil,
-	}
 }
 
 func validateDocument(document *entity.Document) error {
