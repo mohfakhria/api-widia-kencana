@@ -124,6 +124,11 @@ FROM (
         ('height', 'auto', 'Auto', 1, 'active'),
         ('height', '100%', 'Full', 2, 'active'),
         ('height', 'custom', 'Custom', 3, 'active'),
+        ('opacity', '1', '100%', 1, 'active'),
+        ('opacity', '0.5', '50%', 2, 'active'),
+        ('opacity', '0.25', '25%', 3, 'active'),
+        ('opacity', '0.1', '10%', 4, 'active'),
+        ('opacity', 'custom', 'Custom', 5, 'active'),
 
         -- Object fit
         ('object-fit', 'fill', 'Fill', 1, 'active'),
@@ -161,6 +166,7 @@ FROM (
         ('font-size', '16', '16px', 4, 'active'),
         ('font-size', '20', '20px', 5, 'active'),
         ('font-size', '24', '24px', 6, 'active'),
+        ('font-size', 'custom', 'Custom', 7, 'active'),
         ('line-height', 'normal', 'Normal', 1, 'active'),
         ('line-height', '1', 'Tight', 2, 'active'),
         ('line-height', '1.25', 'Compact', 3, 'active'),

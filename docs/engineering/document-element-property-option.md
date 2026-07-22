@@ -79,19 +79,16 @@ Default shape saat `settings` tidak dikirim:
   },
   "regions": {
     "header": {
-      "height": 96,
-      "unit": "px",
-      "watermark": null
+      "height": 0,
+      "unit": "px"
     },
     "body": {
       "height": null,
-      "unit": "auto",
-      "watermark": null
+      "unit": "auto"
     },
     "footer": {
-      "height": 72,
-      "unit": "px",
-      "watermark": null
+      "height": 0,
+      "unit": "px"
     }
   }
 }
@@ -101,7 +98,19 @@ Default shape saat `settings` tidak dikirim:
 - `documents.settings.regions.*.height` menentukan tinggi area region.
 - `height = 0` dengan unit ukuran berarti region tidak dipakai.
 - `height = null` dan `unit = auto` berarti tinggi mengikuti content/area render.
-- `watermark = null` berarti region belum memiliki watermark.
+- Watermark tidak disimpan di `documents.settings`; gunakan element `watermark` pada `document_layers`.
+
+## Element Master
+
+| Code | Name | Renderer Tag | Content Type | Container |
+| --- | --- | --- | --- | --- |
+| `grid` | Grid | `div` | `none` | Yes |
+| `text` | Text | `p` | `text` | No |
+| `image` | Image | `img` | `image` | No |
+| `watermark` | Watermark | `div` | `image` | No |
+| `table` | Table | `table` | `table` | No |
+| `divider` | Divider | `hr` | `none` | No |
+| `spacer` | Spacer | `div` | `none` | No |
 
 ## Property Master
 
@@ -124,6 +133,7 @@ Default shape saat `settings` tidak dikirim:
 | `width` | Width | `string` | `text` | `auto` |  | CSS `width` |
 | `height` | Height | `string` | `text` | `auto` |  | CSS `height` |
 | `object-fit` | Object Fit | `string` | `select` | `fill` |  | CSS `object-fit` |
+| `opacity` | Opacity | `string` | `text` | `1` |  | CSS `opacity` |
 | `border-radius` | Border Radius | `number` | `number` | `0` | `px` | CSS `border-radius` |
 | `border` | Border | `number` | `number` | `0` | `px` | CSS border width |
 | `border-style` | Border Style | `string` | `select` | `none` |  | CSS `border-style` |
@@ -253,6 +263,16 @@ Default shape saat `settings` tidak dikirim:
 | `contain` | Contain | Yes |
 | `cover` | Cover | Yes |
 
+### `opacity`
+
+| Value | Label |
+| --- | --- |
+| `1` | 100% |
+| `0.5` | 50% |
+| `0.25` | 25% |
+| `0.1` | 10% |
+| `custom` | Custom |
+
 ### `padding`
 
 | Value | Label |
@@ -308,6 +328,7 @@ Default shape saat `settings` tidak dikirim:
 | `16` | 16px |
 | `20` | 20px |
 | `24` | 24px |
+| `custom` | Custom |
 
 ### `line-height`
 
@@ -342,8 +363,9 @@ Default shape saat `settings` tidak dikirim:
 | 1 | `display` | `grid` |
 | 2 | `grid-template-columns` | `[100]` |
 | 3 | `padding` | `0` |
-| 4 | `justify-items` | `stretch` |
-| 5 | `align-items` | `stretch` |
+| 4 | `margin` | `0` |
+| 5 | `justify-items` | `stretch` |
+| 6 | `align-items` | `stretch` |
 
 ### `text`
 
@@ -368,6 +390,19 @@ Default shape saat `settings` tidak dikirim:
 | 2 | `height` | `auto` |
 | 3 | `object-fit` | `contain` |
 | 4 | `border-radius` | `0` |
+| 5 | `padding` | `0` |
+| 6 | `margin` | `0` |
+
+### `watermark`
+
+| Position | Property Code | Default |
+| --- | --- | --- |
+| 1 | `width` | `50%` |
+| 2 | `height` | `auto` |
+| 3 | `object-fit` | `contain` |
+| 4 | `opacity` | `0.1` |
+| 5 | `padding` | `0` |
+| 6 | `margin` | `0` |
 
 ### `table`
 
@@ -378,6 +413,8 @@ Default shape saat `settings` tidak dikirim:
 | 3 | `color` | `#000000` |
 | 4 | `border` | `1` |
 | 5 | `border-style` | `solid` |
+| 6 | `padding` | `0` |
+| 7 | `margin` | `0` |
 
 ### `divider`
 
@@ -386,7 +423,8 @@ Default shape saat `settings` tidak dikirim:
 | 1 | `width` | `100%` |
 | 2 | `height` | `1` |
 | 3 | `background-color` | `#000000` |
-| 4 | `margin` | `0` |
+| 4 | `padding` | `0` |
+| 5 | `margin` | `0` |
 
 ### `spacer`
 

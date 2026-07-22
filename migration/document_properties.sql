@@ -75,6 +75,7 @@ INSERT INTO document_properties (
     ('width', 'Width', 'string', 'text', 'auto', '', 'active'),
     ('height', 'Height', 'string', 'text', 'auto', '', 'active'),
     ('object-fit', 'Object Fit', 'string', 'select', 'fill', '', 'active'),
+    ('opacity', 'Opacity', 'string', 'text', '1', '', 'active'),
     ('border-radius', 'Border Radius', 'number', 'number', '0', 'px', 'active'),
     ('border', 'Border', 'number', 'number', '0', 'px', 'active'),
     ('border-style', 'Border Style', 'string', 'select', 'none', '', 'active'),

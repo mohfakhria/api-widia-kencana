@@ -7,10 +7,10 @@ CREATE TABLE IF NOT EXISTS document_elements (
     -- Public identifier for frontend communication
 
     code TEXT NOT NULL,
-    -- Example: grid, text, image, table
+    -- Example: grid, text, image, watermark, table
 
     name TEXT NOT NULL,
-    -- Example: Grid, Text, Image, List
+    -- Example: Grid, Text, Image, Watermark
 
     renderer_type TEXT NOT NULL DEFAULT 'html',
     -- Values: html
@@ -60,6 +60,7 @@ INSERT INTO document_elements (
     ('grid', 'Grid', 'html', 'div', 'none', TRUE, 'active'),
     ('text', 'Text', 'html', 'p', 'text', FALSE, 'active'),
     ('image', 'Image', 'html', 'img', 'image', FALSE, 'active'),
+    ('watermark', 'Watermark', 'html', 'div', 'image', FALSE, 'active'),
     ('table', 'Table', 'html', 'table', 'table', FALSE, 'active'),
     ('divider', 'Divider', 'html', 'hr', 'none', FALSE, 'active'),
     ('spacer', 'Spacer', 'html', 'div', 'none', FALSE, 'active')

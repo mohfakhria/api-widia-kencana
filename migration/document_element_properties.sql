@@ -58,8 +58,9 @@ FROM (
         ('grid', 'display', 'grid', 1, 'active'),
         ('grid', 'grid-template-columns', '[100]', 2, 'active'),
         ('grid', 'padding', '0', 3, 'active'),
-        ('grid', 'justify-items', 'stretch', 4, 'active'),
-        ('grid', 'align-items', 'stretch', 5, 'active'),
+        ('grid', 'margin', '0', 4, 'active'),
+        ('grid', 'justify-items', 'stretch', 5, 'active'),
+        ('grid', 'align-items', 'stretch', 6, 'active'),
 
         -- Text
         ('text', 'font-family', 'Arial', 1, 'active'),
@@ -78,6 +79,16 @@ FROM (
         ('image', 'height', 'auto', 2, 'active'),
         ('image', 'object-fit', 'contain', 3, 'active'),
         ('image', 'border-radius', '0', 4, 'active'),
+        ('image', 'padding', '0', 5, 'active'),
+        ('image', 'margin', '0', 6, 'active'),
+
+        -- Watermark
+        ('watermark', 'width', '50%', 1, 'active'),
+        ('watermark', 'height', 'auto', 2, 'active'),
+        ('watermark', 'object-fit', 'contain', 3, 'active'),
+        ('watermark', 'opacity', '0.1', 4, 'active'),
+        ('watermark', 'padding', '0', 5, 'active'),
+        ('watermark', 'margin', '0', 6, 'active'),
 
         -- Table
         ('table', 'width', '100%', 1, 'active'),
@@ -85,12 +96,15 @@ FROM (
         ('table', 'color', '#000000', 3, 'active'),
         ('table', 'border', '1', 4, 'active'),
         ('table', 'border-style', 'solid', 5, 'active'),
+        ('table', 'padding', '0', 6, 'active'),
+        ('table', 'margin', '0', 7, 'active'),
 
         -- Divider
         ('divider', 'width', '100%', 1, 'active'),
         ('divider', 'height', '1', 2, 'active'),
         ('divider', 'background-color', '#000000', 3, 'active'),
-        ('divider', 'margin', '0', 4, 'active'),
+        ('divider', 'padding', '0', 4, 'active'),
+        ('divider', 'margin', '0', 5, 'active'),
 
         -- Spacer
         ('spacer', 'height', '24', 1, 'active')
