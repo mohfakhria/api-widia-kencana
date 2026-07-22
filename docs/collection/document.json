@@ -827,20 +827,32 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/document-layer-delete/00000000-0000-0000-0000-000000000601",
+              "raw": "{{base_url}}/api/document-layer-delete",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "document-layer-delete",
-                "00000000-0000-0000-0000-000000000601"
+                "document-layer-delete"
               ]
             },
-            "description": "Soft delete document layer by token. Child layers are also soft deleted."
+            "description": "Delete one or more document layers. For single delete, call DELETE /api/document-layer-delete/:token without body. For bulk delete, call DELETE /api/document-layer-delete with document_token and tokens body. Child layers are hard-deleted by database cascade.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_token\": \"{{document_token}}\",\n  \"tokens\": [\n    \"00000000-0000-0000-0000-000000000601\",\n    \"00000000-0000-0000-0000-000000000602\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
           "response": [
             {

@@ -10,7 +10,7 @@ type DocumentLayerUseCase interface {
 	Create(ctx context.Context, cmd CreateDocumentLayerCommand) (*entity.DocumentLayer, error)
 	Update(ctx context.Context, token string, cmd UpdateDocumentLayerCommand) error
 	Sort(ctx context.Context, cmd SortDocumentLayerCommand) error
-	Delete(ctx context.Context, token string) error
+	Delete(ctx context.Context, cmd DeleteDocumentLayerCommand) error
 }
 
 type CreateDocumentLayerCommand struct {
@@ -37,4 +37,9 @@ type SortDocumentLayerCommand struct {
 type SortDocumentLayerItemCommand struct {
 	Token    string
 	Position int
+}
+
+type DeleteDocumentLayerCommand struct {
+	DocumentToken string
+	Tokens        []string
 }

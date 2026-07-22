@@ -228,25 +228,54 @@ func (r *DocumentLayerRepository) Sort(
 	return tx.Commit()
 }
 
-func (r *DocumentLayerRepository) Delete(ctx context.Context, token string) error {
+func (r *DocumentLayerRepository) Delete(ctx context.Context, documentToken string, tokens []string) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	result, err := tx.ExecContext(ctx, `
-		DELETE FROM document_layers
-		WHERE token = $1::uuid
-	`, token)
+	result, err := deleteDocumentLayersTx(ctx, tx, documentToken, tokens)
 	if err != nil {
 		return err
 	}
 	if err := ensureAffected(result, "document layer not found"); err != nil {
 		return err
 	}
+	if err := ensureAllDeleted(result, len(tokens)); err != nil {
+		return err
+	}
 
 	return tx.Commit()
+}
+
+func deleteDocumentLayersTx(ctx context.Context, tx *sql.Tx, documentToken string, tokens []string) (sql.Result, error) {
+	if documentToken == "" {
+		return tx.ExecContext(ctx, `
+			DELETE FROM document_layers
+			WHERE token::text = ANY($1)
+		`, pq.Array(tokens))
+	}
+
+	return tx.ExecContext(ctx, `
+		DELETE FROM document_layers layer
+		USING documents document
+		WHERE layer.document_id = document.id
+			AND document.token = $1::uuid
+			AND layer.token::text = ANY($2)
+	`, documentToken, pq.Array(tokens))
+}
+
+func ensureAllDeleted(result sql.Result, expected int) error {
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected != int64(expected) {
+		return domain.NewError(domain.ErrNotFound, "document layer not found")
+	}
+
+	return nil
 }
 
 func (r *DocumentLayerRepository) GetByToken(

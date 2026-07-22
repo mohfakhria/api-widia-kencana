@@ -58,6 +58,7 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/document-layer-add", deps.DocumentLayerHandler.Create)
 		protected.PUT("/document-layer-update/:token", deps.DocumentLayerHandler.Update)
 		protected.PUT("/document-layer-sort", deps.DocumentLayerHandler.Sort)
+		protected.DELETE("/document-layer-delete", deps.DocumentLayerHandler.Delete)
 		protected.DELETE("/document-layer-delete/:token", deps.DocumentLayerHandler.Delete)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)

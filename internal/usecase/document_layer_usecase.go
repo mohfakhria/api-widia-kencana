@@ -111,13 +111,18 @@ func (uc *documentLayerUseCase) Sort(ctx context.Context, cmd input.SortDocument
 	return uc.repo.Sort(ctx, cmd.DocumentToken, cmd.ParentToken, cmd.Region, layers)
 }
 
-func (uc *documentLayerUseCase) Delete(ctx context.Context, token string) error {
-	token = strings.TrimSpace(token)
-	if err := validateDocumentLayerToken(token, "document layer token"); err != nil {
+func (uc *documentLayerUseCase) Delete(ctx context.Context, cmd input.DeleteDocumentLayerCommand) error {
+	documentToken := strings.TrimSpace(cmd.DocumentToken)
+	if err := validateOptionalDocumentLayerToken(documentToken, "document token"); err != nil {
 		return err
 	}
 
-	return uc.repo.Delete(ctx, token)
+	tokens, err := normalizeDeleteDocumentLayerTokens(cmd.Tokens)
+	if err != nil {
+		return err
+	}
+
+	return uc.repo.Delete(ctx, documentToken, tokens)
 }
 
 func mapDocumentLayerCommand(cmd input.CreateDocumentLayerCommand) *entity.DocumentLayer {
@@ -203,4 +208,31 @@ func validateOptionalDocumentLayerToken(token, label string) error {
 	}
 
 	return validateDocumentLayerToken(token, label)
+}
+
+func normalizeDeleteDocumentLayerTokens(tokens []string) ([]string, error) {
+	unique := make(map[string]struct{}, len(tokens))
+	normalized := make([]string, 0, len(tokens))
+
+	for _, token := range tokens {
+		token = strings.TrimSpace(token)
+		if token == "" {
+			continue
+		}
+		if err := validateDocumentLayerToken(token, "document layer token"); err != nil {
+			return nil, err
+		}
+		if _, exists := unique[token]; exists {
+			continue
+		}
+
+		unique[token] = struct{}{}
+		normalized = append(normalized, token)
+	}
+
+	if len(normalized) == 0 {
+		return nil, domain.NewError(domain.ErrInvalidInput, "at least one document layer token is required")
+	}
+
+	return normalized, nil
 }

@@ -1,6 +1,8 @@
 package http
 
 import (
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
@@ -65,7 +67,13 @@ func (h *DocumentLayerHandler) Sort(c *gin.Context) {
 }
 
 func (h *DocumentLayerHandler) Delete(c *gin.Context) {
-	if err := h.layer.Delete(c.Request.Context(), c.Param("token")); err != nil {
+	var req dto.DeleteDocumentLayerRequest
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	if err := h.layer.Delete(c.Request.Context(), req.ToDeleteDocumentLayerCommand(c.Param("token"))); err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}

@@ -31,6 +31,11 @@ type SortDocumentLayerItemRequest struct {
 	Position int    `json:"position"`
 }
 
+type DeleteDocumentLayerRequest struct {
+	DocumentToken string   `json:"document_token"`
+	Tokens        []string `json:"tokens"`
+}
+
 type DocumentLayerResponse struct {
 	Token         string                  `json:"token"`
 	DocumentToken string                  `json:"document_token"`
@@ -83,6 +88,19 @@ func (r SortDocumentLayerRequest) ToSortDocumentLayerCommand() input.SortDocumen
 	}
 
 	return cmd
+}
+
+func (r DeleteDocumentLayerRequest) ToDeleteDocumentLayerCommand(pathToken string) input.DeleteDocumentLayerCommand {
+	tokens := make([]string, 0, len(r.Tokens)+1)
+	if pathToken != "" {
+		tokens = append(tokens, pathToken)
+	}
+	tokens = append(tokens, r.Tokens...)
+
+	return input.DeleteDocumentLayerCommand{
+		DocumentToken: r.DocumentToken,
+		Tokens:        tokens,
+	}
 }
 
 func NewDocumentLayerResponse(layer *entity.DocumentLayer) DocumentLayerResponse {
