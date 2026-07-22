@@ -134,6 +134,15 @@ Default shape saat `settings` tidak dikirim:
 | `height` | Height | `string` | `text` | `auto` |  | CSS `height` |
 | `object-fit` | Object Fit | `string` | `select` | `fill` |  | CSS `object-fit` |
 | `opacity` | Opacity | `string` | `text` | `1` |  | CSS `opacity` |
+| `position` | Position | `string` | `select` | `static` |  | CSS `position` |
+| `inset` | Inset | `string` | `text` | `auto` |  | CSS `inset` |
+| `placement` | Placement | `string` | `select` | `custom` |  | FE placement helper |
+| `z-index` | Z Index | `string` | `text` | `auto` |  | CSS `z-index` |
+| `pointer-events` | Pointer Events | `string` | `select` | `auto` |  | CSS `pointer-events` |
+| `background-repeat` | Background Repeat | `string` | `select` | `repeat` |  | CSS `background-repeat` |
+| `rotation` | Rotation | `string` | `text` | `0deg` |  | CSS transform rotate value |
+| `mix-blend-mode` | Mix Blend Mode | `string` | `select` | `normal` |  | CSS `mix-blend-mode` |
+| `filter` | Filter | `string` | `text` | `none` |  | CSS `filter` |
 | `border-radius` | Border Radius | `number` | `number` | `0` | `px` | CSS `border-radius` |
 | `border` | Border | `number` | `number` | `0` | `px` | CSS border width |
 | `border-style` | Border Style | `string` | `select` | `none` |  | CSS `border-style` |
@@ -273,6 +282,73 @@ Default shape saat `settings` tidak dikirim:
 | `0.1` | 10% |
 | `custom` | Custom |
 
+### `position`
+
+| Value | Label | Native CSS |
+| --- | --- | --- |
+| `static` | Static | Yes |
+| `relative` | Relative | Yes |
+| `absolute` | Absolute | Yes |
+| `fixed` | Fixed | Yes |
+
+### `placement`
+
+| Value | Label | Meaning |
+| --- | --- | --- |
+| `center` | Center | Centered overlay |
+| `top-left` | Top Left | Top left overlay |
+| `top-center` | Top Center | Top center overlay |
+| `top-right` | Top Right | Top right overlay |
+| `center-left` | Center Left | Middle left overlay |
+| `center-right` | Center Right | Middle right overlay |
+| `bottom-left` | Bottom Left | Bottom left overlay |
+| `bottom-center` | Bottom Center | Bottom center overlay |
+| `bottom-right` | Bottom Right | Bottom right overlay |
+| `custom` | Custom | Frontend uses custom `inset`/transform |
+
+### `z-index`
+
+| Value | Label |
+| --- | --- |
+| `-1` | Behind Content |
+| `0` | Normal |
+| `1` | Above Content |
+| `custom` | Custom |
+
+### `pointer-events`
+
+| Value | Label | Native CSS |
+| --- | --- | --- |
+| `none` | None | Yes |
+| `auto` | Auto | Yes |
+
+### `background-repeat`
+
+| Value | Label | Native CSS |
+| --- | --- | --- |
+| `repeat` | Repeat | Yes |
+| `no-repeat` | No Repeat | Yes |
+| `repeat-x` | Repeat X | Yes |
+| `repeat-y` | Repeat Y | Yes |
+
+### `mix-blend-mode`
+
+| Value | Label | Native CSS |
+| --- | --- | --- |
+| `normal` | Normal | Yes |
+| `multiply` | Multiply | Yes |
+| `screen` | Screen | Yes |
+| `overlay` | Overlay | Yes |
+
+### `filter`
+
+| Value | Label | Native CSS |
+| --- | --- | --- |
+| `none` | None | Yes |
+| `grayscale(1)` | Grayscale | Yes |
+| `brightness(1.2)` | Brighter | Yes |
+| `custom` | Custom | UI preset for custom CSS filter |
+
 ### `padding`
 
 | Value | Label |
@@ -401,8 +477,17 @@ Default shape saat `settings` tidak dikirim:
 | 2 | `height` | `auto` |
 | 3 | `object-fit` | `contain` |
 | 4 | `opacity` | `0.1` |
-| 5 | `padding` | `0` |
-| 6 | `margin` | `0` |
+| 5 | `position` | `absolute` |
+| 6 | `placement` | `center` |
+| 7 | `inset` | `auto` |
+| 8 | `z-index` | `-1` |
+| 9 | `pointer-events` | `none` |
+| 10 | `background-repeat` | `no-repeat` |
+| 11 | `rotation` | `0deg` |
+| 12 | `mix-blend-mode` | `normal` |
+| 13 | `filter` | `none` |
+| 14 | `padding` | `0` |
+| 15 | `margin` | `0` |
 
 ### `table`
 
@@ -460,3 +545,19 @@ Frontend dapat mengubahnya menjadi:
 ```css
 grid-template-columns: 50% 50%;
 ```
+
+### Watermark Overlay
+
+Watermark tetap disimpan sebagai `document_layers` biasa. Frontend dapat menjadikan `placement` sebagai helper untuk menghasilkan CSS positioning, sedangkan `custom` berarti gunakan value `inset` langsung.
+
+Contoh render untuk watermark tengah:
+
+```css
+position: absolute;
+inset: 50% auto auto 50%;
+transform: translate(-50%, -50%) rotate(0deg);
+z-index: -1;
+pointer-events: none;
+```
+
+`rotation` disimpan sebagai value CSS, misalnya `-30deg`. Jika watermark harus berada di belakang content, gunakan `z-index = -1` dan pastikan parent canvas/region memiliki stacking context yang aman.
