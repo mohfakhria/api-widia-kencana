@@ -16,7 +16,6 @@ type RouterDeps struct {
 	TokenSigner          output.TokenSigner
 	AuthHandler          *AuthHandler
 	DocumentHandler      *DocumentHandler
-	DocumentLayerHandler *DocumentLayerHandler
 	ProjectHandler       *ProjectHandler
 	PurchaseOrderHandler *PurchaseOrderHandler
 	QuotationHandler     *QuotationHandler
@@ -45,21 +44,11 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
 		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)
-		protected.GET("/document-master/papers", deps.DocumentHandler.ListPapers)
-		protected.GET("/document-master/elements", deps.DocumentHandler.ListElements)
-		protected.GET("/document-master/properties", deps.DocumentHandler.ListProperties)
-		protected.GET("/document-master/property-options", deps.DocumentHandler.ListPropertyOptions)
-		protected.GET("/document-master/element-properties", deps.DocumentHandler.ListElementProperties)
 		protected.GET("/document-list", deps.DocumentHandler.List)
 		protected.GET("/document-detail/:token", deps.DocumentHandler.Get)
 		protected.POST("/document-add", deps.DocumentHandler.Create)
 		protected.PUT("/document-update/:token", deps.DocumentHandler.Update)
 		protected.DELETE("/document-delete/:token", deps.DocumentHandler.Delete)
-		protected.POST("/document-layer-add", deps.DocumentLayerHandler.Create)
-		protected.PUT("/document-layer-update/:token", deps.DocumentLayerHandler.Update)
-		protected.PUT("/document-layer-sort", deps.DocumentLayerHandler.Sort)
-		protected.DELETE("/document-layer-delete", deps.DocumentLayerHandler.Delete)
-		protected.DELETE("/document-layer-delete/:token", deps.DocumentLayerHandler.Delete)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)

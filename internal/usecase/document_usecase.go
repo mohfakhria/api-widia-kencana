@@ -24,154 +24,38 @@ var allowedDocumentStatuses = map[string]struct{}{
 }
 
 type documentUseCase struct {
-	repo      output.DocumentRepository
-	layerRepo output.DocumentLayerRepository
+	repo output.DocumentRepository
 }
 
-func NewDocumentUseCase(
-	repo output.DocumentRepository,
-	layerRepo output.DocumentLayerRepository,
-) input.DocumentUseCase {
-	return &documentUseCase{repo: repo, layerRepo: layerRepo}
-}
-
-func (uc *documentUseCase) ListPapers(ctx context.Context) ([]entity.DocumentPaper, error) {
-	return uc.repo.ListPapers(ctx)
-}
-
-func (uc *documentUseCase) ListElements(
-	ctx context.Context,
-	query input.ListDocumentElementQuery,
-) ([]entity.DocumentElement, error) {
-	query.Code = strings.TrimSpace(query.Code)
-
-	elements, err := uc.repo.ListElements(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	if query.Code == "" {
-		return elements, nil
-	}
-
-	elementPropertyQuery := input.ListDocumentElementPropertyQuery{}
-	if query.Code != "all" {
-		elementPropertyQuery.ElementCode = query.Code
-	}
-
-	elementProperties, err := uc.ListElementProperties(ctx, elementPropertyQuery)
-	if err != nil {
-		return nil, err
-	}
-
-	return attachElementPropertiesByElement(elements, elementProperties), nil
-}
-
-func (uc *documentUseCase) ListProperties(ctx context.Context) ([]entity.DocumentProperty, error) {
-	return uc.repo.ListProperties(ctx)
-}
-
-func (uc *documentUseCase) ListPropertyOptions(ctx context.Context) ([]entity.DocumentPropertyOption, error) {
-	return uc.repo.ListPropertyOptions(ctx)
-}
-
-func (uc *documentUseCase) ListElementProperties(
-	ctx context.Context,
-	query input.ListDocumentElementPropertyQuery,
-) ([]entity.DocumentElementProperty, error) {
-	query.ElementCode = strings.TrimSpace(query.ElementCode)
-
-	properties, err := uc.repo.ListProperties(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	options, err := uc.repo.ListPropertyOptions(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	elementProperties, err := uc.repo.ListElementProperties(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-
-	propertiesByID := mapPropertiesByID(properties, options)
-	for idx := range elementProperties {
-		property, ok := propertiesByID[elementProperties[idx].DocumentPropertyID]
-		if !ok {
-			continue
-		}
-		elementProperties[idx].Property = property
-	}
-
-	return elementProperties, nil
+func NewDocumentUseCase(repo output.DocumentRepository) input.DocumentUseCase {
+	return &documentUseCase{repo: repo}
 }
 
 func (uc *documentUseCase) List(ctx context.Context, query input.ListDocumentQuery) ([]entity.Document, error) {
 	query.Name = strings.TrimSpace(query.Name)
 	query.Token = strings.TrimSpace(query.Token)
+	query.DocumentType = strings.ToLower(strings.TrimSpace(query.DocumentType))
+	query.Status = strings.ToLower(strings.TrimSpace(query.Status))
+
 	if err := validateOptionalUUIDToken(query.Token, "document token"); err != nil {
 		return nil, err
+	}
+	if query.Status != "" {
+		if _, ok := allowedDocumentStatuses[query.Status]; !ok {
+			return nil, domain.NewError(domain.ErrInvalidInput, "invalid document status")
+		}
 	}
 
 	return uc.repo.List(ctx, query)
 }
 
-func (uc *documentUseCase) GetByToken(
-	ctx context.Context,
-	token string,
-	query input.GetDocumentQuery,
-) (*entity.Document, error) {
+func (uc *documentUseCase) GetByToken(ctx context.Context, token string) (*entity.Document, error) {
 	token = strings.TrimSpace(token)
 	if err := validateUUIDToken(token, "document token"); err != nil {
 		return nil, err
 	}
 
-	document, err := uc.repo.GetByToken(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-	if !query.WithLayer {
-		return document, nil
-	}
-
-	layers, err := uc.layerRepo.ListByDocumentToken(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-
-	layers, err = uc.attachMasterElementProperties(ctx, layers)
-	if err != nil {
-		return nil, err
-	}
-
-	document.WithLayers = true
-	document.Layers = buildDocumentLayerTree(layers)
-	return document, nil
-}
-
-func (uc *documentUseCase) attachMasterElementProperties(
-	ctx context.Context,
-	layers []entity.DocumentLayer,
-) ([]entity.DocumentLayer, error) {
-	elementProperties, err := uc.ListElementProperties(ctx, input.ListDocumentElementPropertyQuery{})
-	if err != nil {
-		return nil, err
-	}
-
-	propertiesByElementCode := make(map[string][]entity.DocumentElementProperty)
-	for _, elementProperty := range elementProperties {
-		propertiesByElementCode[elementProperty.ElementCode] = append(
-			propertiesByElementCode[elementProperty.ElementCode],
-			elementProperty,
-		)
-	}
-
-	for idx := range layers {
-		layers[idx].Element.Properties = propertiesByElementCode[layers[idx].Element.Code]
-	}
-
-	return layers, nil
+	return uc.repo.GetByToken(ctx, token)
 }
 
 func (uc *documentUseCase) Create(ctx context.Context, cmd input.CreateDocumentCommand) (*entity.Document, error) {
@@ -217,6 +101,11 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 		documentType = defaultDocumentType
 	}
 
+	settings := cmd.Settings
+	if settings == nil {
+		settings = map[string]any{}
+	}
+
 	return &entity.Document{
 		Paper: entity.DocumentPaper{
 			Token: strings.TrimSpace(cmd.DocumentPaperToken),
@@ -224,18 +113,10 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 		ParentToken:  strings.TrimSpace(cmd.ParentToken),
 		Name:         strings.TrimSpace(cmd.Name),
 		DocumentType: documentType,
-		Settings:     normalizeDocumentSettings(cmd.Settings),
+		Settings:     settings,
 		Position:     cmd.Position,
 		Status:       status,
 	}
-}
-
-func normalizeDocumentSettings(settings map[string]any) map[string]any {
-	if settings == nil {
-		return entity.DefaultDocumentSettings()
-	}
-
-	return settings
 }
 
 func validateDocument(document *entity.Document) error {
@@ -275,125 +156,4 @@ func validateOptionalUUIDToken(token, label string) error {
 	}
 
 	return validateUUIDToken(token, label)
-}
-
-func mapPropertiesByID(
-	properties []entity.DocumentProperty,
-	options []entity.DocumentPropertyOption,
-) map[int64]entity.DocumentProperty {
-	optionsByPropertyID := make(map[int64][]entity.DocumentPropertyOption)
-	for _, option := range options {
-		optionsByPropertyID[option.DocumentPropertyID] = append(optionsByPropertyID[option.DocumentPropertyID], option)
-	}
-
-	propertiesByID := make(map[int64]entity.DocumentProperty)
-	for _, property := range properties {
-		property.Options = optionsByPropertyID[property.ID]
-		propertiesByID[property.ID] = property
-	}
-
-	return propertiesByID
-}
-
-func attachElementProperties(
-	elements []entity.DocumentElement,
-	elementProperties []entity.DocumentElementProperty,
-	propertiesByID map[int64]entity.DocumentProperty,
-) []entity.DocumentElement {
-	propertiesByElementID := make(map[int64][]entity.DocumentElementProperty)
-	for _, elementProperty := range elementProperties {
-		property, ok := propertiesByID[elementProperty.DocumentPropertyID]
-		if !ok {
-			continue
-		}
-		elementProperty.Property = property
-		propertiesByElementID[elementProperty.DocumentElementID] = append(
-			propertiesByElementID[elementProperty.DocumentElementID],
-			elementProperty,
-		)
-	}
-
-	for idx := range elements {
-		elements[idx].Properties = propertiesByElementID[elements[idx].ID]
-	}
-
-	return elements
-}
-
-func attachElementPropertiesByElement(
-	elements []entity.DocumentElement,
-	elementProperties []entity.DocumentElementProperty,
-) []entity.DocumentElement {
-	propertiesByElementID := make(map[int64][]entity.DocumentElementProperty)
-	for _, elementProperty := range elementProperties {
-		propertiesByElementID[elementProperty.DocumentElementID] = append(
-			propertiesByElementID[elementProperty.DocumentElementID],
-			elementProperty,
-		)
-	}
-
-	for idx := range elements {
-		elements[idx].Properties = propertiesByElementID[elements[idx].ID]
-	}
-
-	return elements
-}
-
-func buildDocumentLayerTree(layers []entity.DocumentLayer) entity.DocumentLayerRegions {
-	regions := entity.DocumentLayerRegions{
-		Header: []entity.DocumentLayer{},
-		Body:   []entity.DocumentLayer{},
-		Footer: []entity.DocumentLayer{},
-	}
-
-	type layerNode struct {
-		layer    entity.DocumentLayer
-		children []*layerNode
-	}
-
-	layerByID := make(map[int64]*layerNode, len(layers))
-	orderedNodes := make([]*layerNode, 0, len(layers))
-	for _, layer := range layers {
-		layer.Children = []entity.DocumentLayer{}
-		node := &layerNode{layer: layer, children: []*layerNode{}}
-		layerByID[layer.ID] = node
-		orderedNodes = append(orderedNodes, node)
-	}
-
-	rootNodes := make([]*layerNode, 0, len(layers))
-	for _, node := range orderedNodes {
-		if node.layer.ParentID != nil {
-			if parent, ok := layerByID[*node.layer.ParentID]; ok {
-				parent.children = append(parent.children, node)
-				continue
-			}
-		}
-
-		rootNodes = append(rootNodes, node)
-	}
-
-	var mapNodeToLayer func(*layerNode) entity.DocumentLayer
-	mapNodeToLayer = func(node *layerNode) entity.DocumentLayer {
-		layer := node.layer
-		layer.Children = make([]entity.DocumentLayer, 0, len(node.children))
-		for _, child := range node.children {
-			layer.Children = append(layer.Children, mapNodeToLayer(child))
-		}
-
-		return layer
-	}
-
-	for _, node := range rootNodes {
-		layer := mapNodeToLayer(node)
-		switch layer.Region {
-		case "header":
-			regions.Header = append(regions.Header, layer)
-		case "footer":
-			regions.Footer = append(regions.Footer, layer)
-		default:
-			regions.Body = append(regions.Body, layer)
-		}
-	}
-
-	return regions
 }

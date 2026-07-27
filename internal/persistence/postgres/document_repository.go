@@ -22,267 +22,17 @@ func NewDocumentRepository(db *sql.DB) output.DocumentRepository {
 	return &DocumentRepository{db: db}
 }
 
-func (r *DocumentRepository) ListPapers(ctx context.Context) ([]entity.DocumentPaper, error) {
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, token::text, name, media_type, width, height, unit,
-			allow_portrait, allow_landscape, status, created_at, updated_at
-		FROM document_papers
-		WHERE status = 'active'
-		ORDER BY media_type, name, width, height
-	`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var papers []entity.DocumentPaper
-	for rows.Next() {
-		var paper entity.DocumentPaper
-		if err := rows.Scan(
-			&paper.ID,
-			&paper.Token,
-			&paper.Name,
-			&paper.MediaType,
-			&paper.Width,
-			&paper.Height,
-			&paper.Unit,
-			&paper.AllowPortrait,
-			&paper.AllowLandscape,
-			&paper.Status,
-			&paper.CreatedAt,
-			&paper.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		papers = append(papers, paper)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return papers, nil
-}
-
-func (r *DocumentRepository) ListElements(
-	ctx context.Context,
-	query input.ListDocumentElementQuery,
-) ([]entity.DocumentElement, error) {
-	builder := strings.Builder{}
-	builder.WriteString(`
-		SELECT id, token::text, code, name, renderer_type, renderer_tag,
-			content_type, is_container, status, created_at, updated_at
-		FROM document_elements
-		WHERE status = 'active'
-	`)
-
-	args := make([]any, 0)
-	if query.Code != "" && query.Code != "all" {
-		args = append(args, query.Code)
-		builder.WriteString(fmt.Sprintf(" AND code = $%d", len(args)))
-	}
-	builder.WriteString(`
-		ORDER BY id
-	`)
-
-	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var elements []entity.DocumentElement
-	for rows.Next() {
-		var element entity.DocumentElement
-		if err := rows.Scan(
-			&element.ID,
-			&element.Token,
-			&element.Code,
-			&element.Name,
-			&element.RendererType,
-			&element.RendererTag,
-			&element.ContentType,
-			&element.IsContainer,
-			&element.Status,
-			&element.CreatedAt,
-			&element.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		elements = append(elements, element)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return elements, nil
-}
-
-func (r *DocumentRepository) ListProperties(ctx context.Context) ([]entity.DocumentProperty, error) {
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, token::text, code, name, data_type, input_type,
-			default_value, unit, status, created_at, updated_at
-		FROM document_properties
-		WHERE status = 'active'
-		ORDER BY id
-	`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var properties []entity.DocumentProperty
-	for rows.Next() {
-		var property entity.DocumentProperty
-		if err := rows.Scan(
-			&property.ID,
-			&property.Token,
-			&property.Code,
-			&property.Name,
-			&property.DataType,
-			&property.InputType,
-			&property.DefaultValue,
-			&property.Unit,
-			&property.Status,
-			&property.CreatedAt,
-			&property.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		properties = append(properties, property)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return properties, nil
-}
-
-func (r *DocumentRepository) ListPropertyOptions(ctx context.Context) ([]entity.DocumentPropertyOption, error) {
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT
-			option.id,
-			option.token::text,
-			option.document_property_id,
-			property.token::text,
-			property.code,
-			option.value,
-			option.label,
-			option.position,
-			option.status,
-			option.created_at,
-			option.updated_at
-		FROM document_property_options option
-		JOIN document_properties property ON property.id = option.document_property_id
-		WHERE option.status = 'active'
-			AND property.status = 'active'
-		ORDER BY option.document_property_id, option.position, option.id
-	`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var options []entity.DocumentPropertyOption
-	for rows.Next() {
-		var option entity.DocumentPropertyOption
-		if err := rows.Scan(
-			&option.ID,
-			&option.Token,
-			&option.DocumentPropertyID,
-			&option.PropertyToken,
-			&option.PropertyCode,
-			&option.Value,
-			&option.Label,
-			&option.Position,
-			&option.Status,
-			&option.CreatedAt,
-			&option.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		options = append(options, option)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return options, nil
-}
-
-func (r *DocumentRepository) ListElementProperties(
-	ctx context.Context,
-	query input.ListDocumentElementPropertyQuery,
-) ([]entity.DocumentElementProperty, error) {
-	builder := strings.Builder{}
-	builder.WriteString(`
-		SELECT
-			element_property.id,
-			element_property.token::text,
-			element_property.document_element_id,
-			element.token::text,
-			element.code,
-			element_property.document_property_id,
-			element_property.default_value,
-			element_property.position,
-			element_property.status,
-			element_property.created_at,
-			element_property.updated_at
-		FROM document_element_properties element_property
-		JOIN document_elements element ON element.id = element_property.document_element_id
-		WHERE element_property.status = 'active'
-			AND element.status = 'active'
-	`)
-
-	args := make([]any, 0)
-	if query.ElementCode != "" {
-		args = append(args, query.ElementCode)
-		builder.WriteString(fmt.Sprintf(" AND element.code = $%d", len(args)))
-	}
-	builder.WriteString(`
-		ORDER BY element_property.document_element_id, element_property.position, element_property.id
-	`)
-
-	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var elementProperties []entity.DocumentElementProperty
-	for rows.Next() {
-		var elementProperty entity.DocumentElementProperty
-		if err := rows.Scan(
-			&elementProperty.ID,
-			&elementProperty.Token,
-			&elementProperty.DocumentElementID,
-			&elementProperty.ElementToken,
-			&elementProperty.ElementCode,
-			&elementProperty.DocumentPropertyID,
-			&elementProperty.DefaultValue,
-			&elementProperty.Position,
-			&elementProperty.Status,
-			&elementProperty.CreatedAt,
-			&elementProperty.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		elementProperties = append(elementProperties, elementProperty)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return elementProperties, nil
-}
-
 func (r *DocumentRepository) List(ctx context.Context, query input.ListDocumentQuery) ([]entity.Document, error) {
 	builder := strings.Builder{}
 	builder.WriteString(documentSelectQuery())
-	builder.WriteString(`
-		WHERE d.status <> 'deleted'
-	`)
 
 	args := make([]any, 0)
+	if query.Status == "" {
+		builder.WriteString(" WHERE d.status <> 'deleted'")
+	} else {
+		args = append(args, query.Status)
+		builder.WriteString(fmt.Sprintf(" WHERE d.status = $%d", len(args)))
+	}
 	if query.Name != "" {
 		args = append(args, "%"+query.Name+"%")
 		builder.WriteString(fmt.Sprintf(" AND d.name ILIKE $%d", len(args)))
@@ -290,6 +40,10 @@ func (r *DocumentRepository) List(ctx context.Context, query input.ListDocumentQ
 	if query.Token != "" {
 		args = append(args, query.Token)
 		builder.WriteString(fmt.Sprintf(" AND d.token = $%d::uuid", len(args)))
+	}
+	if query.DocumentType != "" {
+		args = append(args, query.DocumentType)
+		builder.WriteString(fmt.Sprintf(" AND d.document_type = $%d", len(args)))
 	}
 	builder.WriteString(`
 		ORDER BY d.position ASC, d.created_at DESC
@@ -389,7 +143,7 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 		return err
 	}
 
-	return ensureAffected(result, "document not found")
+	return ensureDocumentAffected(result, "document not found")
 }
 
 func (r *DocumentRepository) Delete(ctx context.Context, token string) error {
@@ -404,7 +158,7 @@ func (r *DocumentRepository) Delete(ctx context.Context, token string) error {
 		return err
 	}
 
-	return ensureAffected(result, "document not found")
+	return ensureDocumentAffected(result, "document not found")
 }
 
 func (r *DocumentRepository) getDocumentPaperIDByToken(ctx context.Context, token string) (int64, error) {
@@ -496,15 +250,14 @@ func scanDocuments(rows *sql.Rows) ([]entity.Document, error) {
 	return documents, nil
 }
 
-type rowScanner interface {
+type documentRowScanner interface {
 	Scan(dest ...any) error
 }
 
-func scanDocument(row rowScanner, document *entity.Document) error {
+func scanDocument(row documentRowScanner, document *entity.Document) error {
 	var parentID sql.NullInt64
 	var settingsRaw string
-
-	err := row.Scan(
+	if err := row.Scan(
 		&document.ID,
 		&document.Token,
 		&document.DocumentPaperID,
@@ -529,16 +282,15 @@ func scanDocument(row rowScanner, document *entity.Document) error {
 		&document.Paper.Status,
 		&document.Paper.CreatedAt,
 		&document.Paper.UpdatedAt,
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
+
 	settings, err := decodeDocumentSettings(settingsRaw)
 	if err != nil {
 		return err
 	}
 	document.Settings = settings
-
 	if parentID.Valid {
 		document.ParentID = &parentID.Int64
 	}
@@ -547,38 +299,40 @@ func scanDocument(row rowScanner, document *entity.Document) error {
 }
 
 func encodeDocumentSettings(settings map[string]any) (string, error) {
-	encoded, err := json.Marshal(normalizeDocumentSettingsMap(settings))
+	if settings == nil {
+		settings = map[string]any{}
+	}
+	encoded, err := json.Marshal(settings)
 	if err != nil {
-		return "", err
+		return "", domain.NewError(domain.ErrInvalidInput, "invalid document settings")
 	}
 
 	return string(encoded), nil
 }
 
 func decodeDocumentSettings(raw string) (map[string]any, error) {
+	if raw == "" {
+		return map[string]any{}, nil
+	}
+
 	var settings map[string]any
 	if err := json.Unmarshal([]byte(raw), &settings); err != nil {
 		return nil, err
 	}
-
-	return normalizeDocumentSettingsMap(settings), nil
-}
-
-func normalizeDocumentSettingsMap(settings map[string]any) map[string]any {
 	if settings == nil {
-		return map[string]any{}
+		return map[string]any{}, nil
 	}
 
-	return settings
+	return settings, nil
 }
 
-func ensureAffected(result sql.Result, notFoundMessage string) error {
+func ensureDocumentAffected(result sql.Result, message string) error {
 	affected, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
 	if affected == 0 {
-		return domain.NewError(domain.ErrNotFound, notFoundMessage)
+		return domain.NewError(domain.ErrNotFound, message)
 	}
 
 	return nil

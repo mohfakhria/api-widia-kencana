@@ -6,9 +6,9 @@ type Document struct {
 	ID              int64
 	Token           string
 	DocumentPaperID int64
+	Paper           DocumentPaper
 	ParentID        *int64
 	ParentToken     string
-	Paper           DocumentPaper
 	Name            string
 	DocumentType    string
 	Settings        map[string]any
@@ -16,12 +16,19 @@ type Document struct {
 	Status          string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
-	WithLayers      bool
-	Layers          DocumentLayerRegions
 }
 
-type DocumentLayerRegions struct {
-	Header []DocumentLayer
-	Body   []DocumentLayer
-	Footer []DocumentLayer
+type DocumentPaper struct {
+	ID             int64
+	Token          string
+	Name           string
+	MediaType      string
+	Width          float64
+	Height         float64
+	Unit           string
+	AllowPortrait  bool
+	AllowLandscape bool
+	Status         string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }

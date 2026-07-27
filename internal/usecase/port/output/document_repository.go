@@ -8,11 +8,6 @@ import (
 )
 
 type DocumentRepository interface {
-	ListPapers(ctx context.Context) ([]entity.DocumentPaper, error)
-	ListElements(ctx context.Context, query input.ListDocumentElementQuery) ([]entity.DocumentElement, error)
-	ListProperties(ctx context.Context) ([]entity.DocumentProperty, error)
-	ListPropertyOptions(ctx context.Context) ([]entity.DocumentPropertyOption, error)
-	ListElementProperties(ctx context.Context, query input.ListDocumentElementPropertyQuery) ([]entity.DocumentElementProperty, error)
 	List(ctx context.Context, query input.ListDocumentQuery) ([]entity.Document, error)
 	GetByToken(ctx context.Context, token string) (*entity.Document, error)
 	Create(ctx context.Context, document *entity.Document) (*entity.Document, error)

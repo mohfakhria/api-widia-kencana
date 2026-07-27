@@ -8,16 +8,7 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 )
 
-type CreateDocumentRequest struct {
-	DocumentPaperToken string         `json:"document_paper_token"`
-	ParentToken        string         `json:"parent_token"`
-	Name               string         `json:"name"`
-	DocumentType       string         `json:"document_type"`
-	Settings           map[string]any `json:"settings"`
-	Status             string         `json:"status"`
-}
-
-type UpdateDocumentRequest struct {
+type DocumentRequest struct {
 	DocumentPaperToken string         `json:"document_paper_token"`
 	ParentToken        string         `json:"parent_token"`
 	Name               string         `json:"name"`
@@ -28,47 +19,37 @@ type UpdateDocumentRequest struct {
 }
 
 type DocumentListFilterRequest struct {
-	Name  string `form:"name"`
-	Token string `form:"token"`
-}
-
-type DocumentDetailQueryRequest struct {
-	WithLayer bool `form:"with_layer"`
+	Name         string `form:"name"`
+	Token        string `form:"token"`
+	DocumentType string `form:"document_type"`
+	Status       string `form:"status"`
 }
 
 type DocumentResponse struct {
-	Token        string                        `json:"token"`
-	ParentToken  string                        `json:"parent_token"`
-	Name         string                        `json:"name"`
-	DocumentType string                        `json:"document_type"`
-	Settings     map[string]any                `json:"settings"`
-	Position     int                           `json:"position"`
-	Status       string                        `json:"status"`
-	Paper        DocumentPaperResponse         `json:"paper"`
-	CreatedAt    time.Time                     `json:"created_at"`
-	UpdatedAt    time.Time                     `json:"updated_at"`
-	Layers       *DocumentLayerRegionsResponse `json:"layers,omitempty"`
+	Token        string                `json:"token"`
+	ParentToken  string                `json:"parent_token"`
+	Name         string                `json:"name"`
+	DocumentType string                `json:"document_type"`
+	Settings     map[string]any        `json:"settings"`
+	Position     int                   `json:"position"`
+	Status       string                `json:"status"`
+	Paper        DocumentPaperResponse `json:"paper"`
+	CreatedAt    time.Time             `json:"created_at"`
+	UpdatedAt    time.Time             `json:"updated_at"`
 }
 
-type DocumentLayerRegionsResponse struct {
-	Header []DocumentLayerTreeResponse `json:"header"`
-	Body   []DocumentLayerTreeResponse `json:"body"`
-	Footer []DocumentLayerTreeResponse `json:"footer"`
-}
-
-type DocumentLayerTreeResponse struct {
-	Token       string                      `json:"token"`
-	ParentToken string                      `json:"parent_token"`
-	Element     DocumentElementResponse     `json:"element"`
-	Region      string                      `json:"region"`
-	Name        string                      `json:"name"`
-	Content     map[string]any              `json:"content"`
-	Properties  map[string]any              `json:"properties"`
-	Position    int                         `json:"position"`
-	Status      string                      `json:"status"`
-	CreatedAt   time.Time                   `json:"created_at"`
-	UpdatedAt   time.Time                   `json:"updated_at"`
-	Children    []DocumentLayerTreeResponse `json:"children"`
+type DocumentPaperResponse struct {
+	Token          string    `json:"token"`
+	Name           string    `json:"name"`
+	MediaType      string    `json:"media_type"`
+	Width          float64   `json:"width"`
+	Height         float64   `json:"height"`
+	Unit           string    `json:"unit"`
+	AllowPortrait  bool      `json:"allow_portrait"`
+	AllowLandscape bool      `json:"allow_landscape"`
+	Status         string    `json:"status"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type DocumentDataResponse struct {
@@ -79,19 +60,8 @@ type DocumentListResponse struct {
 	Documents []DocumentResponse `json:"documents"`
 }
 
-func (r CreateDocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCommand {
+func (r DocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCommand {
 	return input.CreateDocumentCommand{
-		DocumentPaperToken: r.DocumentPaperToken,
-		ParentToken:        r.ParentToken,
-		Name:               r.Name,
-		DocumentType:       r.DocumentType,
-		Settings:           r.Settings,
-		Status:             r.Status,
-	}
-}
-
-func (r UpdateDocumentRequest) ToUpdateDocumentCommand() input.UpdateDocumentCommand {
-	return input.UpdateDocumentCommand{
 		DocumentPaperToken: r.DocumentPaperToken,
 		ParentToken:        r.ParentToken,
 		Name:               r.Name,
@@ -102,21 +72,21 @@ func (r UpdateDocumentRequest) ToUpdateDocumentCommand() input.UpdateDocumentCom
 	}
 }
 
-func (r DocumentListFilterRequest) ToListDocumentQuery() input.ListDocumentQuery {
-	return input.ListDocumentQuery{
-		Name:  strings.TrimSpace(r.Name),
-		Token: strings.TrimSpace(r.Token),
-	}
+func (r DocumentRequest) ToUpdateDocumentCommand() input.UpdateDocumentCommand {
+	return input.UpdateDocumentCommand(r.ToCreateDocumentCommand())
 }
 
-func (r DocumentDetailQueryRequest) ToGetDocumentQuery() input.GetDocumentQuery {
-	return input.GetDocumentQuery{
-		WithLayer: r.WithLayer,
+func (r DocumentListFilterRequest) ToListDocumentQuery() input.ListDocumentQuery {
+	return input.ListDocumentQuery{
+		Name:         strings.TrimSpace(r.Name),
+		Token:        strings.TrimSpace(r.Token),
+		DocumentType: strings.TrimSpace(r.DocumentType),
+		Status:       strings.TrimSpace(r.Status),
 	}
 }
 
 func NewDocumentResponse(document *entity.Document) DocumentResponse {
-	response := DocumentResponse{
+	return DocumentResponse{
 		Token:        document.Token,
 		ParentToken:  document.ParentToken,
 		Name:         document.Name,
@@ -128,11 +98,22 @@ func NewDocumentResponse(document *entity.Document) DocumentResponse {
 		CreatedAt:    document.CreatedAt,
 		UpdatedAt:    document.UpdatedAt,
 	}
-	if document.WithLayers {
-		response.Layers = NewDocumentLayerRegionsResponse(document.Layers)
-	}
+}
 
-	return response
+func NewDocumentPaperResponse(paper entity.DocumentPaper) DocumentPaperResponse {
+	return DocumentPaperResponse{
+		Token:          paper.Token,
+		Name:           paper.Name,
+		MediaType:      paper.MediaType,
+		Width:          paper.Width,
+		Height:         paper.Height,
+		Unit:           paper.Unit,
+		AllowPortrait:  paper.AllowPortrait,
+		AllowLandscape: paper.AllowLandscape,
+		Status:         paper.Status,
+		CreatedAt:      paper.CreatedAt,
+		UpdatedAt:      paper.UpdatedAt,
+	}
 }
 
 func NewDocumentDataResponse(document *entity.Document) DocumentDataResponse {
@@ -148,40 +129,4 @@ func NewDocumentListResponse(documents []entity.Document) DocumentListResponse {
 	}
 
 	return response
-}
-
-func NewDocumentLayerRegionsResponse(
-	regions entity.DocumentLayerRegions,
-) *DocumentLayerRegionsResponse {
-	return &DocumentLayerRegionsResponse{
-		Header: NewDocumentLayerTreeResponses(regions.Header),
-		Body:   NewDocumentLayerTreeResponses(regions.Body),
-		Footer: NewDocumentLayerTreeResponses(regions.Footer),
-	}
-}
-
-func NewDocumentLayerTreeResponses(layers []entity.DocumentLayer) []DocumentLayerTreeResponse {
-	responses := make([]DocumentLayerTreeResponse, 0, len(layers))
-	for _, layer := range layers {
-		responses = append(responses, NewDocumentLayerTreeResponse(&layer))
-	}
-
-	return responses
-}
-
-func NewDocumentLayerTreeResponse(layer *entity.DocumentLayer) DocumentLayerTreeResponse {
-	return DocumentLayerTreeResponse{
-		Token:       layer.Token,
-		ParentToken: layer.ParentToken,
-		Element:     NewDocumentElementResponse(layer.Element),
-		Region:      layer.Region,
-		Name:        layer.Name,
-		Content:     layer.Content,
-		Properties:  layer.Properties,
-		Position:    layer.Position,
-		Status:      layer.Status,
-		CreatedAt:   layer.CreatedAt,
-		UpdatedAt:   layer.UpdatedAt,
-		Children:    NewDocumentLayerTreeResponses(layer.Children),
-	}
 }
