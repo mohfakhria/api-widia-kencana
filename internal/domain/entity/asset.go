@@ -6,6 +6,7 @@ type Asset struct {
 	ID                 int64
 	Token              string
 	Bucket             string
+	Scope              string
 	ObjectName         string
 	OriginalFilename   string
 	StoredFilename     string

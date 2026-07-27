@@ -217,13 +217,14 @@ Jangan cache URL ini sebagai data permanen. Simpan `asset_token`, lalu minta pre
 Untuk menampilkan library asset milik user:
 
 ```http
-GET /api/asset-list?status=uploaded
+GET /api/asset-list?status=uploaded&scope=documents
 ```
 
 Filter opsional:
 
 ```text
 status=uploaded
+scope=documents
 mime_type=image/png
 extension=png
 ```
@@ -240,6 +241,7 @@ Response:
     "assets": [
       {
         "token": "98b5e767-0000-4000-9000-5f73d39cdd66",
+        "scope": "documents",
         "original_filename": "logo.png",
         "mime_type": "image/png",
         "extension": "png",

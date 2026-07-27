@@ -25,13 +25,13 @@ func (r *AssetRepository) CreatePending(ctx context.Context, asset *entity.Asset
 	var token string
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO assets (
-			bucket, object_name, original_filename, stored_filename, mime_type,
+			bucket, scope, object_name, original_filename, stored_filename, mime_type,
 			extension, size, etag, checksum_sha256, status, upload_method, is_private,
 			uploaded_by, presigned_expires_at, created_at, updated_at
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,NOW(),NOW())
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NOW(),NOW())
 		RETURNING token::text
-	`, asset.Bucket, asset.ObjectName, asset.OriginalFilename, asset.StoredFilename,
+	`, asset.Bucket, asset.Scope, asset.ObjectName, asset.OriginalFilename, asset.StoredFilename,
 		asset.MimeType, asset.Extension, asset.Size, asset.ETag, asset.ChecksumSHA256,
 		asset.Status, asset.UploadMethod, asset.IsPrivate, asset.UploadedBy,
 		asset.PresignedExpiresAt).Scan(&token)
@@ -71,6 +71,10 @@ func (r *AssetRepository) List(ctx context.Context, query input.ListAssetQuery) 
 		builder.WriteString(fmt.Sprintf(" AND status = $%d", len(args)))
 	} else {
 		builder.WriteString(" AND status <> 'deleted'")
+	}
+	if query.Scope != "" {
+		args = append(args, query.Scope)
+		builder.WriteString(fmt.Sprintf(" AND scope = $%d", len(args)))
 	}
 	if query.MimeType != "" {
 		args = append(args, query.MimeType)
@@ -176,6 +180,7 @@ func assetSelectQuery() string {
 			id,
 			token::text,
 			bucket,
+			scope,
 			object_name,
 			original_filename,
 			stored_filename,
@@ -219,6 +224,7 @@ func scanAsset(row assetRowScanner, asset *entity.Asset) error {
 		&asset.ID,
 		&asset.Token,
 		&asset.Bucket,
+		&asset.Scope,
 		&asset.ObjectName,
 		&asset.OriginalFilename,
 		&asset.StoredFilename,

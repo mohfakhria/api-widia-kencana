@@ -72,7 +72,7 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/asset-list?status=uploaded&mime_type=&extension=",
+          "raw": "{{base_url}}/api/asset-list?status=uploaded&scope=documents&mime_type=&extension=",
           "host": [
             "{{base_url}}"
           ],
@@ -84,6 +84,10 @@
             {
               "key": "status",
               "value": "uploaded"
+            },
+            {
+              "key": "scope",
+              "value": "documents"
             },
             {
               "key": "mime_type",

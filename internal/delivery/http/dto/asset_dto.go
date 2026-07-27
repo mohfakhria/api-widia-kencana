@@ -17,12 +17,14 @@ type AssetUploadRequest struct {
 
 type AssetListFilterRequest struct {
 	Status    string `form:"status"`
+	Scope     string `form:"scope"`
 	MimeType  string `form:"mime_type"`
 	Extension string `form:"extension"`
 }
 
 type AssetResponse struct {
 	Token              string     `json:"token"`
+	Scope              string     `json:"scope"`
 	ObjectName         string     `json:"object_name"`
 	OriginalFilename   string     `json:"original_filename"`
 	StoredFilename     string     `json:"stored_filename"`
@@ -76,6 +78,7 @@ func (r AssetUploadRequest) ToRequestAssetUploadCommand(uploadedBy *int64) input
 func (r AssetListFilterRequest) ToListAssetQuery() input.ListAssetQuery {
 	return input.ListAssetQuery{
 		Status:    strings.TrimSpace(r.Status),
+		Scope:     strings.TrimSpace(r.Scope),
 		MimeType:  strings.TrimSpace(r.MimeType),
 		Extension: strings.TrimSpace(r.Extension),
 	}
@@ -84,6 +87,7 @@ func (r AssetListFilterRequest) ToListAssetQuery() input.ListAssetQuery {
 func NewAssetResponse(asset *entity.Asset) AssetResponse {
 	return AssetResponse{
 		Token:              asset.Token,
+		Scope:              asset.Scope,
 		ObjectName:         asset.ObjectName,
 		OriginalFilename:   asset.OriginalFilename,
 		StoredFilename:     asset.StoredFilename,

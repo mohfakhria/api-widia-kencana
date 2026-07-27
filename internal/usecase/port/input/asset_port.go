@@ -32,6 +32,7 @@ type AssetUploadRequestResult struct {
 
 type ListAssetQuery struct {
 	Status     string
+	Scope      string
 	MimeType   string
 	Extension  string
 	UploadedBy *int64

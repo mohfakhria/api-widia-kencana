@@ -220,11 +220,11 @@ func (r *PurchaseOrderRepository) createAssetAttachment(ctx context.Context, tx 
 	asset := attachment.Asset
 	err := tx.QueryRowContext(ctx, `
 		INSERT INTO assets (
-			bucket, object_name, original_filename, stored_filename, mime_type,
+			bucket, scope, object_name, original_filename, stored_filename, mime_type,
 			extension, size, etag, status, upload_method, is_private, uploaded_by,
 			uploaded_at, created_at, updated_at
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'uploaded','direct',$9,$10,NOW(),NOW(),NOW())
+		VALUES ($1,'purchase-orders',$2,$3,$4,$5,$6,$7,$8,'uploaded','direct',$9,$10,NOW(),NOW(),NOW())
 		RETURNING id, token::text, status, upload_method, uploaded_at, created_at, updated_at
 	`, asset.Bucket, asset.ObjectName, asset.OriginalFilename, asset.StoredFilename, asset.MimeType,
 		asset.Extension, asset.Size, asset.ETag, asset.IsPrivate, asset.UploadedBy).

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS assets (
     token UUID NOT NULL DEFAULT gen_random_uuid(),
 
     bucket TEXT NOT NULL,
+    scope TEXT NOT NULL DEFAULT 'assets',
     object_name TEXT NOT NULL,
 
     original_filename TEXT NOT NULL,
@@ -43,6 +44,9 @@ CREATE TABLE IF NOT EXISTS assets (
 
     CONSTRAINT assets_bucket_not_empty_chk
         CHECK (BTRIM(bucket) <> ''),
+
+    CONSTRAINT assets_scope_not_empty_chk
+        CHECK (BTRIM(scope) <> ''),
 
     CONSTRAINT assets_object_name_not_empty_chk
         CHECK (BTRIM(object_name) <> ''),
@@ -135,6 +139,9 @@ CREATE INDEX IF NOT EXISTS assets_created_at_idx
 CREATE INDEX IF NOT EXISTS assets_status_idx
     ON assets (status);
 
+CREATE INDEX IF NOT EXISTS assets_scope_idx
+    ON assets (scope);
+
 CREATE INDEX IF NOT EXISTS assets_mime_type_idx
     ON assets (mime_type);
 
@@ -143,6 +150,10 @@ CREATE INDEX IF NOT EXISTS assets_extension_idx
 
 CREATE INDEX IF NOT EXISTS assets_uploaded_by_created_at_idx
     ON assets (uploaded_by, created_at DESC)
+    WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS assets_uploaded_by_scope_created_at_idx
+    ON assets (uploaded_by, scope, created_at DESC)
     WHERE deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS assets_pending_expiry_idx

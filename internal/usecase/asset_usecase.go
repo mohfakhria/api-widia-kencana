@@ -52,12 +52,14 @@ func (uc *assetUseCase) RequestUpload(ctx context.Context, cmd input.RequestAsse
 		contentType = "application/octet-stream"
 	}
 
+	scope := sanitizeAssetScope(cmd.Scope)
 	storedFilename := buildStoredAssetFilename(cmd.OriginalFilename)
-	objectName := fmt.Sprintf("%s/%s", sanitizeAssetScope(cmd.Scope), storedFilename)
+	objectName := fmt.Sprintf("%s/%s", scope, storedFilename)
 	expiresAt := time.Now().Add(defaultAssetUploadExpiry)
 
 	asset := &entity.Asset{
 		Bucket:             uc.storage.Bucket(),
+		Scope:              scope,
 		ObjectName:         objectName,
 		OriginalFilename:   strings.TrimSpace(cmd.OriginalFilename),
 		StoredFilename:     storedFilename,
@@ -132,6 +134,7 @@ func (uc *assetUseCase) CompleteUpload(ctx context.Context, token string, upload
 
 func (uc *assetUseCase) List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error) {
 	query.Status = strings.ToLower(strings.TrimSpace(query.Status))
+	query.Scope = sanitizeOptionalAssetScope(query.Scope)
 	query.MimeType = strings.TrimSpace(query.MimeType)
 	query.Extension = strings.TrimPrefix(strings.ToLower(strings.TrimSpace(query.Extension)), ".")
 	if query.Status != "" {
@@ -232,6 +235,14 @@ func sanitizeAssetScope(scope string) string {
 	}
 
 	return strings.Join(cleaned, "/")
+}
+
+func sanitizeOptionalAssetScope(scope string) string {
+	if strings.TrimSpace(scope) == "" {
+		return ""
+	}
+
+	return sanitizeAssetScope(scope)
 }
 
 func ensureAssetOwner(asset *entity.Asset, uploadedBy *int64) error {

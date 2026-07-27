@@ -87,6 +87,10 @@
                                     "value": "uploaded"
                                 },
                                 {
+                                    "key": "scope",
+                                    "value": "documents"
+                                },
+                                {
                                     "key": "mime_type",
                                     "value": ""
                                 },
@@ -95,7 +99,7 @@
                                     "value": ""
                                 }
                             ],
-                            "raw": "{{base_url}}/api/asset-list?status=uploaded\u0026mime_type=\u0026extension="
+                            "raw": "{{base_url}}/api/asset-list?status=uploaded\u0026scope=documents\u0026mime_type=\u0026extension="
                         }
                     }
                 },
