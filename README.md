@@ -100,6 +100,8 @@ projects.sql
 workflows.sql
 workflow_stages.sql
 workflow_steps.sql
+document_papers.sql
+documents.sql
 quotations.sql
 quotation_sections.sql
 quotation_items.sql
@@ -171,6 +173,12 @@ POST   /api/login
 POST   /api/refresh-token
 POST   /api/logout
 GET    /api/me
+
+GET    /api/document-list
+GET    /api/document-detail/:token
+POST   /api/document-add
+PUT    /api/document-update/:token
+DELETE /api/document-delete/:token
 
 GET    /api/quotation-list
 GET    /api/quotation-detail/:id
