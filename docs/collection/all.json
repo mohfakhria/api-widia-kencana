@@ -9,6 +9,173 @@
         {
             "item": [
                 {
+                    "name": "Request Asset Upload",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+                        },
+                        "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "asset-upload-request"
+                            ],
+                            "raw": "{{base_url}}/api/asset-upload-request"
+                        }
+                    }
+                },
+                {
+                    "name": "Complete Asset Upload",
+                    "request": {
+                        "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "asset-upload-complete",
+                                "{{asset_token}}"
+                            ],
+                            "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                        }
+                    }
+                },
+                {
+                    "name": "List Assets",
+                    "request": {
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "asset-list"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "uploaded"
+                                },
+                                {
+                                    "key": "mime_type",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "extension",
+                                    "value": ""
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/asset-list?status=uploaded\u0026mime_type=\u0026extension="
+                        }
+                    }
+                },
+                {
+                    "name": "Get Asset Detail",
+                    "request": {
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "asset-detail",
+                                "{{asset_token}}"
+                            ],
+                            "raw": "{{base_url}}/api/asset-detail/{{asset_token}}"
+                        }
+                    }
+                },
+                {
+                    "name": "Presign Asset Download",
+                    "request": {
+                        "description": "Returns a temporary GET URL for preview or download.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "asset-presign",
+                                "{{asset_token}}"
+                            ],
+                            "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Asset",
+                    "request": {
+                        "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "asset-delete",
+                                "{{asset_token}}"
+                            ],
+                            "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                        }
+                    }
+                }
+            ],
+            "name": "Asset"
+        },
+        {
+            "item": [
+                {
                     "event": [
                         {
                             "listen": "test",
@@ -1905,6 +2072,10 @@
         },
         {
             "key": "token",
+            "value": ""
+        },
+        {
+            "key": "asset_token",
             "value": ""
         },
         {

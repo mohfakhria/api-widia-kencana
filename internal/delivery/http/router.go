@@ -14,6 +14,7 @@ import (
 type RouterDeps struct {
 	Config               config.Config
 	TokenSigner          output.TokenSigner
+	AssetHandler         *AssetHandler
 	AuthHandler          *AuthHandler
 	DocumentHandler      *DocumentHandler
 	ProjectHandler       *ProjectHandler
@@ -44,6 +45,12 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
 		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)
+		protected.POST("/asset-upload-request", deps.AssetHandler.RequestUpload)
+		protected.POST("/asset-upload-complete/:token", deps.AssetHandler.CompleteUpload)
+		protected.GET("/asset-list", deps.AssetHandler.List)
+		protected.GET("/asset-detail/:token", deps.AssetHandler.Get)
+		protected.GET("/asset-presign/:token", deps.AssetHandler.PresignGet)
+		protected.DELETE("/asset-delete/:token", deps.AssetHandler.Delete)
 		protected.GET("/document-list", deps.DocumentHandler.List)
 		protected.GET("/document-detail/:token", deps.DocumentHandler.Get)
 		protected.POST("/document-add", deps.DocumentHandler.Create)

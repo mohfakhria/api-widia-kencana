@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
-
-	"github.com/google/uuid"
 )
 
 type purchaseOrderUseCase struct {
@@ -167,29 +164,4 @@ func (uc *purchaseOrderUseCase) buildUploadedAssetAttachment(ctx context.Context
 		Category: category,
 		Asset:    asset,
 	}, stored.ObjectName, nil
-}
-
-func buildStoredAssetFilename(originalFilename string) string {
-	filename := sanitizeFilename(filepath.Base(originalFilename))
-	if filename == "" || filename == "." {
-		filename = "asset"
-	}
-
-	return uuid.NewString() + "-" + filename
-}
-
-func sanitizeFilename(filename string) string {
-	var builder strings.Builder
-	for _, r := range filename {
-		switch {
-		case unicode.IsLetter(r), unicode.IsDigit(r):
-			builder.WriteRune(r)
-		case r == '.', r == '-', r == '_':
-			builder.WriteRune(r)
-		case unicode.IsSpace(r):
-			builder.WriteRune('-')
-		}
-	}
-
-	return builder.String()
 }

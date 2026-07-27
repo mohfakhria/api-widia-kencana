@@ -6,6 +6,7 @@ Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utam
 
 - Authentication dengan access token JWT dan refresh token via HttpOnly cookie.
 - Encrypted JWT subject claim untuk menghindari expose raw user id di token.
+- Asset management dengan presigned upload/download URL.
 - Quotation management dengan list/detail/create/update.
 - Purchase order by quotation, termasuk upsert item dan optional asset upload ke MinIO.
 - Project CRUD.
@@ -154,6 +155,7 @@ pkg/                             Shared utility packages
 Postman collection tersedia di:
 
 - `docs/collection/auth.json`
+- `docs/collection/asset.json`
 - `docs/collection/quotation.json`
 - `docs/collection/purchase_order.json`
 - `docs/collection/project.json`
@@ -173,6 +175,13 @@ POST   /api/login
 POST   /api/refresh-token
 POST   /api/logout
 GET    /api/me
+
+POST   /api/asset-upload-request
+POST   /api/asset-upload-complete/:token
+GET    /api/asset-list
+GET    /api/asset-detail/:token
+GET    /api/asset-presign/:token
+DELETE /api/asset-delete/:token
 
 GET    /api/document-list
 GET    /api/document-detail/:token

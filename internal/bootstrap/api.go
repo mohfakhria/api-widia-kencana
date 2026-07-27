@@ -75,6 +75,7 @@ func (a *ApiApp) initialize() error {
 		pg.NewPurchaseOrderRepository(a.db),
 		a.objectStorage,
 	)
+	assetUC := usecase.NewAssetUseCase(pg.NewAssetRepository(a.db), a.objectStorage)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	documentUC := usecase.NewDocumentUseCase(pg.NewDocumentRepository(a.db))
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
@@ -85,6 +86,7 @@ func (a *ApiApp) initialize() error {
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
 		Config:               a.Config,
 		TokenSigner:          tokenSigner,
+		AssetHandler:         deliveryhttp.NewAssetHandler(assetUC),
 		AuthHandler:          deliveryhttp.NewAuthHandler(authUC, a.Config),
 		DocumentHandler:      deliveryhttp.NewDocumentHandler(documentUC),
 		ProjectHandler:       deliveryhttp.NewProjectHandler(projectUC),

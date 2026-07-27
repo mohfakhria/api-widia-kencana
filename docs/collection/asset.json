@@ -1,0 +1,186 @@
+{
+  "info": {
+    "_postman_id": "fe503373-8a91-4c01-a884-0deff835f5eb",
+    "name": "Widia Kencana - Asset",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Asset management endpoints with presigned upload and download URLs."
+  },
+  "item": [
+    {
+      "name": "Request Asset Upload",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/asset-upload-request",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-upload-request"
+          ]
+        },
+        "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
+      }
+    },
+    {
+      "name": "Complete Asset Upload",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-upload-complete",
+            "{{asset_token}}"
+          ]
+        },
+        "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+      }
+    },
+    {
+      "name": "List Assets",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-list?status=uploaded&mime_type=&extension=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-list"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "uploaded"
+            },
+            {
+              "key": "mime_type",
+              "value": ""
+            },
+            {
+              "key": "extension",
+              "value": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Asset Detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-detail/{{asset_token}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-detail",
+            "{{asset_token}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Presign Asset Download",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-presign/{{asset_token}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-presign",
+            "{{asset_token}}"
+          ]
+        },
+        "description": "Returns a temporary GET URL for preview or download."
+      }
+    },
+    {
+      "name": "Delete Asset",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-delete/{{asset_token}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-delete",
+            "{{asset_token}}"
+          ]
+        },
+        "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "asset_token",
+      "value": ""
+    }
+  ]
+}

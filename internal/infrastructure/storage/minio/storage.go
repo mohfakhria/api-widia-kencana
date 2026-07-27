@@ -58,6 +58,10 @@ func (s *Storage) Upload(ctx context.Context, object output.UploadObject) (*outp
 	}, nil
 }
 
+func (s *Storage) Bucket() string {
+	return s.bucket
+}
+
 func (s *Storage) Delete(ctx context.Context, objectName string) error {
 	return s.client.RemoveObject(ctx, s.bucket, objectName, miniosdk.RemoveObjectOptions{})
 }
@@ -69,6 +73,30 @@ func (s *Storage) PresignGet(ctx context.Context, objectName string, expiry time
 	}
 
 	return url.String(), nil
+}
+
+func (s *Storage) PresignPut(ctx context.Context, objectName string, expiry time.Duration, _ string) (string, error) {
+	url, err := s.client.PresignedPutObject(ctx, s.bucket, objectName, expiry)
+	if err != nil {
+		return "", err
+	}
+
+	return url.String(), nil
+}
+
+func (s *Storage) Stat(ctx context.Context, objectName string) (*output.StoredObject, error) {
+	info, err := s.client.StatObject(ctx, s.bucket, objectName, miniosdk.StatObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return &output.StoredObject{
+		Bucket:      s.bucket,
+		ObjectName:  objectName,
+		ETag:        info.ETag,
+		Size:        info.Size,
+		ContentType: info.ContentType,
+	}, nil
 }
 
 func (s *Storage) ensureBucket(ctx context.Context) error {
