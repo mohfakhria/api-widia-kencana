@@ -1,6 +1,6 @@
 # API Widia Kencana V2
 
-Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utama ke struktur Clean Architecture dengan transport HTTP, persistence PostgreSQL, Redis untuk refresh token, dan MinIO untuk asset storage.
+Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utama ke struktur Clean Architecture dengan transport HTTP, persistence PostgreSQL, in-memory store untuk refresh token session, dan MinIO untuk asset storage.
 
 ## Features
 
@@ -19,7 +19,6 @@ Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utam
 - Go `1.24.4`
 - Gin HTTP framework
 - PostgreSQL
-- Redis
 - MinIO object storage
 - JWT
 - bcrypt
@@ -28,7 +27,6 @@ Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utam
 
 - Go `1.24.4` atau versi kompatibel.
 - PostgreSQL.
-- Redis, bila refresh token ingin aktif.
 - MinIO, bila flow asset upload ingin digunakan.
 - `jq`, opsional untuk validasi JSON collection.
 
@@ -69,9 +67,8 @@ PG_USER=postgres
 PG_PASSWORD=postgres
 PG_DB=widia_kencana
 
-REDIS_ENABLED=true
-REDIS_HOST=localhost
-REDIS_PORT=6379
+COOKIE_DOMAIN=
+# COOKIE_SECURE=true
 
 JWT_SECRET=change-this-in-env
 JWT_SUB_ENCRYPTION_KEY=replace-with-base64-encoded-32-byte-key
@@ -85,7 +82,12 @@ MINIO_USE_SSL=false
 
 Catatan:
 
-- Jika `REDIS_ENABLED=false`, login tetap mengembalikan access token, tetapi refresh token cookie tidak dibuat dan endpoint refresh token akan disabled.
+- Refresh token session disimpan di memory proses. Session hilang setiap restart, sehingga semua user perlu login ulang setelah deploy.
+- Karena session tidak dibagi antar proses, API harus dijalankan sebagai satu instance. Untuk multi-instance, store perlu dipindah ke PostgreSQL.
+- `COOKIE_DOMAIN` sebaiknya dibiarkan kosong. Cookie menjadi host-only, terikat persis ke host yang men-set-nya, dan benar di localhost maupun production tanpa dikonfigurasi. Isi hanya bila cookie perlu dibagi ke beberapa subdomain, contoh `.example.com`.
+- Flag `Secure` pada cookie mengikuti skema `APP_BASEURL` secara otomatis: `https://` menghasilkan `Secure=true`. Bila TLS diterminasi di reverse proxy dan `APP_BASEURL` menunjuk alamat internal `http://`, set `COOKIE_SECURE=true` secara eksplisit.
+- Aplikasi menolak start bila `APP_ENV=production` tetapi cookie tidak `Secure`.
+- Cookie memakai `SameSite=Strict`. Ini bekerja selama frontend dan API berada pada registrable domain yang sama, misal `app.example.com` dengan `api.example.com`. Bila keduanya benar-benar beda domain, `SameSite` perlu diturunkan ke `None` dan `Secure` menjadi wajib.
 - MinIO local yang umum dipakai di project ini: console `9001`, API `9002`.
 - `MINIO_ROOT_USER` dan `MINIO_ROOT_PASSWORD` digunakan sebagai credential MinIO.
 
@@ -138,9 +140,9 @@ cmd/api/                         API entry point
 internal/bootstrap/              Application wiring
 internal/delivery/http/          HTTP handlers, router, middleware, DTO
 internal/domain/                 Domain errors and entities
-internal/infrastructure/         Config, database, server, security, cache, storage
+internal/infrastructure/         Config, database, server, security, storage
 internal/persistence/postgres/   PostgreSQL repositories
-internal/persistence/redis/      Redis stores
+internal/persistence/memory/     In-memory stores (refresh token session)
 internal/usecase/                Application use cases
 internal/usecase/port/input/     Input ports
 internal/usecase/port/output/    Output ports

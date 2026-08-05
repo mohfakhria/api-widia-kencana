@@ -3,6 +3,7 @@ package http
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
@@ -11,6 +12,11 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	refreshCookieName = "refresh_token"
+	refreshCookiePath = "/"
 )
 
 type AuthHandler struct {
@@ -38,21 +44,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	if h.cfg.RedisEnabled {
-		c.SetSameSite(http.SameSiteStrictMode)
-		c.SetCookie("refresh_token", result.RefreshToken, int(result.RefreshTokenTTL.Seconds()), "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
-	}
-
+	h.setRefreshCookie(c, result.RefreshToken, result.RefreshTokenTTL)
 	dto.Success(c, "Login success", dto.NewLoginResponse(result))
 }
 
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
-	if !h.cfg.RedisEnabled {
-		dto.Error(c, http.StatusServiceUnavailable, "Refresh token is disabled")
-		return
-	}
-
-	cookie, err := c.Cookie("refresh_token")
+	cookie, err := c.Cookie(refreshCookieName)
 	if err != nil {
 		dto.Error(c, http.StatusUnauthorized, "Missing refresh token")
 		return
@@ -66,18 +63,12 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("refresh_token", result.RefreshToken, int(result.RefreshTokenTTL.Seconds()), "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
+	h.setRefreshCookie(c, result.RefreshToken, result.RefreshTokenTTL)
 	dto.Success(c, "Token refreshed successfully", dto.NewRefreshTokenResponse(result))
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	if !h.cfg.RedisEnabled {
-		dto.Success(c, "Logout successful", nil)
-		return
-	}
-
-	cookie, _ := c.Cookie("refresh_token")
+	cookie, _ := c.Cookie(refreshCookieName)
 	if err := h.auth.Logout(c.Request.Context(), input.LogoutCommand{
 		RefreshToken: cookie,
 	}); err != nil {
@@ -85,7 +76,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("refresh_token", "", -1, "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
+	h.clearRefreshCookie(c)
 	dto.Success(c, "Logout successful", nil)
 }
 
@@ -97,7 +88,7 @@ func (h *AuthHandler) LogoutAll(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("refresh_token", "", -1, "/", h.cfg.CookieDomain(), h.cfg.CookieSecure(), true)
+	h.clearRefreshCookie(c)
 	dto.Success(c, "Logged out from all devices successfully", nil)
 }
 
@@ -111,6 +102,19 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	}
 
 	dto.Success(c, "User profile", dto.NewProfileResponse(result))
+}
+
+// setRefreshCookie dan clearRefreshCookie memusatkan atribut keamanan cookie
+// refresh token, supaya penulisan dan penghapusannya tidak bisa menyimpang.
+// Cookie dihapus browser hanya bila Name, Path, dan Domain-nya sama persis.
+func (h *AuthHandler) setRefreshCookie(c *gin.Context, token string, ttl time.Duration) {
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie(refreshCookieName, token, int(ttl.Seconds()), refreshCookiePath, h.cfg.CookieDomain, h.cfg.CookieSecure, true)
+}
+
+func (h *AuthHandler) clearRefreshCookie(c *gin.Context) {
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie(refreshCookieName, "", -1, refreshCookiePath, h.cfg.CookieDomain, h.cfg.CookieSecure, true)
 }
 
 func UnauthorizedMessage(err error) string {

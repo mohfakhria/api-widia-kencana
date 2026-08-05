@@ -396,7 +396,7 @@
                 {
                     "name": "Logout",
                     "request": {
-                        "description": "Invalidate the current device refresh session in Redis and clear its cookie. Other devices remain signed in.",
+                        "description": "Invalidate the current device refresh session and clear its cookie. Other devices remain signed in.",
                         "method": "POST",
                         "url": {
                             "host": [

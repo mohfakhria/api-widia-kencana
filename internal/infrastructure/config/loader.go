@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"log"
 	"os"
 	"strconv"
@@ -19,9 +20,8 @@ type Config struct {
 	PGUser              string
 	PGPassword          string
 	PGDB                string
-	RedisEnabled        bool
-	RedisHost           string
-	RedisPort           string
+	CookieDomain        string
+	CookieSecure        bool
 	JWTSecret           string
 	JWTSubEncryptionKey string
 	MinIOEndpoint       string
@@ -36,19 +36,30 @@ func Load() Config {
 		log.Println("warning: .env file not found, using system env")
 	}
 
+	appBaseURL := getEnv("APP_BASEURL", "http://localhost:8080")
+
 	return Config{
-		AppEnv:              getEnv("APP_ENV", "local"),
-		AppPort:             getEnv("APP_PORT", "8080"),
-		AppBaseURL:          getEnv("APP_BASEURL", "http://localhost:8080"),
-		FrontendURL:         getEnv("FRONTEND_URL", "http://localhost:3000"),
-		PGHost:              getEnv("PG_HOST", "localhost"),
-		PGPort:              getEnv("PG_PORT", "5432"),
-		PGUser:              getEnv("PG_USER", "postgres"),
-		PGPassword:          getEnv("PG_PASSWORD", "postgres"),
-		PGDB:                getEnv("PG_DB", "postgres"),
-		RedisEnabled:        isRedisEnabled(),
-		RedisHost:           getEnv("REDIS_HOST", "localhost"),
-		RedisPort:           getEnv("REDIS_PORT", "6379"),
+		AppEnv:      getEnv("APP_ENV", "local"),
+		AppPort:     getEnv("APP_PORT", "8080"),
+		AppBaseURL:  appBaseURL,
+		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
+		PGHost:      getEnv("PG_HOST", "localhost"),
+		PGPort:      getEnv("PG_PORT", "5432"),
+		PGUser:      getEnv("PG_USER", "postgres"),
+		PGPassword:  getEnv("PG_PASSWORD", "postgres"),
+		PGDB:        getEnv("PG_DB", "postgres"),
+
+		// Domain kosong membuat cookie host-only: terikat persis ke host yang
+		// men-set-nya, dan benar tanpa dikonfigurasi baik di localhost maupun
+		// production. Isi COOKIE_DOMAIN hanya bila cookie memang perlu dibagi
+		// ke beberapa subdomain.
+		CookieDomain: getEnv("COOKIE_DOMAIN", ""),
+
+		// Cookie hanya boleh melintas HTTPS saat API dilayani lewat HTTPS.
+		// COOKIE_SECURE dipakai bila TLS diterminasi di proxy dan APP_BASEURL
+		// terlanjur menunjuk ke alamat internal http://.
+		CookieSecure: getBoolEnv("COOKIE_SECURE", isHTTPSURL(appBaseURL)),
+
 		JWTSecret:           getEnv("JWT_SECRET", "change-this-in-env"),
 		JWTSubEncryptionKey: getEnv("JWT_SUB_ENCRYPTION_KEY", ""),
 		MinIOEndpoint:       getEnv("MINIO_ENDPOINT", "localhost:9002"),
@@ -67,16 +78,13 @@ func (c Config) IsProduction() bool {
 	return strings.EqualFold(c.AppEnv, "production")
 }
 
-func (c Config) CookieSecure() bool {
-	return false
-}
+// Validate menolak kombinasi konfigurasi yang diam-diam melemahkan keamanan.
+func (c Config) Validate() error {
+	if c.IsProduction() && !c.CookieSecure {
+		return errors.New("APP_ENV=production membutuhkan refresh cookie yang Secure: arahkan APP_BASEURL ke URL https://, atau set COOKIE_SECURE=true bila TLS diterminasi di proxy")
+	}
 
-func (c Config) CookieDomain() string {
-	return "localhost"
-}
-
-func (c Config) RedisAddr() string {
-	return c.RedisHost + ":" + c.RedisPort
+	return nil
 }
 
 func (c Config) PostgresDSN() string {
@@ -104,8 +112,8 @@ func getEnv(key, fallback string) string {
 	return value
 }
 
-func isRedisEnabled() bool {
-	return getBoolEnv("REDIS_ENABLED", true)
+func isHTTPSURL(raw string) bool {
+	return strings.HasPrefix(strings.ToLower(strings.TrimSpace(raw)), "https://")
 }
 
 func getBoolEnv(key string, fallback bool) bool {

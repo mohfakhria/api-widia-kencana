@@ -24,6 +24,11 @@ func NewService(logger *slog.Logger) *Service {
 }
 
 func (r *Service) Run(ctx context.Context, services []ServiceStartup) error {
+	// Komponen yang berhenti — baik gagal maupun bersih — membatalkan runCtx
+	// supaya komponen lain ikut berhenti dan Run tidak menggantung.
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	var (
 		wg       sync.WaitGroup
 		errOnce  sync.Once
@@ -31,15 +36,15 @@ func (r *Service) Run(ctx context.Context, services []ServiceStartup) error {
 	)
 
 	for _, service := range services {
-		service := service
 		wg.Add(1)
 
 		go func() {
 			defer wg.Done()
+			defer cancel()
 
 			r.logger.Info("starting", "component", service.Name())
 
-			if err := service.Run(ctx); err != nil {
+			if err := service.Run(runCtx); err != nil {
 				errOnce.Do(func() {
 					firstErr = err
 				})

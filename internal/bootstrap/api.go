@@ -6,18 +6,15 @@ import (
 	"log/slog"
 
 	deliveryhttp "github.com/mohfakhria/api-widia-kencana/internal/delivery/http"
-	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/cache"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/database"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/security"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/server"
 	miniostorage "github.com/mohfakhria/api-widia-kencana/internal/infrastructure/storage/minio"
+	memorystore "github.com/mohfakhria/api-widia-kencana/internal/persistence/memory"
 	pg "github.com/mohfakhria/api-widia-kencana/internal/persistence/postgres"
-	redisstore "github.com/mohfakhria/api-widia-kencana/internal/persistence/redis"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
-
-	"github.com/redis/go-redis/v9"
 )
 
 type ApiApp struct {
@@ -25,7 +22,6 @@ type ApiApp struct {
 	ServiceLogger *slog.Logger
 	Config        config.Config
 	db            *sql.DB
-	redisClient   *redis.Client
 	objectStorage output.ObjectStorage
 	runner        *Service
 	services      []ServiceStartup
@@ -42,19 +38,15 @@ func NewApiApp(ctx context.Context) *ApiApp {
 }
 
 func (a *ApiApp) initialize() error {
+	if err := a.Config.Validate(); err != nil {
+		return err
+	}
+
 	db, err := database.NewPostgres(a.Context, a.Config)
 	if err != nil {
 		return err
 	}
 	a.db = db
-
-	if a.Config.RedisEnabled {
-		client, err := cache.NewRedis(a.Context, a.Config)
-		if err != nil {
-			return err
-		}
-		a.redisClient = client
-	}
 
 	objectStorage, err := miniostorage.NewStorage(a.Context, a.Config)
 	if err != nil {
@@ -66,9 +58,10 @@ func (a *ApiApp) initialize() error {
 	if err != nil {
 		return err
 	}
+	refreshTokenStore := memorystore.NewRefreshTokenStore()
 	authUC := usecase.NewAuthUseCase(
 		pg.NewUserRepository(a.db),
-		redisstore.NewRefreshTokenStore(a.redisClient, a.Config.RedisEnabled),
+		refreshTokenStore,
 		tokenSigner,
 	)
 	purchaseOrderUC := usecase.NewPurchaseOrderUseCase(
@@ -98,6 +91,7 @@ func (a *ApiApp) initialize() error {
 	})
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),
+		refreshTokenStore,
 	}
 
 	return nil
@@ -113,9 +107,6 @@ func (a *ApiApp) Start() error {
 }
 
 func (a *ApiApp) Cleanup() {
-	if a.redisClient != nil {
-		_ = a.redisClient.Close()
-	}
 	if a.db != nil {
 		_ = a.db.Close()
 	}

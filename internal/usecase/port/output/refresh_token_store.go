@@ -8,9 +8,8 @@ import (
 type RefreshTokenStore interface {
 	Set(ctx context.Context, sessionID string, session RefreshSession, ttl time.Duration) error
 	Get(ctx context.Context, sessionID string) (*RefreshSession, error)
-	Delete(ctx context.Context, userID, sessionID string) error
+	Delete(ctx context.Context, sessionID string) error
 	DeleteAll(ctx context.Context, userID string) error
-	Enabled() bool
 }
 
 type RefreshSession struct {

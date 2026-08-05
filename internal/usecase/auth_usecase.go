@@ -63,13 +63,11 @@ func (uc *authUseCase) Login(ctx context.Context, cmd input.LoginCommand) (*inpu
 		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to generate refresh token")
 	}
 
-	if uc.tokenStore.Enabled() {
-		if err := uc.tokenStore.Set(ctx, sessionID, output.RefreshSession{
-			UserID:    userID,
-			TokenHash: hashToken(refreshToken),
-		}, refreshTokenTTL); err != nil {
-			return nil, domain.NewError(domain.ErrInternalFailure, "Failed to store refresh token")
-		}
+	if err := uc.tokenStore.Set(ctx, sessionID, output.RefreshSession{
+		UserID:    userID,
+		TokenHash: hashToken(refreshToken),
+	}, refreshTokenTTL); err != nil {
+		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to store refresh token")
 	}
 
 	return &input.LoginResult{
@@ -81,9 +79,6 @@ func (uc *authUseCase) Login(ctx context.Context, cmd input.LoginCommand) (*inpu
 }
 
 func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshCommand) (*input.RefreshResult, error) {
-	if !uc.tokenStore.Enabled() {
-		return nil, domain.NewError(domain.ErrUnavailable, "Refresh token is disabled")
-	}
 	if cmd.RefreshToken == "" {
 		return nil, domain.NewError(domain.ErrUnauthorized, "Missing refresh token")
 	}
@@ -138,7 +133,7 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshComman
 }
 
 func (uc *authUseCase) Logout(ctx context.Context, cmd input.LogoutCommand) error {
-	if !uc.tokenStore.Enabled() || cmd.RefreshToken == "" {
+	if cmd.RefreshToken == "" {
 		return nil
 	}
 
@@ -150,13 +145,10 @@ func (uc *authUseCase) Logout(ctx context.Context, cmd input.LogoutCommand) erro
 		return nil
 	}
 
-	return uc.tokenStore.Delete(ctx, claims.Subject, claims.SessionID)
+	return uc.tokenStore.Delete(ctx, claims.SessionID)
 }
 
 func (uc *authUseCase) LogoutAll(ctx context.Context, cmd input.LogoutAllCommand) error {
-	if !uc.tokenStore.Enabled() {
-		return nil
-	}
 	if cmd.UserID == "" {
 		return domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
 	}
