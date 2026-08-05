@@ -17,11 +17,6 @@ CREATE TABLE IF NOT EXISTS documents (
     document_type TEXT NOT NULL DEFAULT 'custom',
     -- Example: quotation, purchase-order, invoice, service-report, custom
 
-    settings JSONB NOT NULL DEFAULT '{}'::jsonb,
-    -- Flexible document-level settings, for example page/margin/header/footer config
-
-    position INTEGER NOT NULL DEFAULT 0,
-
     status TEXT NOT NULL DEFAULT 'draft',
     -- Values: draft, active, inactive, archived, deleted
 
@@ -43,9 +38,6 @@ CREATE INDEX IF NOT EXISTS documents_parent_id_idx
 
 CREATE INDEX IF NOT EXISTS documents_document_type_idx
     ON documents (document_type);
-
-CREATE INDEX IF NOT EXISTS documents_position_idx
-    ON documents (position);
 
 CREATE INDEX IF NOT EXISTS documents_status_idx
     ON documents (status);

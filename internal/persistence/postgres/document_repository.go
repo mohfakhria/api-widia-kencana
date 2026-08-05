@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -46,7 +45,7 @@ func (r *DocumentRepository) List(ctx context.Context, query input.ListDocumentQ
 		builder.WriteString(fmt.Sprintf(" AND d.document_type = $%d", len(args)))
 	}
 	builder.WriteString(`
-		ORDER BY d.position ASC, d.created_at DESC
+		ORDER BY d.created_at DESC
 	`)
 
 	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
@@ -84,10 +83,6 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 	if err != nil {
 		return nil, err
 	}
-	settings, err := encodeDocumentSettings(document.Settings)
-	if err != nil {
-		return nil, err
-	}
 
 	var createdToken string
 	err = r.db.QueryRowContext(ctx, `
@@ -96,14 +91,12 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 			parent_id,
 			name,
 			document_type,
-			settings,
-			position,
 			status,
 			created_at,
 			updated_at
-		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, NOW(), NOW())
+		) VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
 		RETURNING token::text
-	`, paperID, parentID, document.Name, document.DocumentType, settings, document.Position, document.Status).Scan(&createdToken)
+	`, paperID, parentID, document.Name, document.DocumentType, document.Status).Scan(&createdToken)
 	if err != nil {
 		return nil, err
 	}
@@ -121,10 +114,6 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 	if err != nil {
 		return err
 	}
-	settings, err := encodeDocumentSettings(document.Settings)
-	if err != nil {
-		return err
-	}
 
 	result, err := r.db.ExecContext(ctx, `
 		UPDATE documents
@@ -132,13 +121,11 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 			parent_id = $2,
 			name = $3,
 			document_type = $4,
-			settings = $5::jsonb,
-			position = $6,
-			status = $7,
+			status = $5,
 			updated_at = NOW()
-		WHERE token = $8::uuid
+		WHERE token = $6::uuid
 			AND status <> 'deleted'
-	`, paperID, parentID, document.Name, document.DocumentType, settings, document.Position, document.Status, token)
+	`, paperID, parentID, document.Name, document.DocumentType, document.Status, token)
 	if err != nil {
 		return err
 	}
@@ -211,8 +198,6 @@ func documentSelectQuery() string {
 			COALESCE(parent.token::text, ''),
 			d.name,
 			d.document_type,
-			d.settings::text,
-			d.position,
 			d.status,
 			d.created_at,
 			d.updated_at,
@@ -256,7 +241,6 @@ type documentRowScanner interface {
 
 func scanDocument(row documentRowScanner, document *entity.Document) error {
 	var parentID sql.NullInt64
-	var settingsRaw string
 	if err := row.Scan(
 		&document.ID,
 		&document.Token,
@@ -265,8 +249,6 @@ func scanDocument(row documentRowScanner, document *entity.Document) error {
 		&document.ParentToken,
 		&document.Name,
 		&document.DocumentType,
-		&settingsRaw,
-		&document.Position,
 		&document.Status,
 		&document.CreatedAt,
 		&document.UpdatedAt,
@@ -286,44 +268,11 @@ func scanDocument(row documentRowScanner, document *entity.Document) error {
 		return err
 	}
 
-	settings, err := decodeDocumentSettings(settingsRaw)
-	if err != nil {
-		return err
-	}
-	document.Settings = settings
 	if parentID.Valid {
 		document.ParentID = &parentID.Int64
 	}
 
 	return nil
-}
-
-func encodeDocumentSettings(settings map[string]any) (string, error) {
-	if settings == nil {
-		settings = map[string]any{}
-	}
-	encoded, err := json.Marshal(settings)
-	if err != nil {
-		return "", domain.NewError(domain.ErrInvalidInput, "invalid document settings")
-	}
-
-	return string(encoded), nil
-}
-
-func decodeDocumentSettings(raw string) (map[string]any, error) {
-	if raw == "" {
-		return map[string]any{}, nil
-	}
-
-	var settings map[string]any
-	if err := json.Unmarshal([]byte(raw), &settings); err != nil {
-		return nil, err
-	}
-	if settings == nil {
-		return map[string]any{}, nil
-	}
-
-	return settings, nil
 }
 
 func ensureDocumentAffected(result sql.Result, message string) error {

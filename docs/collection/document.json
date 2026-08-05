@@ -82,7 +82,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"settings\": {},\n  \"position\": 1,\n  \"status\": \"draft\"\n}"
+          "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/document-add",
@@ -112,7 +112,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"settings\": {},\n  \"position\": 2,\n  \"status\": \"active\"\n}"
+          "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/api/document-update/{{document_token}}",

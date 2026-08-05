@@ -101,11 +101,6 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 		documentType = defaultDocumentType
 	}
 
-	settings := cmd.Settings
-	if settings == nil {
-		settings = map[string]any{}
-	}
-
 	return &entity.Document{
 		Paper: entity.DocumentPaper{
 			Token: strings.TrimSpace(cmd.DocumentPaperToken),
@@ -113,8 +108,6 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 		ParentToken:  strings.TrimSpace(cmd.ParentToken),
 		Name:         strings.TrimSpace(cmd.Name),
 		DocumentType: documentType,
-		Settings:     settings,
-		Position:     cmd.Position,
 		Status:       status,
 	}
 }
@@ -128,9 +121,6 @@ func validateDocument(document *entity.Document) error {
 	}
 	if document.Name == "" {
 		return domain.NewError(domain.ErrInvalidInput, "document name cannot be empty")
-	}
-	if document.Position < 0 {
-		return domain.NewError(domain.ErrInvalidInput, "document position cannot be negative")
 	}
 	if _, ok := allowedDocumentStatuses[document.Status]; !ok {
 		return domain.NewError(domain.ErrInvalidInput, "invalid document status")

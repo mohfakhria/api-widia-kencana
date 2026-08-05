@@ -11,8 +11,6 @@ type Document struct {
 	ParentToken     string
 	Name            string
 	DocumentType    string
-	Settings        map[string]any
-	Position        int
 	Status          string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
