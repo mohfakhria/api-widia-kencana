@@ -144,11 +144,9 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 	state, err := h.service.Join(connCtx, documentToken, ticket.UserID, subscriber)
 	if err != nil {
 		h.logger.Warn("join document design room", "document", documentToken, "error", err)
-		if errors.Is(err, domain.ErrTooManyRequests) {
-			conn.Close(websocket.StatusTryAgainLater, "too many concurrent design connections")
-			return
-		}
-		conn.Close(websocket.StatusInternalError, "failed to join document room")
+		// Pesan error dari lapisan usecase memang disusun sebagai frasa yang aman
+		// disampaikan ke klien; detail internalnya berhenti di log.
+		conn.Close(joinCloseStatus(err), closeReason(err.Error()))
 		return
 	}
 	defer h.service.Leave(documentToken, ticket.UserID, subscriber)
@@ -368,6 +366,29 @@ func (s *designSubscriber) sendError(seq int64, code, message string) {
 	}
 
 	s.Send(payload)
+}
+
+// joinCloseStatus memetakan kegagalan menempel ke close code yang membedakan
+// "coba lagi nanti" dari "ada yang salah di sisi kami".
+func joinCloseStatus(err error) websocket.StatusCode {
+	if errors.Is(err, domain.ErrTooManyRequests) {
+		return websocket.StatusTryAgainLater
+	}
+
+	return websocket.StatusInternalError
+}
+
+// closeReason memangkas alasan agar muat pada close frame. Protokol WebSocket
+// membatasi alasan sampai 123 byte, dan melewatinya membuat penutupan gagal
+// sehingga klien justru tidak menerima alasan apa pun.
+func closeReason(reason string) string {
+	const maxCloseReasonBytes = 123
+
+	if len(reason) <= maxCloseReasonBytes {
+		return reason
+	}
+
+	return reason[:maxCloseReasonBytes]
 }
 
 // designOriginPatterns membatasi handshake ke host frontend. Bila FrontendURL

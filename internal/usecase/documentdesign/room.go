@@ -93,12 +93,6 @@ type saveResult struct {
 	err     error
 }
 
-// emptyContent dikembalikan sebagai nilai baru tiap pemanggilan, bukan sebagai
-// variabel package, supaya tidak ada pemanggil yang bisa mengubah isi bersama.
-func emptyContent() json.RawMessage {
-	return json.RawMessage(`{"pages":[]}`)
-}
-
 // Room memegang isi satu dokumen selama ada yang menyuntingnya.
 //
 // Seluruh perubahan mengalir lewat inbox dan diterapkan oleh satu goroutine
@@ -121,7 +115,7 @@ type Room struct {
 
 	// Field di bawah ini hanya boleh disentuh goroutine run(). Tidak ada mutex,
 	// dan memang tidak boleh ditambahkan: kepemilikan tunggal itulah jaminannya.
-	content json.RawMessage
+	content *documentContent
 	// version adalah nomor revisi di memori; savedVersion adalah nilai version
 	// yang terakhir berhasil ditulis. Kotor berarti keduanya berbeda — bukan
 	// boolean, karena boolean bisa terhapus keliru oleh perubahan yang masuk
@@ -132,6 +126,9 @@ type Room struct {
 	// broken diisi bila room tidak lagi dapat melayani: isinya gagal dimuat, atau
 	// gagal disimpan secara permanen. Sekali terisi, join ditolak dan penyimpanan
 	// tidak dicoba lagi.
+	//
+	// Pesannya sengaja berupa frasa yang aman disampaikan ke klien; detail
+	// internal penyebabnya hanya masuk log, di tempat dan saat ia terjadi.
 	broken  error
 	members map[Subscriber]struct{}
 }
@@ -145,7 +142,7 @@ func newRoom(token string, documents output.DocumentRepository, logger *slog.Log
 		saved:     make(chan saveResult, 1),
 		stop:      make(chan struct{}),
 		done:      make(chan struct{}),
-		content:   emptyContent(),
+		content:   emptyDocumentContent(),
 		members:   make(map[Subscriber]struct{}),
 	}
 }
@@ -192,15 +189,20 @@ func (r *Room) load(ctx context.Context) {
 		// dengan error ini, penghuni tidak pernah bertambah, dan room tersapu
 		// setelah masa tenggangnya — percobaan berikutnya memuat ulang. Sembuh
 		// sendiri tanpa logika retry.
-		r.broken = fmt.Errorf("load document content: %w", err)
-		r.logger.Error("load document design content", "document", r.token, "error", err)
+		r.markBroken(fmt.Errorf("load document content: %w", err),
+			"document content could not be loaded")
 		return
 	}
 
-	r.content = stored.Content
-	if len(r.content) == 0 {
-		r.content = emptyContent()
+	content, err := parseDocumentContent(stored.Content)
+	if err != nil {
+		// Isi di database cacat. Memuat ulang tidak akan memperbaikinya.
+		r.markBroken(fmt.Errorf("parse document content: %w", err),
+			"document content is malformed")
+		return
 	}
+
+	r.content = content
 	r.version = stored.Version
 	r.savedVersion = stored.Version
 }
@@ -208,18 +210,23 @@ func (r *Room) load(ctx context.Context) {
 func (r *Room) handle(event roomEvent) {
 	switch e := event.(type) {
 	case joinEvent:
-		if r.broken != nil {
-			// reply berkapasitas satu, jadi pengiriman ini tidak pernah menahan
-			// orchestrator walau peminta sudah menyerah menunggu.
-			e.reply <- joinResult{err: r.broken}
-			return
+		if r.broken == nil {
+			// Hasil encode berupa byte baru, jadi klien tidak pernah memegang
+			// struktur yang masih dipakai orchestrator.
+			if encoded, err := r.content.encode(); err != nil {
+				// Isi yang tidak dapat dikodekan juga tidak akan pernah dapat
+				// disimpan, jadi room ini memang sudah tidak berguna.
+				r.markBroken(err, "document content can no longer be encoded")
+			} else {
+				r.members[e.subscriber] = struct{}{}
+				// reply berkapasitas satu, jadi pengiriman ini tidak pernah
+				// menahan orchestrator walau peminta sudah menyerah menunggu.
+				e.reply <- joinResult{snapshot: Snapshot{Content: encoded, Version: r.version}}
+				return
+			}
 		}
 
-		r.members[e.subscriber] = struct{}{}
-		e.reply <- joinResult{snapshot: Snapshot{
-			Content: r.snapshotContent(),
-			Version: r.version,
-		}}
+		e.reply <- joinResult{err: r.broken}
 	case leaveEvent:
 		delete(r.members, e.subscriber)
 	}
@@ -239,8 +246,13 @@ func (r *Room) flush(ctx context.Context) {
 		return
 	}
 
+	content, err := r.content.encode()
+	if err != nil {
+		r.markBroken(err, "document content can no longer be encoded")
+		return
+	}
+
 	r.saving = true
-	content := r.snapshotContent()
 	fromVersion, toVersion := r.savedVersion, r.version
 
 	go func() {
@@ -268,10 +280,8 @@ func (r *Room) handleSaved(result saveResult) {
 	}
 
 	if isPermanentSaveFailure(result.err) {
-		r.broken = fmt.Errorf("save document content: %w", result.err)
-		r.logger.Error("document design content can no longer be saved",
-			"document", r.token, "error", result.err)
-		r.disconnectAll("document content can no longer be saved")
+		r.markBroken(fmt.Errorf("save document content: %w", result.err),
+			"document content can no longer be saved")
 		return
 	}
 
@@ -330,12 +340,19 @@ func (r *Room) drain(ctx context.Context) {
 		return
 	}
 
+	content, err := r.content.encode()
+	if err != nil {
+		r.logger.Error("final save on shutdown could not encode content",
+			"document", r.token, "error", err)
+		return
+	}
+
 	// Context aplikasi sudah dibatalkan saat titik ini tercapai, jadi penyimpanan
 	// terakhir wajib memakai context yang lepas darinya.
 	saveCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), contentSaveTimeout)
 	defer cancel()
 
-	if err := r.documents.SaveContent(saveCtx, r.token, r.snapshotContent(), r.savedVersion, r.version); err != nil {
+	if err := r.documents.SaveContent(saveCtx, r.token, content, r.savedVersion, r.version); err != nil {
 		r.logger.Error("final save on shutdown failed", "document", r.token, "error", err)
 		return
 	}
@@ -343,13 +360,26 @@ func (r *Room) drain(ctx context.Context) {
 	r.savedVersion = r.version
 }
 
-// snapshotContent menyalin isi sebelum menyerahkannya keluar, supaya penerima
-// tidak memegang slice yang masih dipakai orchestrator.
-func (r *Room) snapshotContent() json.RawMessage {
-	content := make(json.RawMessage, len(r.content))
-	copy(content, r.content)
+// markBroken menandai room tidak lagi dapat melayani, mencatat penyebabnya, dan
+// memutus penghuninya.
+//
+// cause adalah penyebab sebenarnya dan hanya masuk log. reason adalah frasa yang
+// disampaikan ke klien — baik lewat close frame bagi yang sedang terhubung,
+// maupun sebagai error bagi yang baru mencoba menempel. Memisahkan keduanya
+// menjaga detail internal tidak bocor sekaligus membuat kedua jalur menyampaikan
+// hal yang sama.
+//
+// Sekali terisi tidak pernah ditimpa: penyebab pertama adalah yang paling
+// menjelaskan, sedangkan kegagalan berikutnya hanyalah akibatnya.
+func (r *Room) markBroken(cause error, reason string) {
+	if r.broken != nil {
+		return
+	}
 
-	return content
+	r.broken = domain.NewError(domain.ErrUnavailable, reason)
+	r.logger.Error("document design room stopped serving",
+		"document", r.token, "reason", reason, "error", cause)
+	r.disconnectAll(reason)
 }
 
 // join menunggu orchestrator memproses pendaftaran lalu mengembalikan isi
