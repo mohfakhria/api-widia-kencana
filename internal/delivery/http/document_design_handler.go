@@ -15,6 +15,7 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
 
 	"github.com/coder/websocket"
@@ -46,6 +47,7 @@ const (
 
 type DocumentDesignHandler struct {
 	service *documentdesign.Service
+	fonts   output.FontCatalog
 	logger  *slog.Logger
 	origins []string
 
@@ -55,7 +57,13 @@ type DocumentDesignHandler struct {
 	appCtx context.Context
 }
 
-func NewDocumentDesignHandler(appCtx context.Context, service *documentdesign.Service, cfg config.Config, logger *slog.Logger) *DocumentDesignHandler {
+func NewDocumentDesignHandler(
+	appCtx context.Context,
+	service *documentdesign.Service,
+	fonts output.FontCatalog,
+	cfg config.Config,
+	logger *slog.Logger,
+) *DocumentDesignHandler {
 	if logger == nil {
 		logger = slog.Default()
 	}
@@ -70,10 +78,21 @@ func NewDocumentDesignHandler(appCtx context.Context, service *documentdesign.Se
 
 	return &DocumentDesignHandler{
 		service: service,
+		fonts:   fonts,
 		logger:  logger,
 		origins: origins,
 		appCtx:  appCtx,
 	}
+}
+
+// ListFonts menyebut font yang benar-benar terdaftar di backend.
+//
+// Ada supaya pilihan font di editor terisi dari sumber yang sama dengan yang
+// menggambar hasil cetak. Daftar yang dipatok di frontend akan melenceng begitu
+// ada yang menambah atau mengganti berkas font, dan melencengnya baru ketahuan
+// ketika ekspor gagal.
+func (h *DocumentDesignHandler) ListFonts(c *gin.Context) {
+	dto.Success(c, "Success", dto.NewDocumentDesignFontsResponse(h.fonts.Catalog()))
 }
 
 func (h *DocumentDesignHandler) IssueTicket(c *gin.Context) {
@@ -464,8 +483,8 @@ func closeReason(reason string) string {
 // lapisan ini; room hanya menyerahkan isi dan nomor versinya.
 type DesignMessageEncoder struct{}
 
-func (DesignMessageEncoder) EncodeSnapshot(content json.RawMessage, version int64) ([]byte, error) {
-	return dto.NewDesignSnapshotMessage(content, version)
+func (DesignMessageEncoder) EncodeSnapshot(content json.RawMessage, version int64, page documentdesign.PageSize) ([]byte, error) {
+	return dto.NewDesignSnapshotMessage(content, version, page.Width, page.Height)
 }
 
 // designOriginPatterns membatasi handshake ke host frontend.

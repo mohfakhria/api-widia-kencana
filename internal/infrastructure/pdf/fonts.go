@@ -23,8 +23,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
@@ -164,18 +166,57 @@ func newFaceKey(family string, face manifestFace) (faceKey, error) {
 // supaya ketiadaan font terlihat di log dan bukan baru terungkap saat ada yang
 // mencoba mengekspor.
 func (f *Fonts) Families() []string {
-	seen := map[string]struct{}{CoreFamily: {}}
-	names := []string{CoreFamily}
-
-	for key := range f.faces {
-		if _, exists := seen[key.family]; exists {
-			continue
-		}
-		seen[key.family] = struct{}{}
-		names = append(names, key.family)
+	catalog := f.Catalog()
+	names := make([]string, 0, len(catalog))
+	for _, family := range catalog {
+		names = append(names, family.Name)
 	}
 
 	return names
+}
+
+// coreFaces adalah potongan yang dimiliki keluarga inti PDF. Hanya tegak dan
+// tebal; ketebalan lain ditolak saat menggambar alih-alih dibulatkan.
+func coreFaces() []design.FontFace {
+	return []design.FontFace{
+		{Weight: 400, Style: design.FontStyleNormal},
+		{Weight: 400, Style: design.FontStyleItalic},
+		{Weight: 700, Style: design.FontStyleNormal},
+		{Weight: 700, Style: design.FontStyleItalic},
+	}
+}
+
+// Catalog menyebut setiap keluarga beserta potongan yang benar-benar terdaftar.
+//
+// Urutannya dibuat pasti — keluarga menurut abjad, potongan menurut ketebalan
+// lalu gaya — supaya pilihan font di editor tidak berubah-ubah urutannya tiap
+// kali halaman dimuat.
+func (f *Fonts) Catalog() []design.FontFamily {
+	grouped := map[string][]design.FontFace{CoreFamily: coreFaces()}
+
+	for key := range f.faces {
+		grouped[key.family] = append(grouped[key.family], design.FontFace{
+			Weight: key.weight,
+			Style:  key.style,
+		})
+	}
+
+	names := slices.Sorted(maps.Keys(grouped))
+	catalog := make([]design.FontFamily, 0, len(names))
+
+	for _, name := range names {
+		faces := grouped[name]
+		slices.SortFunc(faces, func(a, b design.FontFace) int {
+			if a.Weight != b.Weight {
+				return a.Weight - b.Weight
+			}
+
+			return strings.Compare(a.Style, b.Style)
+		})
+		catalog = append(catalog, design.FontFamily{Name: name, Faces: faces})
+	}
+
+	return catalog
 }
 
 // resolve mencari potongan font yang persis diminta.

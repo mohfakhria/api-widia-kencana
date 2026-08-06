@@ -1,6 +1,10 @@
 package dto
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
+)
 
 // Jenis pesan yang dikirim klien.
 const (
@@ -44,7 +48,19 @@ type DesignInbound struct {
 type DesignSnapshotMessage struct {
 	Type    string          `json:"type"`
 	Version int64           `json:"version"`
+	Page    DesignPageSize  `json:"page"`
 	Content json.RawMessage `json:"content"`
+}
+
+// DesignPageSize adalah ukuran satu halaman dalam titik.
+//
+// Ikut dikirim bersama snapshot supaya frontend punya semua yang dibutuhkan untuk
+// menggambar dalam satu pesan. Isi dokumen sengaja tidak memuat ukuran halaman,
+// dan endpoint detail dokumen mengembalikannya dalam satuan asli kertas —
+// milimeter, inci — sehingga tanpa ini frontend harus mengonversi sendiri.
+type DesignPageSize struct {
+	Width  float64 `json:"width"`
+	Height float64 `json:"height"`
 }
 
 type DesignErrorMessage struct {
@@ -53,12 +69,45 @@ type DesignErrorMessage struct {
 	Message string `json:"message"`
 }
 
-func NewDesignSnapshotMessage(content json.RawMessage, version int64) ([]byte, error) {
+func NewDesignSnapshotMessage(content json.RawMessage, version int64, width, height float64) ([]byte, error) {
 	return json.Marshal(DesignSnapshotMessage{
 		Type:    DesignMessageSnapshot,
 		Version: version,
+		Page:    DesignPageSize{Width: width, Height: height},
 		Content: content,
 	})
+}
+
+// DocumentDesignFontsResponse menyebut font yang benar-benar dapat dipakai.
+//
+// Editor membutuhkannya untuk mengisi pilihan font. Tanpa daftar ini frontend
+// hanya dapat menebak, dan tebakan yang salah baru ketahuan saat ekspor gagal.
+type DocumentDesignFontsResponse struct {
+	Fonts []DesignFontFamily `json:"fonts"`
+}
+
+type DesignFontFamily struct {
+	Name  string           `json:"name"`
+	Faces []DesignFontFace `json:"faces"`
+}
+
+type DesignFontFace struct {
+	Weight int    `json:"weight"`
+	Style  string `json:"style"`
+}
+
+func NewDocumentDesignFontsResponse(families []design.FontFamily) DocumentDesignFontsResponse {
+	response := DocumentDesignFontsResponse{Fonts: make([]DesignFontFamily, 0, len(families))}
+
+	for _, family := range families {
+		faces := make([]DesignFontFace, 0, len(family.Faces))
+		for _, face := range family.Faces {
+			faces = append(faces, DesignFontFace{Weight: face.Weight, Style: face.Style})
+		}
+		response.Fonts = append(response.Fonts, DesignFontFamily{Name: family.Name, Faces: faces})
+	}
+
+	return response
 }
 
 func NewDesignErrorMessage(code, message string) ([]byte, error) {

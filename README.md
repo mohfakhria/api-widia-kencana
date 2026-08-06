@@ -210,6 +210,7 @@ POST   /api/document-add
 PUT    /api/document-update/:token
 DELETE /api/document-delete/:token
 
+GET    /api/document-design-fonts
 POST   /api/document-design-ticket/:token
 WS     /document-design/:token?ticket=
 POST   /api/document-export/:token
@@ -323,7 +324,7 @@ jq empty docs/collection/*.json
 
 ## Development Notes
 
-- Panduan integrasi frontend untuk document design realtime ada di `docs/engineering/document-design-realtime.md`.
+- Panduan integrasi frontend untuk document design ada di `docs/engineering/document-design-realtime.md`, mencakup model isi dokumen, aturan agar tampilan editor sama dengan hasil cetak, sesi realtime, dan export PDF.
 - Clean Architecture reference ada di `docs/engineering/Clean_Architecture.md`.
 - README structure guideline ada di `docs/engineering/readme-structure.md`.
 - Unit test baru belum menjadi scope utama project ini; `go test ./...` dipakai sebagai compile/smoke verification.

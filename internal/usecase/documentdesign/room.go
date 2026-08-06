@@ -67,7 +67,19 @@ type Subscriber interface {
 // dapat menyalip snapshot dan klien menerima delta untuk keadaan yang belum ia
 // punya.
 type MessageEncoder interface {
-	EncodeSnapshot(content json.RawMessage, version int64) ([]byte, error)
+	EncodeSnapshot(content json.RawMessage, version int64, page PageSize) ([]byte, error)
+}
+
+// PageSize adalah ukuran halaman dalam titik, ikut dikirim bersama snapshot.
+//
+// Tanpa ini frontend tidak punya cara menentukan ukuran kanvas: isi dokumen
+// sengaja tidak memuat ukuran halaman, dan satu-satunya sumber lain — endpoint
+// detail dokumen — mengembalikan ukuran dalam satuan asli kertas. Menyerahkan
+// konversinya ke frontend berarti membuka satu kelas kesalahan baru untuk
+// pertanyaan yang jawabannya sudah dipegang backend.
+type PageSize struct {
+	Width  float64
+	Height float64
 }
 
 // roomEvent adalah pesan yang diproses orchestrator satu per satu. Antarmuka
@@ -146,8 +158,13 @@ type Room struct {
 	// paper disimpan karena ekspor membutuhkan ukuran halaman, sedangkan isi
 	// dokumen sengaja tidak memuatnya — ukuran kertas adalah milik dokumen, bukan
 	// milik tiap halaman, dan menyalinnya ke dalam isi hanya membuka peluang
-	// keduanya bertentangan.
+	// keduanya bertentangan. Bentuk aslinya dipertahankan untuk ekspor, yang juga
+	// melayani dokumen tanpa room dan karena itu mengonversi sendiri.
 	paper entity.DocumentPaperSize
+	// page adalah ukuran yang sama dalam titik. Dikonversi sekali saat memuat,
+	// bukan tiap snapshot, dan satuan yang tidak dikenal ditolak di sana — sehingga
+	// jalur snapshot maupun benih tidak perlu lagi memikirkan kegagalan konversi.
+	page PageSize
 	// version adalah nomor revisi di memori; savedVersion adalah nilai version
 	// yang terakhir berhasil ditulis. Kotor berarti keduanya berbeda — bukan
 	// boolean, karena boolean bisa terhapus keliru oleh perubahan yang masuk
@@ -230,6 +247,16 @@ func (r *Room) load(ctx context.Context) {
 		return
 	}
 
+	width, height, ok := design.PaperPoints(stored.Paper.Width, stored.Paper.Height, stored.Paper.Unit)
+	if !ok {
+		// Tanpa ukuran halaman, frontend tidak dapat menggambar apa pun dan ekspor
+		// tidak dapat menentukan ukuran kertas. Menolak di sini lebih jujur daripada
+		// melayani sesi yang hasilnya pasti salah.
+		r.markBroken(fmt.Errorf("document paper unit %q is not supported", stored.Paper.Unit),
+			"document paper uses an unsupported unit")
+		return
+	}
+
 	content, err := design.Decode(stored.Content)
 	if err != nil {
 		// Isi di database cacat, atau memakai bentuk lama yang sudah tidak dikenal
@@ -242,6 +269,7 @@ func (r *Room) load(ctx context.Context) {
 
 	r.content = content
 	r.paper = stored.Paper
+	r.page = PageSize{Width: width, Height: height}
 	r.version = stored.Version
 	r.savedVersion = stored.Version
 
@@ -252,7 +280,7 @@ func (r *Room) load(ctx context.Context) {
 		// berikutnya. Tanpa itu ia disusun ulang setiap kali room lahir, dan
 		// elemennya mendapat id baru setiap kali — membuat setiap penyuntingan
 		// yang menunjuk id lama gagal.
-		r.content = defaultDocumentContent(stored.Paper)
+		r.content = defaultDocumentContent(r.page)
 		r.version++
 		r.logger.Info("seeded empty document design content",
 			"document", r.token, "version", r.version)
@@ -317,7 +345,7 @@ func (r *Room) encodeSnapshot() ([]byte, error) {
 		return nil, err
 	}
 
-	return r.encoder.EncodeSnapshot(content, r.version)
+	return r.encoder.EncodeSnapshot(content, r.version, r.page)
 }
 
 // flush menyerahkan penulisan ke goroutine terpisah.

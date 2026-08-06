@@ -77,6 +77,7 @@ func (a *ApiApp) initialize() error {
 	documentDesign := documentdesign.NewService(
 		a.Context, documentRepo, deliveryhttp.DesignMessageEncoder{}, a.ServiceLogger,
 	)
+
 	// Font dimuat sekali saat start, bukan tiap ekspor. Kegagalan di sini
 	// menghentikan aplikasi dengan sengaja: manifes yang cacat atau berkas yang
 	// hilang berarti ekspor akan memakai huruf yang berbeda dari layar, dan itu
@@ -107,7 +108,7 @@ func (a *ApiApp) initialize() error {
 		AuthHandler:     deliveryhttp.NewAuthHandler(authUC, a.Config),
 		DocumentHandler: deliveryhttp.NewDocumentHandler(documentUC),
 		DocumentDesignHandler: deliveryhttp.NewDocumentDesignHandler(
-			a.Context, documentDesign, a.Config, a.ServiceLogger,
+			a.Context, documentDesign, fonts, a.Config, a.ServiceLogger,
 		),
 		DocumentExportHandler: deliveryhttp.NewDocumentExportHandler(documentExportUC, a.ServiceLogger),
 		ProjectHandler:        deliveryhttp.NewProjectHandler(projectUC),

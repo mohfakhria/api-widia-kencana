@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
-	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 
 	"github.com/google/uuid"
 )
@@ -125,29 +124,19 @@ func seedBlocks() []seedBlock {
 // defaultDocumentContent menyusun satu halaman panduan untuk dokumen yang masih
 // kosong.
 //
-// Ukuran kertas dikonversi ke titik lebih dulu, karena seluruh koordinat dalam
-// model isi dokumen memakai titik. Satuan asli kertas — milimeter untuk A4, inci
-// untuk Letter — berhenti di sini dan tidak pernah masuk ke isi dokumen.
-//
-// Kertas dengan satuan yang tidak dikenal menghasilkan dokumen tanpa halaman,
-// bukan benih dengan koordinat yang salah. Kanvas kosong jelas terlihat keliru
-// dan mudah dilaporkan; benih yang ukurannya meleset diam-diam justru akan
-// dikira memang begitu bentuknya.
-func defaultDocumentContent(paper entity.DocumentPaperSize) *design.Content {
-	width, height, ok := design.PaperPoints(paper.Width, paper.Height, paper.Unit)
-	if !ok {
-		return &design.Content{Pages: []design.Page{}}
-	}
-
-	sideMargin := width * seedSideMarginRatio
-	contentWidth := width - 2*sideMargin
-	offsetY := height * seedTopMarginRatio
+// Ukurannya sudah dalam titik saat sampai ke sini. Satuan asli kertas —
+// milimeter untuk A4, inci untuk Letter — berhenti di orchestrator saat memuat,
+// dan tidak pernah masuk ke isi dokumen.
+func defaultDocumentContent(page PageSize) *design.Content {
+	sideMargin := page.Width * seedSideMarginRatio
+	contentWidth := page.Width - 2*sideMargin
+	offsetY := page.Height * seedTopMarginRatio
 
 	blocks := seedBlocks()
 	elements := make([]design.Element, 0, len(blocks))
 
 	for _, block := range blocks {
-		blockHeight := height * block.heightRatio
+		blockHeight := page.Height * block.heightRatio
 
 		elements = append(elements, design.Element{
 			ID:         uuid.NewString(),
@@ -166,7 +155,7 @@ func defaultDocumentContent(paper entity.DocumentPaperSize) *design.Content {
 			LineHeight: block.lineHeight,
 		})
 
-		offsetY += blockHeight + height*block.gapRatio
+		offsetY += blockHeight + page.Height*block.gapRatio
 	}
 
 	return &design.Content{

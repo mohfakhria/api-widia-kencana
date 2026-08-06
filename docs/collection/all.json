@@ -652,6 +652,46 @@
                             "listen": "test",
                             "script": {
                                 "exec": [
+                                    "pm.test(\"Fonts response lists at least the core family\", function () {",
+                                    "  var jsonData = pm.response.json();",
+                                    "  pm.expect(jsonData.data).to.have.property(\"fonts\");",
+                                    "  var names = jsonData.data.fonts.map(function (f) { return f.name; });",
+                                    "  pm.expect(names).to.include(\"helvetica\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "name": "List Design Fonts",
+                    "request": {
+                        "description": "Menyebut keluarga font beserta ketebalan dan gaya yang benar-benar terdaftar di backend, untuk mengisi pilihan font di editor.\n\nKeluarga `helvetica` selalu ada karena metriknya melekat pada spesifikasi PDF, tetapi ia tidak menjamin tampilan editor sama dengan hasil cetak — browser akan memakai Helvetica atau Arial milik sistem. Keluarga lain berasal dari manifes `fonts.json` di dalam `DESIGN_FONT_DIR`.\n\nKetebalan yang tidak ada di daftar ini menggagalkan export dengan 400, tidak dibulatkan ke yang terdekat.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-design-fonts"
+                            ],
+                            "raw": "{{base_url}}/api/document-design-fonts"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
                                     "pm.test(\"Ticket response has design ticket\", function () {",
                                     "  var jsonData = pm.response.json();",
                                     "  pm.expect(jsonData).to.have.property(\"data\");",
