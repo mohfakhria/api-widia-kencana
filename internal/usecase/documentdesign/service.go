@@ -41,7 +41,7 @@ type Service struct {
 
 // NewService menerima context aplikasi karena orchestrator room hidup lebih lama
 // daripada koneksi mana pun dan harus berhenti bersama aplikasi.
-func NewService(appCtx context.Context, documents output.DocumentRepository, logger *slog.Logger) *Service {
+func NewService(appCtx context.Context, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Service {
 	if logger == nil {
 		logger = slog.Default()
 	}
@@ -49,7 +49,7 @@ func NewService(appCtx context.Context, documents output.DocumentRepository, log
 	return &Service{
 		documents:   documents,
 		tickets:     newTicketStore(),
-		rooms:       newManager(appCtx, documents, logger),
+		rooms:       newManager(appCtx, documents, encoder, logger),
 		connections: newConnectionCounter(),
 	}
 }
@@ -94,31 +94,34 @@ func (s *Service) Redeem(key, documentToken string) (Ticket, error) {
 	return ticket, nil
 }
 
-// Join mendaftarkan subscriber ke room dokumen dan mengembalikan isinya saat itu.
+// Attach mencatat satu koneksi baru pada dokumen, mengambil kuota koneksi user
+// lebih dulu.
 //
-// Kuota koneksi per user diambil lebih dulu, dan dikembalikan bila pendaftaran
-// gagal. Room tidak ikut dikembalikan: pemanggil tidak membutuhkannya, dan
-// menyembunyikan tipe itu menjaga lapisan delivery tetap buta terhadap cara room
-// bekerja.
-//
-// Setiap Join yang berhasil wajib diimbangi tepat satu Leave dengan userID yang
-// sama, kalau tidak kuotanya bocor dan user itu perlahan terkunci sendiri.
-func (s *Service) Join(ctx context.Context, documentToken, userID string, sub Subscriber) (Snapshot, error) {
+// Belum menjadikan koneksinya anggota room; itu terjadi saat klien meminta
+// dokumen lewat Sync. Setiap Attach yang berhasil wajib diimbangi tepat satu
+// Detach dengan userID yang sama, kalau tidak kuotanya bocor dan user itu
+// perlahan terkunci sendiri.
+func (s *Service) Attach(documentToken, userID string) error {
 	if !s.connections.acquire(userID) {
-		return Snapshot{}, domain.NewError(domain.ErrTooManyRequests, "too many concurrent design connections")
+		return domain.NewError(domain.ErrTooManyRequests, "too many concurrent design connections")
 	}
 
-	snapshot, err := s.rooms.join(ctx, documentToken, sub)
-	if err != nil {
-		s.connections.release(userID)
-		return Snapshot{}, err
-	}
+	s.rooms.attach(documentToken)
 
-	return snapshot, nil
+	return nil
 }
 
-func (s *Service) Leave(documentToken, userID string, sub Subscriber) {
-	s.rooms.leave(documentToken, sub)
+// Sync meminta room mengirimkan snapshot ke koneksi ini dan menjadikannya
+// anggota, sehingga mulai saat itu ia menerima siaran.
+//
+// Boleh dipanggil berulang pada koneksi yang sama: itulah jalur pemulihan ketika
+// klien menyadari keadaannya tertinggal.
+func (s *Service) Sync(ctx context.Context, documentToken string, sub Subscriber) error {
+	return s.rooms.sync(ctx, documentToken, sub)
+}
+
+func (s *Service) Detach(documentToken, userID string, sub Subscriber) {
+	s.rooms.detach(documentToken, sub)
 	s.connections.release(userID)
 }
 

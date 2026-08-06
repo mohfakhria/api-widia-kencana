@@ -2,7 +2,12 @@ package dto
 
 import "encoding/json"
 
-// Jenis pesan yang dikirim server lewat WebSocket.
+// Jenis pesan yang dikirim klien.
+const (
+	DesignMessageDocumentGet = "document.get"
+)
+
+// Jenis pesan yang dikirim server.
 const (
 	DesignMessageSnapshot = "snapshot"
 	DesignMessageError    = "error"
@@ -28,9 +33,12 @@ func NewDocumentDesignTicketResponse(ticket string, expiresIn int64) DocumentDes
 
 // DesignInbound hanya membaca amplop pesan. Isi spesifik tiap jenis perintah
 // baru diurai ketika penerapan perubahan dibangun.
+//
+// Tidak ada nomor urut. Korelasi permintaan-balasan digantikan version: klien
+// membandingkan versi yang diterima dengan versi lokalnya untuk tahu apakah ia
+// sudah selaras, tertinggal, atau melewatkan sesuatu.
 type DesignInbound struct {
 	Type string `json:"type"`
-	Seq  int64  `json:"seq"`
 }
 
 type DesignSnapshotMessage struct {
@@ -41,7 +49,6 @@ type DesignSnapshotMessage struct {
 
 type DesignErrorMessage struct {
 	Type    string `json:"type"`
-	Seq     int64  `json:"seq,omitempty"`
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
@@ -54,10 +61,9 @@ func NewDesignSnapshotMessage(content json.RawMessage, version int64) ([]byte, e
 	})
 }
 
-func NewDesignErrorMessage(seq int64, code, message string) ([]byte, error) {
+func NewDesignErrorMessage(code, message string) ([]byte, error) {
 	return json.Marshal(DesignErrorMessage{
 		Type:    DesignMessageError,
-		Seq:     seq,
 		Code:    code,
 		Message: message,
 	})

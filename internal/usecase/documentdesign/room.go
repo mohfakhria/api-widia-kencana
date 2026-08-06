@@ -56,10 +56,16 @@ type Subscriber interface {
 	Disconnect(reason string)
 }
 
-// Snapshot adalah isi dokumen pada satu titik waktu.
-type Snapshot struct {
-	Content json.RawMessage
-	Version int64
+// MessageEncoder menyusun payload yang dikirim room ke klien.
+//
+// Room tidak mengenal bentuk kawatnya; lapisan delivery yang menentukan. Port
+// ini ada supaya orchestrator dapat memasukkan snapshot ke antrean keluar
+// sendiri, pada langkah yang sama dengan pendaftaran anggota. Bila penyusunan
+// payload diserahkan ke goroutine handler, siaran dari perubahan berikutnya
+// dapat menyalip snapshot dan klien menerima delta untuk keadaan yang belum ia
+// punya.
+type MessageEncoder interface {
+	EncodeSnapshot(content json.RawMessage, version int64) ([]byte, error)
 }
 
 // roomEvent adalah pesan yang diproses orchestrator satu per satu. Antarmuka
@@ -69,22 +75,22 @@ type roomEvent interface {
 	isRoomEvent()
 }
 
-type joinResult struct {
-	snapshot Snapshot
-	err      error
-}
-
-type joinEvent struct {
+// syncEvent adalah permintaan klien atas isi dokumen.
+//
+// Klien baru menjadi anggota — dan karenanya penerima siaran — pada langkah ini,
+// bukan saat socket terbuka. Dengan begitu mustahil ada delta yang sampai
+// sebelum snapshot yang menjadi dasarnya.
+type syncEvent struct {
 	subscriber Subscriber
 	// Arah channel dinyatakan lewat tipe: orchestrator hanya boleh mengirim.
-	reply chan<- joinResult
+	reply chan<- error
 }
 
 type leaveEvent struct {
 	subscriber Subscriber
 }
 
-func (joinEvent) isRoomEvent()  {}
+func (syncEvent) isRoomEvent()  {}
 func (leaveEvent) isRoomEvent() {}
 
 // saveResult dikirim goroutine penyimpan kembali ke orchestrator.
@@ -102,6 +108,7 @@ type saveResult struct {
 type Room struct {
 	token     string
 	documents output.DocumentRepository
+	encoder   MessageEncoder
 	logger    *slog.Logger
 
 	inbox chan roomEvent
@@ -129,14 +136,18 @@ type Room struct {
 	//
 	// Pesannya sengaja berupa frasa yang aman disampaikan ke klien; detail
 	// internal penyebabnya hanya masuk log, di tempat dan saat ia terjadi.
-	broken  error
+	broken error
+	// members hanya berisi klien yang sudah meminta dan menerima snapshot.
+	// Koneksi yang terbuka tetapi belum meminta dokumen sengaja tidak masuk,
+	// supaya ia tidak pernah menerima delta untuk keadaan yang belum ia punya.
 	members map[Subscriber]struct{}
 }
 
-func newRoom(token string, documents output.DocumentRepository, logger *slog.Logger) *Room {
+func newRoom(token string, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Room {
 	return &Room{
 		token:     token,
 		documents: documents,
+		encoder:   encoder,
 		logger:    logger,
 		inbox:     make(chan roomEvent, roomInboxSize),
 		saved:     make(chan saveResult, 1),
@@ -205,31 +216,62 @@ func (r *Room) load(ctx context.Context) {
 	r.content = content
 	r.version = stored.Version
 	r.savedVersion = stored.Version
+
+	if content.isEmpty() {
+		// Dokumen yang belum punya halaman diisi benih agar kanvas tidak hampa.
+		//
+		// version dinaikkan supaya benihnya ikut tersimpan pada penyimpanan
+		// berikutnya. Tanpa itu ia disusun ulang setiap kali room lahir, dan
+		// elemennya mendapat id baru setiap kali — membuat setiap penyuntingan
+		// yang menunjuk id lama gagal.
+		r.content = defaultDocumentContent(stored.Paper)
+		r.version++
+		r.logger.Info("seeded empty document design content",
+			"document", r.token, "version", r.version)
+	}
 }
 
 func (r *Room) handle(event roomEvent) {
 	switch e := event.(type) {
-	case joinEvent:
-		if r.broken == nil {
-			// Hasil encode berupa byte baru, jadi klien tidak pernah memegang
-			// struktur yang masih dipakai orchestrator.
-			if encoded, err := r.content.encode(); err != nil {
-				// Isi yang tidak dapat dikodekan juga tidak akan pernah dapat
-				// disimpan, jadi room ini memang sudah tidak berguna.
-				r.markBroken(err, "document content can no longer be encoded")
-			} else {
-				r.members[e.subscriber] = struct{}{}
-				// reply berkapasitas satu, jadi pengiriman ini tidak pernah
-				// menahan orchestrator walau peminta sudah menyerah menunggu.
-				e.reply <- joinResult{snapshot: Snapshot{Content: encoded, Version: r.version}}
-				return
-			}
+	case syncEvent:
+		// reply berkapasitas satu, jadi pengiriman apa pun di cabang ini tidak
+		// pernah menahan orchestrator walau peminta sudah menyerah menunggu.
+		if r.broken != nil {
+			e.reply <- r.broken
+			return
 		}
 
-		e.reply <- joinResult{err: r.broken}
+		payload, err := r.encodeSnapshot()
+		if err != nil {
+			// Isi yang tidak dapat dikodekan juga tidak akan pernah dapat
+			// disimpan, jadi room ini memang sudah tidak berguna.
+			r.markBroken(err, "document content can no longer be encoded")
+			e.reply <- r.broken
+			return
+		}
+
+		// Pendaftaran anggota dan pengiriman snapshot terjadi pada langkah yang
+		// sama. Itulah yang menjamin klien tidak pernah menerima delta untuk
+		// keadaan yang belum ia punya.
+		r.members[e.subscriber] = struct{}{}
+		e.subscriber.Send(payload)
+		e.reply <- nil
 	case leaveEvent:
 		delete(r.members, e.subscriber)
 	}
+}
+
+// encodeSnapshot menyusun payload snapshot dari isi terkini.
+//
+// Hasil encode berupa byte baru, jadi klien tidak pernah memegang struktur yang
+// masih dipakai orchestrator.
+func (r *Room) encodeSnapshot() ([]byte, error) {
+	content, err := r.content.encode()
+	if err != nil {
+		return nil, err
+	}
+
+	return r.encoder.EncodeSnapshot(content, r.version)
 }
 
 // flush menyerahkan penulisan ke goroutine terpisah.
@@ -382,28 +424,31 @@ func (r *Room) markBroken(cause error, reason string) {
 	r.disconnectAll(reason)
 }
 
-// join menunggu orchestrator memproses pendaftaran lalu mengembalikan isi
-// dokumen saat itu. Ini satu-satunya operasi yang sinkron, karena pemanggil
-// memang membutuhkan snapshot untuk dikirim ke klien yang baru menempel.
-func (r *Room) join(ctx context.Context, sub Subscriber) (Snapshot, error) {
-	reply := make(chan joinResult, 1)
-	event := joinEvent{subscriber: sub, reply: reply}
+// sync mendaftarkan klien sebagai anggota lalu meminta orchestrator mengirimkan
+// snapshot kepadanya.
+//
+// Ini satu-satunya operasi yang sinkron, dan yang ditunggu hanya konfirmasi
+// berhasil atau tidak — snapshot-nya sendiri dikirim orchestrator langsung ke
+// antrean keluar klien.
+func (r *Room) sync(ctx context.Context, sub Subscriber) error {
+	reply := make(chan error, 1)
+	event := syncEvent{subscriber: sub, reply: reply}
 
 	select {
 	case r.inbox <- event:
 	case <-r.done:
-		return Snapshot{}, domain.NewError(domain.ErrUnavailable, "document design room is closed")
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	case <-ctx.Done():
-		return Snapshot{}, ctx.Err()
+		return ctx.Err()
 	}
 
 	select {
-	case result := <-reply:
-		return result.snapshot, result.err
+	case err := <-reply:
+		return err
 	case <-r.done:
-		return Snapshot{}, domain.NewError(domain.ErrUnavailable, "document design room is closed")
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	case <-ctx.Done():
-		return Snapshot{}, ctx.Err()
+		return ctx.Err()
 	}
 }
 

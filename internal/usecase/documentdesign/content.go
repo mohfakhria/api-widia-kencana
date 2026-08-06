@@ -4,8 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math"
+	"strconv"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
+
+	"github.com/google/uuid"
 )
 
 // Kunci yang dikenal backend. Selebihnya diperlakukan sebagai data yang lewat
@@ -37,6 +42,156 @@ func emptyDocumentContent() *documentContent {
 	return &documentContent{
 		root: map[string]any{contentKeyPages: []any{}},
 	}
+}
+
+// isEmpty menandai dokumen yang belum punya halaman sama sekali — kandidat untuk
+// diisi benih.
+func (c *documentContent) isEmpty() bool {
+	pages, ok := c.root[contentKeyPages].([]any)
+
+	return ok && len(pages) == 0
+}
+
+// Tata letak benih dinyatakan sebagai bagian dari ukuran kertas, bukan angka
+// tetap, supaya hasilnya seimbang pada kertas apa pun.
+const (
+	seedSideMarginRatio = 0.10
+	seedTopMarginRatio  = 0.08
+)
+
+// seedBlock adalah satu blok teks pada dokumen benih.
+//
+// Tinggi dan jarak dinyatakan sebagai bagian dari tinggi kertas; ukuran huruf
+// tidak, karena ukuran huruf lazimnya angka mutlak dan bukan turunan ukuran
+// kertas.
+type seedBlock struct {
+	text        string
+	fontSize    float64
+	fontWeight  string
+	heightRatio float64
+	gapRatio    float64
+}
+
+// seedBlocks adalah panduan singkat yang muncul pada dokumen yang masih kosong.
+//
+// Isinya sengaja memperagakan kaidah yang dijelaskannya: tiga tingkat hierarki,
+// perataan seragam, dan seperlima halaman dibiarkan kosong di bawah.
+func seedBlocks() []seedBlock {
+	return []seedBlock{
+		{
+			text:        "Kaidah Dokumen yang Baik",
+			fontSize:    24,
+			fontWeight:  "bold",
+			heightRatio: 0.06,
+			gapRatio:    0.02,
+		},
+		{
+			text:        "Halaman ini adalah panduan bawaan. Ubah atau hapus isinya kapan saja — ia hanya muncul pada dokumen yang masih kosong.",
+			fontSize:    11,
+			fontWeight:  "regular",
+			heightRatio: 0.07,
+			gapRatio:    0.05,
+		},
+		{
+			text:        "1. Hierarki",
+			fontSize:    13,
+			fontWeight:  "bold",
+			heightRatio: 0.04,
+			gapRatio:    0.01,
+		},
+		{
+			text:        "Ukuran dan ketebalan huruf menuntun mata pembaca. Judul paling besar, subjudul lebih kecil, isi paling kecil. Tiga tingkat sudah cukup; lebih dari itu justru membingungkan.",
+			fontSize:    10.5,
+			fontWeight:  "regular",
+			heightRatio: 0.09,
+			gapRatio:    0.05,
+		},
+		{
+			text:        "2. Ruang Kosong",
+			fontSize:    13,
+			fontWeight:  "bold",
+			heightRatio: 0.04,
+			gapRatio:    0.01,
+		},
+		{
+			text:        "Jangan penuhi seluruh halaman. Ruang kosong memberi napas dan memisahkan gagasan. Perhatikan sisa ruang di bawah halaman ini — itu disengaja.",
+			fontSize:    10.5,
+			fontWeight:  "regular",
+			heightRatio: 0.09,
+			gapRatio:    0.05,
+		},
+		{
+			text:        "3. Konsistensi",
+			fontSize:    13,
+			fontWeight:  "bold",
+			heightRatio: 0.04,
+			gapRatio:    0.01,
+		},
+		{
+			text:        "Satu jenis huruf sudah cukup. Samakan perataan, jarak antarblok, dan ukuran pada elemen yang sederajat. Keseragaman membuat dokumen terasa rapi tanpa usaha tambahan.",
+			fontSize:    10.5,
+			fontWeight:  "regular",
+			heightRatio: 0.09,
+		},
+	}
+}
+
+// defaultDocumentContent menyusun satu halaman panduan untuk dokumen yang masih
+// kosong.
+//
+// Koordinat dan ukuran memakai satuan kertas itu sendiri — itu satu-satunya
+// pilihan yang konsisten tanpa mengarang konversi, karena backend tidak tahu
+// skala yang dipakai kanvas frontend.
+func defaultDocumentContent(paper entity.DocumentPaperSize) *documentContent {
+	sideMargin := paper.Width * seedSideMarginRatio
+	contentWidth := paper.Width - 2*sideMargin
+	offsetY := paper.Height * seedTopMarginRatio
+
+	blocks := seedBlocks()
+	elements := make([]any, 0, len(blocks))
+
+	for _, block := range blocks {
+		height := paper.Height * block.heightRatio
+
+		elements = append(elements, map[string]any{
+			contentKeyID:   uuid.NewString(),
+			contentKeyType: "text",
+			"x":            number(sideMargin),
+			"y":            number(offsetY),
+			"w":            number(contentWidth),
+			"h":            number(height),
+			"props": map[string]any{
+				"text":       block.text,
+				"fontSize":   number(block.fontSize),
+				"fontWeight": block.fontWeight,
+				"align":      "left",
+			},
+		})
+
+		offsetY += height + paper.Height*block.gapRatio
+	}
+
+	page := map[string]any{
+		contentKeyID:       uuid.NewString(),
+		contentKeyElements: elements,
+	}
+
+	return &documentContent{
+		root: map[string]any{contentKeyPages: []any{page}},
+	}
+}
+
+// number menghasilkan literal angka yang sama bentuknya dengan hasil penguraian
+// UseNumber, sehingga benih dan isi yang dimuat dari database diperlakukan sama.
+//
+// Dibulatkan ke tiga desimal — presisi yang sama dengan ukuran kertas di
+// database — supaya penumpukan pecahan biner tidak menghasilkan literal seperti
+// 23.760000000000002. FormatFloat dengan presisi -1 lalu memberi bentuk
+// terpendek yang tetap bulat-balik: 105 tetap "105", bukan "105.000".
+func number(value float64) json.Number {
+	rounded := math.Round(value*1000) / 1000
+
+	return json.Number(strconv.FormatFloat(rounded, 'f', -1, 64))
 }
 
 // parseDocumentContent mengurai isi dokumen dan memvalidasi rangkanya.

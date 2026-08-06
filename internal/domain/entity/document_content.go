@@ -12,4 +12,15 @@ type DocumentContent struct {
 	Token   string
 	Content json.RawMessage
 	Version int64
+	// Paper dibawa bersama isinya karena dokumen yang masih kosong perlu diisi
+	// benih yang ukurannya mengikuti kertas.
+	Paper DocumentPaperSize
+}
+
+// DocumentPaperSize adalah ukuran kertas dokumen, secukupnya untuk menempatkan
+// elemen. Sengaja bukan DocumentPaper utuh: yang dibutuhkan hanya tiga field ini.
+type DocumentPaperSize struct {
+	Width  float64
+	Height float64
+	Unit   string
 }

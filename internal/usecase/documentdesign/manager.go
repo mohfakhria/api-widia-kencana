@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
@@ -48,62 +49,68 @@ type manager struct {
 	// dituntut oleh daur hidupnya.
 	appCtx    context.Context
 	documents output.DocumentRepository
+	encoder   MessageEncoder
 	logger    *slog.Logger
 
 	mu    sync.Mutex
 	rooms map[string]*roomEntry
 }
 
-func newManager(appCtx context.Context, documents output.DocumentRepository, logger *slog.Logger) *manager {
+func newManager(appCtx context.Context, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *manager {
 	return &manager{
 		appCtx:    appCtx,
 		documents: documents,
+		encoder:   encoder,
 		logger:    logger,
 		rooms:     make(map[string]*roomEntry),
 	}
 }
 
-// join mencari-atau-membuat room lalu mendaftarkan penghuninya.
+// attach mencari-atau-membuat room lalu mencatat satu koneksi memakainya.
 //
 // Pencarian, pembuatan, dan penambahan pencacah terjadi di bawah satu penguncian.
 // Memecahnya jadi "periksa" lalu "buat" akan membuat dua koneksi yang datang
 // bersamaan pada dokumen yang sama menghasilkan dua room dengan state bercabang.
 //
-// Kejadian join dikirim setelah kunci dilepas, karena mengirim ke inbox dapat
-// menunggu dan menunggu di bawah kunci peta akan membekukan seluruh dokumen lain.
-func (m *manager) join(ctx context.Context, token string, sub Subscriber) (Snapshot, error) {
+// Ini belum menjadikan koneksinya anggota room. Keanggotaan — dan karenanya hak
+// menerima siaran — baru terjadi saat klien meminta dokumen lewat sync.
+func (m *manager) attach(token string) {
 	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	entry, ok := m.rooms[token]
 	if !ok {
-		entry = &roomEntry{room: newRoom(token, m.documents, m.logger)}
+		entry = &roomEntry{room: newRoom(token, m.documents, m.encoder, m.logger)}
 		m.rooms[token] = entry
 		go entry.room.run(m.appCtx)
 	}
+
 	entry.members++
-	// Room ini berpenghuni lagi, jadi hitung mundur pembuangannya dibatalkan.
+	// Room ini terpakai lagi, jadi hitung mundur pembuangannya dibatalkan.
 	entry.emptyAt = time.Time{}
-	room := entry.room
+}
+
+// sync meminta room mengirimkan snapshot ke satu koneksi dan menjadikannya
+// anggota.
+//
+// Room dicari di bawah kunci, tetapi permintaannya dikirim setelah kunci dilepas:
+// menunggu inbox di bawah kunci peta akan membekukan seluruh dokumen lain.
+func (m *manager) sync(ctx context.Context, token string, sub Subscriber) error {
+	m.mu.Lock()
+	entry, ok := m.rooms[token]
 	m.mu.Unlock()
 
-	snapshot, err := room.join(ctx, sub)
-	if err != nil {
-		// Pendaftaran gagal, jadi pencacahnya harus dikembalikan. Tanpa ini room
-		// tidak akan pernah dianggap kosong dan tidak pernah dibuang.
-		m.release(token, sub)
-		return Snapshot{}, err
+	if !ok {
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	}
 
-	return snapshot, nil
+	return entry.room.sync(ctx, sub)
 }
 
-func (m *manager) leave(token string, sub Subscriber) {
-	m.release(token, sub)
-}
-
-// release mengurangi pencacah dan mulai menghitung mundur begitu penghuni
-// terakhir keluar. Room-nya sendiri belum dibuang di sini — itu tugas sweepIdle
-// setelah roomIdleGrace terlampaui.
-func (m *manager) release(token string, sub Subscriber) {
+// detach mengurangi pencacah dan mulai menghitung mundur begitu koneksi terakhir
+// pergi. Room-nya sendiri belum dibuang di sini — itu tugas sweepIdle setelah
+// roomIdleGrace terlampaui.
+func (m *manager) detach(token string, sub Subscriber) {
 	m.mu.Lock()
 	entry, ok := m.rooms[token]
 	if !ok {

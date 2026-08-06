@@ -154,14 +154,16 @@ func (r *DocumentRepository) GetContent(ctx context.Context, token string) (*ent
 	var (
 		raw     []byte
 		version int64
+		paper   entity.DocumentPaperSize
 	)
 
 	err := r.db.QueryRowContext(ctx, `
-		SELECT content, content_version
-		FROM documents
-		WHERE token = $1::uuid
-			AND status <> 'deleted'
-	`, token).Scan(&raw, &version)
+		SELECT d.content, d.content_version, paper.width, paper.height, paper.unit
+		FROM documents d
+		JOIN document_papers paper ON paper.id = d.document_paper_id
+		WHERE d.token = $1::uuid
+			AND d.status <> 'deleted'
+	`, token).Scan(&raw, &version, &paper.Width, &paper.Height, &paper.Unit)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.NewError(domain.ErrNotFound, "document not found")
@@ -173,6 +175,7 @@ func (r *DocumentRepository) GetContent(ctx context.Context, token string) (*ent
 		Token:   token,
 		Content: json.RawMessage(raw),
 		Version: version,
+		Paper:   paper,
 	}, nil
 }
 

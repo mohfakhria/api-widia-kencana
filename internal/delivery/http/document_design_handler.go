@@ -141,25 +141,18 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 		h.pingLoop(connCtx, conn, cancel)
 	}()
 
-	state, err := h.service.Join(connCtx, documentToken, ticket.UserID, subscriber)
-	if err != nil {
-		h.logger.Warn("join document design room", "document", documentToken, "error", err)
+	// Koneksinya dicatat, tetapi isi dokumen belum dikirim. Klien yang memutuskan
+	// kapan memintanya, lewat pesan document.get.
+	if err := h.service.Attach(documentToken, ticket.UserID); err != nil {
+		h.logger.Warn("attach document design connection", "document", documentToken, "error", err)
 		// Pesan error dari lapisan usecase memang disusun sebagai frasa yang aman
 		// disampaikan ke klien; detail internalnya berhenti di log.
-		conn.Close(joinCloseStatus(err), closeReason(err.Error()))
+		conn.Close(attachCloseStatus(err), closeReason(err.Error()))
 		return
 	}
-	defer h.service.Leave(documentToken, ticket.UserID, subscriber)
+	defer h.service.Detach(documentToken, ticket.UserID, subscriber)
 
-	snapshot, err := dto.NewDesignSnapshotMessage(state.Content, state.Version)
-	if err != nil {
-		h.logger.Error("encode document design snapshot", "document", documentToken, "error", err)
-		conn.Close(websocket.StatusInternalError, "failed to encode snapshot")
-		return
-	}
-	subscriber.Send(snapshot)
-
-	h.dispatchLoop(buffer, subscriber)
+	h.dispatchLoop(connCtx, documentToken, buffer, subscriber)
 
 	// Close frame dikirim lebih dulu, selagi koneksi masih utuh. Membatalkan
 	// context membuat pustaka menutup socket seketika, sehingga alasannya tidak
@@ -281,7 +274,7 @@ func (h *DocumentDesignHandler) pingLoop(ctx context.Context, conn *websocket.Co
 // dispatchLoop berjalan di goroutine handler dan mengubah pesan mentah menjadi
 // tindakan. Memisahkannya dari readLoop membuat pembacaan socket tidak ikut
 // tertahan ketika pemrosesan sedang menunggu kunci room.
-func (h *DocumentDesignHandler) dispatchLoop(buffer *designBuffer, subscriber *designSubscriber) {
+func (h *DocumentDesignHandler) dispatchLoop(ctx context.Context, documentToken string, buffer *designBuffer, subscriber *designSubscriber) {
 	for {
 		batch, ok := buffer.inbound.dequeue()
 		if !ok {
@@ -289,26 +282,39 @@ func (h *DocumentDesignHandler) dispatchLoop(buffer *designBuffer, subscriber *d
 		}
 
 		for _, payload := range batch {
-			h.dispatch(payload, subscriber)
+			h.dispatch(ctx, documentToken, payload, subscriber)
 		}
 	}
 }
 
-func (h *DocumentDesignHandler) dispatch(payload []byte, subscriber *designSubscriber) {
+func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {
 	var inbound dto.DesignInbound
 	if err := json.Unmarshal(payload, &inbound); err != nil {
-		subscriber.sendError(0, "malformed_message", "message is not valid JSON")
-		return
-	}
-	if inbound.Type == "" {
-		subscriber.sendError(inbound.Seq, "missing_message_type", "message type is required")
+		subscriber.sendError("malformed_message", "message is not valid JSON")
 		return
 	}
 
-	// Penerapan perubahan belum dibangun. Menolak dengan kode yang jelas lebih
-	// baik daripada diam, supaya ketidakcocokan kontrak langsung terlihat.
-	subscriber.sendError(inbound.Seq, "unsupported_message_type",
-		fmt.Sprintf("message type %q is not handled yet", inbound.Type))
+	switch inbound.Type {
+	case "":
+		subscriber.sendError("missing_message_type", "message type is required")
+	case dto.DesignMessageDocumentGet:
+		h.sendSnapshot(ctx, documentToken, subscriber)
+	default:
+		// Penerapan perubahan belum dibangun. Menolak dengan kode yang jelas lebih
+		// baik daripada diam, supaya ketidakcocokan kontrak langsung terlihat.
+		subscriber.sendError("unsupported_message_type",
+			fmt.Sprintf("message type %q is not handled yet", inbound.Type))
+	}
+}
+
+// sendSnapshot meneruskan permintaan ke room. Snapshot-nya sendiri dimasukkan ke
+// antrean keluar oleh orchestrator, bukan di sini — itulah yang menjamin ia tidak
+// pernah disalip siaran perubahan berikutnya.
+func (h *DocumentDesignHandler) sendSnapshot(ctx context.Context, documentToken string, subscriber *designSubscriber) {
+	if err := h.service.Sync(ctx, documentToken, subscriber); err != nil {
+		h.logger.Warn("sync document design", "document", documentToken, "error", err)
+		subscriber.sendError("document_unavailable", err.Error())
+	}
 }
 
 // designSubscriber menjembatani room dengan satu koneksi. Room hanya mengenal
@@ -358,8 +364,8 @@ func (s *designSubscriber) takeCloseReason() (string, bool) {
 	return s.closeReason, s.closeReason != ""
 }
 
-func (s *designSubscriber) sendError(seq int64, code, message string) {
-	payload, err := dto.NewDesignErrorMessage(seq, code, message)
+func (s *designSubscriber) sendError(code, message string) {
+	payload, err := dto.NewDesignErrorMessage(code, message)
 	if err != nil {
 		s.cancel()
 		return
@@ -368,9 +374,9 @@ func (s *designSubscriber) sendError(seq int64, code, message string) {
 	s.Send(payload)
 }
 
-// joinCloseStatus memetakan kegagalan menempel ke close code yang membedakan
+// attachCloseStatus memetakan kegagalan menempel ke close code yang membedakan
 // "coba lagi nanti" dari "ada yang salah di sisi kami".
-func joinCloseStatus(err error) websocket.StatusCode {
+func attachCloseStatus(err error) websocket.StatusCode {
 	if errors.Is(err, domain.ErrTooManyRequests) {
 		return websocket.StatusTryAgainLater
 	}
@@ -389,6 +395,16 @@ func closeReason(reason string) string {
 	}
 
 	return reason[:maxCloseReasonBytes]
+}
+
+// DesignMessageEncoder menyusun payload yang dikirim room ke klien.
+//
+// Implementasi dari port documentdesign.MessageEncoder. Bentuk kawatnya milik
+// lapisan ini; room hanya menyerahkan isi dan nomor versinya.
+type DesignMessageEncoder struct{}
+
+func (DesignMessageEncoder) EncodeSnapshot(content json.RawMessage, version int64) ([]byte, error) {
+	return dto.NewDesignSnapshotMessage(content, version)
 }
 
 // designOriginPatterns membatasi handshake ke host frontend. Bila FrontendURL
