@@ -2,6 +2,7 @@ package documentdesign
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"sync"
 	"time"
@@ -105,6 +106,38 @@ func (m *manager) sync(ctx context.Context, token string, sub Subscriber) error 
 	}
 
 	return entry.room.sync(ctx, sub)
+}
+
+// snapshot mengambil isi terkini bila dokumen ini sedang disunting seseorang.
+//
+// found bernilai false ketika tidak ada room sama sekali. Itu bukan kegagalan
+// melainkan keadaan yang paling umum — dokumen yang tidak sedang dibuka siapa
+// pun — dan artinya database sudah memuat keadaan terakhirnya.
+func (m *manager) snapshot(ctx context.Context, token string) (result snapshotResult, found bool, err error) {
+	m.mu.Lock()
+	entry, ok := m.rooms[token]
+	m.mu.Unlock()
+
+	if !ok {
+		return snapshotResult{}, false, nil
+	}
+
+	result, err = entry.room.snapshot(ctx)
+	if errors.Is(err, errRoomClosed) {
+		// Room berhenti tepat di antara pencarian di peta dan pertanyaan ini —
+		// bisa terjadi bila penghuni terakhir baru saja pergi dan masa tenggangnya
+		// habis. Orchestrator selalu menyimpan sekali lagi sebelum berhenti, jadi
+		// database sudah mutakhir dan pemanggil dapat membacanya seperti dokumen
+		// yang memang tidak sedang dibuka. Meneruskan kegagalan di sini hanya akan
+		// menolak ekspor yang sebenarnya bisa dilayani.
+		return snapshotResult{}, false, nil
+	}
+
+	// Kegagalan lain diteruskan apa adanya. Room yang masih hidup tetapi tidak
+	// dapat dibaca berarti keadaan sebenarnya tidak diketahui, dan database bisa
+	// saja tertinggal — menghasilkan PDF dari sana akan memberi pengguna dokumen
+	// yang tampak wajar padahal sudah usang.
+	return result, true, err
 }
 
 // detach mengurangi pencacah dan mulai menghitung mundur begitu koneksi terakhir

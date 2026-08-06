@@ -1,0 +1,199 @@
+// Package pdf menggambar isi dokumen menjadi berkas PDF.
+//
+// Renderer di sini adalah pasangan dari komponen render di frontend: keduanya
+// membaca model yang sama dan harus menghasilkan tata letak yang sama. Karena
+// keduanya mesin yang berbeda, kesamaan itu tidak datang sendiri — ia dijaga oleh
+// tiga hal yang harus ditegakkan di kedua sisi:
+//
+//  1. Berkas font yang persis sama. Bukan sekadar nama keluarga yang sama:
+//     Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda,
+//     dan perbedaan itu menumpuk menjadi pemenggalan baris yang berbeda.
+//  2. Kerning dan ligatur dimatikan di frontend, lewat font-kerning: none dan
+//     font-feature-settings: "liga" 0. Renderer ini menjumlahkan lebar glif
+//     apa adanya tanpa penyesuaian pasangan huruf, jadi browser harus diminta
+//     berhenti melakukannya juga.
+//  3. Aturan pemenggalan baris yang sama: rakus, patah di spasi, tanpa tanda
+//     hubung otomatis.
+//
+// Tanpa ketiganya, hasil ekspor akan mirip tetapi tidak sama — dan perbedaannya
+// justru paling terlihat pada dokumen yang paling penting, yang teksnya panjang.
+package pdf
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
+)
+
+// ManifestName adalah berkas yang mendaftarkan keluarga font beserta berkasnya.
+// Pendaftaran dibuat eksplisit, bukan hasil pemindaian direktori, supaya nama
+// keluarga yang dipakai frontend tidak bergantung pada nama berkas.
+const ManifestName = "fonts.json"
+
+// CoreFamily adalah satu-satunya keluarga yang selalu tersedia tanpa berkas apa
+// pun, karena metriknya melekat pada spesifikasi PDF.
+//
+// Ia ada supaya aplikasi tetap dapat mengekspor sebelum font sungguhan
+// disiapkan. Kesamaan dengan tampilan layar TIDAK dijamin di sini: browser akan
+// memakai Helvetica atau Arial milik sistem, yang metriknya berbeda antar sistem
+// operasi. Untuk dokumen yang sungguh dipakai, daftarkan berkas font sendiri.
+const CoreFamily = "helvetica"
+
+// Metrik vertikal Helvetica, dalam seperseribu em, dari berkas AFM Adobe yang
+// mendefinisikan 14 font baku PDF.
+//
+// Nilainya dituliskan di sini karena fpdf tidak menyertakannya: font inti tidak
+// perlu disematkan ke dalam berkas, sehingga pustaka itu hanya menyimpan lebar
+// glifnya saja. Penempatan garis dasar tetap membutuhkan keduanya. Keempat gaya
+// Helvetica — tegak, tebal, miring, tebal miring — memakai nilai yang sama.
+const (
+	coreAscent  = 718
+	coreDescent = -207
+)
+
+// faceKey adalah satu potongan font: satu keluarga, satu ketebalan, satu gaya.
+type faceKey struct {
+	family string
+	weight int
+	style  string
+}
+
+// Fonts adalah kumpulan font yang tersedia bagi renderer.
+//
+// Seluruh berkas dimuat ke memori sekali saat aplikasi start, bukan dibaca tiap
+// ekspor. Satu berkas font berukuran ratusan kilobita dan jumlahnya sedikit,
+// sedangkan membacanya berulang kali akan menambah I/O pada jalur yang justru
+// diharapkan cepat.
+type Fonts struct {
+	faces map[faceKey][]byte
+}
+
+type manifest struct {
+	Families []manifestFamily `json:"families"`
+}
+
+type manifestFamily struct {
+	Name  string         `json:"name"`
+	Faces []manifestFace `json:"faces"`
+}
+
+type manifestFace struct {
+	Weight int    `json:"weight"`
+	Style  string `json:"style"`
+	File   string `json:"file"`
+}
+
+// LoadFonts membaca manifes dan seluruh berkas font di dalamnya.
+//
+// Direktori yang tidak ada bukan error: aplikasi tetap berjalan dengan keluarga
+// inti saja. Yang menjadi error adalah manifes yang ada tetapi cacat, atau berkas
+// yang disebut manifes tetapi tidak ditemukan — keduanya berarti niat yang tidak
+// terpenuhi, dan mendiamkannya akan muncul belakangan sebagai ekspor yang
+// hurufnya berbeda dari layar.
+func LoadFonts(dir string) (*Fonts, error) {
+	fonts := &Fonts{faces: make(map[faceKey][]byte)}
+
+	if dir == "" {
+		return fonts, nil
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, ManifestName))
+	if errors.Is(err, os.ErrNotExist) {
+		return fonts, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read font manifest: %w", err)
+	}
+
+	var parsed manifest
+	if err := json.Unmarshal(raw, &parsed); err != nil {
+		return nil, fmt.Errorf("parse font manifest: %w", err)
+	}
+
+	for _, family := range parsed.Families {
+		name := strings.ToLower(strings.TrimSpace(family.Name))
+		if name == "" {
+			return nil, errors.New("font manifest has a family without a name")
+		}
+		if name == CoreFamily {
+			return nil, fmt.Errorf("font family %q is reserved for the built-in core font", CoreFamily)
+		}
+
+		for _, face := range family.Faces {
+			key, err := newFaceKey(name, face)
+			if err != nil {
+				return nil, err
+			}
+
+			data, err := os.ReadFile(filepath.Join(dir, face.File))
+			if err != nil {
+				return nil, fmt.Errorf("read font file for %s %d %s: %w", name, key.weight, key.style, err)
+			}
+			fonts.faces[key] = data
+		}
+	}
+
+	return fonts, nil
+}
+
+func newFaceKey(family string, face manifestFace) (faceKey, error) {
+	if face.Weight < 100 || face.Weight > 900 || face.Weight%100 != 0 {
+		return faceKey{}, fmt.Errorf("font family %q has face weight %d, expected a multiple of 100 between 100 and 900", family, face.Weight)
+	}
+
+	style := strings.ToLower(strings.TrimSpace(face.Style))
+	if style == "" {
+		style = design.FontStyleNormal
+	}
+	if style != design.FontStyleNormal && style != design.FontStyleItalic {
+		return faceKey{}, fmt.Errorf("font family %q has face style %q, expected normal or italic", family, style)
+	}
+	if strings.TrimSpace(face.File) == "" {
+		return faceKey{}, fmt.Errorf("font family %q has a face without a file", family)
+	}
+
+	return faceKey{family: family, weight: face.Weight, style: style}, nil
+}
+
+// Families menyebut seluruh keluarga yang tersedia, untuk dicatat saat start
+// supaya ketiadaan font terlihat di log dan bukan baru terungkap saat ada yang
+// mencoba mengekspor.
+func (f *Fonts) Families() []string {
+	seen := map[string]struct{}{CoreFamily: {}}
+	names := []string{CoreFamily}
+
+	for key := range f.faces {
+		if _, exists := seen[key.family]; exists {
+			continue
+		}
+		seen[key.family] = struct{}{}
+		names = append(names, key.family)
+	}
+
+	return names
+}
+
+// resolve mencari potongan font yang persis diminta.
+//
+// Tidak ada pencarian ketebalan terdekat maupun penebalan buatan. Keduanya
+// adalah cara paling halus untuk merusak kesamaan: browser akan memakai font
+// yang benar sementara renderer memakai penggantinya, dan hasilnya berbeda tanpa
+// satu pun pesan kesalahan. Lebih baik ekspor gagal dengan keterangan jelas
+// daripada berhasil dengan huruf yang salah.
+func (f *Fonts) resolve(family string, weight int, style string) (data []byte, core bool, err error) {
+	if family == CoreFamily {
+		return nil, true, nil
+	}
+
+	data, ok := f.faces[faceKey{family: family, weight: weight, style: style}]
+	if !ok {
+		return nil, false, fmt.Errorf("font %s %d %s is not available", family, weight, style)
+	}
+
+	return data, false, nil
+}

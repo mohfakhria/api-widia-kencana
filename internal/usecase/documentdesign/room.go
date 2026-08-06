@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
@@ -90,8 +92,26 @@ type leaveEvent struct {
 	subscriber Subscriber
 }
 
-func (syncEvent) isRoomEvent()  {}
-func (leaveEvent) isRoomEvent() {}
+// snapshotEvent meminta salinan isi terkini, dipakai ekspor.
+//
+// Ekspor wajib lewat sini dan bukan membaca database, karena penyimpanan bersifat
+// tunda: perubahan terakhir bisa tertinggal sampai satu denyut flush penuh. Tanpa
+// jalur ini pengguna dapat menggeser sebuah elemen lalu mengekspor dan menerima
+// PDF yang belum memuat geseran itu.
+type snapshotEvent struct {
+	reply chan<- snapshotResult
+}
+
+type snapshotResult struct {
+	content json.RawMessage
+	version int64
+	paper   entity.DocumentPaperSize
+	err     error
+}
+
+func (syncEvent) isRoomEvent()     {}
+func (leaveEvent) isRoomEvent()    {}
+func (snapshotEvent) isRoomEvent() {}
 
 // saveResult dikirim goroutine penyimpan kembali ke orchestrator.
 type saveResult struct {
@@ -122,7 +142,12 @@ type Room struct {
 
 	// Field di bawah ini hanya boleh disentuh goroutine run(). Tidak ada mutex,
 	// dan memang tidak boleh ditambahkan: kepemilikan tunggal itulah jaminannya.
-	content *documentContent
+	content *design.Content
+	// paper disimpan karena ekspor membutuhkan ukuran halaman, sedangkan isi
+	// dokumen sengaja tidak memuatnya — ukuran kertas adalah milik dokumen, bukan
+	// milik tiap halaman, dan menyalinnya ke dalam isi hanya membuka peluang
+	// keduanya bertentangan.
+	paper entity.DocumentPaperSize
 	// version adalah nomor revisi di memori; savedVersion adalah nilai version
 	// yang terakhir berhasil ditulis. Kotor berarti keduanya berbeda — bukan
 	// boolean, karena boolean bisa terhapus keliru oleh perubahan yang masuk
@@ -153,7 +178,7 @@ func newRoom(token string, documents output.DocumentRepository, encoder MessageE
 		saved:     make(chan saveResult, 1),
 		stop:      make(chan struct{}),
 		done:      make(chan struct{}),
-		content:   emptyDocumentContent(),
+		content:   &design.Content{Pages: []design.Page{}},
 		members:   make(map[Subscriber]struct{}),
 	}
 }
@@ -205,19 +230,22 @@ func (r *Room) load(ctx context.Context) {
 		return
 	}
 
-	content, err := parseDocumentContent(stored.Content)
+	content, err := design.Decode(stored.Content)
 	if err != nil {
-		// Isi di database cacat. Memuat ulang tidak akan memperbaikinya.
+		// Isi di database cacat, atau memakai bentuk lama yang sudah tidak dikenal
+		// skema tertutup. Memuat ulang tidak akan memperbaikinya; yang dibutuhkan
+		// adalah menyetel ulang kolom content dokumen tersebut.
 		r.markBroken(fmt.Errorf("parse document content: %w", err),
 			"document content is malformed")
 		return
 	}
 
 	r.content = content
+	r.paper = stored.Paper
 	r.version = stored.Version
 	r.savedVersion = stored.Version
 
-	if content.isEmpty() {
+	if content.IsEmpty() {
 		// Dokumen yang belum punya halaman diisi benih agar kanvas tidak hampa.
 		//
 		// version dinaikkan supaya benihnya ikut tersimpan pada penyimpanan
@@ -258,6 +286,24 @@ func (r *Room) handle(event roomEvent) {
 		e.reply <- nil
 	case leaveEvent:
 		delete(r.members, e.subscriber)
+	case snapshotEvent:
+		if r.broken != nil {
+			e.reply <- snapshotResult{err: r.broken}
+			return
+		}
+
+		content, err := r.content.Encode()
+		if err != nil {
+			r.markBroken(err, "document content can no longer be encoded")
+			e.reply <- snapshotResult{err: r.broken}
+			return
+		}
+
+		e.reply <- snapshotResult{
+			content: content,
+			version: r.version,
+			paper:   r.paper,
+		}
 	}
 }
 
@@ -266,7 +312,7 @@ func (r *Room) handle(event roomEvent) {
 // Hasil encode berupa byte baru, jadi klien tidak pernah memegang struktur yang
 // masih dipakai orchestrator.
 func (r *Room) encodeSnapshot() ([]byte, error) {
-	content, err := r.content.encode()
+	content, err := r.content.Encode()
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +334,7 @@ func (r *Room) flush(ctx context.Context) {
 		return
 	}
 
-	content, err := r.content.encode()
+	content, err := r.content.Encode()
 	if err != nil {
 		r.markBroken(err, "document content can no longer be encoded")
 		return
@@ -382,7 +428,7 @@ func (r *Room) drain(ctx context.Context) {
 		return
 	}
 
-	content, err := r.content.encode()
+	content, err := r.content.Encode()
 	if err != nil {
 		r.logger.Error("final save on shutdown could not encode content",
 			"document", r.token, "error", err)
@@ -449,6 +495,39 @@ func (r *Room) sync(ctx context.Context, sub Subscriber) error {
 		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	case <-ctx.Done():
 		return ctx.Err()
+	}
+}
+
+// errRoomClosed menandai room yang sudah berhenti, dibedakan dari room yang
+// rusak.
+//
+// Keduanya berakhir sebagai ErrUnavailable bagi klien WebSocket, dan karena
+// domain.Error membandingkan dirinya lewat Kind saja, errors.Is tidak dapat
+// memisahkan keduanya. Ekspor justru harus memisahkannya: room yang berhenti
+// berarti database sudah mutakhir dan aman dibaca, sedangkan room yang rusak
+// berarti keadaan sebenarnya tidak diketahui. Karena itu penanda tersendiri, dan
+// sengaja tidak diekspor — hanya manager yang perlu mengenalinya.
+var errRoomClosed = errors.New("document design room stopped")
+
+// snapshot mengambil salinan isi terkini dari orchestrator.
+func (r *Room) snapshot(ctx context.Context) (snapshotResult, error) {
+	reply := make(chan snapshotResult, 1)
+
+	select {
+	case r.inbox <- snapshotEvent{reply: reply}:
+	case <-r.done:
+		return snapshotResult{}, errRoomClosed
+	case <-ctx.Done():
+		return snapshotResult{}, ctx.Err()
+	}
+
+	select {
+	case result := <-reply:
+		return result, result.err
+	case <-r.done:
+		return snapshotResult{}, errRoomClosed
+	case <-ctx.Done():
+		return snapshotResult{}, ctx.Err()
 	}
 }
 

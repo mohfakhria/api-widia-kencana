@@ -19,6 +19,7 @@ type RouterDeps struct {
 	AuthHandler           *AuthHandler
 	DocumentHandler       *DocumentHandler
 	DocumentDesignHandler *DocumentDesignHandler
+	DocumentExportHandler *DocumentExportHandler
 	ProjectHandler        *ProjectHandler
 	PurchaseOrderHandler  *PurchaseOrderHandler
 	QuotationHandler      *QuotationHandler
@@ -59,6 +60,7 @@ func NewRouter(deps RouterDeps) http.Handler {
 		protected.PUT("/document-update/:token", deps.DocumentHandler.Update)
 		protected.DELETE("/document-delete/:token", deps.DocumentHandler.Delete)
 		protected.POST("/document-design-ticket/:token", deps.DocumentDesignHandler.IssueTicket)
+		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)

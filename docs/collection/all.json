@@ -701,6 +701,49 @@
                         }
                     },
                     "response": []
+                },
+                {
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Response is a PDF\", function () {",
+                                    "  pm.response.to.have.status(200);",
+                                    "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\");",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Body starts with the PDF header\", function () {",
+                                    "  pm.expect(pm.response.text().slice(0, 5)).to.eql(\"%PDF-\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "name": "Export Document PDF",
+                    "request": {
+                        "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah, satuan kertas tidak dikenal, atau font yang diminta tidak terdaftar di `DESIGN_FONT_DIR`. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-export",
+                                "{{document_token}}"
+                            ],
+                            "raw": "{{base_url}}/api/document-export/{{document_token}}"
+                        }
+                    },
+                    "response": []
                 }
             ],
             "name": "Document Design"

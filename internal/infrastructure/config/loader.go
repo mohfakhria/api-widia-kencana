@@ -30,6 +30,7 @@ type Config struct {
 	MinIORootPassword   string
 	MinIOBucket         string
 	MinIOUseSSL         bool
+	DesignFontDir       string
 }
 
 func Load() Config {
@@ -72,6 +73,12 @@ func Load() Config {
 		MinIORootPassword:   getEnv("MINIO_ROOT_PASSWORD", ""),
 		MinIOBucket:         getEnv("MINIO_BUCKET", "widia-assets"),
 		MinIOUseSSL:         getBoolEnv("MINIO_USE_SSL", false),
+
+		// Direktori berkas font untuk ekspor PDF. Berkas yang sama harus
+		// disajikan ke frontend: nama keluarga yang sama tidak cukup, karena
+		// Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda
+		// dan perbedaan itu menggeser pemenggalan baris.
+		DesignFontDir: getEnv("DESIGN_FONT_DIR", "assets/fonts"),
 	}
 }
 

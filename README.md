@@ -6,6 +6,7 @@ Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utam
 
 - Authentication dengan access token JWT dan refresh token via HttpOnly cookie.
 - Document designer realtime lewat WebSocket, diamankan tiket handshake sekali pakai.
+- Export dokumen ke PDF, digambar langsung di Go tanpa headless browser.
 - Encrypted JWT subject claim untuk menghindari expose raw user id di token.
 - Asset management dengan presigned upload/download URL.
 - Quotation management dengan list/detail/create/update.
@@ -80,6 +81,8 @@ MINIO_ROOT_USER=minioadmin
 MINIO_ROOT_PASSWORD=minioadmin
 MINIO_BUCKET=widia-assets
 MINIO_USE_SSL=false
+
+DESIGN_FONT_DIR=assets/fonts
 ```
 
 Catatan:
@@ -92,6 +95,8 @@ Catatan:
 - Flag `Secure` pada cookie mengikuti skema `APP_BASEURL` secara otomatis: `https://` menghasilkan `Secure=true`. Bila TLS diterminasi di reverse proxy dan `APP_BASEURL` menunjuk alamat internal `http://`, set `COOKIE_SECURE=true` secara eksplisit.
 - Aplikasi menolak start bila `APP_ENV=production` tetapi cookie tidak `Secure`.
 - Cookie memakai `SameSite=Strict`. Ini bekerja selama frontend dan API berada pada registrable domain yang sama, misal `app.example.com` dengan `api.example.com`. Bila keduanya benar-benar beda domain, `SameSite` perlu diturunkan ke `None` dan `Secure` menjadi wajib.
+- `DESIGN_FONT_DIR` menunjuk direktori berkas font untuk export PDF, beserta manifes `fonts.json` di dalamnya. Direktori yang tidak ada bukan error: export tetap berjalan dengan keluarga bawaan `helvetica`. Manifes yang cacat atau berkas yang disebut manifes tetapi tidak ditemukan **menolak start**, karena keduanya berarti export akan memakai huruf yang berbeda dari tampilan editor — jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
+- Berkas font yang sama wajib disajikan ke frontend. Nama keluarga yang sama tidak cukup: Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda, dan selisihnya menumpuk menjadi pemenggalan baris yang berbeda antara layar dan hasil cetak. Detailnya ada di `docs/engineering/document-design-realtime.md`.
 - MinIO local yang umum dipakai di project ini: console `9001`, API `9002`.
 - `MINIO_ROOT_USER` dan `MINIO_ROOT_PASSWORD` digunakan sebagai credential MinIO.
 
@@ -207,6 +212,7 @@ DELETE /api/document-delete/:token
 
 POST   /api/document-design-ticket/:token
 WS     /document-design/:token?ticket=
+POST   /api/document-export/:token
 
 GET    /api/quotation-list
 GET    /api/quotation-detail/:id

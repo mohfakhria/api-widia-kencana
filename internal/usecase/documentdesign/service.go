@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 
 	"github.com/google/uuid"
@@ -121,6 +122,29 @@ func (s *Service) Attach(documentToken, userID string) (int, error) {
 // klien menyadari keadaannya tertinggal.
 func (s *Service) Sync(ctx context.Context, documentToken string, sub Subscriber) error {
 	return s.rooms.sync(ctx, documentToken, sub)
+}
+
+// Snapshot mengembalikan isi dokumen yang paling mutakhir, untuk ekspor.
+//
+// Sumbernya room bila dokumen sedang disunting, dan database bila tidak. Urutan
+// ini penting: penyimpanan bersifat tunda sampai dua detik, jadi membaca database
+// pada dokumen yang sedang dibuka dapat menghasilkan PDF yang tertinggal beberapa
+// suntingan dari yang dilihat pengguna di layar.
+func (s *Service) Snapshot(ctx context.Context, documentToken string) (*entity.DocumentContent, error) {
+	result, found, err := s.rooms.snapshot(ctx, documentToken)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return s.documents.GetContent(ctx, documentToken)
+	}
+
+	return &entity.DocumentContent{
+		Token:   documentToken,
+		Content: result.content,
+		Version: result.version,
+		Paper:   result.paper,
+	}, nil
 }
 
 func (s *Service) Detach(documentToken, userID string, sub Subscriber) {

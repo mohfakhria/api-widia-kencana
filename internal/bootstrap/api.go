@@ -8,6 +8,7 @@ import (
 	deliveryhttp "github.com/mohfakhria/api-widia-kencana/internal/delivery/http"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/database"
+	pdfrender "github.com/mohfakhria/api-widia-kencana/internal/infrastructure/pdf"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/security"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/server"
 	miniostorage "github.com/mohfakhria/api-widia-kencana/internal/infrastructure/storage/minio"
@@ -76,6 +77,24 @@ func (a *ApiApp) initialize() error {
 	documentDesign := documentdesign.NewService(
 		a.Context, documentRepo, deliveryhttp.DesignMessageEncoder{}, a.ServiceLogger,
 	)
+	// Font dimuat sekali saat start, bukan tiap ekspor. Kegagalan di sini
+	// menghentikan aplikasi dengan sengaja: manifes yang cacat atau berkas yang
+	// hilang berarti ekspor akan memakai huruf yang berbeda dari layar, dan itu
+	// jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
+	fonts, err := pdfrender.LoadFonts(a.Config.DesignFontDir)
+	if err != nil {
+		return err
+	}
+	a.ServiceLogger.Info("loaded document export fonts",
+		"dir", a.Config.DesignFontDir, "families", fonts.Families())
+
+	documentExportUC := usecase.NewDocumentExportUseCase(
+		documentRepo,
+		documentDesign,
+		pg.NewAssetRepository(a.db),
+		a.objectStorage,
+		pdfrender.NewRenderer(fonts),
+	)
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
 	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))
@@ -90,12 +109,13 @@ func (a *ApiApp) initialize() error {
 		DocumentDesignHandler: deliveryhttp.NewDocumentDesignHandler(
 			a.Context, documentDesign, a.Config, a.ServiceLogger,
 		),
-		ProjectHandler:       deliveryhttp.NewProjectHandler(projectUC),
-		PurchaseOrderHandler: deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
-		QuotationHandler:     deliveryhttp.NewQuotationHandler(quotationUC),
-		WorkflowHandler:      deliveryhttp.NewWorkflowHandler(workflowUC),
-		WorkflowStageHandler: deliveryhttp.NewWorkflowStageHandler(workflowStageUC),
-		WorkflowStepHandler:  deliveryhttp.NewWorkflowStepHandler(workflowStepUC),
+		DocumentExportHandler: deliveryhttp.NewDocumentExportHandler(documentExportUC, a.ServiceLogger),
+		ProjectHandler:        deliveryhttp.NewProjectHandler(projectUC),
+		PurchaseOrderHandler:  deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
+		QuotationHandler:      deliveryhttp.NewQuotationHandler(quotationUC),
+		WorkflowHandler:       deliveryhttp.NewWorkflowHandler(workflowUC),
+		WorkflowStageHandler:  deliveryhttp.NewWorkflowStageHandler(workflowStageUC),
+		WorkflowStepHandler:   deliveryhttp.NewWorkflowStepHandler(workflowStepUC),
 	})
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),

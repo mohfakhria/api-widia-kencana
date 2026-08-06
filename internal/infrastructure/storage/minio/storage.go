@@ -3,6 +3,7 @@ package minio
 import (
 	"context"
 	"errors"
+	"io"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
@@ -64,6 +65,21 @@ func (s *Storage) Bucket() string {
 
 func (s *Storage) Delete(ctx context.Context, objectName string) error {
 	return s.client.RemoveObject(ctx, s.bucket, objectName, miniosdk.RemoveObjectOptions{})
+}
+
+// Download mengembalikan pembaca objek.
+//
+// GetObject pada SDK MinIO bersifat malas: kesalahan seperti objek tidak
+// ditemukan baru muncul pada pembacaan pertama, bukan di sini. Pemanggil karena
+// itu tetap harus memeriksa error saat membaca, bukan hanya error dari fungsi
+// ini.
+func (s *Storage) Download(ctx context.Context, objectName string) (io.ReadCloser, error) {
+	object, err := s.client.GetObject(ctx, s.bucket, objectName, miniosdk.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return object, nil
 }
 
 func (s *Storage) PresignGet(ctx context.Context, objectName string, expiry time.Duration) (string, error) {

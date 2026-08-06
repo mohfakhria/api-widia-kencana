@@ -12,10 +12,16 @@ realtime, **sesuai implementasi yang sudah berjalan hari ini**.
 | Minta isi dokumen (`document.get`) | Daftar siapa yang sedang membuka (`presence`) |
 | Terima `snapshot` | |
 | Panduan bawaan untuk dokumen kosong | |
+| Ekspor PDF | |
 
 Isi dokumen **belum dapat diubah lewat API mana pun**. Semua jenis pesan selain
 `document.get` dibalas `unsupported_message_type`. Bentuk pesannya sudah final,
 jadi pengirimnya dapat ditulis sekarang meski balasannya masih penolakan.
+
+> **Perubahan yang memutus kompatibilitas.** Model isi dokumen sekarang tertutup
+> dan bersatuan titik (pt). Dokumen yang isinya masih memakai bentuk lama —
+> dengan `props` — tidak akan terbaca dan koneksinya ditutup `1011`. Cara
+> menyetel ulangnya ada di [bagian 6](#6-bentuk-isi-dokumen).
 
 ---
 
@@ -272,27 +278,277 @@ diberi panduan bawaan.
 
 ## 6. Bentuk isi dokumen
 
-Backend **tidak memaksakan** bentuk elemen. Struktur `props` sepenuhnya keputusan
-frontend, dan apa pun yang dikirim akan kembali utuh — termasuk field yang backend
-tidak kenal, dan termasuk literal angka apa adanya (`0.50` tetap `0.50`).
+Model isi dokumen **tertutup**. Hanya properti yang benar-benar digambar backend
+yang boleh ada; properti lain menghasilkan penolakan, bukan diabaikan diam-diam.
 
-Yang **wajib** hanya rangkanya:
+Ketertutupan itu bukan kerewelan. Backend sekarang ikut menggambar — untuk ekspor
+PDF — sehingga properti yang tidak dipahaminya akan tampil di layar tetapi hilang
+di hasil cetak, tanpa satu pun error maupun log. Menolaknya di pintu masuk membuat
+perbedaan itu mustahil.
+
+### Satuan: titik (pt)
+
+Seluruh koordinat, ukuran, dan ukuran huruf memakai **titik**, yaitu 1/72 inci.
+Tidak ada satuan yang ditulis di dalam data — angkanya saja.
+
+Titik dipilih karena ia satuan asli PDF sekaligus satuan sah di CSS. Frontend
+cukup menempelkan `pt`:
+
+```js
+const style = {
+  left:      `${el.x}pt`,
+  top:       `${el.y}pt`,
+  width:     `${el.w}pt`,
+  height:    `${el.h}pt`,
+  fontSize:  `${el.fontSize}pt`,
+};
+```
+
+Browser dan PDF karenanya membaca ukuran yang persis sama. Ukuran kertas ikut
+dikonversi: A4 yang di database tersimpan `210 × 297 mm` menjadi
+`595.276 × 841.89 pt`.
+
+### Rangka
 
 | Aturan | |
 |---|---|
-| `content.pages` | array |
-| Setiap halaman | objek dengan `id` bertipe string dan tidak kosong |
-| Setiap elemen | objek dengan `id` dan `type`, keduanya string dan tidak kosong |
+| `content.pages` | array; boleh kosong |
+| Setiap halaman | objek dengan `id` tidak kosong dan `elements` (opsional) |
+| Setiap elemen | objek dengan `id` dan `type` yang dikenal |
 | Seluruh `id` | unik dalam satu dokumen, termasuk lintas halaman |
 
-Halaman tanpa `elements` sah. Field lain di tingkat mana pun lewat apa adanya.
+Ukuran halaman **tidak** disimpan di dalam isi dokumen. Ia diambil dari kertas
+dokumen, sehingga seluruh halaman dijamin seukuran dan data tidak dapat
+bertentangan dengan kertas yang dipilih pengguna.
+
+### Properti bersama
+
+| Properti | Tipe | Keterangan |
+|---|---|---|
+| `id` | string | tidak kosong, unik se-dokumen |
+| `type` | string | `text`, `rect`, `line`, `image` |
+| `x`, `y` | number | sudut kiri atas, relatif terhadap sudut kiri atas halaman |
+| `w`, `h` | number | lebar dan tinggi; tidak boleh negatif kecuali pada `line` |
+
+Nilai di luar ±100000 ditolak.
+
+### `text`
+
+| Properti | Tipe | Nilai yang sah |
+|---|---|---|
+| `text` | string | boleh kosong |
+| `fontFamily` | string | nama keluarga yang terdaftar di backend |
+| `fontSize` | number | > 0 |
+| `fontWeight` | number | kelipatan 100, dari 100 sampai 900 |
+| `fontStyle` | string | `normal`, `italic` |
+| `color` | string | `#rgb` atau `#rrggbb` |
+| `align` | string | `left`, `center`, `right`, `justify` |
+| `lineHeight` | number | pengali ukuran huruf, misal `1.5` |
+| `letterSpacing` | number | titik; boleh negatif |
+
+Warna **hanya** menerima heksadesimal. Nama warna CSS, `rgba()`, dan `hsl()`
+ditolak — menerimanya berarti backend harus menafsirkan sebagian CSS, dan
+penafsiran sebagian itulah yang membuat layar dan cetak berbeda.
+
+### `rect`
+
+| Properti | Tipe | Keterangan |
+|---|---|---|
+| `fill` | string | warna isi; kosong berarti tanpa isi |
+| `stroke` | string | warna garis tepi; kosong berarti tanpa garis |
+| `strokeWidth` | number | ≥ 0; garis tepi hanya digambar bila > 0 |
+| `radius` | number | ≥ 0; dibatasi separuh sisi terpendek |
+
+### `line`
+
+`w` dan `h` di sini bukan ukuran melainkan **simpangan ujung terhadap pangkal**,
+sehingga keduanya boleh negatif. Garis mendatar berarti `h: 0`.
+
+| Properti | Tipe | Keterangan |
+|---|---|---|
+| `stroke` | string | wajib diisi agar garis terlihat |
+| `strokeWidth` | number | > 0 agar garis terlihat |
+
+Ketebalan terbagi rata di kedua sisi jalurnya, sama seperti `stroke` pada SVG.
+
+### `image`
+
+| Properti | Tipe | Keterangan |
+|---|---|---|
+| `assetToken` | string | wajib; token aset yang sudah terunggah |
+| `fit` | string | `contain`, `cover`, `fill` — sama artinya dengan `object-fit` |
+
+Gambar menunjuk aset, bukan URL. Backend tidak pernah mengambil alamat yang
+ditentukan lewat isi dokumen. Aset yang sudah terhapus dilewati saat ekspor —
+sama seperti frontend yang juga tidak dapat menampilkannya.
+
+Format yang dapat disematkan: JPEG, PNG, GIF.
+
+### Nilai bawaan
+
+Properti yang tidak disebutkan memakai nilai di bawah ini. **Frontend wajib
+memakai nilai yang sama persis** — bila berbeda, elemen yang tidak menyebutkan
+properti itu akan tampil berbeda antara layar dan cetak.
+
+| Properti | Bawaan |
+|---|---|
+| `fontFamily` | `helvetica` |
+| `fontSize` | `12` |
+| `fontWeight` | `400` |
+| `fontStyle` | `normal` |
+| `color` | `#000000` |
+| `align` | `left` |
+| `lineHeight` | `1.2` |
+| `letterSpacing` | `0` |
+| `fit` | `contain` |
+
+Cara paling aman adalah tidak bergantung pada nilai bawaan sama sekali: sebutkan
+properti yang menentukan tata letak secara tegas pada setiap elemen teks.
+
+### Contoh satu elemen
+
+```json
+{
+  "id": "el_7f3a",
+  "type": "text",
+  "x": 59.53,
+  "y": 68.03,
+  "w": 476.22,
+  "h": 50.51,
+  "text": "Kaidah Dokumen yang Baik",
+  "fontFamily": "helvetica",
+  "fontSize": 24,
+  "fontWeight": 700,
+  "fontStyle": "normal",
+  "color": "#111827",
+  "align": "left",
+  "lineHeight": 1.3
+}
+```
+
+### Isi yang ditolak
 
 Isi yang melanggar aturan di atas membuat koneksi ditutup `1011` dengan alasan
-yang menyebutkan persis apa yang salah — misalnya `duplicate element id "dup"`.
+yang menyebutkan persis apa yang salah — misalnya
+`json: unknown field "textShadow"` atau `duplicate element id "dup"`.
+
+### Menyetel ulang dokumen berbentuk lama
+
+Dokumen yang isinya masih memakai bentuk `props` tidak akan terbaca. Kosongkan
+isinya agar panduan bawaan disusun ulang dalam bentuk baru:
+
+```sql
+UPDATE documents
+SET content = '{"pages": []}',
+    content_version = content_version + 1
+WHERE content::text LIKE '%"props"%';
+```
+
+Jalankan saat tidak ada yang sedang membuka dokumennya.
 
 ---
 
-## 7. Panduan bawaan
+## 7. Agar layar dan cetak sama
+
+Ekspor PDF digambar mesin yang berbeda dari browser. Kesamaan hasilnya tidak
+datang sendiri — ia ditegakkan oleh tiga hal, dan ketiganya **kewajiban
+frontend**.
+
+### Berkas font yang sama
+
+Bukan sekadar nama keluarga yang sama. Helvetica di macOS dan Arial di Windows
+punya lebar glif yang berbeda, dan selisih sekecil apa pun menumpuk menjadi
+pemenggalan baris yang berbeda.
+
+Backend memuat berkas font dari direktori `DESIGN_FONT_DIR` menurut manifes
+`fonts.json`:
+
+```json
+{
+  "families": [
+    {
+      "name": "inter",
+      "faces": [
+        { "weight": 400, "style": "normal", "file": "Inter-Regular.ttf" },
+        { "weight": 700, "style": "normal", "file": "Inter-Bold.ttf" }
+      ]
+    }
+  ]
+}
+```
+
+Berkas **yang sama** harus disajikan ke frontend lewat `@font-face`, bukan diambil
+dari Google Fonts maupun font sistem.
+
+Keluarga `helvetica` selalu tersedia tanpa berkas apa pun karena metriknya melekat
+pada spesifikasi PDF, tetapi ia punya dua batas:
+
+- **Kesamaan tidak dijamin.** Browser akan memakai Helvetica atau Arial milik
+  sistem, yang metriknya berbeda antar sistem operasi.
+- **Hanya huruf Eropa Barat.** Keluarga inti memakai pengkodean Windows-1252.
+  Tanda pisah `—`, kutip tipografis `“ ”`, dan huruf beraksen tercetak benar,
+  tetapi aksara di luar itu — Tionghoa, Arab, Jepang — menjadi tanda tanya.
+
+Ia ada supaya ekspor dapat dicoba sebelum font sungguhan disiapkan, bukan untuk
+dipakai pada dokumen yang sungguh dicetak.
+
+Ketebalan yang tidak terdaftar **menggagalkan ekspor**, tidak dibulatkan ke yang
+terdekat. Penebalan buatan oleh browser sementara backend memakai penggantinya
+adalah cara paling halus untuk menghasilkan dua tampilan yang berbeda.
+
+### Kerning dan ligatur dimatikan
+
+```css
+font-kerning: none;
+font-feature-settings: "liga" 0;
+```
+
+Browser secara bawaan merapatkan pasangan huruf tertentu dan menggabungkan `fi`
+menjadi satu glif. Backend menjumlahkan lebar glif apa adanya. Tanpa kedua baris
+di atas, lebar baris di layar dan di cetak tidak akan pernah sama.
+
+### Perilaku kotak teks
+
+```css
+white-space: pre-line;
+overflow: hidden;
+overflow-wrap: normal;
+```
+
+| Aturan backend | Padanan CSS |
+|---|---|
+| `\n` menjadi pergantian baris, deretan spasi dipadatkan jadi satu | `white-space: pre-line` |
+| Teks yang melebihi kotak dipotong | `overflow: hidden` |
+| Kata yang lebih lebar dari kotak dibiarkan meluber, tidak dipatahkan | `overflow-wrap: normal` |
+| Baris kosong tetap memakan satu tinggi baris | — |
+
+### Aturan tata letak yang dipakai backend
+
+**Pemenggalan baris** rakus: kata ditambahkan selama masih muat, dan pindah ke
+baris berikutnya begitu tidak. Tanpa tanda hubung otomatis.
+
+**Lebar teks** adalah jumlah lebar glif, ditambah `letterSpacing` setelah
+**setiap** huruf termasuk yang terakhir — sama seperti CSS.
+
+**Garis dasar baris pertama** memakai aturan half-leading milik CSS:
+
+```
+tinggiBaris  = fontSize × lineHeight
+sisa         = tinggiBaris − (ascent + descent)
+garisDasar   = y + sisa / 2 + ascent
+```
+
+`ascent` dan `descent` diambil dari FontDescriptor berkas font. Perlu dicatat
+bahwa browser tidak selalu memakai sumber yang sama — sebagian mengambil metrik
+`hhea`, sebagian `OS/2`. **Bila teks tampak bergeser vertikal secara konsisten
+pada satu keluarga font, di sinilah tempat memeriksanya.**
+
+**Rata penuh** hanya meregangkan jarak antar kata, dan **tidak** diterapkan pada
+baris terakhir sebuah paragraf — sama seperti `text-align: justify` bawaan.
+
+---
+
+## 8. Panduan bawaan
 
 Dokumen yang `pages`-nya masih kosong **diisi otomatis** satu halaman berisi
 delapan blok teks berisi kaidah menyusun dokumen. Benih ini disimpan, sehingga
@@ -302,21 +558,18 @@ Dokumen yang sudah punya halaman tidak pernah disentuh — sekalipun halaman itu
 belum berisi elemen.
 
 Tata letaknya proporsional terhadap kertas: margin sisi 10% lebar, margin atas 8%
-tinggi, dan seperlima halaman bawah sengaja dibiarkan kosong.
+tinggi, dan seperlima halaman bawah sengaja dibiarkan kosong. Ukuran hurufnya
+tidak proporsional melainkan mutlak — 24, 13, 11, dan 10.5 pt — karena yang
+menentukan keterbacaan adalah jarak baca mata, bukan lebar kertas.
 
-> **Dua asumsi yang perlu dikonfirmasi frontend.**
->
-> **Satuan.** Koordinat dan ukuran memakai satuan kertas itu sendiri — milimeter
-> untuk A4, inci untuk Letter — sedangkan `fontSize` memakai angka mutlak. Bila
-> kanvas bekerja dalam piksel, angkanya perlu dikonversi.
->
-> **Nama properti.** `text`, `fontSize`, `fontWeight`, `align` disusun dari
-> toolbar editor. Backend tidak memvalidasi isi `props`, jadi nama yang keliru
-> tidak menimbulkan error — benihnya saja yang tidak terbaca.
+Setiap blok menyebut `fontFamily`, `fontSize`, `fontWeight`, `fontStyle`, `color`,
+`align`, dan `lineHeight` secara tegas, tanpa mengandalkan satu pun nilai bawaan.
+Benih ini karenanya dapat dipakai sebagai rujukan pertama saat menyelaraskan
+tampilan frontend.
 
 ---
 
-## 8. Contoh utuh
+## 9. Contoh utuh
 
 ```js
 const API = 'http://localhost:8081';
@@ -402,6 +655,72 @@ function retryWithNewTicket() {
   return openDesign(documentToken, accessToken);   // selalu mulai dari langkah 1
 }
 ```
+
+---
+
+## 10. Ekspor PDF
+
+```
+POST /api/document-export/{documentToken}
+Authorization: Bearer <access token>
+```
+
+Balasannya **bukan** amplop JSON seperti endpoint lain, melainkan berkas PDF
+mentah:
+
+```
+200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="Surat Jalan.pdf"; filename*=UTF-8''Surat%20Jalan.pdf
+Cache-Control: no-store
+```
+
+Kegagalan tetap memakai amplop JSON yang sama dengan endpoint lain, karena saat
+itu tidak ada berkas yang dikirim.
+
+```js
+async function exportPdf(documentToken, accessToken) {
+  const res = await fetch(`${API}/api/document-export/${documentToken}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!res.ok) {
+    const { message } = await res.json();
+    throw new Error(message);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filenameFrom(res.headers.get('Content-Disposition')) ?? 'document.pdf';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+```
+
+### Yang dicetak adalah keadaan terkini, bukan yang tersimpan
+
+Penyimpanan ke database bersifat tunda sampai dua detik. Karena itu ekspor
+mengambil isi dari room bila dokumennya sedang dibuka seseorang, dan dari database
+bila tidak.
+
+Artinya **tidak perlu menunggu atau memaksa simpan sebelum mengekspor**. Menggeser
+sebuah elemen lalu langsung menekan ekspor menghasilkan PDF yang sudah memuat
+geseran itu.
+
+### Kegagalan yang mungkin
+
+| Status | Sebab |
+|---|---|
+| `400` | isi dokumen tidak sah, kertas memakai satuan yang tidak dikenal, atau font yang diminta tidak tersedia |
+| `404` | dokumen tidak ada atau sudah dihapus |
+| `503` | dokumen sedang dibuka tetapi room-nya bermasalah |
+
+Pesan pada `400` menyebut persis apa yang kurang — misalnya
+`font inter 700 normal is not available`. Itu jenis kegagalan yang diperbaiki
+dengan mendaftarkan berkas fontnya, bukan dengan mencoba lagi.
 
 ---
 
