@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
@@ -68,6 +70,32 @@ type Subscriber interface {
 // punya.
 type MessageEncoder interface {
 	EncodeSnapshot(content json.RawMessage, version int64, page PageSize) ([]byte, error)
+	EncodePresence(users []PresenceUser) ([]byte, error)
+}
+
+// Member adalah satu koneksi beserta pemiliknya.
+//
+// Identitas dibawa dari tiket, bukan dicari saat koneksi terjadi. Membaca tabel
+// user di dalam orchestrator berarti satu query lambat membekukan penyuntingan
+// seluruh dokumen itu; tiket sudah diterbitkan lewat endpoint terautentikasi di
+// luar jalur realtime, dan umurnya cuma tiga puluh detik sehingga namanya tidak
+// mungkin basi.
+type Member struct {
+	Subscriber Subscriber
+	UserID     string
+	UserName   string
+}
+
+// PresenceUser adalah satu orang yang sedang membuka dokumen.
+//
+// Yang dihitung orang, bukan koneksi: satu orang dengan tiga tab tetap satu
+// entri, dan ia baru hilang ketika tab terakhirnya tertutup. Menghitung koneksi
+// akan menampilkan satu orang sebagai beberapa penyunting — dan itu bukan
+// kemungkinan teoretis, karena frontend membuka lebih dari satu koneksi tiap kali
+// halaman dimuat.
+type PresenceUser struct {
+	ID   string
+	Name string
 }
 
 // PageSize adalah ukuran halaman dalam titik, ikut dikirim bersama snapshot.
@@ -95,7 +123,7 @@ type roomEvent interface {
 // bukan saat socket terbuka. Dengan begitu mustahil ada delta yang sampai
 // sebelum snapshot yang menjadi dasarnya.
 type syncEvent struct {
-	subscriber Subscriber
+	member Member
 	// Arah channel dinyatakan lewat tipe: orchestrator hanya boleh mengirim.
 	reply chan<- error
 }
@@ -181,8 +209,9 @@ type Room struct {
 	broken error
 	// members hanya berisi klien yang sudah meminta dan menerima snapshot.
 	// Koneksi yang terbuka tetapi belum meminta dokumen sengaja tidak masuk,
-	// supaya ia tidak pernah menerima delta untuk keadaan yang belum ia punya.
-	members map[Subscriber]struct{}
+	// supaya ia tidak pernah menerima delta untuk keadaan yang belum ia punya —
+	// dan supaya ia belum terhitung hadir, karena ia memang belum melihat apa pun.
+	members map[Subscriber]Member
 }
 
 func newRoom(token string, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Room {
@@ -196,7 +225,7 @@ func newRoom(token string, documents output.DocumentRepository, encoder MessageE
 		stop:      make(chan struct{}),
 		done:      make(chan struct{}),
 		content:   &design.Content{Pages: []design.Page{}},
-		members:   make(map[Subscriber]struct{}),
+		members:   make(map[Subscriber]Member),
 	}
 }
 
@@ -306,14 +335,41 @@ func (r *Room) handle(event roomEvent) {
 			return
 		}
 
+		// Diperiksa sebelum didaftarkan: yang menentukan perlu-tidaknya siaran
+		// adalah apakah ORANGNYA sudah hadir, bukan koneksinya.
+		newcomer := !r.hasUser(e.member.UserID)
+
 		// Pendaftaran anggota dan pengiriman snapshot terjadi pada langkah yang
 		// sama. Itulah yang menjamin klien tidak pernah menerima delta untuk
 		// keadaan yang belum ia punya.
-		r.members[e.subscriber] = struct{}{}
-		e.subscriber.Send(payload)
+		r.members[e.member.Subscriber] = e.member
+		e.member.Subscriber.Send(payload)
+
+		// Snapshot lebih dulu, baru daftar orangnya. Keduanya masuk antrean pada
+		// langkah yang sama, jadi urutan itu terjamin sampai ke klien.
+		if newcomer {
+			r.broadcastPresence()
+		} else {
+			// Tab kedua milik orang yang sama, atau document.get yang diulang
+			// sebagai jalur pemulihan. Daftar tidak berubah bagi yang lain, tetapi
+			// peminta tetap perlu menerimanya.
+			r.sendPresence(e.member.Subscriber)
+		}
+
+		// Balasan paling akhir, supaya kembalinya Sync berarti seluruh pesan untuk
+		// bergabung sudah masuk antrean — bukan sebagian. Ongkosnya hanya beberapa
+		// penambahan ke antrean, dan sebagai gantinya perilakunya dapat ditalar
+		// tanpa memikirkan apa yang masih tertinggal di belakang.
 		e.reply <- nil
 	case leaveEvent:
+		member, joined := r.members[e.subscriber]
 		delete(r.members, e.subscriber)
+
+		// Orang yang masih memegang tab lain belum benar-benar pergi, jadi tidak
+		// ada yang berubah untuk disiarkan.
+		if joined && !r.hasUser(member.UserID) {
+			r.broadcastPresence()
+		}
 	case snapshotEvent:
 		if r.broken != nil {
 			e.reply <- snapshotResult{err: r.broken}
@@ -346,6 +402,84 @@ func (r *Room) encodeSnapshot() ([]byte, error) {
 	}
 
 	return r.encoder.EncodeSnapshot(content, r.version, r.page)
+}
+
+// hasUser menjawab apakah seseorang masih memegang setidaknya satu koneksi ke
+// dokumen ini.
+func (r *Room) hasUser(userID string) bool {
+	for _, member := range r.members {
+		if member.UserID == userID {
+			return true
+		}
+	}
+
+	return false
+}
+
+// presentUsers menyusun daftar orang yang sedang membuka dokumen, tanpa
+// pengulangan.
+//
+// Urutannya dibuat pasti — menurut nama, lalu id sebagai pemutus seri — karena
+// iterasi peta di Go berurutan acak. Tanpa pengurutan, tumpukan avatar di
+// frontend akan berganti susunan setiap kali ada yang datang atau pergi.
+func (r *Room) presentUsers() []PresenceUser {
+	seen := make(map[string]struct{}, len(r.members))
+	users := make([]PresenceUser, 0, len(r.members))
+
+	for _, member := range r.members {
+		if _, exists := seen[member.UserID]; exists {
+			continue
+		}
+		seen[member.UserID] = struct{}{}
+		users = append(users, PresenceUser{ID: member.UserID, Name: member.UserName})
+	}
+
+	slices.SortFunc(users, func(a, b PresenceUser) int {
+		if order := strings.Compare(a.Name, b.Name); order != 0 {
+			return order
+		}
+
+		return strings.Compare(a.ID, b.ID)
+	})
+
+	return users
+}
+
+// broadcastPresence memberi tahu seluruh penghuni siapa saja yang sedang membuka
+// dokumen ini.
+//
+// Kegagalan menyusun payload hanya dicatat, tidak menandai room rusak. Daftar
+// kehadiran adalah hiasan di sekitar pekerjaan yang sebenarnya; menghentikan
+// penyuntingan karena ia gagal disusun jauh lebih merugikan daripada tumpukan
+// avatar yang tidak diperbarui.
+func (r *Room) broadcastPresence() {
+	payload, err := r.encodePresence()
+	if err != nil {
+		return
+	}
+
+	for subscriber := range r.members {
+		subscriber.Send(payload)
+	}
+}
+
+func (r *Room) sendPresence(subscriber Subscriber) {
+	payload, err := r.encodePresence()
+	if err != nil {
+		return
+	}
+
+	subscriber.Send(payload)
+}
+
+func (r *Room) encodePresence() ([]byte, error) {
+	payload, err := r.encoder.EncodePresence(r.presentUsers())
+	if err != nil {
+		r.logger.Error("encode document design presence", "document", r.token, "error", err)
+		return nil, err
+	}
+
+	return payload, nil
 }
 
 // flush menyerahkan penulisan ke goroutine terpisah.
@@ -504,9 +638,9 @@ func (r *Room) markBroken(cause error, reason string) {
 // Ini satu-satunya operasi yang sinkron, dan yang ditunggu hanya konfirmasi
 // berhasil atau tidak — snapshot-nya sendiri dikirim orchestrator langsung ke
 // antrean keluar klien.
-func (r *Room) sync(ctx context.Context, sub Subscriber) error {
+func (r *Room) sync(ctx context.Context, member Member) error {
 	reply := make(chan error, 1)
-	event := syncEvent{subscriber: sub, reply: reply}
+	event := syncEvent{member: member, reply: reply}
 
 	select {
 	case r.inbox <- event:

@@ -67,7 +67,7 @@
             "{{document_token}}"
           ]
         },
-        "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu."
+        "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.\n\nTiket juga membawa nama pemiliknya, dipakai server untuk memberi tahu siapa saja yang sedang membuka dokumen lewat pesan `presence`. Bentuk response endpoint ini tidak berubah."
       },
       "event": [
         {

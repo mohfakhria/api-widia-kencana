@@ -15,6 +15,7 @@ GET  /api/document-design-fonts           →  font yang tersedia
 POST /api/document-design-ticket/:token   →  tiket sekali pakai, 30 detik
 WS   /document-design/:token?ticket=      →  buka sesi
      kirim { "type": "document.get" }     →  terima { "type": "snapshot", … }
+                                          →  lalu { "type": "presence", … }
 POST /api/document-export/:token          →  berkas PDF
 ```
 
@@ -22,8 +23,9 @@ POST /api/document-export/:token          →  berkas PDF
 |---|---|
 | Tiket handshake dan koneksi WebSocket | Penyuntingan lewat API mana pun |
 | Minta isi dokumen dan terima snapshot | Siaran perubahan antar klien |
-| Panduan bawaan untuk dokumen kosong | Daftar siapa yang sedang membuka |
-| Ekspor PDF | Riwayat dan pembatalan perubahan |
+| Daftar siapa yang sedang membuka | Riwayat dan pembatalan perubahan |
+| Panduan bawaan untuk dokumen kosong | Kursor dan pilihan orang lain |
+| Ekspor PDF | |
 
 **Isi dokumen belum dapat diubah lewat API.** Setiap jenis pesan selain
 `document.get` dibalas `unsupported_message_type`. Bentuk pesan untuk penyuntingan
@@ -687,7 +689,53 @@ Semua pesan wajib berupa **JSON dalam text frame**.
 dokumen ini. Ia satu-satunya sumber ukuran kanvas yang perlu dipakai — lihat
 [2.1](#21-ukuran-halaman-zoom-dan-koordinat).
 
-### 3.5 Versi
+### 3.5 Siapa yang sedang membuka
+
+Setiap kali daftar orang berubah, server mengirim:
+
+```jsonc
+{
+  "type": "presence",
+  "users": [
+    { "id": "7",  "name": "Fahmi Ardiyanto" },
+    { "id": "12", "name": "Dewi Anggraini" }
+  ]
+}
+```
+
+Tidak ada field jumlah tersendiri — `users.length` sudah menjawabnya, termasuk
+untuk menampilkan "+6" pada tumpukan avatar. Warna avatar juga tidak dikirim;
+turunkan sendiri dari `id` supaya orang yang sama berwarna sama di semua layar.
+
+**Yang didaftar orang, bukan koneksi.** Satu orang dengan tiga tab tetap satu
+entri, dan ia baru hilang ketika tab terakhirnya tertutup. Ini bukan kehalusan
+teoretis: frontend membuka lebih dari satu koneksi tiap kali halaman dimuat, jadi
+menghitung koneksi akan menampilkan satu orang sebagai beberapa penyunting.
+
+Urutannya menurut nama, jadi susunan avatar tidak berubah-ubah sendiri.
+
+**Kapan pesan ini datang:**
+
+| Kejadian | Siapa yang menerima |
+|---|---|
+| Seseorang bergabung, dan ia belum hadir sebelumnya | **semua**, termasuk yang baru bergabung |
+| Seseorang membuka tab kedua | hanya tab baru itu — bagi yang lain daftarnya tidak berubah |
+| `document.get` diulang sebagai pemulihan | hanya yang meminta |
+| Seseorang menutup satu dari beberapa tabnya | **tidak ada** — ia masih hadir |
+| Seseorang menutup tab terakhirnya | semua yang tersisa |
+
+Pada klien yang baru bergabung, `snapshot` **selalu** datang lebih dulu, baru
+`presence`. Keduanya dimasukkan ke antrean pada langkah yang sama oleh server,
+jadi urutan itu terjamin.
+
+Seseorang baru terhitung hadir setelah ia mengirim `document.get` dan menerima
+isinya — koneksi yang terbuka tetapi belum meminta dokumen belum masuk daftar.
+Itu memang benar: ia belum melihat apa pun.
+
+Nama diambil dari tiket, yang diterbitkan lewat endpoint terautentikasi. Tidak
+ada yang perlu dikirim frontend untuk ini.
+
+### 3.6 Versi
 
 `version` adalah nomor revisi **dokumen** — satu dokumen, satu penghitung, naik
 setiap kali ada perubahan yang berhasil diterapkan.
@@ -702,7 +750,7 @@ tidak ada siaran perubahan sama sekali. **Simpan nilainya, jangan bangun logika
 rekonsiliasi apa pun di atasnya sekarang** — aturannya akan ditulis di sini
 bersamaan dengan pesan penyuntingan, bukan sebelumnya.
 
-### 3.6 Panduan bawaan untuk dokumen kosong
+### 3.7 Panduan bawaan untuk dokumen kosong
 
 Dokumen yang `pages`-nya masih kosong **diisi otomatis** satu halaman berisi
 delapan blok teks tentang kaidah menyusun dokumen. Benih ini disimpan, sehingga id
@@ -894,6 +942,12 @@ async function openDesign(documentToken, accessToken) {
       // page berisi ukuran halaman dalam titik; dibutuhkan untuk menyiapkan kanvas.
       renderCanvas(message.content, message.page);
       localVersion = message.version;
+      return;
+    }
+
+    if (message.type === 'presence') {
+      // Daftar orang, bukan koneksi. Selalu datang setelah snapshot pertama.
+      renderAvatars(message.users);
       return;
     }
 

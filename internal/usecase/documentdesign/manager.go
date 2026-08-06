@@ -96,7 +96,7 @@ func (m *manager) attach(token string) {
 //
 // Room dicari di bawah kunci, tetapi permintaannya dikirim setelah kunci dilepas:
 // menunggu inbox di bawah kunci peta akan membekukan seluruh dokumen lain.
-func (m *manager) sync(ctx context.Context, token string, sub Subscriber) error {
+func (m *manager) sync(ctx context.Context, token string, member Member) error {
 	m.mu.Lock()
 	entry, ok := m.rooms[token]
 	m.mu.Unlock()
@@ -105,7 +105,7 @@ func (m *manager) sync(ctx context.Context, token string, sub Subscriber) error 
 		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	}
 
-	return entry.room.sync(ctx, sub)
+	return entry.room.sync(ctx, member)
 }
 
 // snapshot mengambil isi terkini bila dokumen ini sedang disunting seseorang.

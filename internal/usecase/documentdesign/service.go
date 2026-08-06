@@ -35,6 +35,7 @@ const roomStopTimeout = 8 * time.Second
 // realtime. Ia tidak mengenal WebSocket, HTTP, maupun gin.
 type Service struct {
 	documents   output.DocumentRepository
+	users       output.UserRepository
 	tickets     *ticketStore
 	rooms       *manager
 	connections *connectionCounter
@@ -42,13 +43,20 @@ type Service struct {
 
 // NewService menerima context aplikasi karena orchestrator room hidup lebih lama
 // daripada koneksi mana pun dan harus berhenti bersama aplikasi.
-func NewService(appCtx context.Context, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Service {
+func NewService(
+	appCtx context.Context,
+	documents output.DocumentRepository,
+	users output.UserRepository,
+	encoder MessageEncoder,
+	logger *slog.Logger,
+) *Service {
 	if logger == nil {
 		logger = slog.Default()
 	}
 
 	return &Service{
 		documents:   documents,
+		users:       users,
 		tickets:     newTicketStore(),
 		rooms:       newManager(appCtx, documents, encoder, logger),
 		connections: newConnectionCounter(),
@@ -70,8 +78,17 @@ func (s *Service) IssueTicket(ctx context.Context, documentToken, userID string)
 		return "", 0, err
 	}
 
+	// Nama diambil di sini, bukan saat koneksi terbuka. Penerbitan tiket terjadi
+	// sekali per sesi dan sudah menyentuh database, sedangkan jalur WebSocket
+	// harus tetap bebas dari query.
+	user, err := s.users.FindByID(ctx, userID)
+	if err != nil {
+		return "", 0, domain.NewError(domain.ErrUnauthorized, "User not found or deleted")
+	}
+
 	key, err := s.tickets.issue(Ticket{
 		UserID:        userID,
+		UserName:      user.Name,
 		DocumentToken: documentToken,
 	}, time.Now())
 	if err != nil {
@@ -120,8 +137,12 @@ func (s *Service) Attach(documentToken, userID string) (int, error) {
 //
 // Boleh dipanggil berulang pada koneksi yang sama: itulah jalur pemulihan ketika
 // klien menyadari keadaannya tertinggal.
-func (s *Service) Sync(ctx context.Context, documentToken string, sub Subscriber) error {
-	return s.rooms.sync(ctx, documentToken, sub)
+//
+// Identitas dibawa di sini, bukan saat Attach, karena kehadiran dihitung dari
+// keanggotaan room — dan seseorang baru dianggap hadir setelah ia benar-benar
+// menerima isi dokumennya.
+func (s *Service) Sync(ctx context.Context, documentToken string, member Member) error {
+	return s.rooms.sync(ctx, documentToken, member)
 }
 
 // Snapshot mengembalikan isi dokumen yang paling mutakhir, untuk ekspor.

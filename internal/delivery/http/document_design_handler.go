@@ -151,7 +151,12 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 	buffer := newDesignBuffer(designQueueLimit)
 	defer buffer.close()
 
-	subscriber := &designSubscriber{buffer: buffer, cancel: cancel}
+	subscriber := &designSubscriber{
+		buffer:   buffer,
+		cancel:   cancel,
+		userID:   ticket.UserID,
+		userName: ticket.UserName,
+	}
 
 	var loops sync.WaitGroup
 	loops.Add(3)
@@ -391,7 +396,13 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 // antrean keluar oleh orchestrator, bukan di sini — itulah yang menjamin ia tidak
 // pernah disalip siaran perubahan berikutnya.
 func (h *DocumentDesignHandler) sendSnapshot(ctx context.Context, documentToken string, subscriber *designSubscriber) {
-	if err := h.service.Sync(ctx, documentToken, subscriber); err != nil {
+	member := documentdesign.Member{
+		Subscriber: subscriber,
+		UserID:     subscriber.userID,
+		UserName:   subscriber.userName,
+	}
+
+	if err := h.service.Sync(ctx, documentToken, member); err != nil {
 		h.logger.Warn("sync document design", "document", documentToken, "error", err)
 		subscriber.sendError("document_unavailable", err.Error())
 	}
@@ -402,6 +413,11 @@ func (h *DocumentDesignHandler) sendSnapshot(ctx context.Context, documentToken 
 type designSubscriber struct {
 	buffer *designBuffer
 	cancel context.CancelFunc
+
+	// Identitas pemilik koneksi, disalin dari tiket saat handshake. Hanya dibaca,
+	// tidak pernah berubah selama koneksi hidup, jadi tidak butuh penguncian.
+	userID   string
+	userName string
 
 	// closeReason diisi Disconnect dan dibaca Connect setelah seluruh loop
 	// selesai, untuk dijadikan alasan pada close frame. Dijaga mutex karena
@@ -485,6 +501,15 @@ type DesignMessageEncoder struct{}
 
 func (DesignMessageEncoder) EncodeSnapshot(content json.RawMessage, version int64, page documentdesign.PageSize) ([]byte, error) {
 	return dto.NewDesignSnapshotMessage(content, version, page.Width, page.Height)
+}
+
+func (DesignMessageEncoder) EncodePresence(users []documentdesign.PresenceUser) ([]byte, error) {
+	payload := make([]dto.DesignPresenceUser, 0, len(users))
+	for _, user := range users {
+		payload = append(payload, dto.DesignPresenceUser{ID: user.ID, Name: user.Name})
+	}
+
+	return dto.NewDesignPresenceMessage(payload)
 }
 
 // designOriginPatterns membatasi handshake ke host frontend.

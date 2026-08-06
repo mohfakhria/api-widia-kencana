@@ -14,6 +14,7 @@ const (
 // Jenis pesan yang dikirim server.
 const (
 	DesignMessageSnapshot = "snapshot"
+	DesignMessagePresence = "presence"
 	DesignMessageError    = "error"
 )
 
@@ -61,6 +62,39 @@ type DesignSnapshotMessage struct {
 type DesignPageSize struct {
 	Width  float64 `json:"width"`
 	Height float64 `json:"height"`
+}
+
+// DesignPresenceMessage menyebut siapa saja yang sedang membuka dokumen ini.
+//
+// Tidak ada field jumlah tersendiri: panjang Users sudah menjawabnya. Field yang
+// dapat diturunkan dari field lain cepat atau lambat akan melenceng dari
+// sumbernya.
+//
+// Yang didaftar orang, bukan koneksi — satu orang dengan beberapa tab tetap satu
+// entri. Warna avatar sengaja tidak ikut; frontend menurunkannya sendiri dari id
+// supaya orang yang sama berwarna sama di semua layar tanpa backend perlu
+// menyimpan apa pun.
+type DesignPresenceMessage struct {
+	Type  string               `json:"type"`
+	Users []DesignPresenceUser `json:"users"`
+}
+
+type DesignPresenceUser struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func NewDesignPresenceMessage(users []DesignPresenceUser) ([]byte, error) {
+	if users == nil {
+		// Array kosong, bukan null. Frontend memetakannya langsung ke daftar
+		// avatar, dan null memaksa setiap pemakainya memeriksa lebih dulu.
+		users = []DesignPresenceUser{}
+	}
+
+	return json.Marshal(DesignPresenceMessage{
+		Type:  DesignMessagePresence,
+		Users: users,
+	})
 }
 
 type DesignErrorMessage struct {

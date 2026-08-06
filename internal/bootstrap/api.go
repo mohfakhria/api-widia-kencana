@@ -75,7 +75,8 @@ func (a *ApiApp) initialize() error {
 	documentRepo := pg.NewDocumentRepository(a.db)
 	documentUC := usecase.NewDocumentUseCase(documentRepo)
 	documentDesign := documentdesign.NewService(
-		a.Context, documentRepo, deliveryhttp.DesignMessageEncoder{}, a.ServiceLogger,
+		a.Context, documentRepo, pg.NewUserRepository(a.db),
+		deliveryhttp.DesignMessageEncoder{}, a.ServiceLogger,
 	)
 
 	// Font dimuat sekali saat start, bukan tiap ekspor. Kegagalan di sini

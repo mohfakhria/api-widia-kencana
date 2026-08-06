@@ -25,8 +25,16 @@ const (
 )
 
 // Ticket adalah hasil penukaran, berisi siapa yang terhubung dan ke dokumen mana.
+// Ticket adalah izin sekali pakai untuk satu handshake.
+//
+// UserName ikut dibawa supaya jalur WebSocket tidak perlu membaca tabel user
+// sama sekali. Nama hanya dipakai untuk menampilkan siapa yang sedang membuka
+// dokumen, dan tiket berumur tiga puluh detik — cukup pendek untuk memastikan
+// namanya tidak basi, cukup jauh dari orchestrator untuk memastikan query-nya
+// tidak pernah menahan penyuntingan siapa pun.
 type Ticket struct {
 	UserID        string
+	UserName      string
 	DocumentToken string
 }
 
