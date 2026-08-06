@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
 	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
@@ -36,6 +38,10 @@ const (
 	// Tenggang menunggu pong. Koneksi yang mati terdeteksi paling lambat
 	// designPingInterval + designPongTimeout setelah benar-benar putus.
 	designPongTimeout = 10 * time.Second
+
+	// Tenggat satu kali penulisan ke socket. Tanpa ini, klien yang berhenti
+	// membaca dapat menahan penulis sampai ping gagal, yaitu sekitar 40 detik.
+	designWriteTimeout = 5 * time.Second
 )
 
 type DocumentDesignHandler struct {
@@ -87,14 +93,9 @@ func (h *DocumentDesignHandler) IssueTicket(c *gin.Context) {
 func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	documentToken := r.PathValue("token")
 
-	// Tiket ditukar sebelum upgrade, sehingga kegagalannya berupa respons HTTP
-	// biasa yang punya status jelas, bukan koneksi yang terlanjur terbuka.
-	if _, err := h.service.Redeem(r.URL.Query().Get("ticket"), documentToken); err != nil {
-		writeDesignError(w, apperror.ToHTTPStatus(err), err.Error())
-		return
-	}
-
-	// Accept menolak Origin asing dengan HTTP 403 dan menulis responsnya sendiri.
+	// Accept lebih dulu. Origin diperiksa di dalamnya dan ditolak dengan HTTP 403
+	// sebelum upgrade, sehingga permintaan lintas situs tetap tertahan tanpa
+	// pernah menyentuh tiket — dan tiket yang sah tidak hangus percuma.
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		OriginPatterns: h.origins,
 	})
@@ -103,6 +104,17 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	defer conn.CloseNow()
+
+	// Tiket ditukar setelah upgrade supaya kegagalannya dapat disampaikan sebagai
+	// close frame beralasan. Browser tidak pernah bisa membaca status HTTP dari
+	// handshake WebSocket yang gagal, sedangkan CloseEvent.reason terbaca — jadi
+	// inilah satu-satunya cara frontend tahu ia perlu menerbitkan tiket baru.
+	ticket, err := h.service.Redeem(r.URL.Query().Get("ticket"), documentToken)
+	if err != nil {
+		h.logger.Warn("redeem design ticket", "document", documentToken, "error", err)
+		conn.Close(websocket.StatusPolicyViolation, "invalid or expired design ticket")
+		return
+	}
 
 	conn.SetReadLimit(designMaxMessageBytes)
 
@@ -129,11 +141,19 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 		h.pingLoop(connCtx, conn, cancel)
 	}()
 
-	room := h.service.Join(documentToken, subscriber)
-	defer h.service.Leave(documentToken, subscriber)
+	state, err := h.service.Join(connCtx, documentToken, ticket.UserID, subscriber)
+	if err != nil {
+		h.logger.Warn("join document design room", "document", documentToken, "error", err)
+		if errors.Is(err, domain.ErrTooManyRequests) {
+			conn.Close(websocket.StatusTryAgainLater, "too many concurrent design connections")
+			return
+		}
+		conn.Close(websocket.StatusInternalError, "failed to join document room")
+		return
+	}
+	defer h.service.Leave(documentToken, ticket.UserID, subscriber)
 
-	content, version := room.Snapshot()
-	snapshot, err := dto.NewDesignSnapshotMessage(content, version)
+	snapshot, err := dto.NewDesignSnapshotMessage(state.Content, state.Version)
 	if err != nil {
 		h.logger.Error("encode document design snapshot", "document", documentToken, "error", err)
 		conn.Close(websocket.StatusInternalError, "failed to encode snapshot")
@@ -193,11 +213,27 @@ func (h *DocumentDesignHandler) writeLoop(ctx context.Context, conn *websocket.C
 		}
 
 		for _, payload := range batch {
-			if err := conn.Write(ctx, websocket.MessageText, payload); err != nil {
+			if err := writeMessage(ctx, conn, payload); err != nil {
 				return
 			}
 		}
 	}
+}
+
+// writeMessage melepaskan penulisan dari pembatalan context koneksi.
+//
+// Kalau keduanya terikat, pembatalan yang menandai koneksi berakhir juga
+// menggagalkan pengiriman pesan yang masih mengantre — dan readLoop memang
+// membatalkan context sebelum menutup buffer, sehingga balasan terakhir tidak
+// akan pernah sampai. Yang membatasi penulisan sekarang tenggatnya sendiri.
+//
+// Pengurasan tetap terbatas: writeLoop berhenti pada kegagalan pertama, jadi
+// lawan bicara yang sudah pergi paling banyak membayar satu tenggat.
+func writeMessage(ctx context.Context, conn *websocket.Conn, payload []byte) error {
+	writeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), designWriteTimeout)
+	defer cancel()
+
+	return conn.Write(writeCtx, websocket.MessageText, payload)
 }
 
 // pingLoop membuat koneksi yang mati diam-diam bisa terdeteksi.
@@ -291,17 +327,6 @@ func (s *designSubscriber) sendError(seq int64, code, message string) {
 	}
 
 	s.Send(payload)
-}
-
-// writeDesignError memakai bentuk error yang sama dengan endpoint REST lain,
-// karena kegagalan handshake terjadi sebelum upgrade dan masih berupa HTTP biasa.
-func writeDesignError(w http.ResponseWriter, status int, message string) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(dto.APIErrorResponse{
-		Status:  "error",
-		Message: message,
-	})
 }
 
 // designOriginPatterns membatasi handshake ke host frontend. Bila FrontendURL

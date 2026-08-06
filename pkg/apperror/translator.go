@@ -17,6 +17,8 @@ func ToHTTPStatus(err error) int {
 		return http.StatusForbidden
 	case errors.Is(err, domain.ErrInvalidInput):
 		return http.StatusBadRequest
+	case errors.Is(err, domain.ErrTooManyRequests):
+		return http.StatusTooManyRequests
 	case errors.Is(err, domain.ErrUnavailable):
 		return http.StatusServiceUnavailable
 	default:

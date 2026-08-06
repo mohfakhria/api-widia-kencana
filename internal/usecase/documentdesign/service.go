@@ -10,19 +10,35 @@ import (
 	"github.com/google/uuid"
 )
 
+// janitorInterval adalah denyut pembersih. Satu goroutine melayani dua sapuan
+// sekaligus — tiket kedaluwarsa dan room yang sudah kosong — karena keduanya
+// hanya menyusuri peta di memori dan tidak sepadan dengan goroutine sendiri.
+//
+// Konsekuensinya keduanya berbagi irama, sehingga denyutnya harus mengikuti umur
+// terpendek yang dijaga, yaitu roomIdleGrace. Bila denyut dan umurnya sama,
+// sampah bisa bertahan hampir dua kali lipat sebelum tersapu.
+const janitorInterval = 5 * time.Second
+
+// roomStopTimeout membatasi berapa lama shutdown menunggu seluruh orchestrator
+// berhenti. Disamakan dengan tenggat shutdown HTTP server supaya keduanya tidak
+// saling menunggu lebih lama dari yang diperlukan.
+const roomStopTimeout = 5 * time.Second
+
 // Service adalah satu-satunya pintu masuk lapisan delivery ke sesi penyuntingan
 // realtime. Ia tidak mengenal WebSocket, HTTP, maupun gin.
 type Service struct {
-	documents output.DocumentRepository
-	tickets   *ticketStore
-	rooms     *manager
+	documents   output.DocumentRepository
+	tickets     *ticketStore
+	rooms       *manager
+	connections *connectionCounter
 }
 
 func NewService(documents output.DocumentRepository) *Service {
 	return &Service{
-		documents: documents,
-		tickets:   newTicketStore(),
-		rooms:     newManager(),
+		documents:   documents,
+		tickets:     newTicketStore(),
+		rooms:       newManager(),
+		connections: newConnectionCounter(),
 	}
 }
 
@@ -66,30 +82,58 @@ func (s *Service) Redeem(key, documentToken string) (Ticket, error) {
 	return ticket, nil
 }
 
-func (s *Service) Join(documentToken string, sub Subscriber) *Room {
-	return s.rooms.join(documentToken, sub)
+// Join mendaftarkan subscriber ke room dokumen dan mengembalikan isinya saat itu.
+//
+// Kuota koneksi per user diambil lebih dulu, dan dikembalikan bila pendaftaran
+// gagal. Room tidak ikut dikembalikan: pemanggil tidak membutuhkannya, dan
+// menyembunyikan tipe itu menjaga lapisan delivery tetap buta terhadap cara room
+// bekerja.
+//
+// Setiap Join yang berhasil wajib diimbangi tepat satu Leave dengan userID yang
+// sama, kalau tidak kuotanya bocor dan user itu perlahan terkunci sendiri.
+func (s *Service) Join(ctx context.Context, documentToken, userID string, sub Subscriber) (Snapshot, error) {
+	if !s.connections.acquire(userID) {
+		return Snapshot{}, domain.NewError(domain.ErrTooManyRequests, "too many concurrent design connections")
+	}
+
+	snapshot, err := s.rooms.join(ctx, documentToken, sub)
+	if err != nil {
+		s.connections.release(userID)
+		return Snapshot{}, err
+	}
+
+	return snapshot, nil
 }
 
-func (s *Service) Leave(documentToken string, sub Subscriber) {
+func (s *Service) Leave(documentToken, userID string, sub Subscriber) {
 	s.rooms.leave(documentToken, sub)
+	s.connections.release(userID)
 }
 
 // Name dan Run membuat Service dapat dijalankan sebagai komponen bootstrap,
-// sehingga goroutine pembersih tiket punya pemilik dan berhenti bersama aplikasi.
+// sehingga pembersih berkala dan seluruh orchestrator room punya pemilik yang
+// jelas dan berhenti bersama aplikasi.
 func (s *Service) Name() string {
 	return "document-design-janitor"
 }
 
 func (s *Service) Run(ctx context.Context) error {
-	ticker := time.NewTicker(ticketCleanupInterval)
+	ticker := time.NewTicker(janitorInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
+			// Hentikan seluruh orchestrator yang masih hidup lalu tunggu sampai
+			// benar-benar berhenti. Koneksi biasanya sudah membubarkan diri lebih
+			// dulu karena context-nya turunan dari context aplikasi, tetapi ini
+			// menutup kemungkinan ada yang tersisa — termasuk room yang sedang
+			// menunggu masa tenggangnya habis.
+			s.rooms.stopAll(roomStopTimeout)
 			return nil
 		case now := <-ticker.C:
 			s.tickets.evictExpired(now)
+			s.rooms.sweepIdle(now)
 		}
 	}
 }

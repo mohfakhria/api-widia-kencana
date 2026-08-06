@@ -22,10 +22,6 @@ const (
 	// yang memanggil endpoint tiket berulang-ulang dapat menumbuhkan peta tiket
 	// tanpa henti.
 	maxTicketsPerUser = 5
-
-	// ticketCleanupInterval dibuat lebih rapat daripada TicketTTL. Bila keduanya
-	// sama, tiket basi bisa bertahan hampir dua kali umurnya sebelum tersapu.
-	ticketCleanupInterval = 10 * time.Second
 )
 
 // Ticket adalah hasil penukaran, berisi siapa yang terhubung dan ke dokumen mana.
