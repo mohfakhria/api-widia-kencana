@@ -314,6 +314,7 @@ jq empty docs/collection/*.json
 
 ## Development Notes
 
+- Panduan integrasi frontend untuk document design realtime ada di `docs/engineering/document-design-realtime.md`.
 - Clean Architecture reference ada di `docs/engineering/Clean_Architecture.md`.
 - README structure guideline ada di `docs/engineering/readme-structure.md`.
 - Unit test baru belum menjadi scope utama project ini; `go test ./...` dipakai sebagai compile/smoke verification.
