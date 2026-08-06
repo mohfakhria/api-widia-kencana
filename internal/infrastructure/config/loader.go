@@ -13,6 +13,7 @@ import (
 type Config struct {
 	AppEnv              string
 	AppPort             string
+	LogLevel            string
 	AppBaseURL          string
 	FrontendURL         string
 	PGHost              string
@@ -39,8 +40,12 @@ func Load() Config {
 	appBaseURL := getEnv("APP_BASEURL", "http://localhost:8080")
 
 	return Config{
-		AppEnv:      getEnv("APP_ENV", "local"),
-		AppPort:     getEnv("APP_PORT", "8080"),
+		AppEnv:  getEnv("APP_ENV", "local"),
+		AppPort: getEnv("APP_PORT", "8080"),
+		// debug menyalakan jejak pesan WebSocket per klien. Sengaja tidak menyala
+		// secara bawaan: begitu penyuntingan mengalir, satu geseran elemen
+		// menghasilkan puluhan pesan per detik.
+		LogLevel:    getEnv("LOG_LEVEL", "info"),
 		AppBaseURL:  appBaseURL,
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
 		PGHost:      getEnv("PG_HOST", "localhost"),

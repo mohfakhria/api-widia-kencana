@@ -142,7 +142,7 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 	}()
 	go func() {
 		defer loops.Done()
-		h.writeLoop(connCtx, conn, buffer, cancel)
+		h.writeLoop(connCtx, documentToken, conn, buffer, cancel)
 	}()
 	go func() {
 		defer loops.Done()
@@ -228,7 +228,7 @@ func (h *DocumentDesignHandler) readLoop(ctx context.Context, conn *websocket.Co
 
 // writeLoop memindahkan antrean keluar ke socket, menguras seluruh isinya tiap
 // kali bangun.
-func (h *DocumentDesignHandler) writeLoop(ctx context.Context, conn *websocket.Conn, buffer *designBuffer, cancel context.CancelFunc) {
+func (h *DocumentDesignHandler) writeLoop(ctx context.Context, documentToken string, conn *websocket.Conn, buffer *designBuffer, cancel context.CancelFunc) {
 	defer cancel()
 
 	for {
@@ -238,11 +238,47 @@ func (h *DocumentDesignHandler) writeLoop(ctx context.Context, conn *websocket.C
 		}
 
 		for _, payload := range batch {
+			// Dicatat di sini, bukan saat pesan dimasukkan ke antrean. Antrean
+			// diisi orchestrator, dan menulis log di sana berarti menahan seluruh
+			// penyuntingan dokumen selama I/O log berlangsung.
+			h.logMessage(documentToken, "out", payload)
+
 			if err := writeMessage(ctx, conn, payload); err != nil {
 				return
 			}
 		}
 	}
+}
+
+// logMessage mencatat jejak satu pesan pada level debug.
+//
+// Jenis pesan diurai hanya bila level debug memang menyala, karena mengurai
+// setiap payload keluar sia-sia ketika catatannya toh dibuang. Isi payload
+// sengaja tidak ikut dicatat: snapshot dapat berukuran ratusan kilobyte dan
+// memuat isi dokumen pengguna.
+func (h *DocumentDesignHandler) logMessage(documentToken, direction string, payload []byte) {
+	if !h.logger.Enabled(context.Background(), slog.LevelDebug) {
+		return
+	}
+
+	h.logger.Debug("document design message",
+		"document", documentToken,
+		"direction", direction,
+		"type", designMessageType(payload),
+		"bytes", len(payload))
+}
+
+// designMessageType membaca field type saja. Payload yang tidak dapat diurai
+// dilaporkan apa adanya sebagai "?" — itu sendiri sudah informasi.
+func designMessageType(payload []byte) string {
+	var envelope struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(payload, &envelope); err != nil || envelope.Type == "" {
+		return "?"
+	}
+
+	return envelope.Type
 }
 
 // writeMessage melepaskan penulisan dari pembatalan context koneksi.
@@ -311,6 +347,8 @@ func (h *DocumentDesignHandler) dispatchLoop(ctx context.Context, documentToken 
 }
 
 func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {
+	h.logMessage(documentToken, "in", payload)
+
 	var inbound dto.DesignInbound
 	if err := json.Unmarshal(payload, &inbound); err != nil {
 		subscriber.sendError("malformed_message", "message is not valid JSON")

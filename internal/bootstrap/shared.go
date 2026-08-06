@@ -13,8 +13,10 @@ type Shared struct {
 }
 
 func NewShared() *Shared {
+	cfg := config.Load()
+
 	return &Shared{
-		Config: config.Load(),
-		Logger: logger.New(),
+		Config: cfg,
+		Logger: logger.New(cfg.LogLevel),
 	}
 }
