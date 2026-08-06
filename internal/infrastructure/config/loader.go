@@ -78,6 +78,15 @@ func (c Config) IsProduction() bool {
 	return strings.EqualFold(c.AppEnv, "production")
 }
 
+// IsLocal menandai pengembangan di mesin sendiri.
+//
+// Dipakai untuk melonggarkan pemeriksaan yang di lingkungan lain harus ketat.
+// Sengaja diperiksa persis "local", bukan "bukan production", supaya staging
+// tetap seketat produksi.
+func (c Config) IsLocal() bool {
+	return strings.EqualFold(c.AppEnv, "local")
+}
+
 // Validate menolak kombinasi konfigurasi yang diam-diam melemahkan keamanan.
 func (c Config) Validate() error {
 	if c.IsProduction() && !c.CookieSecure {

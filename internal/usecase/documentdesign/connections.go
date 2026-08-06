@@ -28,16 +28,19 @@ func newConnectionCounter() *connectionCounter {
 	return &connectionCounter{counts: make(map[string]int)}
 }
 
-func (c *connectionCounter) acquire(userID string) bool {
+// acquire mengembalikan jumlah koneksi user setelah percobaan ini, dan apakah
+// percobaannya diterima. Jumlahnya ikut dikembalikan karena berguna di log:
+// koneksi ganda yang tak disengaja langsung terlihat dari angkanya.
+func (c *connectionCounter) acquire(userID string) (int, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	if c.counts[userID] >= maxConnectionsPerUser {
-		return false
+		return c.counts[userID], false
 	}
 	c.counts[userID]++
 
-	return true
+	return c.counts[userID], true
 }
 
 func (c *connectionCounter) release(userID string) {

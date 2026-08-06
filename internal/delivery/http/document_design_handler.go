@@ -60,10 +60,18 @@ func NewDocumentDesignHandler(appCtx context.Context, service *documentdesign.Se
 		logger = slog.Default()
 	}
 
+	origins := designOriginPatterns(cfg)
+	if cfg.IsLocal() {
+		// Pelonggaran keamanan sebaiknya terlihat di log, supaya tidak pernah
+		// diam-diam aktif di lingkungan yang seharusnya ketat.
+		logger.Warn("document design origin check relaxed for local environment",
+			"patterns", origins)
+	}
+
 	return &DocumentDesignHandler{
 		service: service,
 		logger:  logger,
-		origins: designOriginPatterns(cfg),
+		origins: origins,
 		appCtx:  appCtx,
 	}
 }
@@ -143,14 +151,29 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 
 	// Koneksinya dicatat, tetapi isi dokumen belum dikirim. Klien yang memutuskan
 	// kapan memintanya, lewat pesan document.get.
-	if err := h.service.Attach(documentToken, ticket.UserID); err != nil {
-		h.logger.Warn("attach document design connection", "document", documentToken, "error", err)
+	open, err := h.service.Attach(documentToken, ticket.UserID)
+	if err != nil {
+		h.logger.Warn("attach document design connection",
+			"document", documentToken, "user", ticket.UserID, "open", open, "error", err)
 		// Pesan error dari lapisan usecase memang disusun sebagai frasa yang aman
 		// disampaikan ke klien; detail internalnya berhenti di log.
 		conn.Close(attachCloseStatus(err), closeReason(err.Error()))
 		return
 	}
 	defer h.service.Detach(documentToken, ticket.UserID, subscriber)
+
+	// Handshake WebSocket dilayani di luar gin, sehingga tidak menghasilkan baris
+	// access log seperti rute lain. Dua baris ini penggantinya — tanpanya koneksi
+	// yang berhasil sama sekali tidak berjejak, dan hanya kegagalannya yang
+	// terlihat.
+	connectedAt := time.Now()
+	h.logger.Info("document design connected",
+		"document", documentToken, "user", ticket.UserID, "open", open)
+	defer func() {
+		h.logger.Info("document design disconnected",
+			"document", documentToken, "user", ticket.UserID,
+			"duration", time.Since(connectedAt).Round(time.Millisecond))
+	}()
 
 	h.dispatchLoop(connCtx, documentToken, buffer, subscriber)
 
@@ -407,14 +430,52 @@ func (DesignMessageEncoder) EncodeSnapshot(content json.RawMessage, version int6
 	return dto.NewDesignSnapshotMessage(content, version)
 }
 
-// designOriginPatterns membatasi handshake ke host frontend. Bila FrontendURL
-// tidak dapat diurai, nil dikembalikan dan pustaka hanya mengizinkan same-origin,
-// yang merupakan default paling aman.
+// designOriginPatterns membatasi handshake ke host frontend.
+//
+// Bila tidak ada satu pun pola yang terkumpul, nil dikembalikan dan pustaka
+// hanya mengizinkan same-origin — default paling aman.
 func designOriginPatterns(cfg config.Config) []string {
-	parsed, err := url.Parse(cfg.FrontendURL)
-	if err != nil || parsed.Host == "" {
+	patterns := make([]string, 0, 7)
+
+	if parsed, err := url.Parse(cfg.FrontendURL); err == nil && parsed.Host != "" {
+		patterns = append(patterns, parsed.Host)
+	}
+
+	if cfg.IsLocal() {
+		patterns = append(patterns, localOriginPatterns()...)
+	}
+
+	if len(patterns) == 0 {
 		return nil
 	}
 
-	return []string{parsed.Host}
+	return patterns
+}
+
+// localOriginPatterns adalah host yang ikut diizinkan saat APP_ENV=local.
+//
+// Di mesin sendiri, port dan subdomain berganti mengikuti cara frontend
+// dijalankan — localhost:3000, portal.localhost:3000, dan seterusnya — sehingga
+// menyetel ulang FRONTEND_URL setiap kali hanya menghambat.
+//
+// Pelonggarannya tetap terkurung pada loopback. Akhiran .localhost adalah TLD
+// yang dicadangkan RFC 6761 dan tidak dapat didaftarkan publik, jadi tidak ada
+// host luar yang bisa menyamar lewat pola ini.
+//
+// Pencocokannya memakai path.Match, tempat * mencakup apa saja selain garis
+// miring. Karena itu pola seperti "localhost*" sengaja dihindari: ia juga akan
+// cocok dengan localhost.evil.com. Setiap pola di bawah menambatkan nama host
+// secara utuh, dan hanya bagian port yang dibebaskan.
+//
+// IPv6 tidak disertakan: path.Match memperlakukan "[" sebagai pembuka kelas
+// karakter, sehingga pola untuk [::1] akan diartikan sama sekali lain.
+func localOriginPatterns() []string {
+	return []string{
+		"localhost",
+		"localhost:*",
+		"*.localhost",
+		"*.localhost:*",
+		"127.0.0.1",
+		"127.0.0.1:*",
+	}
 }

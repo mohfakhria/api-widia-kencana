@@ -101,14 +101,17 @@ func (s *Service) Redeem(key, documentToken string) (Ticket, error) {
 // dokumen lewat Sync. Setiap Attach yang berhasil wajib diimbangi tepat satu
 // Detach dengan userID yang sama, kalau tidak kuotanya bocor dan user itu
 // perlahan terkunci sendiri.
-func (s *Service) Attach(documentToken, userID string) error {
-	if !s.connections.acquire(userID) {
-		return domain.NewError(domain.ErrTooManyRequests, "too many concurrent design connections")
+// Mengembalikan jumlah koneksi yang kini dipegang user tersebut, untuk dicatat
+// pemanggil.
+func (s *Service) Attach(documentToken, userID string) (int, error) {
+	open, ok := s.connections.acquire(userID)
+	if !ok {
+		return open, domain.NewError(domain.ErrTooManyRequests, "too many concurrent design connections")
 	}
 
 	s.rooms.attach(documentToken)
 
-	return nil
+	return open, nil
 }
 
 // Sync meminta room mengirimkan snapshot ke koneksi ini dan menjadikannya

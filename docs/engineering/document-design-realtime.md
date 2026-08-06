@@ -76,6 +76,21 @@ ws://localhost:8081/document-design/{documentToken}?ticket={ticket}
 Header `Origin` diperiksa terhadap `FRONTEND_URL` di backend. Bila tidak cocok,
 handshake ditolak **HTTP 403 sebelum upgrade**.
 
+Saat `APP_ENV=local`, seluruh host loopback ikut diizinkan tanpa perlu menyetel
+`FRONTEND_URL` setiap kali port atau subdomain berganti:
+
+```
+localhost           localhost:<port>
+*.localhost         *.localhost:<port>      ← portal.localhost:3000, dan seterusnya
+127.0.0.1           127.0.0.1:<port>
+```
+
+Pelonggaran ini **hanya** berlaku pada `APP_ENV=local` — staging maupun produksi
+tetap terkurung pada `FRONTEND_URL`. Ia juga tetap terbatas pada loopback:
+`.localhost` adalah TLD yang dicadangkan RFC 6761 dan tidak dapat didaftarkan
+publik, sehingga `localhost.evil.com` tetap ditolak. Backend mencatat peringatan
+saat start bila pelonggaran ini aktif.
+
 > **Browser tidak dapat membaca status HTTP dari handshake WebSocket yang gagal.**
 > Penolakan `Origin` akan tampak sama persis dengan jaringan mati. Bila koneksi
 > gagal tanpa `CloseEvent` yang berarti, tersangka pertama adalah `FRONTEND_URL`
@@ -104,6 +119,29 @@ pernah tersimpan lebih buruk daripada menghentikannya.
 Room yang bermasalah **sebelum** frontend menjadi anggota — misalnya isinya cacat
 di database — tidak menutup koneksi; ia dibalas pesan `error` berkode
 `document_unavailable`. Lihat bagian berikutnya.
+
+### `1006` punya dua sebab yang sangat berbeda
+
+Handshake yang ditolak — `Origin` tidak diizinkan, atau backend tidak terjangkau
+— gagal **sebelum** upgrade, sehingga tidak ada close frame sama sekali. Browser
+melaporkannya sebagai `1006`, sama persis dengan jaringan yang putus di tengah
+sesi. Keduanya butuh tindakan yang berlawanan.
+
+Pembedanya murah: catat apakah `onopen` pernah menyala.
+
+| | Sebab | Tindakan |
+|---|---|---|
+| `1006` setelah `onopen` menyala | Jaringan putus, server berhenti | Backoff seperti biasa |
+| `1006` tanpa `onopen` pernah menyala | Handshake ditolak — `Origin`, URL, atau backend mati | **Berhenti setelah 2–3 percobaan** dan tampilkan pesan konfigurasi |
+
+Yang kedua tidak akan sembuh dengan menunggu. Mencoba terus hanya menghasilkan
+percobaan tanpa akhir tanpa petunjuk apa pun di sisi browser — sementara log
+backend sebenarnya sudah menyebutkan `Origin` yang ditolak beserta `Host` yang
+diharapkan.
+
+Catatan: saat backend berhenti secara wajar, klien pun kemungkinan besar melihat
+`1006`, bukan `1000` — socket sudah tertutup sebelum close frame sempat terkirim.
+Tindakannya sama, jadi tidak ada yang perlu dibedakan.
 
 ### Batas koneksi
 
@@ -184,12 +222,20 @@ bagian [Versi](#5-versi) untuk penggantinya.
 { "type": "error", "code": "unsupported_message_type", "message": "…" }
 ```
 
-| Code | Arti |
-|---|---|
-| `malformed_message` | JSON tidak dapat diurai; **buang antrean optimistik dan `document.get` ulang** |
-| `missing_message_type` | Field `type` kosong atau tidak ada |
-| `unsupported_message_type` | Jenis pesan belum didukung backend |
-| `document_unavailable` | Room tidak dapat melayani `document.get`; pesannya menjelaskan sebabnya, misalnya `document content is malformed`. Koneksi **tetap terbuka** — mencoba lagi beberapa detik kemudian bisa berhasil, karena room yang bermasalah dibuang setelah masa tenggangnya lalu dimuat ulang |
+> **Pesan `error` tidak menutup koneksi.** Ia jalur yang terpisah sama sekali dari
+> close code, dan menyambung ulang **bukan** tindakan yang tepat untuk salah satu
+> pun di antaranya.
+
+| Code | Arti | Tindakan |
+|---|---|---|
+| `document_unavailable` | Room tidak dapat melayani `document.get`; pesannya menyebut sebabnya, misalnya `document content is malformed` | Tunggu belasan detik, lalu kirim `document.get` lagi. Room yang bermasalah dibuang setelah masa tenggangnya dan dimuat ulang, sehingga percobaan berikutnya sering berhasil. **Jangan** sambung ulang koneksinya |
+| `malformed_message` | JSON tidak dapat diurai, sehingga backend tidak tahu pesan mana yang dimaksud | Buang antrean optimistik, kirim `document.get` untuk memulai bersih |
+| `missing_message_type` | Field `type` kosong atau tidak ada | Bug frontend |
+| `unsupported_message_type` | Jenis pesan belum didukung backend | Bug frontend, atau fitur yang memang belum ada |
+
+Bila `document_unavailable` diabaikan, antarmuka akan menggantung dengan kanvas
+kosong tanpa tanda apa pun — koneksinya hidup, hanya isinya yang tidak pernah
+datang.
 
 ---
 
@@ -291,8 +337,14 @@ async function openDesign(documentToken, accessToken) {
   const ws = new WebSocket(`${WS}/document-design/${documentToken}?ticket=${ticket}`);
   let localVersion = -1;
 
+  // Pembeda antara handshake yang ditolak dan jaringan yang putus di tengah.
+  let everOpened = false;
+
   // 2. Server diam sampai diminta.
-  ws.onopen = () => ws.send(JSON.stringify({ type: 'document.get' }));
+  ws.onopen = () => {
+    everOpened = true;
+    ws.send(JSON.stringify({ type: 'document.get' }));
+  };
 
   ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
@@ -303,30 +355,51 @@ async function openDesign(documentToken, accessToken) {
       return;
     }
 
-    if (message.type === 'error') {
-      if (message.code === 'malformed_message') {
+    if (message.type !== 'error') return;
+
+    // Pesan error TIDAK menutup koneksi. Menyambung ulang bukan jawabannya.
+    switch (message.code) {
+      case 'document_unavailable':
+        // Room bermasalah; ia dimuat ulang setelah masa tenggangnya habis.
+        return setTimeout(() => ws.send(JSON.stringify({ type: 'document.get' })), 15000);
+      case 'malformed_message':
         // Tidak ada yang dapat dikorelasikan; mulai bersih.
-        ws.send(JSON.stringify({ type: 'document.get' }));
-        return;
-      }
-      console.warn('server menolak:', message.code, message.message);
+        return ws.send(JSON.stringify({ type: 'document.get' }));
+      default:
+        return console.warn('server menolak:', message.code, message.message);
     }
   };
 
   ws.onclose = (event) => {
     switch (event.code) {
-      case 1008:                                   // tiket basi
-        return openDesign(documentToken, accessToken);
+      case 1008:                                   // tiket basi — selalu ambil tiket baru
+        return retryWithNewTicket();
       case 1013:                                   // batas koneksi
-        return setTimeout(() => openDesign(documentToken, accessToken), 5000);
-      case 1011:                                   // tidak dapat dilayani
+        return setTimeout(retryWithNewTicket, 5000);
+      case 1011:                                   // room berhenti melayani
+      case 1003:                                   // frame biner: bug frontend
         return showError(event.reason);
       default:
-        return scheduleReconnect();
+        if (!everOpened) {
+          // Handshake ditolak — Origin, URL, atau backend mati. Menunggu tidak
+          // akan menyembuhkannya; log backend menyebutkan sebabnya.
+          return showConfigurationError();
+        }
+        return scheduleReconnect();   // jaringan putus: backoff biasa
     }
   };
 
   return ws;
+}
+```
+
+Setiap jalur penyambungan ulang — termasuk backoff — **wajib menerbitkan tiket
+baru**. Tiket lama sudah hangus atau kedaluwarsa, dan memakainya kembali hanya
+menghasilkan `1008` yang menyesatkan.
+
+```js
+function retryWithNewTicket() {
+  return openDesign(documentToken, accessToken);   // selalu mulai dari langkah 1
 }
 ```
 
@@ -338,7 +411,9 @@ async function openDesign(documentToken, accessToken) {
 mengambil tiket baru.
 
 **Kegagalan `Origin` tidak terlihat dari browser.** Tidak ada status, tidak ada
-`reason`. Periksa `FRONTEND_URL` di backend.
+`reason`. Periksa `FRONTEND_URL` — atau pastikan `APP_ENV=local` bila frontend
+dijalankan di host loopback selain itu. Log backend menyebutkan `Origin` yang
+ditolak beserta `Host` yang diharapkan.
 
 **Access token harus segar dulu.** `401` pada endpoint tiket berarti alur refresh
 token yang bermasalah, bukan WebSocket.
