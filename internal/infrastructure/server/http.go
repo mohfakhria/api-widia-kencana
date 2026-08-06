@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 )
 
@@ -14,7 +13,7 @@ type HTTPServer struct {
 	server *http.Server
 }
 
-func NewHTTPServer(cfg config.Config, handler *gin.Engine) *HTTPServer {
+func NewHTTPServer(cfg config.Config, handler http.Handler) *HTTPServer {
 	return &HTTPServer{
 		server: &http.Server{
 			Addr:              cfg.Address(),

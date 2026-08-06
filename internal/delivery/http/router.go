@@ -1,6 +1,7 @@
 package http
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
@@ -12,20 +13,21 @@ import (
 )
 
 type RouterDeps struct {
-	Config               config.Config
-	TokenSigner          output.TokenSigner
-	AssetHandler         *AssetHandler
-	AuthHandler          *AuthHandler
-	DocumentHandler      *DocumentHandler
-	ProjectHandler       *ProjectHandler
-	PurchaseOrderHandler *PurchaseOrderHandler
-	QuotationHandler     *QuotationHandler
-	WorkflowHandler      *WorkflowHandler
-	WorkflowStageHandler *WorkflowStageHandler
-	WorkflowStepHandler  *WorkflowStepHandler
+	Config                config.Config
+	TokenSigner           output.TokenSigner
+	AssetHandler          *AssetHandler
+	AuthHandler           *AuthHandler
+	DocumentHandler       *DocumentHandler
+	DocumentDesignHandler *DocumentDesignHandler
+	ProjectHandler        *ProjectHandler
+	PurchaseOrderHandler  *PurchaseOrderHandler
+	QuotationHandler      *QuotationHandler
+	WorkflowHandler       *WorkflowHandler
+	WorkflowStageHandler  *WorkflowStageHandler
+	WorkflowStepHandler   *WorkflowStepHandler
 }
 
-func NewRouter(deps RouterDeps) *gin.Engine {
+func NewRouter(deps RouterDeps) http.Handler {
 	r := gin.Default()
 	r.Use(corsMiddleware(deps.Config))
 
@@ -56,6 +58,7 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/document-add", deps.DocumentHandler.Create)
 		protected.PUT("/document-update/:token", deps.DocumentHandler.Update)
 		protected.DELETE("/document-delete/:token", deps.DocumentHandler.Delete)
+		protected.POST("/document-design-ticket/:token", deps.DocumentDesignHandler.IssueTicket)
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)
@@ -86,7 +89,16 @@ func NewRouter(deps RouterDeps) *gin.Engine {
 		protected.POST("/quotation-add", deps.QuotationHandler.Create)
 	}
 
-	return r
+	// Handshake WebSocket dilayani di luar gin. Upgrade harus mengambil alih
+	// koneksi mentah, sedangkan gin v1.11 menolak hijack begitu responsnya
+	// tersentuh. Selain itu handshake tidak melewati AuthRequired karena browser
+	// tidak bisa mengirim header Authorization; pengamanannya berupa tiket
+	// sekali pakai dari endpoint terproteksi di atas, plus pemeriksaan Origin.
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /document-design/{token}", deps.DocumentDesignHandler.Connect)
+	mux.Handle("/", r)
+
+	return mux
 }
 
 func corsMiddleware(cfg config.Config) gin.HandlerFunc {

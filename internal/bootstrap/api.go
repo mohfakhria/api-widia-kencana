@@ -14,6 +14,7 @@ import (
 	memorystore "github.com/mohfakhria/api-widia-kencana/internal/persistence/memory"
 	pg "github.com/mohfakhria/api-widia-kencana/internal/persistence/postgres"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
@@ -70,18 +71,23 @@ func (a *ApiApp) initialize() error {
 	)
 	assetUC := usecase.NewAssetUseCase(pg.NewAssetRepository(a.db), a.objectStorage)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
-	documentUC := usecase.NewDocumentUseCase(pg.NewDocumentRepository(a.db))
+	documentRepo := pg.NewDocumentRepository(a.db)
+	documentUC := usecase.NewDocumentUseCase(documentRepo)
+	documentDesign := documentdesign.NewService(documentRepo)
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
 	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))
 	workflowStepUC := usecase.NewWorkflowStepUseCase(pg.NewWorkflowStepRepository(a.db))
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
-		Config:               a.Config,
-		TokenSigner:          tokenSigner,
-		AssetHandler:         deliveryhttp.NewAssetHandler(assetUC),
-		AuthHandler:          deliveryhttp.NewAuthHandler(authUC, a.Config),
-		DocumentHandler:      deliveryhttp.NewDocumentHandler(documentUC),
+		Config:          a.Config,
+		TokenSigner:     tokenSigner,
+		AssetHandler:    deliveryhttp.NewAssetHandler(assetUC),
+		AuthHandler:     deliveryhttp.NewAuthHandler(authUC, a.Config),
+		DocumentHandler: deliveryhttp.NewDocumentHandler(documentUC),
+		DocumentDesignHandler: deliveryhttp.NewDocumentDesignHandler(
+			a.Context, documentDesign, a.Config, a.ServiceLogger,
+		),
 		ProjectHandler:       deliveryhttp.NewProjectHandler(projectUC),
 		PurchaseOrderHandler: deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
 		QuotationHandler:     deliveryhttp.NewQuotationHandler(quotationUC),
@@ -92,6 +98,7 @@ func (a *ApiApp) initialize() error {
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),
 		refreshTokenStore,
+		documentDesign,
 	}
 
 	return nil
