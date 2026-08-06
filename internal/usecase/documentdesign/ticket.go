@@ -10,9 +10,23 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 )
 
-// TicketTTL sengaja pendek. Tiket hanya perlu bertahan dari saat frontend
-// menerimanya sampai handshake WebSocket dibuka, yang berlangsung sekejap.
-const TicketTTL = 30 * time.Second
+const (
+	// TicketTTL sengaja pendek. Tiket hanya perlu bertahan dari saat frontend
+	// menerimanya sampai handshake WebSocket dibuka, yang berlangsung sekejap.
+	TicketTTL = 30 * time.Second
+
+	// maxTicketsPerUser membatasi jumlah tiket hidup milik satu user.
+	//
+	// Secara sah hanya perlu satu tiket per percobaan koneksi; lima sudah
+	// menutup beberapa tab sekaligus percobaan ulang. Tanpa batas ini, satu user
+	// yang memanggil endpoint tiket berulang-ulang dapat menumbuhkan peta tiket
+	// tanpa henti.
+	maxTicketsPerUser = 5
+
+	// ticketCleanupInterval dibuat lebih rapat daripada TicketTTL. Bila keduanya
+	// sama, tiket basi bisa bertahan hampir dua kali umurnya sebelum tersapu.
+	ticketCleanupInterval = 10 * time.Second
+)
 
 // Ticket adalah hasil penukaran, berisi siapa yang terhubung dan ke dokumen mana.
 type Ticket struct {
@@ -29,13 +43,20 @@ type ticketEntry struct {
 //
 // Tipe konkret tanpa interface: hanya ada satu implementasi yang masuk akal,
 // dan tiket berumur 30 detik memang tidak pantas dipersistenkan.
+//
+// byUser adalah index balik dari user ke tiket miliknya, dipakai untuk menegakkan
+// maxTicketsPerUser tanpa menyapu seluruh peta tiket setiap kali menerbitkan.
 type ticketStore struct {
 	mu      sync.Mutex
 	tickets map[string]ticketEntry
+	byUser  map[string]map[string]struct{}
 }
 
 func newTicketStore() *ticketStore {
-	return &ticketStore{tickets: make(map[string]ticketEntry)}
+	return &ticketStore{
+		tickets: make(map[string]ticketEntry),
+		byUser:  make(map[string]map[string]struct{}),
+	}
 }
 
 func (s *ticketStore) issue(ticket Ticket, now time.Time) (string, error) {
@@ -48,7 +69,14 @@ func (s *ticketStore) issue(ticket Ticket, now time.Time) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.enforceUserQuotaLocked(ticket.UserID, now)
+
 	s.tickets[key] = ticketEntry{ticket: ticket, expiresAt: now.Add(TicketTTL)}
+	if s.byUser[ticket.UserID] == nil {
+		s.byUser[ticket.UserID] = make(map[string]struct{})
+	}
+	s.byUser[ticket.UserID][key] = struct{}{}
+
 	return key, nil
 }
 
@@ -62,7 +90,7 @@ func (s *ticketStore) redeem(key string, now time.Time) (Ticket, error) {
 	if !ok {
 		return Ticket{}, domain.NewError(domain.ErrUnauthorized, "invalid design ticket")
 	}
-	delete(s.tickets, key)
+	s.removeLocked(key)
 
 	if now.After(entry.expiresAt) {
 		return Ticket{}, domain.NewError(domain.ErrUnauthorized, "design ticket expired")
@@ -77,7 +105,72 @@ func (s *ticketStore) evictExpired(now time.Time) {
 
 	for key, entry := range s.tickets {
 		if now.After(entry.expiresAt) {
-			delete(s.tickets, key)
+			s.removeLocked(key)
 		}
+	}
+}
+
+// enforceUserQuotaLocked menyisihkan tiket kedaluwarsa milik satu user, lalu
+// membuang yang tertua sampai kuotanya menyisakan tempat.
+//
+// Yang tertua dibuang, bukan permintaan barunya yang ditolak, supaya user yang
+// sekadar membuka banyak tab tidak terkunci dari dokumennya sendiri. Tiket lama
+// yang belum sempat dipakai memang paling kecil kemungkinannya masih dinanti.
+func (s *ticketStore) enforceUserQuotaLocked(userID string, now time.Time) {
+	for key := range s.byUser[userID] {
+		entry, ok := s.tickets[key]
+		if !ok {
+			// Index dan penyimpanan tidak sinkron; rapikan indexnya saja.
+			delete(s.byUser[userID], key)
+			continue
+		}
+		if now.After(entry.expiresAt) {
+			s.removeLocked(key)
+		}
+	}
+
+	for len(s.byUser[userID]) >= maxTicketsPerUser {
+		oldest, ok := s.oldestLocked(userID)
+		if !ok {
+			break
+		}
+		s.removeLocked(oldest)
+	}
+}
+
+// oldestLocked mencari tiket paling tua milik satu user. Karena seluruh tiket
+// memakai TTL yang sama, kedaluwarsa paling awal berarti diterbitkan paling awal.
+// Penyapuan linear tidak jadi soal: panjangnya dibatasi maxTicketsPerUser.
+func (s *ticketStore) oldestLocked(userID string) (string, bool) {
+	var (
+		oldestKey string
+		oldestAt  time.Time
+		found     bool
+	)
+
+	for key := range s.byUser[userID] {
+		entry, ok := s.tickets[key]
+		if !ok {
+			continue
+		}
+		if !found || entry.expiresAt.Before(oldestAt) {
+			oldestKey, oldestAt, found = key, entry.expiresAt, true
+		}
+	}
+
+	return oldestKey, found
+}
+
+func (s *ticketStore) removeLocked(key string) {
+	entry, ok := s.tickets[key]
+	if !ok {
+		return
+	}
+	delete(s.tickets, key)
+
+	tickets := s.byUser[entry.ticket.UserID]
+	delete(tickets, key)
+	if len(tickets) == 0 {
+		delete(s.byUser, entry.ticket.UserID)
 	}
 }

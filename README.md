@@ -5,6 +5,7 @@ Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utam
 ## Features
 
 - Authentication dengan access token JWT dan refresh token via HttpOnly cookie.
+- Document designer realtime lewat WebSocket, diamankan tiket handshake sekali pakai.
 - Encrypted JWT subject claim untuk menghindari expose raw user id di token.
 - Asset management dengan presigned upload/download URL.
 - Quotation management dengan list/detail/create/update.
@@ -158,6 +159,8 @@ Postman collection tersedia di:
 
 - `docs/collection/auth.json`
 - `docs/collection/asset.json`
+- `docs/collection/document.json`
+- `docs/collection/document_design.json`
 - `docs/collection/quotation.json`
 - `docs/collection/purchase_order.json`
 - `docs/collection/project.json`
@@ -190,6 +193,9 @@ GET    /api/document-detail/:token
 POST   /api/document-add
 PUT    /api/document-update/:token
 DELETE /api/document-delete/:token
+
+POST   /api/document-design-ticket/:token
+WS     /document-design/:token?ticket=
 
 GET    /api/quotation-list
 GET    /api/quotation-detail/:id

@@ -647,6 +647,67 @@
         {
             "item": [
                 {
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Ticket response has design ticket\", function () {",
+                                    "  var jsonData = pm.response.json();",
+                                    "  pm.expect(jsonData).to.have.property(\"data\");",
+                                    "  pm.expect(jsonData.data.design_ticket).to.have.property(\"ticket\");",
+                                    "});",
+                                    "",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData \u0026\u0026 jsonData.data \u0026\u0026 jsonData.data.design_ticket \u0026\u0026 jsonData.data.design_ticket.ticket) {",
+                                    "  var ticket = jsonData.data.design_ticket.ticket;",
+                                    "  pm.collectionVariables.set(\"design_ticket\", ticket);",
+                                    "",
+                                    "  // http:// menjadi ws://, https:// menjadi wss://",
+                                    "  var baseUrl = pm.collectionVariables.get(\"base_url\") || \"\";",
+                                    "  var socketBase = baseUrl.replace(/^http/, \"ws\");",
+                                    "  var documentToken = pm.collectionVariables.get(\"document_token\") || \"\";",
+                                    "  var socketUrl = socketBase + \"/document-design/\" + documentToken + \"?ticket=\" + ticket;",
+                                    "",
+                                    "  pm.collectionVariables.set(\"design_socket_url\", socketUrl);",
+                                    "  console.log(\"WebSocket URL (berlaku \" + jsonData.data.design_ticket.expires_in + \" detik):\");",
+                                    "  console.log(socketUrl);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "name": "Issue Design Ticket",
+                    "request": {
+                        "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "document-design-ticket",
+                                "{{document_token}}"
+                            ],
+                            "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}"
+                        }
+                    },
+                    "response": []
+                }
+            ],
+            "name": "Document Design"
+        },
+        {
+            "item": [
+                {
                     "name": "List Projects",
                     "request": {
                         "header": [
@@ -2088,6 +2149,14 @@
         },
         {
             "key": "document_paper_token",
+            "value": ""
+        },
+        {
+            "key": "design_ticket",
+            "value": ""
+        },
+        {
+            "key": "design_socket_url",
             "value": ""
         }
     ]

@@ -1,0 +1,88 @@
+{
+    "info": {
+        "_postman_id": "5c1f2a90-8d63-4b71-9a2e-7f6c0d4e2b18",
+        "name": "Widia Kencana - Document Design",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": "Realtime document designer.\n\nAlur:\n\n1. Panggil `Issue Design Ticket` untuk mendapat tiket sekali pakai. Skrip test-nya menyimpan tiket ke variabel `design_ticket` dan menyusun URL lengkapnya ke `design_socket_url`.\n2. Buka WebSocket ke `design_socket_url` dalam 30 detik. Tiket hangus setelah dipakai sekali dan setelah kedaluwarsa.\n3. Pesan pertama dari server selalu `snapshot` berisi seluruh isi dokumen.\n\nHandshake tidak memakai header `Authorization` karena `WebSocket` di browser tidak dapat mengirimnya. Tiket dipakai sebagai gantinya, dan access token sengaja tidak ditaruh di query string karena query string masuk ke access log dan log proxy.\n\nHeader `Origin` diperiksa terhadap `FRONTEND_URL`, tetapi hanya bila header itu ada. Klien non-browser seperti Postman tidak mengirimkannya dan tetap diterima; pemeriksaan `Origin` memang perisai terhadap serangan lintas situs dari browser, bukan pengganti tiket.\n\nCATATAN: koneksi WebSocket tidak dapat dijalankan dari item koleksi ini. Skema Postman v2.1.0 yang dipakai seluruh berkas di folder ini tidak mendefinisikan request WebSocket. Buat `New > WebSocket Request` di aplikasi Postman lalu tempel isi `design_socket_url`.\n\nPesan server ke klien:\n\n```\n{\"type\":\"snapshot\",\"version\":0,\"content\":{\"pages\":[]}}\n{\"type\":\"error\",\"seq\":7,\"code\":\"unsupported_message_type\",\"message\":\"...\"}\n```\n\nPesan klien ke server harus JSON dalam text frame. Frame biner ditolak dengan close code 1003. Batas satu pesan 1 MB.\n\nKode error yang sudah ada: `malformed_message`, `missing_message_type`, `unsupported_message_type`.\n\nPenerapan perubahan belum dibangun, sehingga semua jenis pesan masih dibalas `unsupported_message_type`.\n\nServer mengirim ping tiap 30 detik dan menunggu pong 10 detik. Koneksi yang tidak membalas diputus."
+    },
+    "item": [
+        {
+            "name": "Issue Design Ticket",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "document-design-ticket",
+                        "{{document_token}}"
+                    ]
+                },
+                "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu."
+            },
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "pm.test(\"Ticket response has design ticket\", function () {",
+                            "  var jsonData = pm.response.json();",
+                            "  pm.expect(jsonData).to.have.property(\"data\");",
+                            "  pm.expect(jsonData.data.design_ticket).to.have.property(\"ticket\");",
+                            "});",
+                            "",
+                            "var jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.data && jsonData.data.design_ticket && jsonData.data.design_ticket.ticket) {",
+                            "  var ticket = jsonData.data.design_ticket.ticket;",
+                            "  pm.collectionVariables.set(\"design_ticket\", ticket);",
+                            "",
+                            "  // http:// menjadi ws://, https:// menjadi wss://",
+                            "  var baseUrl = pm.collectionVariables.get(\"base_url\") || \"\";",
+                            "  var socketBase = baseUrl.replace(/^http/, \"ws\");",
+                            "  var documentToken = pm.collectionVariables.get(\"document_token\") || \"\";",
+                            "  var socketUrl = socketBase + \"/document-design/\" + documentToken + \"?ticket=\" + ticket;",
+                            "",
+                            "  pm.collectionVariables.set(\"design_socket_url\", socketUrl);",
+                            "  console.log(\"WebSocket URL (berlaku \" + jsonData.data.design_ticket.expires_in + \" detik):\");",
+                            "  console.log(socketUrl);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8081"
+        },
+        {
+            "key": "token",
+            "value": ""
+        },
+        {
+            "key": "document_token",
+            "value": ""
+        },
+        {
+            "key": "design_ticket",
+            "value": ""
+        },
+        {
+            "key": "design_socket_url",
+            "value": ""
+        }
+    ]
+}

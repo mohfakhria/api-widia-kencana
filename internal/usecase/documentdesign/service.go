@@ -81,7 +81,7 @@ func (s *Service) Name() string {
 }
 
 func (s *Service) Run(ctx context.Context) error {
-	ticker := time.NewTicker(TicketTTL)
+	ticker := time.NewTicker(ticketCleanupInterval)
 	defer ticker.Stop()
 
 	for {
