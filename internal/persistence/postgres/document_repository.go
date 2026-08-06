@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
@@ -146,6 +148,83 @@ func (r *DocumentRepository) Delete(ctx context.Context, token string) error {
 	}
 
 	return ensureDocumentAffected(result, "document not found")
+}
+
+func (r *DocumentRepository) GetContent(ctx context.Context, token string) (*entity.DocumentContent, error) {
+	var (
+		raw     []byte
+		version int64
+	)
+
+	err := r.db.QueryRowContext(ctx, `
+		SELECT content, content_version
+		FROM documents
+		WHERE token = $1::uuid
+			AND status <> 'deleted'
+	`, token).Scan(&raw, &version)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.NewError(domain.ErrNotFound, "document not found")
+		}
+		return nil, err
+	}
+
+	return &entity.DocumentContent{
+		Token:   token,
+		Content: json.RawMessage(raw),
+		Version: version,
+	}, nil
+}
+
+func (r *DocumentRepository) SaveContent(ctx context.Context, token string, content json.RawMessage, fromVersion, toVersion int64) error {
+	// content dikirim sebagai string, bukan []byte: lib/pq mengencode []byte
+	// sebagai bytea, yang tidak dapat di-assign ke kolom jsonb.
+	result, err := r.db.ExecContext(ctx, `
+		UPDATE documents
+		SET content = $1,
+			content_version = $2,
+			updated_at = NOW()
+		WHERE token = $3::uuid
+			AND status <> 'deleted'
+			AND content_version = $4
+	`, string(content), toVersion, token, fromVersion)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return r.explainSaveContentFailure(ctx, token, fromVersion)
+	}
+
+	return nil
+}
+
+// saveFailureLookupTimeout memberi pemeriksaan penyebab kegagalan tenggatnya
+// sendiri, terlepas dari sisa tenggat pemanggil.
+const saveFailureLookupTimeout = 2 * time.Second
+
+// explainSaveContentFailure membedakan dokumen yang hilang dari versi yang sudah
+// bergeser, supaya pemanggil tahu apakah perlu memuat ulang atau menyerah.
+func (r *DocumentRepository) explainSaveContentFailure(ctx context.Context, token string, fromVersion int64) error {
+	// Context sendiri, lepas dari milik pemanggil. Bila UPDATE tadi sudah
+	// menghabiskan hampir seluruh tenggatnya, query ini akan gagal karena deadline
+	// dan kegagalan permanen justru tersamar menjadi kegagalan sementara — lalu
+	// dicoba berulang kali padahal dokumennya memang sudah tidak ada.
+	lookupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), saveFailureLookupTimeout)
+	defer cancel()
+
+	current, err := r.GetContent(lookupCtx, token)
+	if err != nil {
+		return err
+	}
+
+	return domain.NewError(domain.ErrConflict, fmt.Sprintf(
+		"document content version mismatch: expected %d, found %d", fromVersion, current.Version,
+	))
 }
 
 func (r *DocumentRepository) getDocumentPaperIDByToken(ctx context.Context, token string) (int64, error) {

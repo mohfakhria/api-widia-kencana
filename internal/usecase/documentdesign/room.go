@@ -3,22 +3,57 @@ package documentdesign
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"log/slog"
+	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
-// roomInboxSize membatasi berapa kejadian yang boleh mengantre menuju satu room.
-// Pengirim yang menemukannya penuh akan menunggu, sehingga penyunting yang lebih
-// cepat daripada laju penerapan tertahan alih-alih menumbuhkan antrean.
-const roomInboxSize = 64
+const (
+	// roomInboxSize membatasi berapa kejadian yang boleh mengantre menuju satu
+	// room. Pengirim yang menemukannya penuh akan menunggu, sehingga penyunting
+	// yang lebih cepat daripada laju penerapan tertahan alih-alih menumbuhkan
+	// antrean.
+	roomInboxSize = 64
+
+	// flushInterval adalah jarak antar penyimpanan ke database. Kerugian maksimal
+	// saat proses mati mendadak sebesar ini, selalu.
+	flushInterval = 2 * time.Second
+
+	contentLoadTimeout = 5 * time.Second
+
+	// contentSaveTimeout membatasi satu kali penulisan. Tiga detik sudah lebih
+	// dari cukup untuk memperbarui satu baris; bila lebih lama dari itu ada yang
+	// tidak beres, dan mencoba lagi pada denyut berikutnya adalah jawaban yang
+	// benar.
+	contentSaveTimeout = 3 * time.Second
+
+	// drainSaveWait sengaja LEBIH PANJANG daripada contentSaveTimeout.
+	//
+	// Goroutine penyimpan selalu mengirim hasilnya dalam batas tenggatnya
+	// sendiri, jadi penantian yang lebih panjang membuat hasil itu praktis selalu
+	// tiba lebih dulu. Bila keduanya disamakan, timer dapat menang tipis dan
+	// drain menyerah tepat sebelum hasilnya datang — lalu keluar tanpa pernah
+	// mencoba penyimpanan terakhir. Cabang timeout di bawah hanya menjaga
+	// kemungkinan driver yang mengabaikan context.
+	drainSaveWait = contentSaveTimeout + time.Second
+)
 
 // Subscriber adalah satu koneksi yang menerima siaran dari room.
 //
 // Send wajib tidak memblokir. Orchestrator memanggilnya saat menyiarkan, dan
 // implementasi yang menunggu I/O akan menghentikan seluruh penyuntingan dokumen
-// itu hanya karena satu klien lambat.
+// itu hanya karena satu klien lambat. Disconnect tunduk pada aturan yang sama.
 type Subscriber interface {
 	Send(payload []byte)
+
+	// Disconnect memutus koneksi ini beserta alasannya. Dipanggil ketika room
+	// tidak lagi dapat melayani — membiarkan orang menyunting sesuatu yang tidak
+	// akan pernah tersimpan jauh lebih buruk daripada memutusnya.
+	Disconnect(reason string)
 }
 
 // Snapshot adalah isi dokumen pada satu titik waktu.
@@ -34,10 +69,15 @@ type roomEvent interface {
 	isRoomEvent()
 }
 
+type joinResult struct {
+	snapshot Snapshot
+	err      error
+}
+
 type joinEvent struct {
 	subscriber Subscriber
 	// Arah channel dinyatakan lewat tipe: orchestrator hanya boleh mengirim.
-	reply chan<- Snapshot
+	reply chan<- joinResult
 }
 
 type leaveEvent struct {
@@ -46,6 +86,12 @@ type leaveEvent struct {
 
 func (joinEvent) isRoomEvent()  {}
 func (leaveEvent) isRoomEvent() {}
+
+// saveResult dikirim goroutine penyimpan kembali ke orchestrator.
+type saveResult struct {
+	version int64
+	err     error
+}
 
 // emptyContent dikembalikan sebagai nilai baru tiap pemanggilan, bukan sebagai
 // variabel package, supaya tidak ada pemanggil yang bisa mengubah isi bersama.
@@ -59,14 +105,13 @@ func emptyContent() json.RawMessage {
 // orchestrator, sehingga tidak pernah ada dua penyuntingan yang berjalan
 // bersamaan pada dokumen yang sama. Urutan penerapan adalah urutan inbox, bukan
 // hasil undian penjadwal.
-//
-// Pada tahap ini isinya lahir kosong dan hilang saat proses berakhir. Pemuatan
-// dan penyimpanan ke database menyusul, dan tempatnya nanti adalah select yang
-// sama di run().
 type Room struct {
-	token string
+	token     string
+	documents output.DocumentRepository
+	logger    *slog.Logger
 
 	inbox chan roomEvent
+	saved chan saveResult
 
 	// stop ditutup manager untuk menghentikan orchestrator; done ditutup
 	// orchestrator saat benar-benar berhenti. Pengirim memakai done sebagai
@@ -77,23 +122,32 @@ type Room struct {
 	// Field di bawah ini hanya boleh disentuh goroutine run(). Tidak ada mutex,
 	// dan memang tidak boleh ditambahkan: kepemilikan tunggal itulah jaminannya.
 	content json.RawMessage
-	version int64
+	// version adalah nomor revisi di memori; savedVersion adalah nilai version
+	// yang terakhir berhasil ditulis. Kotor berarti keduanya berbeda — bukan
+	// boolean, karena boolean bisa terhapus keliru oleh perubahan yang masuk
+	// selama penulisan berlangsung.
+	version      int64
+	savedVersion int64
+	saving       bool
+	// broken diisi bila room tidak lagi dapat melayani: isinya gagal dimuat, atau
+	// gagal disimpan secara permanen. Sekali terisi, join ditolak dan penyimpanan
+	// tidak dicoba lagi.
+	broken  error
 	members map[Subscriber]struct{}
 }
 
-func newRoom(token string) *Room {
+func newRoom(token string, documents output.DocumentRepository, logger *slog.Logger) *Room {
 	return &Room{
-		token:   token,
-		inbox:   make(chan roomEvent, roomInboxSize),
-		stop:    make(chan struct{}),
-		done:    make(chan struct{}),
-		content: emptyContent(),
-		members: make(map[Subscriber]struct{}),
+		token:     token,
+		documents: documents,
+		logger:    logger,
+		inbox:     make(chan roomEvent, roomInboxSize),
+		saved:     make(chan saveResult, 1),
+		stop:      make(chan struct{}),
+		done:      make(chan struct{}),
+		content:   emptyContent(),
+		members:   make(map[Subscriber]struct{}),
 	}
-}
-
-func (r *Room) Token() string {
-	return r.token
 }
 
 // run adalah orchestrator dokumen ini. Ia dimiliki manager yang menjalankannya
@@ -102,29 +156,191 @@ func (r *Room) Token() string {
 // Inbox sengaja tidak pernah ditutup. Menutupnya berarti pengirim bisa panik
 // ketika mengirim ke channel tertutup; sebagai gantinya orchestrator menutup
 // done saat keluar, dan setiap pengirim menjadikannya jalan keluar.
-func (r *Room) run() {
+func (r *Room) run(ctx context.Context) {
 	defer close(r.done)
+
+	// Pemuatan terjadi sebelum inbox dilayani. Penempel pertama menunggunya lewat
+	// reply channel, penempel berikutnya mengantre di inbox di belakangnya —
+	// sehingga tidak pernah ada dua query untuk dokumen yang sama.
+	r.load(ctx)
+
+	ticker := time.NewTicker(flushInterval)
+	defer ticker.Stop()
 
 	for {
 		select {
 		case <-r.stop:
+			r.drain(ctx)
 			return
 		case event := <-r.inbox:
 			r.handle(event)
+		case result := <-r.saved:
+			r.handleSaved(result)
+		case <-ticker.C:
+			r.flush(ctx)
 		}
 	}
+}
+
+func (r *Room) load(ctx context.Context) {
+	loadCtx, cancel := context.WithTimeout(ctx, contentLoadTimeout)
+	defer cancel()
+
+	stored, err := r.documents.GetContent(loadCtx, r.token)
+	if err != nil {
+		// Room tidak dapat melayani apa pun tanpa isinya. Setiap join ditolak
+		// dengan error ini, penghuni tidak pernah bertambah, dan room tersapu
+		// setelah masa tenggangnya — percobaan berikutnya memuat ulang. Sembuh
+		// sendiri tanpa logika retry.
+		r.broken = fmt.Errorf("load document content: %w", err)
+		r.logger.Error("load document design content", "document", r.token, "error", err)
+		return
+	}
+
+	r.content = stored.Content
+	if len(r.content) == 0 {
+		r.content = emptyContent()
+	}
+	r.version = stored.Version
+	r.savedVersion = stored.Version
 }
 
 func (r *Room) handle(event roomEvent) {
 	switch e := event.(type) {
 	case joinEvent:
+		if r.broken != nil {
+			// reply berkapasitas satu, jadi pengiriman ini tidak pernah menahan
+			// orchestrator walau peminta sudah menyerah menunggu.
+			e.reply <- joinResult{err: r.broken}
+			return
+		}
+
 		r.members[e.subscriber] = struct{}{}
-		// reply berkapasitas satu, jadi pengiriman ini tidak pernah menahan
-		// orchestrator walau peminta sudah menyerah menunggu.
-		e.reply <- Snapshot{Content: r.snapshotContent(), Version: r.version}
+		e.reply <- joinResult{snapshot: Snapshot{
+			Content: r.snapshotContent(),
+			Version: r.version,
+		}}
 	case leaveEvent:
 		delete(r.members, e.subscriber)
 	}
+}
+
+// flush menyerahkan penulisan ke goroutine terpisah.
+//
+// Menulis di dalam orchestrator akan menghentikan seluruh penyuntingan dokumen
+// ini selama query berlangsung — beberapa milidetik pada keadaan normal, tetapi
+// bisa jauh lebih lama saat database tersendat.
+//
+// Paling banyak satu penulisan berjalan per room. Perubahan yang masuk selama
+// penulisan otomatis membuat version melewati versi yang sedang ditulis,
+// sehingga room tetap kotor dan ikut tertulis pada denyut berikutnya.
+func (r *Room) flush(ctx context.Context) {
+	if r.broken != nil || r.saving || r.version == r.savedVersion {
+		return
+	}
+
+	r.saving = true
+	content := r.snapshotContent()
+	fromVersion, toVersion := r.savedVersion, r.version
+
+	go func() {
+		// Penyimpanan sengaja lepas dari pembatalan context aplikasi: memutus
+		// penulisan di tengah jalan hanya membuang pekerjaan pengguna, sedangkan
+		// tenggatnya sudah membatasi.
+		saveCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), contentSaveTimeout)
+		defer cancel()
+
+		err := r.documents.SaveContent(saveCtx, r.token, content, fromVersion, toVersion)
+
+		select {
+		case r.saved <- saveResult{version: toVersion, err: err}:
+		case <-r.done:
+		}
+	}()
+}
+
+func (r *Room) handleSaved(result saveResult) {
+	r.saving = false
+
+	if result.err == nil {
+		r.savedVersion = result.version
+		return
+	}
+
+	if isPermanentSaveFailure(result.err) {
+		r.broken = fmt.Errorf("save document content: %w", result.err)
+		r.logger.Error("document design content can no longer be saved",
+			"document", r.token, "error", result.err)
+		r.disconnectAll("document content can no longer be saved")
+		return
+	}
+
+	// Kegagalan sementara: biarkan tetap kotor dan coba lagi pada denyut
+	// berikutnya. Tidak ada yang hilang selama room masih hidup.
+	r.logger.Warn("save document design content failed, will retry",
+		"document", r.token, "error", result.err)
+}
+
+// isPermanentSaveFailure memisahkan kegagalan yang tidak akan membaik dengan
+// mencoba lagi dari gangguan sementara seperti koneksi database terputus.
+//
+// ErrNotFound berarti dokumennya sudah dihapus. ErrConflict berarti versinya
+// bergeser, yang dengan satu instance seharusnya tidak pernah terjadi —
+// kemunculannya adalah sinyal bahwa asumsi itu dilanggar, misalnya ada proses
+// kedua atau UPDATE manual.
+//
+// Keduanya diperlakukan permanen, artinya klien diputus dan kehilangan delta
+// yang belum tersimpan. Alternatifnya memuat ulang dari database, yang menahan
+// sesinya tetapi tetap membuang delta yang sama. Memutus dipilih karena lebih
+// jujur: menimpa penulis lain jauh lebih berbahaya daripada memaksa klien
+// menyambung ulang dan melihat keadaan yang sebenarnya.
+func isPermanentSaveFailure(err error) bool {
+	return errors.Is(err, domain.ErrNotFound) || errors.Is(err, domain.ErrConflict)
+}
+
+// disconnectAll memutus seluruh penghuni. Keanggotaannya sendiri dibiarkan
+// dibersihkan oleh leaveEvent masing-masing, supaya jalur keluarnya tetap satu.
+func (r *Room) disconnectAll(reason string) {
+	for member := range r.members {
+		member.Disconnect(reason)
+	}
+}
+
+// drain adalah kesempatan terakhir menyimpan sebelum orchestrator berhenti.
+//
+// Penulisan yang sedang berjalan ditunggu lebih dulu, kalau tidak compare-and-set
+// terakhir akan bentrok dengan penulisan kita sendiri dan justru menandai room
+// sebagai rusak.
+func (r *Room) drain(ctx context.Context) {
+	if r.saving {
+		select {
+		case result := <-r.saved:
+			r.handleSaved(result)
+		case <-time.After(drainSaveWait):
+			// Hasil penulisan tidak diketahui, jadi compare-and-set berikutnya
+			// tidak dapat memilih fromVersion yang benar. Menyerah lebih jujur
+			// daripada menebak dan berisiko menimpa.
+			r.logger.Warn("gave up waiting for in-flight save, tail changes may be lost",
+				"document", r.token)
+			return
+		}
+	}
+
+	if r.broken != nil || r.version == r.savedVersion {
+		return
+	}
+
+	// Context aplikasi sudah dibatalkan saat titik ini tercapai, jadi penyimpanan
+	// terakhir wajib memakai context yang lepas darinya.
+	saveCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), contentSaveTimeout)
+	defer cancel()
+
+	if err := r.documents.SaveContent(saveCtx, r.token, r.snapshotContent(), r.savedVersion, r.version); err != nil {
+		r.logger.Error("final save on shutdown failed", "document", r.token, "error", err)
+		return
+	}
+
+	r.savedVersion = r.version
 }
 
 // snapshotContent menyalin isi sebelum menyerahkannya keluar, supaya penerima
@@ -140,7 +356,7 @@ func (r *Room) snapshotContent() json.RawMessage {
 // dokumen saat itu. Ini satu-satunya operasi yang sinkron, karena pemanggil
 // memang membutuhkan snapshot untuk dikirim ke klien yang baru menempel.
 func (r *Room) join(ctx context.Context, sub Subscriber) (Snapshot, error) {
-	reply := make(chan Snapshot, 1)
+	reply := make(chan joinResult, 1)
 	event := joinEvent{subscriber: sub, reply: reply}
 
 	select {
@@ -152,8 +368,8 @@ func (r *Room) join(ctx context.Context, sub Subscriber) (Snapshot, error) {
 	}
 
 	select {
-	case snapshot := <-reply:
-		return snapshot, nil
+	case result := <-reply:
+		return result.snapshot, result.err
 	case <-r.done:
 		return Snapshot{}, domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	case <-ctx.Done():

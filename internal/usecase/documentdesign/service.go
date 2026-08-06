@@ -2,6 +2,7 @@ package documentdesign
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
@@ -20,9 +21,14 @@ import (
 const janitorInterval = 5 * time.Second
 
 // roomStopTimeout membatasi berapa lama shutdown menunggu seluruh orchestrator
-// berhenti. Disamakan dengan tenggat shutdown HTTP server supaya keduanya tidak
-// saling menunggu lebih lama dari yang diperlukan.
-const roomStopTimeout = 5 * time.Second
+// berhenti.
+//
+// Nilainya harus menutupi kasus terburuk satu room saat drain: menunggu penulisan
+// yang sedang berjalan (drainSaveWait, 4 detik) lalu menyimpan sekali lagi
+// (contentSaveTimeout, 3 detik). Bila lebih kecil, stopAll menyerah di tengah
+// drain dan justru membuang suntingan terakhir yang drain diadakan untuk
+// menyelamatkan.
+const roomStopTimeout = 8 * time.Second
 
 // Service adalah satu-satunya pintu masuk lapisan delivery ke sesi penyuntingan
 // realtime. Ia tidak mengenal WebSocket, HTTP, maupun gin.
@@ -33,11 +39,17 @@ type Service struct {
 	connections *connectionCounter
 }
 
-func NewService(documents output.DocumentRepository) *Service {
+// NewService menerima context aplikasi karena orchestrator room hidup lebih lama
+// daripada koneksi mana pun dan harus berhenti bersama aplikasi.
+func NewService(appCtx context.Context, documents output.DocumentRepository, logger *slog.Logger) *Service {
+	if logger == nil {
+		logger = slog.Default()
+	}
+
 	return &Service{
 		documents:   documents,
 		tickets:     newTicketStore(),
-		rooms:       newManager(),
+		rooms:       newManager(appCtx, documents, logger),
 		connections: newConnectionCounter(),
 	}
 }

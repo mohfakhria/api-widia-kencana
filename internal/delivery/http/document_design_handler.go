@@ -163,13 +163,24 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 
 	h.dispatchLoop(buffer, subscriber)
 
-	// Bereskan kedua loop sebelum menutup koneksi, supaya penulis sempat
-	// menguras antrean dan tidak ada yang menulis ke socket yang sudah tutup.
+	// Close frame dikirim lebih dulu, selagi koneksi masih utuh. Membatalkan
+	// context membuat pustaka menutup socket seketika, sehingga alasannya tidak
+	// akan pernah sampai bila urutannya dibalik.
+	//
+	// Room dapat memutus koneksi ini beserta alasannya, misalnya karena isinya
+	// tidak mungkin lagi disimpan — frontend perlu tahu bahwa berhenti menyunting
+	// memang keputusan yang benar, bukan sekadar gangguan jaringan.
+	if reason, ok := subscriber.takeCloseReason(); ok {
+		conn.Close(websocket.StatusInternalError, reason)
+	} else {
+		conn.Close(websocket.StatusNormalClosure, "")
+	}
+
+	// Bereskan ketiga loop. Penulis sempat menguras antreannya karena buffer
+	// sudah ditutup sebelum titik ini.
 	cancel()
 	buffer.close()
 	loops.Wait()
-
-	conn.Close(websocket.StatusNormalClosure, "")
 }
 
 // readLoop memindahkan frame dari socket ke antrean masuk.
@@ -303,10 +314,16 @@ func (h *DocumentDesignHandler) dispatch(payload []byte, subscriber *designSubsc
 }
 
 // designSubscriber menjembatani room dengan satu koneksi. Room hanya mengenal
-// metode Send; segala hal tentang frame dan socket berhenti di sini.
+// Send dan Disconnect; segala hal tentang frame dan socket berhenti di sini.
 type designSubscriber struct {
 	buffer *designBuffer
 	cancel context.CancelFunc
+
+	// closeReason diisi Disconnect dan dibaca Connect setelah seluruh loop
+	// selesai, untuk dijadikan alasan pada close frame. Dijaga mutex karena
+	// penulisnya goroutine orchestrator dan pembacanya goroutine handler.
+	mu          sync.Mutex
+	closeReason string
 }
 
 // Send tidak pernah memblokir karena room memanggilnya sambil memegang kunci.
@@ -317,6 +334,30 @@ func (s *designSubscriber) Send(payload []byte) {
 	if !s.buffer.outbound.enqueue(payload) {
 		s.cancel()
 	}
+}
+
+// Disconnect dipanggil orchestrator sambil memiliki state room, jadi ia tidak
+// boleh melakukan I/O apa pun — hanya mencatat alasan lalu menutup buffer.
+//
+// Menutup buffer, bukan membatalkan context. Membatalkan context membuat
+// coder/websocket menutup socket seketika, sehingga close frame beserta
+// alasannya tidak akan pernah sampai ke klien. Menutup buffer membangunkan
+// dispatcher, dan handler yang mengirim close frame selagi koneksi masih utuh.
+func (s *designSubscriber) Disconnect(reason string) {
+	s.mu.Lock()
+	if s.closeReason == "" {
+		s.closeReason = reason
+	}
+	s.mu.Unlock()
+
+	s.buffer.close()
+}
+
+func (s *designSubscriber) takeCloseReason() (string, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.closeReason, s.closeReason != ""
 }
 
 func (s *designSubscriber) sendError(seq int64, code, message string) {

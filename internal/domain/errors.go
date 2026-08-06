@@ -19,6 +19,7 @@ var (
 	ErrUnauthorized    = &Error{Kind: "unauthorized"}
 	ErrForbidden       = &Error{Kind: "forbidden"}
 	ErrInvalidInput    = &Error{Kind: "invalid_input"}
+	ErrConflict        = &Error{Kind: "conflict"}
 	ErrTooManyRequests = &Error{Kind: "too_many_requests"}
 	ErrUnavailable     = &Error{Kind: "unavailable"}
 	ErrInternalFailure = &Error{Kind: "internal_failure"}

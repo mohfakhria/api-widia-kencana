@@ -73,7 +73,7 @@ func (a *ApiApp) initialize() error {
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	documentRepo := pg.NewDocumentRepository(a.db)
 	documentUC := usecase.NewDocumentUseCase(documentRepo)
-	documentDesign := documentdesign.NewService(documentRepo)
+	documentDesign := documentdesign.NewService(a.Context, documentRepo, a.ServiceLogger)
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
 	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))

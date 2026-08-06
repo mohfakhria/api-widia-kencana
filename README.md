@@ -96,6 +96,14 @@ Catatan:
 
 Migration disimpan sebagai pure SQL per table di folder `migration/`. Project belum menambahkan migration runner Go, sehingga migration dijalankan manual atau memakai tool eksternal.
 
+Perhatikan bahwa berkas migration memakai `CREATE TABLE IF NOT EXISTS`, sehingga kolom yang ditambahkan belakangan **tidak** ikut terpasang pada database yang tabelnya sudah ada. Menjalankan ulang berkasnya tidak akan menghasilkan apa-apa. Untuk database lama, jalankan `ALTER TABLE` secara manual. Kolom yang ditambahkan setelah rilis awal:
+
+```sql
+ALTER TABLE documents
+    ADD COLUMN IF NOT EXISTS content JSONB NOT NULL DEFAULT '{"pages": []}',
+    ADD COLUMN IF NOT EXISTS content_version BIGINT NOT NULL DEFAULT 0;
+```
+
 Urutan baseline yang aman:
 
 ```text

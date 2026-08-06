@@ -2,8 +2,11 @@ package documentdesign
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"time"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
 // roomIdleGrace adalah berapa lama room yang sudah ditinggalkan dipertahankan
@@ -39,12 +42,25 @@ type roomEntry struct {
 // invariannya lebih jelas di sini, dan yang benar-benar butuh kepemilikan
 // tunggal adalah state dokumen di dalam Room, bukan petanya.
 type manager struct {
+	// appCtx adalah context aplikasi, bukan context request. Orchestrator hidup
+	// lebih lama daripada koneksi mana pun, jadi context miliknya harus mengikuti
+	// umur aplikasi — inilah kasus di mana menyimpan context di struct memang
+	// dituntut oleh daur hidupnya.
+	appCtx    context.Context
+	documents output.DocumentRepository
+	logger    *slog.Logger
+
 	mu    sync.Mutex
 	rooms map[string]*roomEntry
 }
 
-func newManager() *manager {
-	return &manager{rooms: make(map[string]*roomEntry)}
+func newManager(appCtx context.Context, documents output.DocumentRepository, logger *slog.Logger) *manager {
+	return &manager{
+		appCtx:    appCtx,
+		documents: documents,
+		logger:    logger,
+		rooms:     make(map[string]*roomEntry),
+	}
 }
 
 // join mencari-atau-membuat room lalu mendaftarkan penghuninya.
@@ -59,9 +75,9 @@ func (m *manager) join(ctx context.Context, token string, sub Subscriber) (Snaps
 	m.mu.Lock()
 	entry, ok := m.rooms[token]
 	if !ok {
-		entry = &roomEntry{room: newRoom(token)}
+		entry = &roomEntry{room: newRoom(token, m.documents, m.logger)}
 		m.rooms[token] = entry
-		go entry.room.run()
+		go entry.room.run(m.appCtx)
 	}
 	entry.members++
 	// Room ini berpenghuni lagi, jadi hitung mundur pembuangannya dibatalkan.

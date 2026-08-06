@@ -20,6 +20,14 @@ CREATE TABLE IF NOT EXISTS documents (
     status TEXT NOT NULL DEFAULT 'draft',
     -- Values: draft, active, inactive, archived, deleted
 
+    content JSONB NOT NULL DEFAULT '{"pages": []}',
+    -- Isi kanvas: halaman beserta elemennya.
+    -- Dikelola realtime lewat ws /document-design/:token, bukan lewat REST.
+
+    content_version BIGINT NOT NULL DEFAULT 0,
+    -- Nomor revisi isi kanvas. Dipakai sebagai compare-and-set saat menyimpan,
+    -- sehingga penulisan dari dua proses tidak saling menimpa diam-diam.
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
