@@ -96,7 +96,7 @@ Catatan:
 - Aplikasi menolak start bila `APP_ENV=production` tetapi cookie tidak `Secure`.
 - Cookie memakai `SameSite=Strict`. Ini bekerja selama frontend dan API berada pada registrable domain yang sama, misal `app.example.com` dengan `api.example.com`. Bila keduanya benar-benar beda domain, `SameSite` perlu diturunkan ke `None` dan `Secure` menjadi wajib.
 - `DESIGN_FONT_DIR` menunjuk direktori berkas font untuk export PDF, beserta manifes `fonts.json` di dalamnya. Direktori yang tidak ada bukan error: export tetap berjalan dengan keluarga bawaan `helvetica`. Manifes yang cacat atau berkas yang disebut manifes tetapi tidak ditemukan **menolak start**, karena keduanya berarti export akan memakai huruf yang berbeda dari tampilan editor — jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
-- Berkas font yang sama wajib disajikan ke frontend. Nama keluarga yang sama tidak cukup: Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda, dan selisihnya menumpuk menjadi pemenggalan baris yang berbeda antara layar dan hasil cetak. Detailnya ada di `docs/engineering/document-design-realtime.md`.
+- Berkas font yang sama wajib disajikan ke frontend. Nama keluarga yang sama tidak cukup: Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda, dan selisihnya menumpuk menjadi pemenggalan baris yang berbeda antara layar dan hasil cetak. Detailnya ada di `docs/engineering/document-design.md`.
 - MinIO local yang umum dipakai di project ini: console `9001`, API `9002`.
 - `MINIO_ROOT_USER` dan `MINIO_ROOT_PASSWORD` digunakan sebagai credential MinIO.
 
@@ -324,7 +324,10 @@ jq empty docs/collection/*.json
 
 ## Development Notes
 
-- Panduan integrasi frontend untuk document design ada di `docs/engineering/document-design-realtime.md`, mencakup model isi dokumen, aturan agar tampilan editor sama dengan hasil cetak, sesi realtime, dan export PDF.
+- Kontrak WebSocket untuk document design ada di `docs/engineering/websocket-contract.md`: setiap pesan, apa yang memicunya, close code, dan riwayat perubahan kontrak.
+- Panduan membangun editor ada di `docs/engineering/document-design.md`: model isi dokumen, aturan agar tampilan editor sama dengan hasil cetak, export PDF, dan daftar periksa penyesuaian.
+- Kontrak dalam bentuk definisi tipe TypeScript ada di `docs/engineering/document-design.d.ts`, untuk disalin atau diimpor frontend.
+- Aturan bahwa keempatnya berubah dalam satu commit ada di `CLAUDE.md`.
 - Clean Architecture reference ada di `docs/engineering/Clean_Architecture.md`.
 - README structure guideline ada di `docs/engineering/readme-structure.md`.
 - Unit test baru belum menjadi scope utama project ini; `go test ./...` dipakai sebagai compile/smoke verification.
