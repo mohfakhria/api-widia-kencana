@@ -395,7 +395,7 @@ koneksinya. Memeriksanya setelah pendaftaran selalu menghasilkan "sudah hadir".
 koneksi ketika antrean keluar penuh, dan itu benar untuk snapshot maupun
 presence: klien yang kehilangan salah satunya akan salah selamanya. Untuk kursor
 itu keliru — jeda GC atau satu render berat sudah cukup untuk menjatuhkan sesi
-orang yang sedang bekerja, demi pesan yang basi dalam lima puluh milidetik.
+orang yang sedang bekerja, demi pesan yang sudah basi satu denyut kemudian.
 
 **8. Penggabungan mengganti DI TEMPAT, bukan memindahkan ke belakang.**
 `designQueue.conflate` menimpa isi isian yang kuncinya sama tanpa menggesernya,
@@ -468,7 +468,7 @@ memaksa klien menyambung ulang dan melihat keadaan yang sebenarnya.
 | `flushInterval` | 2 dtk | kerugian maksimal saat proses mati mendadak |
 | `contentLoadTimeout` | 5 dtk | |
 | `contentSaveTimeout` | 3 dtk | lebih dari cukup untuk memperbarui satu baris |
-| `cursorTickInterval` | 50 ms | laju siaran kursor terikat pada denyut ini, berapa pun derasnya masukan. Terukur: 521 gerakan dalam 3 detik menjadi 61 pesan, latensi p99 45 ms |
+| `cursorTickInterval` | 70 ms | laju siaran kursor terikat pada denyut ini, berapa pun derasnya masukan. Terukur **pada denyut 50 ms**: 521 gerakan dalam 3 detik menjadi 61 pesan, latensi p99 45 ms — angkanya berskala dengan denyut |
 | `roomIdleGrace` | 10 dtk | menutup refresh halaman dan wifi berkedip |
 | `janitorInterval` | 5 dtk | **harus lebih kecil** dari `roomIdleGrace`, kalau tidak sampah bertahan hampir dua kali lipat |
 

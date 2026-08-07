@@ -5,14 +5,9 @@ import "sync"
 // maxConnectionsPerUser membatasi berapa koneksi realtime yang boleh dipegang
 // satu user sekaligus.
 //
-// Kuota tiket tidak menutup ini. Tiket hangus begitu ditukar, sehingga satu user
-// dapat mengulang terbitkan-lalu-sambung tanpa henti dan menumbuhkan jumlah
-// koneksi tanpa batas — padahal tiap koneksi memakai empat goroutine dan sekitar
-// 72 KB. Pencacah inilah yang membatasi pemakaian sumber daya, bukan kuota tiket.
-//
-// Sepuluh sudah longgar untuk pemakaian wajar: beberapa tab pada beberapa dokumen
-// sekaligus, ditambah ruang untuk koneksi lama yang belum sempat dibersihkan
-// setelah jaringan terputus.
+// Kuota tiket TIDAK menutup ini. Tiket hangus begitu ditukar, sehingga satu user
+// dapat mengulang terbitkan-lalu-sambung tanpa henti dan menumbuhkan koneksi
+// tanpa batas. Pencacah inilah yang membatasi sumber daya, bukan kuota tiket.
 const maxConnectionsPerUser = 10
 
 // connectionCounter mencacah koneksi hidup per user.

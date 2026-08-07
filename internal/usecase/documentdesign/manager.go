@@ -14,14 +14,12 @@ import (
 // roomIdleGrace adalah berapa lama room yang sudah ditinggalkan dipertahankan
 // sebelum dibuang.
 //
-// Gunanya menutup kasus yang paling sering terjadi: refresh halaman dan wifi
-// yang kedip sesaat. Tanpa jeda ini, setiap refresh berarti room dibongkar lalu
-// dibangun ulang — dan setelah ada persistensi nanti, juga satu pembacaan
-// database tiap kali. Dengan jeda, penyambungan kembali mendarat di room yang
-// masih hangat berikut isinya.
+// Menutup kasus yang paling sering terjadi — refresh halaman dan wifi yang kedip
+// sesaat — supaya penyambungan kembali mendarat di room yang masih hangat, bukan
+// memicu pembongkaran berikut pembacaan database ulang.
 //
-// Menutup tab lalu pergi lebih lama dari ini tetap kehilangan room-nya; untuk
-// itu yang dibutuhkan persistensi, bukan jeda yang lebih panjang.
+// Pergi lebih lama dari ini tetap kehilangan room-nya, dan itu memang tidak
+// merugikan: isinya sudah tersimpan.
 const roomIdleGrace = 10 * time.Second
 
 // roomEntry membungkus room beserta catatan daur hidupnya.
@@ -91,21 +89,36 @@ func (m *manager) attach(token string) {
 	entry.emptyAt = time.Time{}
 }
 
+// room mencari room yang sedang hidup untuk satu dokumen.
+//
+// Kunci dilepas sebelum kembali, dan itu yang membuat pemanggil aman menunggu
+// inbox orchestrator sesudahnya: menahan kunci peta selama penantian itu akan
+// membekukan seluruh dokumen lain.
+//
+// Konsekuensinya room dapat berhenti di antara pencarian ini dan pemakaiannya.
+// Setiap pemanggil harus menganggap itu mungkin — lihat penanganan errRoomClosed
+// di snapshot.
+func (m *manager) room(token string) (*Room, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	entry, ok := m.rooms[token]
+	if !ok {
+		return nil, false
+	}
+
+	return entry.room, true
+}
+
 // sync meminta room mengirimkan snapshot ke satu koneksi dan menjadikannya
 // anggota.
-//
-// Room dicari di bawah kunci, tetapi permintaannya dikirim setelah kunci dilepas:
-// menunggu inbox di bawah kunci peta akan membekukan seluruh dokumen lain.
 func (m *manager) sync(ctx context.Context, token string, member Member) error {
-	m.mu.Lock()
-	entry, ok := m.rooms[token]
-	m.mu.Unlock()
-
+	room, ok := m.room(token)
 	if !ok {
 		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	}
 
-	return entry.room.sync(ctx, member)
+	return room.sync(ctx, member)
 }
 
 // snapshot mengambil isi terkini bila dokumen ini sedang disunting seseorang.
@@ -114,15 +127,12 @@ func (m *manager) sync(ctx context.Context, token string, member Member) error {
 // melainkan keadaan yang paling umum — dokumen yang tidak sedang dibuka siapa
 // pun — dan artinya database sudah memuat keadaan terakhirnya.
 func (m *manager) snapshot(ctx context.Context, token string) (result snapshotResult, found bool, err error) {
-	m.mu.Lock()
-	entry, ok := m.rooms[token]
-	m.mu.Unlock()
-
+	room, ok := m.room(token)
 	if !ok {
 		return snapshotResult{}, false, nil
 	}
 
-	result, err = entry.room.snapshot(ctx)
+	result, err = room.snapshot(ctx)
 	if errors.Is(err, errRoomClosed) {
 		// Room berhenti tepat di antara pencarian di peta dan pertanyaan ini —
 		// bisa terjadi bila penghuni terakhir baru saja pergi dan masa tenggangnya
@@ -145,15 +155,9 @@ func (m *manager) snapshot(ctx context.Context, token string) (result snapshotRe
 // Dokumen yang tidak sedang dibuka siapa pun tidak punya room, dan itu bukan
 // kegagalan — cukup diabaikan.
 func (m *manager) moveCursor(token string, cursor Cursor) {
-	m.mu.Lock()
-	entry, ok := m.rooms[token]
-	m.mu.Unlock()
-
-	if !ok {
-		return
+	if room, ok := m.room(token); ok {
+		room.moveCursor(cursor)
 	}
-
-	entry.room.moveCursor(cursor)
 }
 
 // detach mengurangi pencacah dan mulai menghitung mundur begitu koneksi terakhir

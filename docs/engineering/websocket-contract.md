@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-07 | Denyut siaran `cursor` dilonggarkan 50 ms → **70 ms** | Tidak ada, bentuk pesannya tetap. Sesuaikan hanya bila durasi interpolasi dipatok pada 50 ms |
 | 2026-08-07 | Pesan `cursor` dan `cursor.move` — kursor langsung antar penyunting | Tambahan. Tangani bila ingin menampilkan kursor orang lain; abaikan dengan aman bila belum |
 | 2026-08-06 | Pesan `presence` — siapa yang sedang membuka dokumen | Tambahan. Tangani bila ingin menampilkan tumpukan avatar; abaikan dengan aman bila belum |
 | 2026-08-06 | Field `page` pada `snapshot` — ukuran halaman dalam titik | Tambahan, tetapi **berhenti** menghitung ukuran kertas sendiri dari endpoint detail dokumen |
@@ -200,7 +201,7 @@ Ringkasannya:
 |---|---|---|---|
 | `snapshot` | klien mengirim `document.get` | hanya peminta | ganti seluruh keadaan kanvas |
 | `presence` | daftar **orang** berubah, atau `document.get` | semua, atau hanya peminta — lihat 3.2 | perbarui daftar penyunting |
-| `cursor` | denyut 50 ms bila ada yang berubah, atau `document.get` | semua bila penghuni ≥ 2; hanya peminta bila baru bergabung | ganti seluruh keadaan kursor |
+| `cursor` | denyut 70 ms bila ada yang berubah, atau `document.get` | semua bila penghuni ≥ 2; hanya peminta bila baru bergabung | ganti seluruh keadaan kursor |
 | `error` | permintaan ditolak | hanya peminta | **jangan** sambung ulang |
 
 ### 3.1 `snapshot`
@@ -303,7 +304,7 @@ satu kursor, yaitu posisi dari tab yang terakhir bergerak.
 
 | Kapan pesan ini datang | |
 |---|---|
-| Denyut **50 ms**, hanya bila ada yang berubah | siaran ke semua penghuni |
+| Denyut **70 ms**, hanya bila ada yang berubah | siaran ke semua penghuni |
 | Baru bergabung lewat `document.get` | langsung, hanya ke pendatang |
 | Ada yang pergi | kursornya hilang dari daftar berikutnya |
 | Tidak ada yang bergerak | **tidak ada pesan sama sekali** |
@@ -319,10 +320,11 @@ klien penuh — dan siaran baru **menggantikan** siaran kursor yang masih mengan
 alih-alih menumpuk di belakangnya. Klien yang tersendat karenanya menerima posisi
 terkini saat ia menyusul, bukan tumpukan posisi basi.
 
-Terukur: 521 `cursor.move` dalam tiga detik menghasilkan **61 pesan keluar** —
-tepat 20 per detik — dengan latensi p99 45 ms.
+Terukur pada denyut 50 ms: 521 `cursor.move` dalam tiga detik menghasilkan
+**61 pesan keluar**, tepat 20 per detik, dengan latensi p99 45 ms. Angka itu
+berskala dengan denyutnya.
 
-**Gambarlah dengan interpolasi.** Denyut 50 ms terlihat melompat bila digambar
+**Gambarlah dengan interpolasi.** Denyut 70 ms terlihat melompat bila digambar
 mentah, tetapi mulus dengan `transition` CSS atau lerp per frame — dan itu membuat
 tunda rata-rata 25 ms tidak terasa.
 
@@ -488,7 +490,7 @@ async function openDesign(documentToken, accessToken) {
 
       case 'cursor':
         // Seluruh kursor sekaligus — ganti, jangan gabungkan. Saring id sendiri,
-        // dan gambar dengan interpolasi supaya denyut 50 ms tidak terlihat melompat.
+        // dan gambar dengan interpolasi supaya denyutnya tidak terlihat melompat.
         renderCursors(message.cursors.filter((c) => c.id !== myUserId));
         return;
 

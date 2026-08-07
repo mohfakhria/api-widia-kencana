@@ -172,7 +172,7 @@ export interface DesignPresenceUser {
 }
 
 /**
- * Kursor semua orang, satu pesan per denyut 50 ms dan hanya bila ada yang
+ * Kursor semua orang, satu pesan per denyut 70 ms dan hanya bila ada yang
  * berubah. Juga dikirim langsung kepada orang yang baru bergabung.
  *
  * GANTI seluruh keadaan kursor dengan isi array ini, jangan digabungkan satu per
