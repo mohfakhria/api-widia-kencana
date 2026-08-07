@@ -27,6 +27,17 @@ Apa pun yang punya field `type` atau kode penutupan masuk
 masuk `document-design.md`. Jangan menjelaskan hal yang sama di keduanya —
 tautkan saja.
 
+## Sebelum mengubah document design
+
+Baca `docs/engineering/document-design-architecture.md` lebih dulu. Di sana ada
+tujuh invarian yang bila dilanggar tidak menghasilkan galat kompilasi maupun
+pesan kesalahan — misalnya menambahkan mutex ke `Room`, atau membuat
+`Subscriber.Send` menunggu I/O.
+
+Bagian **Invarian** dan **Tetapan waktu** ikut diperbarui bila keputusannya
+berubah. Tetapan waktu di sana saling bergantung; mengubah satu tanpa yang lain
+membuang suntingan terakhir pengguna saat shutdown.
+
 ## Verifikasi
 
 ```bash

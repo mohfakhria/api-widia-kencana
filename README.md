@@ -324,6 +324,7 @@ jq empty docs/collection/*.json
 
 ## Development Notes
 
+- Arsitektur document design di backend ada di `docs/engineering/document-design-architecture.md`: alur hulu ke hilir, kenapa memakai orchestrator, invarian yang tidak boleh dilanggar, model kegagalan, dan alasan di balik tiap tetapan waktu. Baca ini sebelum mengubah kodenya.
 - Kontrak WebSocket untuk document design ada di `docs/engineering/websocket-contract.md`: setiap pesan, apa yang memicunya, close code, dan riwayat perubahan kontrak.
 - Panduan membangun editor ada di `docs/engineering/document-design.md`: model isi dokumen, aturan agar tampilan editor sama dengan hasil cetak, export PDF, dan daftar periksa penyesuaian.
 - Kontrak dalam bentuk definisi tipe TypeScript ada di `docs/engineering/document-design.d.ts`, untuk disalin atau diimpor frontend.
