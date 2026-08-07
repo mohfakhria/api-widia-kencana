@@ -27,7 +27,7 @@ sama persis dengan hasil cetak, dan cara mengekspornya.
 Isi dokumen **belum dapat diubah lewat API mana pun** — untuk sekarang
 perubahannya dilakukan langsung ke kolom `documents.content` di database. Bentuk
 pesan penyuntingan belum diputuskan; lihat
-[kontrak WebSocket](websocket-contract.md#22-yang-belum-ada).
+[kontrak WebSocket](websocket-contract.md#23-yang-belum-ada).
 
 ---
 

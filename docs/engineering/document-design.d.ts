@@ -120,12 +120,30 @@ export type DesignElement =
 // Pesan WebSocket
 // ---------------------------------------------------------------------------
 
-/** Satu-satunya pesan yang didukung hari ini. Jenis lain dibalas unsupported_message_type. */
 export interface DesignDocumentGetMessage {
   type: 'document.get';
 }
 
-export type DesignClientMessage = DesignDocumentGetMessage;
+/**
+ * Letak pointer di atas kanvas.
+ *
+ * Tidak pernah dibalas, bahkan saat ditolak. Batasi lajunya dengan throttle —
+ * requestAnimationFrame paling sederhana — BUKAN debounce: debounce menunggu
+ * jeda, sehingga kursor baru bergerak ketika mouse berhenti.
+ *
+ * Pengirim harus sudah menjadi anggota, yaitu sudah mengirim document.get.
+ */
+export interface DesignCursorMoveMessage {
+  type: 'cursor.move';
+  /** Id halaman tempat pointer berada. Wajib, tidak boleh kosong. */
+  page: string;
+  x: Points;
+  y: Points;
+}
+
+export type DesignClientMessage =
+  | DesignDocumentGetMessage
+  | DesignCursorMoveMessage;
 
 export interface DesignSnapshotMessage {
   type: 'snapshot';
@@ -153,6 +171,32 @@ export interface DesignPresenceUser {
   name: string;
 }
 
+/**
+ * Kursor semua orang, satu pesan per denyut 50 ms dan hanya bila ada yang
+ * berubah. Juga dikirim langsung kepada orang yang baru bergabung.
+ *
+ * GANTI seluruh keadaan kursor dengan isi array ini, jangan digabungkan satu per
+ * satu. Termasuk kursor penerima sendiri — saring id sendiri saat menggambar.
+ *
+ * Dikunci per ORANG, bukan per koneksi. Setiap id dijamin ada juga di presence,
+ * jadi nama dan warnanya selalu tersedia; warna diturunkan frontend dari id.
+ *
+ * Satu-satunya pesan yang boleh hilang: bila antrean klien penuh ia dilewati, dan
+ * yang baru menggantikan yang masih mengantre.
+ */
+export interface DesignCursorMessage {
+  type: 'cursor';
+  cursors: DesignCursor[];
+}
+
+export interface DesignCursor {
+  id: string;
+  /** Id halaman; sembunyikan kursor orang yang sedang melihat halaman lain. */
+  page: string;
+  x: Points;
+  y: Points;
+}
+
 /** Pesan error TIDAK menutup koneksi. Menyambung ulang bukan tindakan yang tepat. */
 export interface DesignErrorMessage {
   type: 'error';
@@ -173,6 +217,7 @@ export type DesignErrorCode =
 export type DesignServerMessage =
   | DesignSnapshotMessage
   | DesignPresenceMessage
+  | DesignCursorMessage
   | DesignErrorMessage;
 
 /**

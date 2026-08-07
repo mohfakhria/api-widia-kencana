@@ -9,12 +9,14 @@ import (
 // Jenis pesan yang dikirim klien.
 const (
 	DesignMessageDocumentGet = "document.get"
+	DesignMessageCursorMove  = "cursor.move"
 )
 
 // Jenis pesan yang dikirim server.
 const (
 	DesignMessageSnapshot = "snapshot"
 	DesignMessagePresence = "presence"
+	DesignMessageCursor   = "cursor"
 	DesignMessageError    = "error"
 )
 
@@ -44,6 +46,52 @@ func NewDocumentDesignTicketResponse(ticket string, expiresIn int64) DocumentDes
 // sudah selaras, tertinggal, atau melewatkan sesuatu.
 type DesignInbound struct {
 	Type string `json:"type"`
+}
+
+// DesignCursorMove adalah muatan pesan cursor.move.
+//
+// Koordinat memakai titik, sama seperti seluruh isi dokumen, sehingga letaknya
+// dapat dipakai langsung tanpa konversi. Page disertakan karena satu dokumen
+// dapat berisi banyak halaman — tanpanya penerima tidak tahu di halaman mana
+// kursor itu harus digambar.
+type DesignCursorMove struct {
+	Page string  `json:"page"`
+	X    float64 `json:"x"`
+	Y    float64 `json:"y"`
+}
+
+// DesignCursorMessage adalah letak kursor semua orang sekaligus.
+//
+// Sengaja berisi seluruh daftar, bukan satu kursor yang baru bergerak. Satu
+// muatan dapat dipakai bersama oleh semua penerima, dan penerima cukup mengganti
+// seluruh keadaan kursornya alih-alih menggabungkan perubahan satu per satu.
+//
+// Klien mengabaikan id-nya sendiri. Menyaringnya di server berarti menyusun
+// muatan berbeda untuk tiap penerima, dan itu mengalikan pekerjaan penyandian
+// sebanyak jumlah penghuni.
+type DesignCursorMessage struct {
+	Type    string              `json:"type"`
+	Cursors []DesignCursorEntry `json:"cursors"`
+}
+
+type DesignCursorEntry struct {
+	ID   string  `json:"id"`
+	Page string  `json:"page"`
+	X    float64 `json:"x"`
+	Y    float64 `json:"y"`
+}
+
+func NewDesignCursorMessage(cursors []DesignCursorEntry) ([]byte, error) {
+	if cursors == nil {
+		// Array kosong, bukan null — supaya frontend tidak perlu memeriksanya
+		// sebelum memetakan.
+		cursors = []DesignCursorEntry{}
+	}
+
+	return json.Marshal(DesignCursorMessage{
+		Type:    DesignMessageCursor,
+		Cursors: cursors,
+	})
 }
 
 type DesignSnapshotMessage struct {

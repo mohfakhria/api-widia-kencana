@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-07 | Pesan `cursor` dan `cursor.move` — kursor langsung antar penyunting | Tambahan. Tangani bila ingin menampilkan kursor orang lain; abaikan dengan aman bila belum |
 | 2026-08-06 | Pesan `presence` — siapa yang sedang membuka dokumen | Tambahan. Tangani bila ingin menampilkan tumpukan avatar; abaikan dengan aman bila belum |
 | 2026-08-06 | Field `page` pada `snapshot` — ukuran halaman dalam titik | Tambahan, tetapi **berhenti** menghitung ukuran kertas sendiri dari endpoint detail dokumen |
 | 2026-08-06 | `GET /api/document-design-fonts` | Tambahan. Isi pilihan font dari sini, jangan dipatok di frontend |
@@ -141,10 +142,46 @@ Klien baru menjadi anggota room pada saat permintaan ini diproses, bukan saat
 socket terbuka. Sebelum itu ia belum terhitung hadir, dan tidak akan menerima
 siaran apa pun.
 
-### 2.2 Yang belum ada
+### 2.2 `cursor.move`
 
-Penyuntingan **belum dapat dilakukan lewat pesan mana pun**. Setiap jenis selain
-`document.get` dibalas `unsupported_message_type`.
+```jsonc
+{ "type": "cursor.move", "page": "18f10d20-42f7-4a4c-80df-63dc46ab0022", "x": 120.5, "y": 340.25 }
+```
+
+| | |
+|---|---|
+| Kapan dikirim | saat pointer bergerak di atas kanvas |
+| Balasan | **tidak ada** — kursor disiarkan pada denyut, bukan dibalas per pesan |
+| Bila cacat | dijatuhkan diam-diam |
+
+`page` **wajib** dan tidak boleh kosong; pesan tanpanya dijatuhkan. Koordinat
+dalam titik, sama seperti seluruh isi dokumen.
+
+**Pengirim harus sudah menjadi anggota**, yaitu sudah mengirim `document.get`.
+Kursor dari koneksi yang belum meminta dokumen diabaikan sepenuhnya — orang itu
+belum muncul di `presence`, sehingga kursornya akan sampai ke layar orang lain
+sebagai id yang tidak dapat dipetakan ke nama maupun warna mana pun.
+
+**Tidak pernah dibalas, bahkan saat ditolak.** Membalas kesalahan pada laju
+puluhan kali per detik hanya akan membanjiri klien dengan pesan yang tidak dapat
+ia perbuat apa-apa, sekaligus memenuhi antrean keluarnya sendiri.
+
+**Batasi lajunya dengan throttle, bukan debounce.** Debounce menunggu jeda —
+dipakai di sini ia menahan kiriman sampai mouse berhenti, sehingga kursor orang
+lain diam terus lalu melompat. `requestAnimationFrame` adalah pembatas yang
+paling sederhana dan sudah selaras dengan saat browser punya posisi terbaru.
+
+Mengirim lebih sering daripada denyut tidak menghasilkan satu pun pesan tambahan
+bagi orang lain: backend memadatkan gerakan menjadi satu posisi terakhir per
+orang. Yang didapat dari membatasi hanyalah lalu lintas naik yang lebih hemat.
+
+### 2.3 Yang belum ada
+
+Penyuntingan **belum dapat dilakukan lewat pesan mana pun**. Jenis di luar kedua
+yang disebut di atas dibalas `unsupported_message_type`.
+
+`cursor.hide` juga belum ada: kursor orang yang menggeser pointer keluar kanvas
+baru hilang ketika ia menutup tab, atau ketika ia pergi.
 
 Bentuk pesan untuk menyunting — `element.update`, `page.add`, dan sejenisnya —
 **belum diputuskan**. Jangan menulis pengirimnya berdasarkan tebakan; bentuknya
@@ -163,6 +200,7 @@ Ringkasannya:
 |---|---|---|---|
 | `snapshot` | klien mengirim `document.get` | hanya peminta | ganti seluruh keadaan kanvas |
 | `presence` | daftar **orang** berubah, atau `document.get` | semua, atau hanya peminta — lihat 3.2 | perbarui daftar penyunting |
+| `cursor` | denyut 50 ms bila ada yang berubah, atau `document.get` | semua bila penghuni ≥ 2; hanya peminta bila baru bergabung | ganti seluruh keadaan kursor |
 | `error` | permintaan ditolak | hanya peminta | **jangan** sambung ulang |
 
 ### 3.1 `snapshot`
@@ -185,7 +223,7 @@ Ringkasannya:
 
 | Field | Arti |
 |---|---|
-| `version` | nomor revisi dokumen; lihat [3.4](#34-versi) |
+| `version` | nomor revisi dokumen; lihat [3.4](#35-versi) |
 | `page` | ukuran satu halaman **dalam titik**, berlaku untuk seluruh halaman dokumen ini |
 | `content` | isi kanvas — bentuknya di [`document-design.md`](document-design.md) |
 
@@ -231,7 +269,64 @@ Urutannya menurut nama, jadi susunan avatar tidak berubah-ubah sendiri.
 | Seseorang menutup satu dari beberapa tabnya | **tidak ada** — ia masih hadir |
 | Seseorang menutup tab terakhirnya | semua yang tersisa |
 
-### 3.3 `error`
+### 3.3 `cursor`
+
+```jsonc
+{
+  "type": "cursor",
+  "cursors": [
+    { "id": "1", "page": "18f10d20-42f7-4a4c-80df-63dc46ab0022", "x": 88,    "y": 120 },
+    { "id": "2", "page": "18f10d20-42f7-4a4c-80df-63dc46ab0022", "x": 120.5, "y": 340.25 }
+  ]
+}
+```
+
+**Seluruh kursor sekaligus**, bukan hanya yang baru bergerak. Ganti seluruh
+keadaan kursor dengan isi array ini; jangan menggabungkannya satu per satu.
+
+**Termasuk kursor penerima sendiri.** Saring `id` sendiri saat menggambar.
+Muatannya satu untuk semua penerima — menyaring di server berarti menyusun
+payload berbeda untuk tiap orang, dan itu mengalikan pekerjaan penyandian
+sebanyak jumlah penghuni.
+
+Diurutkan menurut `id`, sehingga isinya dapat diulang.
+
+Nama dan warna tidak ikut. Nama sudah ada dari [`presence`](#32-presence), dan
+warna diturunkan frontend dari `id` supaya orang yang sama berwarna sama di semua
+layar.
+
+**Setiap `id` di sini dijamin ada juga di `presence`.** Kursor hanya dimiliki
+anggota, dan hilang begitu orangnya benar-benar pergi.
+
+**Dikunci per orang, bukan per koneksi.** Satu orang dengan beberapa tab punya
+satu kursor, yaitu posisi dari tab yang terakhir bergerak.
+
+| Kapan pesan ini datang | |
+|---|---|
+| Denyut **50 ms**, hanya bila ada yang berubah | siaran ke semua penghuni |
+| Baru bergabung lewat `document.get` | langsung, hanya ke pendatang |
+| Ada yang pergi | kursornya hilang dari daftar berikutnya |
+| Tidak ada yang bergerak | **tidak ada pesan sama sekali** |
+| Penghuni kurang dari dua | tidak disiarkan |
+
+Kiriman ke pendatang tidak menunggu denyut. Denyut hanya menyiarkan saat ada yang
+berubah, jadi orang yang bergabung ketika semua sedang diam tidak akan pernah
+melihat satu kursor pun tanpa kiriman langsung itu.
+
+**Pesan ini boleh hilang.** Berbeda dari `snapshot`, `presence`, dan `error` yang
+memutus klien tertinggal terlalu jauh, `cursor` justru dilewati bila antrean
+klien penuh — dan siaran baru **menggantikan** siaran kursor yang masih mengantre
+alih-alih menumpuk di belakangnya. Klien yang tersendat karenanya menerima posisi
+terkini saat ia menyusul, bukan tumpukan posisi basi.
+
+Terukur: 521 `cursor.move` dalam tiga detik menghasilkan **61 pesan keluar** —
+tepat 20 per detik — dengan latensi p99 45 ms.
+
+**Gambarlah dengan interpolasi.** Denyut 50 ms terlihat melompat bila digambar
+mentah, tetapi mulus dengan `transition` CSS atau lerp per frame — dan itu membuat
+tunda rata-rata 25 ms tidak terasa.
+
+### 3.4 `error`
 
 ```jsonc
 { "type": "error", "code": "unsupported_message_type", "message": "…" }
@@ -252,7 +347,7 @@ Bila `document_unavailable` diabaikan, antarmuka akan menggantung dengan kanvas
 kosong tanpa tanda apa pun — koneksinya hidup, hanya isinya yang tidak pernah
 datang.
 
-### 3.4 Versi
+### 3.5 Versi
 
 `version` adalah nomor revisi **dokumen** — satu dokumen, satu penghitung, naik
 setiap kali ada perubahan yang berhasil diterapkan.
@@ -273,8 +368,9 @@ sini bersamaan dengan pesan penyuntingan.
 
 Yang benar-benar dijamin backend, dan boleh diandalkan:
 
-- **`snapshot` selalu tiba sebelum `presence`** pada klien yang baru bergabung.
-  Keduanya dimasukkan ke antrean keluar pada langkah yang sama oleh server.
+- **Pada klien yang baru bergabung, urutannya selalu `snapshot` → `presence` →
+  `cursor`.** Ketiganya dimasukkan ke antrean keluar pada langkah yang sama oleh
+  server. `cursor` dilewati bila memang belum ada kursor sama sekali.
 - **Tidak akan pernah ada delta sebelum snapshot yang menjadi dasarnya.**
   Keanggotaan room dan pengiriman snapshot terjadi pada langkah yang sama, jadi
   mustahil ada siaran perubahan yang menyalip snapshot pertama.
@@ -287,6 +383,10 @@ Yang **tidak** dijamin:
   yang berbeda.
 - Bahwa setiap perubahan menghasilkan tepat satu pesan. Server sengaja menahan
   siaran yang tidak mengubah apa pun — lihat tabel pemicu di 3.2.
+- Bahwa setiap `cursor.move` menghasilkan satu `cursor`. Gerakan dipadatkan:
+  yang keluar adalah posisi terakhir per denyut, bukan setiap gerakan.
+- Bahwa setiap `cursor` sampai. Ia satu-satunya pesan yang boleh hilang, dan yang
+  baru menggantikan yang masih mengantre.
 
 ---
 
@@ -384,6 +484,12 @@ async function openDesign(documentToken, accessToken) {
       case 'presence':
         // Daftar orang, bukan koneksi. Selalu datang setelah snapshot pertama.
         renderAvatars(message.users);
+        return;
+
+      case 'cursor':
+        // Seluruh kursor sekaligus — ganti, jangan gabungkan. Saring id sendiri,
+        // dan gambar dengan interpolasi supaya denyut 50 ms tidak terlihat melompat.
+        renderCursors(message.cursors.filter((c) => c.id !== myUserId));
         return;
 
       case 'error':

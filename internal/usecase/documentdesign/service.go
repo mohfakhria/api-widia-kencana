@@ -168,6 +168,20 @@ func (s *Service) Snapshot(ctx context.Context, documentToken string) (*entity.D
 	}, nil
 }
 
+// MoveCursor menyiarkan letak kursor seseorang ke seluruh penghuni dokumen.
+//
+// Tidak mengembalikan apa pun dan tidak menunggu: kursor adalah keadaan sesaat,
+// dan memberinya nilai balik hanya mengundang pemanggil menanganinya seolah ia
+// berarti.
+func (s *Service) MoveCursor(documentToken, userID, page string, x, y float64) {
+	s.rooms.moveCursor(documentToken, Cursor{
+		UserID: userID,
+		Page:   page,
+		X:      x,
+		Y:      y,
+	})
+}
+
 func (s *Service) Detach(documentToken, userID string, sub Subscriber) {
 	s.rooms.detach(documentToken, sub)
 	s.connections.release(userID)

@@ -44,6 +44,18 @@ const (
 	// mencoba penyimpanan terakhir. Cabang timeout di bawah hanya menjaga
 	// kemungkinan driver yang mengabaikan context.
 	drainSaveWait = contentSaveTimeout + time.Second
+
+	// cursorTickInterval adalah jarak antar siaran kursor — dua puluh kali per
+	// detik.
+	//
+	// Gerakan tidak lagi disiarkan saat diterima melainkan dipadatkan: pesan masuk
+	// cuma menimpa satu entri peta, lalu denyut ini menyiarkan seluruh peta sekali.
+	// Laju keluar karenanya terbatas pada denyut, berapa pun derasnya masukan.
+	//
+	// Lima puluh milidetik berarti tunda rata-rata 25 ms — di bawah ambang "terasa
+	// seketika", dan tenggelam di dalam interpolasi yang dilakukan frontend.
+	// Menaikkannya ke 30 Hz cukup mengganti tetapan ini saja.
+	cursorTickInterval = 50 * time.Millisecond
 )
 
 // Subscriber adalah satu koneksi yang menerima siaran dari room.
@@ -52,7 +64,22 @@ const (
 // implementasi yang menunggu I/O akan menghentikan seluruh penyuntingan dokumen
 // itu hanya karena satu klien lambat. Disconnect tunduk pada aturan yang sama.
 type Subscriber interface {
+	// Send untuk pesan yang wajib sampai. Antrean yang penuh berarti klien
+	// tertinggal terlalu jauh, dan koneksinya diakhiri.
 	Send(payload []byte)
+
+	// SendEphemeral untuk pesan yang hanya berarti nilai terkininya.
+	//
+	// stream menandai pesan mana yang saling menggantikan: payload baru menimpa
+	// pesan sejenis yang masih mengantre, alih-alih menumpuk di belakangnya.
+	// Klien yang tersendat karenanya menerima posisi terkini saat ia menyusul,
+	// bukan tumpukan posisi basi.
+	//
+	// Pemisahan dari Send bukan kerapian melainkan keharusan. Kursor yang memakai
+	// Send akan MENJATUHKAN sesi penyuntingan begitu klien tersendat sesaat —
+	// jeda GC atau satu render berat sudah cukup menumpuk lebih dari kapasitas
+	// antrean.
+	SendEphemeral(stream string, payload []byte)
 
 	// Disconnect memutus koneksi ini beserta alasannya. Dipanggil ketika room
 	// tidak lagi dapat melayani — membiarkan orang menyunting sesuatu yang tidak
@@ -71,6 +98,25 @@ type Subscriber interface {
 type MessageEncoder interface {
 	EncodeSnapshot(content json.RawMessage, version int64, page PageSize) ([]byte, error)
 	EncodePresence(users []PresenceUser) ([]byte, error)
+	EncodeCursors(cursors []Cursor) ([]byte, error)
+}
+
+// cursorStream menandai seluruh siaran kursor sebagai satu aliran
+// nilai-terakhir. Siaran baru menggantikan siaran kursor yang masih mengantre di
+// klien, karena letak kursor lima puluh milidetik lalu sudah tidak berarti apa
+// pun begitu ada yang lebih baru.
+const cursorStream = "cursor"
+
+// Cursor adalah letak kursor satu orang di atas dokumen.
+//
+// Dikunci per orang, bukan per koneksi — sama seperti kehadiran. Satu orang
+// dengan beberapa tab punya satu kursor, yaitu posisi dari tab yang terakhir
+// bergerak; dua kursor berlabel nama yang sama justru membingungkan pembacanya.
+type Cursor struct {
+	UserID string
+	Page   string
+	X      float64
+	Y      float64
 }
 
 // Member adalah satu koneksi beserta pemiliknya.
@@ -149,9 +195,16 @@ type snapshotResult struct {
 	err     error
 }
 
-func (syncEvent) isRoomEvent()     {}
-func (leaveEvent) isRoomEvent()    {}
-func (snapshotEvent) isRoomEvent() {}
+// cursorMoveEvent tidak punya reply. Pengirimnya tidak menunggu apa pun, dan
+// tidak ada yang berguna untuk dikembalikan — kursor adalah keadaan sesaat.
+type cursorMoveEvent struct {
+	cursor Cursor
+}
+
+func (syncEvent) isRoomEvent()       {}
+func (leaveEvent) isRoomEvent()      {}
+func (snapshotEvent) isRoomEvent()   {}
+func (cursorMoveEvent) isRoomEvent() {}
 
 // saveResult dikirim goroutine penyimpan kembali ke orchestrator.
 type saveResult struct {
@@ -212,6 +265,15 @@ type Room struct {
 	// supaya ia tidak pernah menerima delta untuk keadaan yang belum ia punya —
 	// dan supaya ia belum terhitung hadir, karena ia memang belum melihat apa pun.
 	members map[Subscriber]Member
+	// cursors dikunci id orang, isinya menang-terakhir. Disimpan, bukan sekadar
+	// diteruskan, supaya orang yang baru bergabung dapat langsung diberi seluruh
+	// kursor yang sudah ada — dan supaya kursor milik orang yang pergi dapat
+	// dibuang.
+	cursors map[string]Cursor
+	// cursorsDirty menandai ada yang berubah sejak siaran terakhir. Tanpa ini
+	// denyut akan mengirim ulang posisi yang sama dua puluh kali per detik walau
+	// tidak ada satu pun yang bergerak.
+	cursorsDirty bool
 }
 
 func newRoom(token string, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Room {
@@ -226,6 +288,7 @@ func newRoom(token string, documents output.DocumentRepository, encoder MessageE
 		done:      make(chan struct{}),
 		content:   &design.Content{Pages: []design.Page{}},
 		members:   make(map[Subscriber]Member),
+		cursors:   make(map[string]Cursor),
 	}
 }
 
@@ -246,6 +309,9 @@ func (r *Room) run(ctx context.Context) {
 	ticker := time.NewTicker(flushInterval)
 	defer ticker.Stop()
 
+	cursorTicker := time.NewTicker(cursorTickInterval)
+	defer cursorTicker.Stop()
+
 	for {
 		select {
 		case <-r.stop:
@@ -257,6 +323,8 @@ func (r *Room) run(ctx context.Context) {
 			r.handleSaved(result)
 		case <-ticker.C:
 			r.flush(ctx)
+		case <-cursorTicker.C:
+			r.broadcastCursors()
 		}
 	}
 }
@@ -356,6 +424,11 @@ func (r *Room) handle(event roomEvent) {
 			r.sendPresence(e.member.Subscriber)
 		}
 
+		// Kursor yang sudah ada dikirim langsung, tidak menunggu denyut. Denyut
+		// hanya menyiarkan saat ada yang berubah, jadi pendatang yang bergabung
+		// ketika semua orang sedang diam tidak akan pernah melihat satu kursor pun.
+		r.sendCursors(e.member.Subscriber)
+
 		// Balasan paling akhir, supaya kembalinya Sync berarti seluruh pesan untuk
 		// bergabung sudah masuk antrean — bukan sebagian. Ongkosnya hanya beberapa
 		// penambahan ke antrean, dan sebagai gantinya perilakunya dapat ditalar
@@ -368,8 +441,28 @@ func (r *Room) handle(event roomEvent) {
 		// Orang yang masih memegang tab lain belum benar-benar pergi, jadi tidak
 		// ada yang berubah untuk disiarkan.
 		if joined && !r.hasUser(member.UserID) {
+			// Orang yang benar-benar pergi tidak boleh meninggalkan kursornya
+			// menggantung di layar orang lain. Siarannya diserahkan ke denyut;
+			// kehadiran tidak, karena ia tidak punya denyut sendiri.
+			if _, had := r.cursors[member.UserID]; had {
+				delete(r.cursors, member.UserID)
+				r.cursorsDirty = true
+			}
 			r.broadcastPresence()
 		}
+	case cursorMoveEvent:
+		// Kursor hanya milik anggota. Koneksi yang sudah terbuka tetapi belum
+		// meminta dokumen belum hadir bagi siapa pun — namanya tidak ada di
+		// presence — sehingga kursornya akan muncul di layar orang lain sebagai id
+		// yang tidak dapat dipetakan ke siapa pun.
+		if !r.hasUser(e.cursor.UserID) {
+			return
+		}
+
+		// Seluruh kerja untuk satu gerakan cuma dua baris ini. Penyandian dan
+		// siarannya menunggu denyut.
+		r.cursors[e.cursor.UserID] = e.cursor
+		r.cursorsDirty = true
 	case snapshotEvent:
 		if r.broken != nil {
 			e.reply <- snapshotResult{err: r.broken}
@@ -470,6 +563,77 @@ func (r *Room) sendPresence(subscriber Subscriber) {
 	}
 
 	subscriber.Send(payload)
+}
+
+// broadcastCursors mengirim letak seluruh kursor ke semua penghuni.
+//
+// Kegagalan menyusun payload hanya dicatat, tidak menandai room rusak. Kursor
+// adalah hiasan di sekitar pekerjaan yang sebenarnya; menghentikan penyuntingan
+// karena ia gagal disusun jauh lebih merugikan daripada kursor yang tidak
+// bergerak.
+func (r *Room) broadcastCursors() {
+	// Penanda kotor sengaja TIDAK dibersihkan saat penghuninya kurang dari dua.
+	// Dengan begitu orang kedua yang bergabung langsung menerima kursor yang sudah
+	// ada pada denyut berikutnya, bukan menunggu ada yang menggerakkannya lagi.
+	if !r.cursorsDirty || len(r.members) < 2 {
+		return
+	}
+	r.cursorsDirty = false
+
+	payload, err := r.encodeCursors()
+	if err != nil {
+		return
+	}
+
+	for subscriber := range r.members {
+		subscriber.SendEphemeral(cursorStream, payload)
+	}
+}
+
+// sendCursors mengirim kursor yang sudah ada kepada satu orang saja, dipakai saat
+// ia baru bergabung.
+//
+// Dilewati bila belum ada kursor sama sekali: daftar kosong tidak memberi tahu
+// apa pun kepada pendatang yang memang belum punya kursor untuk digambar.
+func (r *Room) sendCursors(subscriber Subscriber) {
+	if len(r.cursors) == 0 {
+		return
+	}
+
+	payload, err := r.encodeCursors()
+	if err != nil {
+		return
+	}
+
+	subscriber.SendEphemeral(cursorStream, payload)
+}
+
+func (r *Room) encodeCursors() ([]byte, error) {
+	payload, err := r.encoder.EncodeCursors(r.presentCursors())
+	if err != nil {
+		r.logger.Error("encode document design cursors", "document", r.token, "error", err)
+		return nil, err
+	}
+
+	return payload, nil
+}
+
+// presentCursors menyusun muatan siaran.
+//
+// Diurutkan menurut id semata-mata supaya isinya dapat diulang: iterasi peta di
+// Go berurutan acak, dan tanpa pengurutan dua siaran untuk keadaan yang sama akan
+// menghasilkan byte yang berbeda-beda.
+func (r *Room) presentCursors() []Cursor {
+	cursors := make([]Cursor, 0, len(r.cursors))
+	for _, cursor := range r.cursors {
+		cursors = append(cursors, cursor)
+	}
+
+	slices.SortFunc(cursors, func(a, b Cursor) int {
+		return strings.Compare(a.UserID, b.UserID)
+	})
+
+	return cursors
 }
 
 func (r *Room) encodePresence() ([]byte, error) {
@@ -690,6 +854,14 @@ func (r *Room) snapshot(ctx context.Context) (snapshotResult, error) {
 		return snapshotResult{}, errRoomClosed
 	case <-ctx.Done():
 		return snapshotResult{}, ctx.Err()
+	}
+}
+
+// moveCursor tidak menunggu hasil, sama seperti leave.
+func (r *Room) moveCursor(cursor Cursor) {
+	select {
+	case r.inbox <- cursorMoveEvent{cursor: cursor}:
+	case <-r.done:
 	}
 }
 

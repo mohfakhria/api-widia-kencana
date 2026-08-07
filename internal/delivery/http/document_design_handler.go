@@ -384,12 +384,32 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		subscriber.sendError("missing_message_type", "message type is required")
 	case dto.DesignMessageDocumentGet:
 		h.sendSnapshot(ctx, documentToken, subscriber)
+	case dto.DesignMessageCursorMove:
+		h.moveCursor(documentToken, payload, subscriber)
 	default:
 		// Penerapan perubahan belum dibangun. Menolak dengan kode yang jelas lebih
 		// baik daripada diam, supaya ketidakcocokan kontrak langsung terlihat.
 		subscriber.sendError("unsupported_message_type",
 			fmt.Sprintf("message type %q is not handled yet", inbound.Type))
 	}
+}
+
+// moveCursor mengurai letak kursor dari muatannya.
+//
+// Diurai ulang di sini karena dispatch hanya membaca amplopnya. Ongkosnya kecil
+// dan hanya dibayar oleh jenis pesan yang memang membutuhkannya.
+//
+// Muatan yang cacat dijatuhkan DIAM-DIAM, tanpa pesan error — berbeda dari jenis
+// pesan lain. Kursor datang puluhan kali per detik; membalas kesalahan pada laju
+// itu hanya akan membanjiri klien dengan pesan yang tidak dapat ia perbuat
+// apa-apa, dan pada gilirannya memenuhi antrean keluarnya sendiri.
+func (h *DocumentDesignHandler) moveCursor(documentToken string, payload []byte, subscriber *designSubscriber) {
+	var move dto.DesignCursorMove
+	if err := json.Unmarshal(payload, &move); err != nil || move.Page == "" {
+		return
+	}
+
+	h.service.MoveCursor(documentToken, subscriber.userID, move.Page, move.X, move.Y)
 }
 
 // sendSnapshot meneruskan permintaan ke room. Snapshot-nya sendiri dimasukkan ke
@@ -434,6 +454,19 @@ func (s *designSubscriber) Send(payload []byte) {
 	if !s.buffer.outbound.enqueue(payload) {
 		s.cancel()
 	}
+}
+
+// SendEphemeral menggantikan pesan sejenis yang masih mengantre, dan tidak
+// pernah memutus koneksi.
+//
+// Dua sifat, keduanya disengaja. Menggantikan: klien yang tersendat menerima
+// posisi terkini saat ia menyusul, bukan tumpukan posisi basi — dan karena
+// penggantian terjadi di tempat, satu aliran hanya pernah menempati satu slot.
+// Tidak memutus: bila antrean terlanjur penuh oleh pesan lain, kiriman ini
+// dilewati begitu saja, karena gerakan berikutnya akan datang beberapa milidetik
+// lagi.
+func (s *designSubscriber) SendEphemeral(stream string, payload []byte) {
+	_ = s.buffer.outbound.conflate(stream, payload)
 }
 
 // Disconnect dipanggil orchestrator sambil memiliki state room, jadi ia tidak
@@ -501,6 +534,20 @@ type DesignMessageEncoder struct{}
 
 func (DesignMessageEncoder) EncodeSnapshot(content json.RawMessage, version int64, page documentdesign.PageSize) ([]byte, error) {
 	return dto.NewDesignSnapshotMessage(content, version, page.Width, page.Height)
+}
+
+func (DesignMessageEncoder) EncodeCursors(cursors []documentdesign.Cursor) ([]byte, error) {
+	entries := make([]dto.DesignCursorEntry, 0, len(cursors))
+	for _, cursor := range cursors {
+		entries = append(entries, dto.DesignCursorEntry{
+			ID:   cursor.UserID,
+			Page: cursor.Page,
+			X:    cursor.X,
+			Y:    cursor.Y,
+		})
+	}
+
+	return dto.NewDesignCursorMessage(entries)
 }
 
 func (DesignMessageEncoder) EncodePresence(users []documentdesign.PresenceUser) ([]byte, error) {

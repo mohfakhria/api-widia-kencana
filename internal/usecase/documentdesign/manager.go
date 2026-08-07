@@ -140,6 +140,22 @@ func (m *manager) snapshot(ctx context.Context, token string) (result snapshotRe
 	return result, true, err
 }
 
+// moveCursor meneruskan letak kursor ke room.
+//
+// Dokumen yang tidak sedang dibuka siapa pun tidak punya room, dan itu bukan
+// kegagalan — cukup diabaikan.
+func (m *manager) moveCursor(token string, cursor Cursor) {
+	m.mu.Lock()
+	entry, ok := m.rooms[token]
+	m.mu.Unlock()
+
+	if !ok {
+		return
+	}
+
+	entry.room.moveCursor(cursor)
+}
+
 // detach mengurangi pencacah dan mulai menghitung mundur begitu koneksi terakhir
 // pergi. Room-nya sendiri belum dibuang di sini — itu tugas sweepIdle setelah
 // roomIdleGrace terlampaui.
