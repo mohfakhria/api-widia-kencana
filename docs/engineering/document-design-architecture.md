@@ -27,7 +27,7 @@ flowchart TB
     subgraph uc["usecase/documentdesign"]
         SVC["Service<br/>pintu masuk tunggal"]
         MGR["manager<br/>peta token → room"]
-        ORC["ORCHESTRATOR<br/>1 goroutine per dokumen<br/>pemilik tunggal:<br/>content, version, members"]
+        ORC["ORCHESTRATOR<br/>1 goroutine per dokumen<br/>pemilik tunggal:<br/>content, version,<br/>members, cursors"]
         TS[("ticketStore<br/>memori, 30 dtk")]
     end
 
@@ -38,7 +38,7 @@ flowchart TB
     FE -->|"① POST tiket"| TICKET --> TS
     FE -->|"② handshake + tiket"| WS --> BUF
     BUF -->|"③ document.get"| SVC --> MGR --> ORC
-    ORC -->|"snapshot, presence"| BUF --> FE
+    ORC -->|"snapshot, presence,<br/>cursor"| BUF --> FE
     ORC -.->|"tiap 2 dtk,<br/>goroutine terpisah"| DB
     ORC -->|"muat saat lahir"| DB
 
@@ -60,7 +60,7 @@ delivery/http
   document_design_handler.go    handshake, empat goroutine per koneksi, dispatch
   document_design_buffer.go     antrean masuk/keluar per klien (sync.Cond)
   document_export_handler.go    POST /api/document-export/:token
-  dto/document_design_dto.go    bentuk kawat: snapshot, presence, error
+  dto/document_design_dto.go    bentuk kawat: snapshot, presence, cursor, error
         │
         ▼  port: MessageEncoder, Subscriber
 usecase/documentdesign
@@ -287,8 +287,8 @@ alamat yang ditentukan klien lewat isi dokumen.
 
 ## 2. Kenapa orchestrator, bukan mutex
 
-Seluruh state satu dokumen — isi, versi, versi tersimpan, daftar anggota, status
-rusak — dimiliki **satu goroutine**, dan diubah hanya lewat antrean kejadian.
+Seluruh state satu dokumen — isi, versi, versi tersimpan, daftar anggota, letak
+kursor, status rusak — dimiliki **satu goroutine**, dan diubah hanya lewat antrean kejadian.
 
 Yang didapat dari situ:
 
@@ -391,7 +391,19 @@ menjadikannya jalan keluar.
 perlu-tidaknya siaran kehadiran adalah apakah **orangnya** sudah hadir, bukan
 koneksinya. Memeriksanya setelah pendaftaran selalu menghasilkan "sudah hadir".
 
-**7. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
+**7. Kursor memakai `SendEphemeral`, tidak pernah `Send`.** `Send` mengakhiri
+koneksi ketika antrean keluar penuh, dan itu benar untuk snapshot maupun
+presence: klien yang kehilangan salah satunya akan salah selamanya. Untuk kursor
+itu keliru — jeda GC atau satu render berat sudah cukup untuk menjatuhkan sesi
+orang yang sedang bekerja, demi pesan yang basi dalam lima puluh milidetik.
+
+**8. Penggabungan mengganti DI TEMPAT, bukan memindahkan ke belakang.**
+`designQueue.conflate` menimpa isi isian yang kuncinya sama tanpa menggesernya,
+sehingga urutan pesan itu terhadap jenis pesan lain tetap seperti saat ia pertama
+masuk. Memindahkannya ke ekor akan membuat kursor menyalip snapshot atau
+presence yang datang lebih dulu.
+
+**9. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
 menunggu channel.** `manager.sync` dan `manager.snapshot` melepas kunci sebelum
 bertanya ke room. Menahannya akan membekukan seluruh dokumen lain.
 
@@ -411,7 +423,9 @@ goroutine penyimpan yang datang dan pergi tiap dua detik.
 
 Yang mendominasi memori adalah **isi dokumen itu sendiri**, dipegang sekali per
 room — bukan per koneksi. Sisanya kecil dan tetap: dua antrean berkapasitas 64
-pointer per koneksi, dan satu antrean 64 kejadian per room.
+pointer per koneksi, dan satu antrean 16384 kejadian per room — **256 KB**,
+karena channel mengalokasikan seluruh slotnya di muka. Angka terakhir itu yang
+naik paling cepat bila banyak dokumen dibuka serentak.
 
 Verifikasi kebocoran dilakukan dengan membandingkan jumlah goroutine sebelum dan
 sesudah beban, setelah memberi orchestrator waktu menuntaskan drain-nya.
@@ -450,10 +464,11 @@ memaksa klien menyambung ulang dan melihat keadaan yang sebenarnya.
 | `designQueueLimit` | 64 | klien yang tertinggal lebih jauh diputus, bukan ditumbuhkan antreannya |
 | `designPingInterval` + `designPongTimeout` | 30 + 10 dtk | koneksi mati terdeteksi paling lambat 40 detik |
 | `designWriteTimeout` | 5 dtk | penulisan memakai context yang lepas dari pembatalan, jadi butuh batasnya sendiri |
-| `roomInboxSize` | 64 | penyunting yang lebih cepat daripada laju penerapan tertahan, bukan menumbuhkan antrean |
+| `roomInboxSize` | 16384 | kelonggaran bagi lonjakan kursor; pengirim yang tertahan di sini berujung pada koneksi klien yang diakhiri. **256 KB per room** dialokasikan di muka, plus ~768 KB bila sungguh terisi penuh |
 | `flushInterval` | 2 dtk | kerugian maksimal saat proses mati mendadak |
 | `contentLoadTimeout` | 5 dtk | |
 | `contentSaveTimeout` | 3 dtk | lebih dari cukup untuk memperbarui satu baris |
+| `cursorTickInterval` | 50 ms | laju siaran kursor terikat pada denyut ini, berapa pun derasnya masukan. Terukur: 521 gerakan dalam 3 detik menjadi 61 pesan, latensi p99 45 ms |
 | `roomIdleGrace` | 10 dtk | menutup refresh halaman dan wifi berkedip |
 | `janitorInterval` | 5 dtk | **harus lebih kecil** dari `roomIdleGrace`, kalau tidak sampah bertahan hampir dua kali lipat |
 
@@ -505,6 +520,10 @@ tanda pisah `—` tercetak sebagai `â€"`, tanpa satu pun galat.
 **Penyuntingan lewat pesan.** Bentuk pesannya belum diputuskan. Fondasinya sudah
 siap: orchestrator sudah memiliki state, sudah menyiarkan, dan sudah menyimpan
 secara tunda. Yang tersisa adalah penerapan patch dan penyiarannya.
+
+**`cursor.hide`.** Kursor orang yang menggeser pointer keluar kanvas baru hilang
+ketika ia menutup tab atau pergi. Fondasinya sudah ada — tinggal satu jenis
+kejadian yang menghapus satu entri peta.
 
 **Kepemilikan dokumen.** Siapa pun yang berhasil login dapat membuka dan
 mengekspor dokumen mana pun, cukup dengan mengetahui tokennya. Konsisten dengan

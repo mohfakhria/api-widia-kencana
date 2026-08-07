@@ -20,8 +20,23 @@ const (
 	// roomInboxSize membatasi berapa kejadian yang boleh mengantre menuju satu
 	// room. Pengirim yang menemukannya penuh akan menunggu, sehingga penyunting
 	// yang lebih cepat daripada laju penerapan tertahan alih-alih menumbuhkan
-	// antrean.
-	roomInboxSize = 64
+	// antrean tanpa batas.
+	//
+	// Kelonggarannya besar karena rantai kegagalannya panjang dan ujungnya mahal:
+	// pengirim yang tertahan di sini menahan dispatch, lalu antrean masuk klien
+	// terisi, lalu readLoop keluar — dan koneksi orang itu diakhiri. Lonjakan
+	// sesaat, terutama dari kursor yang datang jauh lebih deras daripada kejadian
+	// lain, sebaiknya tidak pernah sampai ke sana.
+	//
+	// Ongkosnya dua lapis, dan hanya yang pertama selalu dibayar:
+	//
+	//	256 KB  array slot, dialokasikan di muka begitu room lahir
+	//	768 KB  isinya, hanya bila antrean sungguh terisi penuh
+	//
+	// Channel mengalokasikan seluruh slotnya di muka, dan satu roomEvent adalah
+	// interface selebar dua kata. Angkanya PER ROOM, jadi puncaknya sebanding
+	// dengan jumlah dokumen yang dibuka serentak.
+	roomInboxSize = 16384
 
 	// flushInterval adalah jarak antar penyimpanan ke database. Kerugian maksimal
 	// saat proses mati mendadak sebesar ini, selalu.

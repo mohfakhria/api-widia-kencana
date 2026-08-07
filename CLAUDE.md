@@ -30,7 +30,7 @@ tautkan saja.
 ## Sebelum mengubah document design
 
 Baca `docs/engineering/document-design-architecture.md` lebih dulu. Di sana ada
-tujuh invarian yang bila dilanggar tidak menghasilkan galat kompilasi maupun
+sembilan invarian yang bila dilanggar tidak menghasilkan galat kompilasi maupun
 pesan kesalahan — misalnya menambahkan mutex ke `Room`, atau membuat
 `Subscriber.Send` menunggu I/O.
 
