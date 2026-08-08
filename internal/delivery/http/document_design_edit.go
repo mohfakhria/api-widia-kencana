@@ -139,6 +139,29 @@ func (h *DocumentDesignHandler) createPage(ctx context.Context, documentToken st
 	}
 }
 
+func (h *DocumentDesignHandler) updatePage(documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignPageUpdate
+	if err := json.Unmarshal(payload, &message); err != nil {
+		subscriber.sendError("malformed_message", "page.update payload is not valid")
+		return
+	}
+	if message.ID == "" {
+		subscriber.sendError("malformed_message", "page.update requires an id")
+		return
+	}
+
+	// Kedua field WAJIB ada. Yang hilang tidak diperlakukan sebagai false: klien
+	// yang lupa menyertakan locked akan membuka kunci halaman diam-diam, lalu
+	// penyuntingannya tersiar ke semua orang sebagai perubahan yang sah. Ditolak
+	// di sini, sebelum menyentuh orchestrator.
+	if message.Hidden == nil || message.Locked == nil {
+		subscriber.sendError("malformed_message", "page.update requires both hidden and locked")
+		return
+	}
+
+	h.service.UpdatePage(documentToken, subscriber, message.ID, *message.Hidden, *message.Locked)
+}
+
 func (h *DocumentDesignHandler) deletePage(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {
 	var message dto.DesignPageDelete
 	if err := json.Unmarshal(payload, &message); err != nil {

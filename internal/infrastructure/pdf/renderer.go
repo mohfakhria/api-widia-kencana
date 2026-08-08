@@ -88,11 +88,16 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 		registeredImages: make(map[string]imageRegistration),
 	}
 
-	pages := document.Content.Pages
+	// Disaring lebih dulu, bukan dilewati di dalam perulangan. Penjaga di bawah
+	// menghitung dari daftar ini, sehingga dokumen yang SELURUH halamannya
+	// tersembunyi ikut tertangkap — kalau penyaringannya di dalam perulangan,
+	// penjaga itu lolos dan hasilnya PDF tanpa halaman sama sekali.
+	pages := document.Content.VisiblePages()
 	if len(pages) == 0 {
-		// PDF tanpa halaman bukan berkas yang sah. Dokumen yang masih kosong
-		// menghasilkan satu halaman kosong, yang juga jawaban yang benar bagi
-		// pengguna: itu memang isi dokumennya.
+		// PDF tanpa halaman bukan berkas yang sah. Dokumen yang masih kosong —
+		// atau yang seluruh halamannya disembunyikan — menghasilkan satu halaman
+		// kosong, yang juga jawaban yang benar bagi pengguna: itu memang yang akan
+		// tercetak.
 		doc.AddPageFormat("P", size)
 	}
 

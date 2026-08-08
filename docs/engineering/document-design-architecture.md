@@ -444,7 +444,19 @@ dokumen tanpa halaman sebagai dokumen kosong dan menimpanya dengan panduan
 bawaan. Yang melihatnya adalah orang berikutnya yang membuka dokumen, dan ia
 tidak akan punya cara menghubungkannya dengan penghapusan itu.
 
-**14. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
+**14. `design.VisiblePages` adalah satu-satunya definisi "terlihat".** Ekspor
+memakainya untuk dua hal yang harus sepakat: menggambar halaman, dan menentukan
+aset mana yang diunduh. Menyaring sendiri-sendiri di kedua tempat akan berakhir
+dengan salah satunya lupa — dan gejalanya adalah halaman tersembunyi berisi
+gambar rusak yang menggagalkan ekspor dokumen yang sebenarnya baik-baik saja,
+karena kegagalan mengunduh satu aset membatalkan seluruh ekspor.
+
+Penyaringan juga terjadi **sebelum** penjaga dokumen kosong di `renderer.go`,
+bukan di dalam perulangan gambar. Bila dibalik, dokumen yang seluruh halamannya
+tersembunyi lolos penjaga itu dan menghasilkan PDF tanpa halaman sama sekali,
+yang bukan berkas sah.
+
+**15. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
 menunggu channel.** `manager.sync` dan `manager.snapshot` melepas kunci sebelum
 bertanya ke room. Menahannya akan membekukan seluruh dokumen lain.
 
@@ -575,7 +587,19 @@ akan terasa mahal bila tidak lagi begitu.
 
 **Kunci elemen saat digeser.** Tidak ada penanda "elemen ini sedang dipegang si
 A". Menang-terakhir sudah menyelesaikan kasusnya tanpa keadaan tambahan yang
-harus dibersihkan ketika orang putus koneksi mendadak.
+harus dibersihkan ketika orang putus koneksi mendadak. Ini berbeda dari field
+`locked`, yang permanen dan disimpan bersama dokumen.
+
+**Penegakan `locked`.** Backend menyimpan dan menyiarkannya, tetapi tidak menolak
+satu pun penyuntingan atas halaman maupun elemen terkunci. Menegakkannya berarti
+menambah jalur penolakan pada jalur penyuntingan yang paling ramai, dan bentuk
+yang benar bila nanti diperlukan adalah mendiamkan — seperti sasaran yang lenyap
+— bukan membalas, supaya `element.update` tetap tanpa balasan.
+
+**Grup sebagai keadaan yang dijaga.** `groupId` datar dan tidak berarti apa-apa
+bagi backend: anggota satu grup tidak dijamin bersebelahan dalam urutan gambar,
+menggeser grup adalah N perubahan terpisah dan bukan satu langkah tak terbagi,
+dan grup di dalam grup butuh pohon yang belum diputuskan.
 
 **`cursor.hide`.** Kursor orang yang menggeser pointer keluar kanvas baru hilang
 ketika ia menutup tab atau pergi. Fondasinya sudah ada — tinggal satu jenis

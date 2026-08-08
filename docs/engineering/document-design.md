@@ -83,7 +83,8 @@ snapshot, jadi frontend tidak perlu mengonversi apa pun.
 | Aturan | |
 |---|---|
 | `pages` | array; **minimal satu halaman** — halaman terakhir tidak dapat dihapus |
-| Setiap halaman | `id` tidak kosong, `elements` opsional |
+| Setiap halaman | `id` tidak kosong, `elements` opsional, `hidden` dan `locked` opsional |
+| Setiap elemen | `locked` dan `groupId` opsional, berlaku untuk semua jenis |
 | Setiap elemen | `id` tidak kosong dan `type` yang dikenal |
 | Seluruh `id` | unik dalam satu dokumen, **termasuk lintas halaman** |
 
@@ -98,6 +99,22 @@ field `page` pada pesan `snapshot`, sudah dalam titik — lihat
 Urutan elemen adalah urutan gambar: yang belakangan menutupi yang terdahulu, sama
 seperti urutan DOM. Urutan **halaman** adalah urutan cetak, dan keduanya diubah
 lewat pesan `element.reorder` dan `page.reorder`.
+
+**`hidden` pada halaman tidak ikut tercetak.** Ekspor melewatinya seluruhnya —
+termasuk tidak mengunduh aset di atasnya. Dokumen yang seluruh halamannya
+tersembunyi menghasilkan PDF berisi satu halaman kosong, sama seperti dokumen
+yang memang belum punya halaman.
+
+**`locked` dan `groupId` tidak digambar sama sekali.** Renderer mengabaikan
+keduanya; mereka ada supaya editor punya tempat menyimpannya, dan supaya ikut
+tersalin ketika elemen berpindah. `locked` **tidak ditegakkan backend** — ia
+mencegah kecelakaan, bukan mencegah klien yang memang mengirim perubahan.
+`groupId` datar, tanpa penyusunan bersarang, dan backend tidak menjamin anggota
+satu grup bersebelahan dalam urutan gambar.
+
+> **`element.update` mengganti elemen seutuhnya.** Update yang tidak menyertakan
+> `locked` dan `groupId` akan menghapus keduanya. Kirim balik seluruh field yang
+> Anda terima, termasuk yang tidak Anda pedulikan.
 
 Satu dokumen dibatasi **200 halaman**; jumlah elemen tidak dibatasi. Halaman
 berbiaya jauh melampaui isinya karena tiap halaman menjadi satu halaman PDF yang

@@ -181,6 +181,54 @@ func (c *Content) CreatePage(id string, index *int) (effective int, err error) {
 	return effective, nil
 }
 
+// UpdatePage menyetel properti halaman, dan HANYA properti halaman.
+//
+// Sengaja tidak menerima halaman utuh seperti UpdateElement menerima elemen utuh.
+// Elemen adalah daun; halaman memuat elemen — mengganti halaman seutuhnya berarti
+// setiap perubahan hidden ikut menimpa seluruh isinya, dan dua orang yang
+// menyunting elemen di halaman itu akan saling menghapus pekerjaan.
+//
+// changed bernilai false juga ketika nilainya sudah sama persis, bukan hanya
+// ketika halamannya tidak ada. Keduanya sama-sama tidak mengubah dokumen, dan
+// menaikkan version untuk perubahan yang tidak mengubah apa pun akan membuat
+// klien lain memuat ulang tanpa sebab.
+//
+// Pemeriksaan ini mungkin di sini karena propertinya cuma dua. UpdateElement
+// tidak melakukannya: membandingkan elemen utuh jauh lebih mahal daripada
+// sesekali menyiarkan yang sama.
+func (c *Content) UpdatePage(id string, hidden, locked bool) (changed bool) {
+	index := slices.IndexFunc(c.Pages, func(p Page) bool { return p.ID == id })
+	if index < 0 {
+		return false
+	}
+	if c.Pages[index].Hidden == hidden && c.Pages[index].Locked == locked {
+		return false
+	}
+
+	c.Pages[index].Hidden = hidden
+	c.Pages[index].Locked = locked
+
+	return true
+}
+
+// VisiblePages adalah satu-satunya definisi "terlihat" di seluruh aplikasi.
+//
+// Ekspor memakainya untuk dua hal — menggambar, dan menentukan aset mana yang
+// perlu diunduh. Bila keduanya menyaring sendiri-sendiri, cepat atau lambat salah
+// satunya lupa, dan gejalanya berupa halaman tersembunyi yang menggagalkan ekspor
+// karena gambarnya tidak dapat diambil.
+func (c *Content) VisiblePages() []Page {
+	pages := make([]Page, 0, len(c.Pages))
+	for _, page := range c.Pages {
+		if page.Hidden {
+			continue
+		}
+		pages = append(pages, page)
+	}
+
+	return pages
+}
+
 // DeletePage membuang halaman beserta seluruh elemen di atasnya.
 //
 // Halaman TERAKHIR tidak boleh dibuang, dan itu bukan kerewelan. Dokumen yang

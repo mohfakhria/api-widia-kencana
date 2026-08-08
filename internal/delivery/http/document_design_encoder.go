@@ -55,6 +55,10 @@ func (DesignMessageEncoder) EncodePageCreated(version int64, id string, index in
 	return dto.NewDesignPageCreatedMessage(version, id, index)
 }
 
+func (DesignMessageEncoder) EncodePageUpdated(version int64, id string, hidden, locked bool) ([]byte, error) {
+	return dto.NewDesignPageUpdatedMessage(version, id, hidden, locked)
+}
+
 func (DesignMessageEncoder) EncodePageDeleted(version int64, id string) ([]byte, error) {
 	return dto.NewDesignPageDeletedMessage(version, id)
 }

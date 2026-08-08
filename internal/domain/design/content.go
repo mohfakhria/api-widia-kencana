@@ -86,7 +86,16 @@ type Content struct {
 // supaya seluruh halaman satu dokumen dijamin seukuran dan tidak ada jalan bagi
 // data untuk bertentangan dengan kertas yang dipilih pengguna.
 type Page struct {
-	ID       string    `json:"id"`
+	ID string `json:"id"`
+	// Hidden mengeluarkan halaman dari hasil cetak, bukan sekadar dari layar.
+	// Ekspor melewatinya seluruhnya — termasuk tidak mengunduh asetnya.
+	//
+	// Locked hanya penanda; backend TIDAK menegakkannya. Ia mencegah kecelakaan di
+	// editor, bukan mencegah orang yang berniat, dan menegakkannya di sini berarti
+	// menambah jalur penolakan pada jalur penyuntingan yang paling ramai.
+	Hidden bool `json:"hidden,omitempty"`
+	Locked bool `json:"locked,omitempty"`
+
 	Elements []Element `json:"elements"`
 }
 
@@ -114,6 +123,20 @@ type Element struct {
 	Y float64 `json:"y"`
 	W float64 `json:"w"`
 	H float64 `json:"h"`
+
+	// Locked dan GroupID tidak memengaruhi gambar sama sekali; renderer
+	// mengabaikan keduanya. Mereka ada di model ini semata-mata supaya editor
+	// punya tempat menyimpannya, dan supaya keduanya ikut tersalin ketika elemen
+	// dipindahkan atau dokumen digandakan.
+	//
+	// GroupID datar, tidak bersarang. Grup di dalam grup butuh pohon, dan itu
+	// keputusan yang belum diambil.
+	//
+	// PERHATIAN: element.update mengganti elemen SELURUHNYA. Klien yang tidak
+	// mengirim balik kedua field ini akan membuka kuncinya dan mengeluarkannya
+	// dari grup, diam-diam.
+	Locked  bool   `json:"locked,omitempty"`
+	GroupID string `json:"groupId,omitempty"`
 
 	// Properti teks.
 	Text          string  `json:"text,omitempty"`

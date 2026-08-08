@@ -321,6 +321,8 @@ func (r *Room) handle(event roomEvent) {
 		r.applyReorder(e)
 	case pageCreateEvent:
 		r.applyPageCreate(e)
+	case pageUpdateEvent:
+		r.applyPageUpdate(e)
 	case pageDeleteEvent:
 		r.applyPageDelete(e)
 	case pageReorderEvent:
@@ -531,6 +533,14 @@ func (r *Room) deletePage(ctx context.Context, sub Subscriber, id string) error 
 	event := pageDeleteEvent{subscriber: sub, id: id, reply: reply}
 
 	return r.await(ctx, event, reply)
+}
+
+// updatePage tidak menunggu hasil, sama seperti updateElement.
+func (r *Room) updatePage(sub Subscriber, id string, hidden, locked bool) {
+	select {
+	case r.inbox <- pageUpdateEvent{subscriber: sub, id: id, hidden: hidden, locked: locked}:
+	case <-r.done:
+	}
 }
 
 func (r *Room) reorderPage(sub Subscriber, id string, index int) {

@@ -132,6 +132,18 @@ type pageDeleteEvent struct {
 	reply      chan<- error
 }
 
+// pageUpdateEvent tidak membalas, sama seperti elementUpdateEvent. Muatan yang
+// tidak lengkap sudah ditolak di lapisan delivery sebelum menyentuh orchestrator,
+// sehingga yang tersisa di sini paling banter tidak berlaku.
+type pageUpdateEvent struct {
+	subscriber Subscriber
+	id         string
+	hidden     bool
+	locked     bool
+}
+
+func (pageUpdateEvent) isRoomEvent() {}
+
 type pageReorderEvent struct {
 	subscriber Subscriber
 	id         string

@@ -167,7 +167,11 @@ func imageTokens(content *design.Content) []string {
 	seen := make(map[string]struct{})
 	tokens := make([]string, 0)
 
-	for _, page := range content.Pages {
+	// Halaman tersembunyi dilewati, dan itu bukan sekadar penghematan: kegagalan
+	// mengunduh satu aset menggagalkan SELURUH ekspor, sehingga gambar rusak di
+	// halaman yang bahkan tidak dicetak akan membatalkan dokumen yang sebenarnya
+	// baik-baik saja.
+	for _, page := range content.VisiblePages() {
 		for _, element := range page.Elements {
 			if element.Type != design.ElementImage || element.AssetToken == "" {
 				continue

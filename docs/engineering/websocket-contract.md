@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-08 | `page.update` beserta siaran `page.updated`; field baru `hidden`/`locked` pada halaman dan `locked`/`groupId` pada elemen | Tambahan, **tetapi**: `element.update` mengganti elemen seutuhnya, jadi mulai kirim balik `locked` dan `groupId` pada setiap update — yang tidak disertakan akan terhapus. Halaman `hidden` **tidak ikut tercetak** |
 | 2026-08-08 | `page.create`, `page.delete`, `page.reorder` beserta siaran `page.*` dan kode error `page_rejected` | Tambahan. Halaman kini dapat ditambah dan dibuang saat sesi berjalan — **berhenti** menganggap daftar halaman tetap sepanjang koneksi. Halaman terakhir tidak dapat dihapus |
 | 2026-08-08 | **Penyuntingan lewat WebSocket**: `element.create`, `element.update`, `element.delete`, `element.reorder`, beserta siaran `element.*` dan kode error `element_rejected` | Fitur baru. `version` kini bergerak setiap ada perubahan — **mulai pakai** deteksi celah nomor di [3.6](#36-versi). Berhenti menyunting `documents.content` langsung di database |
 | 2026-08-07 | Denyut siaran `cursor` dilonggarkan 50 ms → **70 ms** | Tidak ada, bentuk pesannya tetap. Sesuaikan hanya bila durasi interpolasi dipatok pada 50 ms |
@@ -286,7 +287,49 @@ Halaman baru **selalu kosong**. Belum ada penyalinan halaman.
 
 Ditolak bila id sudah dipakai, atau bila dokumen sudah punya **200 halaman**.
 
-### 2.9 `page.delete`
+### 2.9 `page.update`
+
+```jsonc
+{ "type": "page.update", "id": "9c1f…", "hidden": true, "locked": false }
+```
+
+| | |
+|---|---|
+| Kapan dikirim | pengguna menyembunyikan, menampilkan, mengunci, atau membuka halaman |
+| Balasan | `page.updated` ke **semua** penghuni, termasuk pengirim |
+| Bila muatannya kurang | `error` dengan kode `malformed_message` |
+
+**Kedua boolean WAJIB, selalu keduanya.** Pesan yang hanya menyebut salah satunya
+**ditolak**, bukan diperlakukan sebagai `false`. Tanpa aturan itu, mengirim
+`{"hidden": true}` akan sekalian **membuka kunci** halaman itu diam-diam, dan
+perubahan yang tidak Anda minta tersiar ke semua orang sebagai perubahan yang sah.
+
+**Tidak ada field `elements`.** Ini perbedaan pokok dari `element.update`. Elemen
+adalah daun sehingga dikirim utuh; halaman memuat elemen, dan mengirim halaman
+utuh berarti setiap perubahan `hidden` ikut menimpa seluruh isinya — dua orang
+yang menyunting elemen di halaman itu akan saling menghapus pekerjaan.
+
+Nilai yang **sudah sama persis** tidak menghasilkan siaran dan tidak menaikkan
+`version`. Aman mengirimnya berulang, tetapi tidak ada gunanya.
+
+#### `hidden` — tidak ikut tercetak
+
+Halaman tersembunyi **dilewati ekspor seluruhnya**, termasuk aset di atasnya yang
+tidak akan diunduh. Ia bukan sekadar disembunyikan dari editor.
+
+Boleh menyembunyikan halaman terlihat yang terakhir. Dokumen yang seluruh
+halamannya tersembunyi menghasilkan PDF berisi **satu halaman kosong** — sama
+seperti dokumen yang memang belum punya halaman, dan dengan alasan yang sama: itu
+memang yang akan tercetak.
+
+#### `locked` — tidak ditegakkan backend
+
+`locked` adalah **penanda**, bukan penjagaan. Backend menyimpannya dan
+menyiarkannya, tetapi tidak menolak satu pun penyuntingan atas halaman atau elemen
+yang terkunci. Ia mencegah kecelakaan di editor, bukan mencegah klien yang memang
+mengirim perubahan.
+
+### 2.10 `page.delete`
 
 ```jsonc
 { "type": "page.delete", "id": "9c1f…" }
@@ -305,7 +348,7 @@ Sembunyikan atau matikan tombolnya ketika dokumen tinggal satu halaman.
 
 Halaman yang memang sudah tidak ada didiamkan, sama seperti elemen.
 
-### 2.10 `page.reorder`
+### 2.11 `page.reorder`
 
 ```jsonc
 { "type": "page.reorder", "id": "9c1f…", "index": 0 }
@@ -315,7 +358,7 @@ Halaman yang memang sudah tidak ada didiamkan, sama seperti elemen.
 karena memindahkan tanpa menyebut tujuan tidak berarti apa-apa. Di luar batas
 dijepit, dan siaran `page.reordered` membawa letak sesungguhnya.
 
-### 2.11 Yang belum ada
+### 2.12 Yang belum ada
 
 `cursor.hide` belum ada: kursor orang yang menggeser pointer keluar kanvas baru
 hilang ketika ia menutup tab, atau ketika ia pergi.
@@ -345,6 +388,7 @@ Ringkasannya:
 | `element.deleted` | `element.delete` diterapkan | **semua**, pengirim ikut | buang elemen berid itu |
 | `element.reordered` | `element.reorder` diterapkan | **semua**, pengirim ikut | pindahkan elemen ke `index` |
 | `page.created` | `page.create` diterapkan | **semua**, pengirim ikut | sisipkan halaman kosong di `index` |
+| `page.updated` | `page.update` diterapkan | **semua**, pengirim ikut | setel `hidden` dan `locked` halaman itu |
 | `page.deleted` | `page.delete` diterapkan | **semua**, pengirim ikut | buang halaman itu **beserta seluruh elemennya** |
 | `page.reordered` | `page.reorder` diterapkan | **semua**, pengirim ikut | pindahkan halaman ke `index` |
 | `error` | permintaan ditolak | hanya peminta | **jangan** sambung ulang |
@@ -505,9 +549,14 @@ Siaran halaman mengikuti pola yang sama persis:
 
 ```jsonc
 { "type": "page.created",   "version": 60, "id": "…", "index": 2 }
-{ "type": "page.deleted",   "version": 61, "id": "…" }
-{ "type": "page.reordered", "version": 62, "id": "…", "index": 0 }
+{ "type": "page.updated",   "version": 61, "id": "…", "hidden": true, "locked": false }
+{ "type": "page.deleted",   "version": 62, "id": "…" }
+{ "type": "page.reordered", "version": 63, "id": "…", "index": 0 }
 ```
+
+Pada `page.updated`, **kedua boolean selalu ada** — termasuk ketika bernilai
+`false`. Siaran yang mengatakan "sekarang tidak tersembunyi" harus dapat
+dibedakan dari siaran yang tidak menyebut apa-apa.
 
 `page.deleted` **tidak menyebutkan elemen di atasnya satu per satu.** Anda sudah
 tahu isi halaman itu dari `snapshot` dan siaran sebelumnya; buang halamannya, dan

@@ -214,6 +214,8 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		h.reorderElement(documentToken, payload, subscriber)
 	case dto.DesignMessagePageCreate:
 		h.createPage(ctx, documentToken, payload, subscriber)
+	case dto.DesignMessagePageUpdate:
+		h.updatePage(documentToken, payload, subscriber)
 	case dto.DesignMessagePageDelete:
 		h.deletePage(ctx, documentToken, payload, subscriber)
 	case dto.DesignMessagePageReorder:

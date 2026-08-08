@@ -15,6 +15,7 @@ const (
 	DesignMessageElementDelete  = "element.delete"
 	DesignMessageElementReorder = "element.reorder"
 	DesignMessagePageCreate     = "page.create"
+	DesignMessagePageUpdate     = "page.update"
 	DesignMessagePageDelete     = "page.delete"
 	DesignMessagePageReorder    = "page.reorder"
 )
@@ -35,6 +36,7 @@ const (
 	DesignMessageElementDeleted   = "element.deleted"
 	DesignMessageElementReordered = "element.reordered"
 	DesignMessagePageCreated      = "page.created"
+	DesignMessagePageUpdated      = "page.updated"
 	DesignMessagePageDeleted      = "page.deleted"
 	DesignMessagePageReordered    = "page.reordered"
 )
@@ -256,6 +258,48 @@ func NewDesignElementDeletedMessage(version int64, id string) ([]byte, error) {
 type DesignPageCreate struct {
 	ID    string `json:"id"`
 	Index *int   `json:"index"`
+}
+
+// DesignPageUpdate adalah muatan pesan page.update — properti halaman saja.
+//
+// TIDAK ADA field elements, dan itu perbedaan pokok dari element.update. Elemen
+// adalah daun sehingga dikirim utuh; halaman memuat elemen, dan mengirim halaman
+// utuh berarti tiap perubahan hidden ikut menimpa seluruh isinya — dua orang yang
+// menyunting elemen di halaman itu akan saling menghapus pekerjaan.
+//
+// Kedua boolean BERTIPE POINTER supaya "tidak dikirim" dapat dibedakan dari
+// "dikirim bernilai false", lalu ditolak. Tanpa itu, klien yang lupa menyertakan
+// locked akan MEMBUKA KUNCI halaman diam-diam dan menyiarkannya ke semua orang
+// sebagai perubahan yang sah. Dua field, dua kesempatan untuk lupa; lebih baik
+// gagal berisik daripada mengubah sesuatu yang tidak diminta siapa pun.
+type DesignPageUpdate struct {
+	ID     string `json:"id"`
+	Hidden *bool  `json:"hidden"`
+	Locked *bool  `json:"locked"`
+}
+
+// DesignPageUpdatedMessage adalah siarannya.
+//
+// Tanpa omitempty pada kedua boolean: siaran yang mengatakan "sekarang TIDAK
+// tersembunyi" wajib membawa "hidden": false. Dengan omitempty ia terkirim tanpa
+// field itu sama sekali, dan penerima tidak dapat membedakannya dari pesan yang
+// memang tidak menyebut apa-apa.
+type DesignPageUpdatedMessage struct {
+	Type    string `json:"type"`
+	Version int64  `json:"version"`
+	ID      string `json:"id"`
+	Hidden  bool   `json:"hidden"`
+	Locked  bool   `json:"locked"`
+}
+
+func NewDesignPageUpdatedMessage(version int64, id string, hidden, locked bool) ([]byte, error) {
+	return json.Marshal(DesignPageUpdatedMessage{
+		Type:    DesignMessagePageUpdated,
+		Version: version,
+		ID:      id,
+		Hidden:  hidden,
+		Locked:  locked,
+	})
 }
 
 // DesignPageDelete adalah muatan pesan page.delete.

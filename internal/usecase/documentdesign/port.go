@@ -57,6 +57,7 @@ type MessageEncoder interface {
 	EncodeElementDeleted(version int64, id string) ([]byte, error)
 	EncodeElementReordered(version int64, id string, index int) ([]byte, error)
 	EncodePageCreated(version int64, id string, index int) ([]byte, error)
+	EncodePageUpdated(version int64, id string, hidden, locked bool) ([]byte, error)
 	EncodePageDeleted(version int64, id string) ([]byte, error)
 	EncodePageReordered(version int64, id string, index int) ([]byte, error)
 }

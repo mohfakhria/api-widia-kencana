@@ -117,6 +117,27 @@ func (r *Room) applyPageCreate(e pageCreateEvent) {
 	e.reply <- nil
 }
 
+// applyPageUpdate menyetel hidden dan locked.
+//
+// Tidak membalas: yang dapat ditolak — muatan tanpa salah satu field — sudah
+// ditahan di lapisan delivery. Yang tersisa di sini paling banter tidak berlaku,
+// yaitu halaman yang sudah lenyap atau nilai yang memang sudah sama.
+//
+// hidden mengubah hasil cetak, bukan sekadar tampilan: ekspor melewati halaman
+// tersembunyi seluruhnya, termasuk tidak mengunduh asetnya. locked tidak
+// ditegakkan di mana pun — ia penanda untuk editor.
+func (r *Room) applyPageUpdate(e pageUpdateEvent) {
+	if err := r.editable(e.subscriber); err != nil {
+		return
+	}
+	if !r.content.UpdatePage(e.id, e.hidden, e.locked) {
+		return
+	}
+
+	r.version++
+	r.broadcastEdit(r.encoder.EncodePageUpdated(r.version, e.id, e.hidden, e.locked))
+}
+
 // applyPageDelete membuang halaman beserta seluruh elemennya.
 //
 // Membalas, berbeda dari applyDelete pada elemen, karena penghapusan halaman

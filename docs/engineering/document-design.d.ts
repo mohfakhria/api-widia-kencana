@@ -44,6 +44,16 @@ export interface DesignContent {
 export interface DesignPage {
   /** Tidak kosong, unik se-dokumen. */
   id: string;
+  /**
+   * Halaman tersembunyi TIDAK IKUT TERCETAK — ekspor melewatinya seluruhnya,
+   * termasuk tidak mengunduh asetnya. Bukan sekadar disembunyikan dari editor.
+   *
+   * Dokumen yang seluruh halamannya tersembunyi menghasilkan PDF berisi satu
+   * halaman kosong.
+   */
+  hidden?: boolean;
+  /** Penanda saja; backend TIDAK menegakkannya. Lihat DesignPageUpdateMessage. */
+  locked?: boolean;
   /** Urutan elemen adalah urutan gambar: yang belakangan menutupi yang terdahulu. */
   elements?: DesignElement[];
 }
@@ -56,6 +66,20 @@ interface DesignElementBase {
   y: Points;
   w: Points;
   h: Points;
+  /**
+   * Penanda saja; backend TIDAK menegakkannya. Elemen terkunci tetap dapat
+   * diubah oleh element.update mana pun — ia mencegah kecelakaan di editor,
+   * bukan mencegah klien yang memang mengirim perubahan.
+   */
+  locked?: boolean;
+  /**
+   * Pengelompokan, DATAR — tidak bersarang. Grup di dalam grup belum ada.
+   *
+   * Backend tidak menjaga apa pun tentang grup: anggotanya tidak dijamin
+   * bersebelahan dalam urutan gambar, dan menggeser lima elemen segrup adalah
+   * lima pesan yang diterapkan satu per satu, bukan satu langkah tak terbagi.
+   */
+  groupId?: string;
 }
 
 export interface DesignTextElement extends DesignElementBase {
@@ -162,6 +186,11 @@ export interface DesignElementCreateMessage {
  * Bukan patch: field yang tidak disertakan kembali ke nilai bawaannya. Letaknya
  * dalam urutan gambar tidak berubah — yang memindahkan hanya element.reorder.
  *
+ * KIRIM BALIK locked DAN groupId. Keduanya tidak Anda pedulikan saat menggeser,
+ * tetapi update yang tidak menyertakannya akan MEMBUKA KUNCI elemen itu dan
+ * MENGELUARKANNYA DARI GRUP — diam-diam, dan tersiar ke semua orang sebagai
+ * perubahan yang sah.
+ *
  * Elemen yang sudah tidak ada didiamkan: tanpa error, tanpa siaran, tanpa
  * kenaikan version. Orang lain yang menghapusnya lebih dulu adalah kejadian
  * biasa, dan element.deleted untuknya sedang menuju Anda.
@@ -213,6 +242,30 @@ export interface DesignPageCreateMessage {
 }
 
 /**
+ * Menyetel properti halaman — dan HANYA properti halaman.
+ *
+ * TIDAK ADA field elements. Elemen adalah daun sehingga dikirim utuh; halaman
+ * memuat elemen, dan mengirim halaman utuh berarti tiap perubahan hidden ikut
+ * menimpa seluruh isinya — dua orang yang menyunting elemen di halaman itu akan
+ * saling menghapus pekerjaan.
+ *
+ * KEDUA BOOLEAN WAJIB, SELALU KEDUANYA. Pesan yang hanya menyebut salah satunya
+ * ditolak (malformed_message), bukan diperlakukan sebagai false — tanpa aturan
+ * itu, mengirim { hidden: true } akan sekalian membuka kunci halaman diam-diam.
+ *
+ * Nilai yang sudah sama persis tidak menghasilkan siaran dan tidak menaikkan
+ * version.
+ */
+export interface DesignPageUpdateMessage {
+  type: 'page.update';
+  id: string;
+  /** Tidak ikut tercetak. Lihat DesignPage.hidden. */
+  hidden: boolean;
+  /** Penanda saja; backend tidak menegakkannya. */
+  locked: boolean;
+}
+
+/**
  * Membuang halaman beserta SELURUH elemen di atasnya.
  *
  * HALAMAN TERAKHIR TIDAK DAPAT DIHAPUS — dibalas page_rejected. Matikan tombolnya
@@ -243,6 +296,7 @@ export type DesignClientMessage =
   | DesignElementDeleteMessage
   | DesignElementReorderMessage
   | DesignPageCreateMessage
+  | DesignPageUpdateMessage
   | DesignPageDeleteMessage
   | DesignPageReorderMessage;
 
@@ -351,6 +405,15 @@ export interface DesignPageCreatedMessage {
   index: number;
 }
 
+/** Kedua boolean SELALU ada, termasuk ketika bernilai false. */
+export interface DesignPageUpdatedMessage {
+  type: 'page.updated';
+  version: number;
+  id: string;
+  hidden: boolean;
+  locked: boolean;
+}
+
 /**
  * Halaman dibuang. Elemen di atasnya TIDAK disebutkan satu per satu — buang
  * halamannya dan seluruh elemennya ikut.
@@ -409,6 +472,7 @@ export type DesignServerMessage =
   | DesignElementDeletedMessage
   | DesignElementReorderedMessage
   | DesignPageCreatedMessage
+  | DesignPageUpdatedMessage
   | DesignPageDeletedMessage
   | DesignPageReorderedMessage
   | DesignErrorMessage;

@@ -216,6 +216,12 @@ func (m *manager) deletePage(ctx context.Context, token string, sub Subscriber, 
 	return room.deletePage(ctx, sub, id)
 }
 
+func (m *manager) updatePage(token string, sub Subscriber, id string, hidden, locked bool) {
+	if room, ok := m.room(token); ok {
+		room.updatePage(sub, id, hidden, locked)
+	}
+}
+
 func (m *manager) reorderPage(token string, sub Subscriber, id string, index int) {
 	if room, ok := m.room(token); ok {
 		room.reorderPage(sub, id, index)
