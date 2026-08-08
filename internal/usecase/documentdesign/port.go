@@ -1,6 +1,10 @@
 package documentdesign
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
+)
 
 // Subscriber adalah satu koneksi yang menerima siaran dari room.
 //
@@ -43,6 +47,15 @@ type MessageEncoder interface {
 	EncodeSnapshot(content json.RawMessage, version int64, page PageSize) ([]byte, error)
 	EncodePresence(users []PresenceUser) ([]byte, error)
 	EncodeCursors(cursors []Cursor) ([]byte, error)
+
+	// Siaran perubahan. Elemen diserahkan sebagai nilai domain, bukan JSON mentah
+	// seperti snapshot: di sini ia sudah tervalidasi dan dimiliki orchestrator,
+	// sehingga menyandikannya lebih dulu menjadi byte hanya untuk disandikan ulang
+	// ke dalam amplop adalah pekerjaan ganda tanpa jaminan tambahan.
+	EncodeElementCreated(version int64, page string, element design.Element) ([]byte, error)
+	EncodeElementUpdated(version int64, element design.Element) ([]byte, error)
+	EncodeElementDeleted(version int64, id string) ([]byte, error)
+	EncodeElementReordered(version int64, id string, index int) ([]byte, error)
 }
 
 // Cursor adalah letak kursor satu orang di atas dokumen.

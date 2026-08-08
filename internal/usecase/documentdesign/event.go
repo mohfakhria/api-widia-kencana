@@ -3,6 +3,7 @@ package documentdesign
 import (
 	"encoding/json"
 
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 )
 
@@ -50,6 +51,54 @@ type snapshotResult struct {
 type cursorMoveEvent struct {
 	cursor Cursor
 }
+
+// Keempat kejadian penyuntingan membawa subscriber pengirimnya, semata-mata untuk
+// memeriksa keanggotaan. Koneksi yang terbuka tetapi belum meminta dokumen belum
+// pernah melihat isinya, jadi suntingan darinya menunjuk keadaan yang tidak pernah
+// ia miliki.
+//
+// Pemeriksaannya per KONEKSI, bukan per orang seperti kursor. Kursor dikunci per
+// orang sehingga tab mana pun boleh menggerakkannya; suntingan menunjuk isi
+// dokumen, dan hanya koneksi yang sudah menerima snapshot yang punya dasar untuk
+// menunjuknya.
+
+// elementCreateEvent satu-satunya yang punya reply.
+//
+// Hanya penambahan yang dapat gagal di dalam orchestrator — halaman tidak ada,
+// atau id sudah dipakai — dan kegagalan itu wajib sampai ke pengirimnya, kalau
+// tidak elemen yang sudah tergambar optimistis di layarnya tidak akan pernah ada
+// di dokumen. Ketiga sisanya paling banter tidak berlaku, dan itu menyatu dengan
+// sendirinya.
+type elementCreateEvent struct {
+	subscriber Subscriber
+	page       string
+	element    design.Element
+	reply      chan<- error
+}
+
+type elementUpdateEvent struct {
+	subscriber Subscriber
+	element    design.Element
+}
+
+type elementDeleteEvent struct {
+	subscriber Subscriber
+	id         string
+}
+
+type elementReorderEvent struct {
+	subscriber Subscriber
+	id         string
+	index      int
+}
+
+func (elementCreateEvent) isRoomEvent() {}
+
+func (elementUpdateEvent) isRoomEvent() {}
+
+func (elementDeleteEvent) isRoomEvent() {}
+
+func (elementReorderEvent) isRoomEvent() {}
 
 func (syncEvent) isRoomEvent() {}
 

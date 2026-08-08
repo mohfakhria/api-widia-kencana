@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
 
@@ -157,6 +158,43 @@ func (m *manager) snapshot(ctx context.Context, token string) (result snapshotRe
 func (m *manager) moveCursor(token string, cursor Cursor) {
 	if room, ok := m.room(token); ok {
 		room.moveCursor(cursor)
+	}
+}
+
+// createElement meneruskan penambahan dan menunggu hasilnya.
+//
+// Room yang tidak ada di sini berarti pengirimnya belum meminta dokumen, atau
+// room-nya baru saja disapu. Keduanya sama bagi klien: yang ia lihat gagal, dan
+// document.get adalah jalan keluarnya.
+func (m *manager) createElement(ctx context.Context, token string, sub Subscriber, page string, element design.Element) error {
+	room, ok := m.room(token)
+	if !ok {
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	}
+
+	return room.createElement(ctx, sub, page, element)
+}
+
+// Ketiga sisanya tidak melaporkan apa pun, sama seperti moveCursor. Perubahan
+// yang tidak sampai karena room-nya sudah berhenti tidak berbeda dari perubahan
+// yang sasarannya sudah lenyap — keduanya tidak menaikkan version, jadi tidak ada
+// klien yang melihat celah nomor.
+
+func (m *manager) updateElement(token string, sub Subscriber, element design.Element) {
+	if room, ok := m.room(token); ok {
+		room.updateElement(sub, element)
+	}
+}
+
+func (m *manager) deleteElement(token string, sub Subscriber, id string) {
+	if room, ok := m.room(token); ok {
+		room.deleteElement(sub, id)
+	}
+}
+
+func (m *manager) reorderElement(token string, sub Subscriber, id string, index int) {
+	if room, ok := m.room(token); ok {
+		room.reorderElement(sub, id, index)
 	}
 }
 

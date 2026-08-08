@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
 )
 
@@ -32,6 +33,22 @@ func (DesignMessageEncoder) EncodeCursors(cursors []documentdesign.Cursor) ([]by
 	}
 
 	return dto.NewDesignCursorMessage(entries)
+}
+
+func (DesignMessageEncoder) EncodeElementCreated(version int64, page string, element design.Element) ([]byte, error) {
+	return dto.NewDesignElementCreatedMessage(version, page, element)
+}
+
+func (DesignMessageEncoder) EncodeElementUpdated(version int64, element design.Element) ([]byte, error) {
+	return dto.NewDesignElementUpdatedMessage(version, element)
+}
+
+func (DesignMessageEncoder) EncodeElementDeleted(version int64, id string) ([]byte, error) {
+	return dto.NewDesignElementDeletedMessage(version, id)
+}
+
+func (DesignMessageEncoder) EncodeElementReordered(version int64, id string, index int) ([]byte, error) {
+	return dto.NewDesignElementReorderedMessage(version, id, index)
 }
 
 func (DesignMessageEncoder) EncodePresence(users []documentdesign.PresenceUser) ([]byte, error) {

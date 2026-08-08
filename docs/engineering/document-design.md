@@ -24,10 +24,10 @@ sama persis dengan hasil cetak, dan cara mengekspornya.
 | [4. Ekspor PDF](#4-ekspor-pdf) | `POST /api/document-export/:token` |
 | [Daftar periksa](#daftar-periksa-penyesuaian-frontend) | Apa yang harus diubah dari editor yang sudah ada |
 
-Isi dokumen **belum dapat diubah lewat API mana pun** — untuk sekarang
-perubahannya dilakukan langsung ke kolom `documents.content` di database. Bentuk
-pesan penyuntingan belum diputuskan; lihat
-[kontrak WebSocket](websocket-contract.md#23-yang-belum-ada).
+Isi dokumen diubah lewat pesan `element.*` di WebSocket — bentuk dan aturannya
+ada di [kontrak WebSocket](websocket-contract.md#23-elementcreate). Dokumen ini
+menjelaskan **isinya**: bentuk elemen yang Anda kirim di dalam pesan-pesan itu,
+dan cara menggambarnya supaya layar dan hasil cetak sama.
 
 ---
 

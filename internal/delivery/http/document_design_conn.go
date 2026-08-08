@@ -204,6 +204,14 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		h.sendSnapshot(ctx, documentToken, subscriber)
 	case dto.DesignMessageCursorMove:
 		h.moveCursor(documentToken, payload, subscriber)
+	case dto.DesignMessageElementCreate:
+		h.createElement(ctx, documentToken, payload, subscriber)
+	case dto.DesignMessageElementUpdate:
+		h.updateElement(documentToken, payload, subscriber)
+	case dto.DesignMessageElementDelete:
+		h.deleteElement(documentToken, payload, subscriber)
+	case dto.DesignMessageElementReorder:
+		h.reorderElement(documentToken, payload, subscriber)
 	default:
 		// Penerapan perubahan belum dibangun. Menolak dengan kode yang jelas lebih
 		// baik daripada diam, supaya ketidakcocokan kontrak langsung terlihat.

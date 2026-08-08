@@ -8,16 +8,29 @@ import (
 
 // Jenis pesan yang dikirim klien.
 const (
-	DesignMessageDocumentGet = "document.get"
-	DesignMessageCursorMove  = "cursor.move"
+	DesignMessageDocumentGet    = "document.get"
+	DesignMessageCursorMove     = "cursor.move"
+	DesignMessageElementCreate  = "element.create"
+	DesignMessageElementUpdate  = "element.update"
+	DesignMessageElementDelete  = "element.delete"
+	DesignMessageElementReorder = "element.reorder"
 )
 
 // Jenis pesan yang dikirim server.
+//
+// Perubahan disiarkan dalam bentuk lampau — created, bukan create — supaya
+// perintah dan pemberitahuan tidak pernah tertukar. Keduanya membawa muatan yang
+// mirip, dan tanpa pembeda pada field type, catatan log maupun union tipe di
+// frontend akan menyatukan dua hal yang arahnya berlawanan.
 const (
-	DesignMessageSnapshot = "snapshot"
-	DesignMessagePresence = "presence"
-	DesignMessageCursor   = "cursor"
-	DesignMessageError    = "error"
+	DesignMessageSnapshot         = "snapshot"
+	DesignMessagePresence         = "presence"
+	DesignMessageCursor           = "cursor"
+	DesignMessageError            = "error"
+	DesignMessageElementCreated   = "element.created"
+	DesignMessageElementUpdated   = "element.updated"
+	DesignMessageElementDeleted   = "element.deleted"
+	DesignMessageElementReordered = "element.reordered"
 )
 
 type DocumentDesignTicketResponse struct {
@@ -91,6 +104,138 @@ func NewDesignCursorMessage(cursors []DesignCursorEntry) ([]byte, error) {
 	return json.Marshal(DesignCursorMessage{
 		Type:    DesignMessageCursor,
 		Cursors: cursors,
+	})
+}
+
+// DesignElementCreate adalah muatan pesan element.create.
+//
+// Page wajib: elemen baru harus tahu ke halaman mana ia dipasang, dan tidak ada
+// tempat lain yang menyimpan keterangan itu.
+//
+// Element dibiarkan mentah dan tidak diurai di sini. Bentuk elemen beserta
+// aturannya dimiliki domain/design, yang menolak field asing lewat
+// DisallowUnknownFields — mengurainya di lapisan ini akan menduplikasi aturan itu
+// di tempat yang tidak berwenang, dan duplikatnya akan melenceng.
+type DesignElementCreate struct {
+	Page    string          `json:"page"`
+	Element json.RawMessage `json:"element"`
+}
+
+// DesignElementUpdate adalah muatan pesan element.update.
+//
+// Elemen dikirim UTUH, bukan hanya field yang berubah. Menang-terakhir jadi
+// harfiah — elemen berid sama diganti apa adanya — dan patch per field akan
+// memaksa seluruh field menjadi pointer hanya untuk membedakan "tidak dikirim"
+// dari "dikirim bernilai nol".
+//
+// Tidak ada field page. Id elemen unik se-dokumen termasuk lintas halaman, jadi
+// halaman dapat dicari dari id-nya. Menyertakan page justru membuka satu keadaan
+// yang mustahil ditangani dengan benar: klien menyebut halaman yang bukan tempat
+// elemen itu berada.
+type DesignElementUpdate struct {
+	Element json.RawMessage `json:"element"`
+}
+
+// DesignElementDelete adalah muatan pesan element.delete.
+//
+// Cukup id, dengan alasan yang sama seperti update.
+type DesignElementDelete struct {
+	ID string `json:"id"`
+}
+
+// DesignElementReorder adalah muatan pesan element.reorder.
+//
+// Urutan elemen di dalam sebuah halaman ADALAH urutan gambar: yang belakangan
+// menutupi yang terdahulu. Karena element.update hanya mengganti elemen di
+// tempatnya dan tidak memindahkannya, tanpa pesan ini elemen yang tertutup tidak
+// punya cara apa pun untuk dinaikkan.
+//
+// Index adalah letak tujuan di dalam halaman elemen itu sendiri, dihitung dari
+// nol. Nol berarti paling bawah. Halaman tidak perlu disebut, sama seperti update
+// dan delete — id sudah menentukannya.
+type DesignElementReorder struct {
+	ID    string `json:"id"`
+	Index int    `json:"index"`
+}
+
+// DesignElementReorderMessage adalah siaran satu pemindahan urutan.
+//
+// Sengaja TIDAK memakai DesignElementMessage. Index bertipe int, dan `omitempty`
+// pada int membuang nilai nol — sehingga "pindahkan ke paling bawah" akan
+// terkirim tanpa field index sama sekali dan terbaca frontend sebagai nilai
+// bawaan yang kebetulan juga nol. Kebetulan itu bekerja sampai suatu hari tidak,
+// dan struct tersendiri menutupnya tanpa perlu pointer.
+//
+// Index yang disiarkan adalah letak SESUNGGUHNYA setelah diterapkan, bukan yang
+// diminta. Permintaan yang melewati batas dijepit ke ujung terdekat, dan klien
+// perlu tahu ke mana elemennya benar-benar mendarat.
+type DesignElementReorderMessage struct {
+	Type    string `json:"type"`
+	Version int64  `json:"version"`
+	ID      string `json:"id"`
+	Index   int    `json:"index"`
+}
+
+func NewDesignElementReorderedMessage(version int64, id string, index int) ([]byte, error) {
+	return json.Marshal(DesignElementReorderMessage{
+		Type:    DesignMessageElementReordered,
+		Version: version,
+		ID:      id,
+		Index:   index,
+	})
+}
+
+// DesignElementMessage adalah siaran satu perubahan elemen.
+//
+// Satu bentuk untuk ketiga jenis siaran, karena yang membedakannya hanya field
+// mana yang terisi:
+//
+//	element.created  → Page dan Element
+//	element.updated  → Element
+//	element.deleted  → ID
+//
+// Version SELALU terisi, dan itu bagian terpenting dari pesan ini. Tiap perubahan
+// yang diterapkan menaikkannya satu, sehingga klien yang menerima nomor bukan
+// versi+1 tahu ada siaran yang terlewat dan cukup meminta document.get. Ini bukan
+// rekonsiliasi — hanya cara klien mengetahui bahwa ia perlu memuat ulang.
+// Element bertipe domain di sini, bukan json.RawMessage seperti pada muatan
+// masuk. Asimetri itu disengaja: yang masuk berasal dari klien dan tidak boleh
+// diurai oleh lapisan ini, sedangkan yang keluar sudah tervalidasi dan dimiliki
+// orchestrator. Menyandikannya lebih dulu menjadi byte hanya untuk disandikan
+// ulang ke dalam amplop adalah pekerjaan ganda tanpa jaminan tambahan.
+//
+// Pointer supaya omitempty bekerja: elemen kosong pada siaran penghapusan harus
+// benar-benar hilang dari JSON, bukan muncul sebagai objek berisi nilai nol.
+type DesignElementMessage struct {
+	Type    string          `json:"type"`
+	Version int64           `json:"version"`
+	Page    string          `json:"page,omitempty"`
+	ID      string          `json:"id,omitempty"`
+	Element *design.Element `json:"element,omitempty"`
+}
+
+func NewDesignElementCreatedMessage(version int64, page string, element design.Element) ([]byte, error) {
+	return json.Marshal(DesignElementMessage{
+		Type:    DesignMessageElementCreated,
+		Version: version,
+		Page:    page,
+		Element: &element,
+	})
+}
+
+func NewDesignElementUpdatedMessage(version int64, element design.Element) ([]byte, error) {
+	return json.Marshal(DesignElementMessage{
+		Type:    DesignMessageElementUpdated,
+		Version: version,
+		Element: &element,
+	})
+}
+
+func NewDesignElementDeletedMessage(version int64, id string) ([]byte, error) {
+	return json.Marshal(DesignElementMessage{
+		Type:    DesignMessageElementDeleted,
+		Version: version,
+		ID:      id,
 	})
 }
 

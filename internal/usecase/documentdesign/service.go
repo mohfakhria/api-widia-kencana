@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 
@@ -180,6 +181,36 @@ func (s *Service) MoveCursor(documentToken, userID, page string, x, y float64) {
 		X:      x,
 		Y:      y,
 	})
+}
+
+// CreateElement memasang elemen baru pada satu halaman.
+//
+// Satu-satunya penyuntingan yang mengembalikan error, karena satu-satunya yang
+// dapat ditolak: halaman tidak ada, atau id elemennya sudah dipakai. Pemanggil
+// wajib meneruskannya ke klien — elemen yang sudah tergambar optimistis di
+// layarnya tidak akan pernah ada di dokumen bila ia tidak diberi tahu.
+func (s *Service) CreateElement(ctx context.Context, documentToken string, sub Subscriber, page string, element design.Element) error {
+	return s.rooms.createElement(ctx, documentToken, sub, page, element)
+}
+
+// UpdateElement mengganti satu elemen seluruhnya.
+//
+// Tidak mengembalikan apa pun. Elemen yang sudah lenyap didiamkan: pada
+// menang-terakhir itu lomba yang wajar, dan pengirimnya toh sedang menerima
+// siaran penghapusannya.
+func (s *Service) UpdateElement(documentToken string, sub Subscriber, element design.Element) {
+	s.rooms.updateElement(documentToken, sub, element)
+}
+
+func (s *Service) DeleteElement(documentToken string, sub Subscriber, id string) {
+	s.rooms.deleteElement(documentToken, sub, id)
+}
+
+// ReorderElement memindahkan elemen di dalam halamannya, karena urutan elemen
+// adalah urutan gambar. Index di luar batas dijepit oleh orchestrator, dan letak
+// sesungguhnya itulah yang disiarkan.
+func (s *Service) ReorderElement(documentToken string, sub Subscriber, id string, index int) {
+	s.rooms.reorderElement(documentToken, sub, id, index)
 }
 
 func (s *Service) Detach(documentToken, userID string, sub Subscriber) {

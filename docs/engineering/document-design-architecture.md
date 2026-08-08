@@ -57,16 +57,25 @@ penyuntingan, snapshot, ekspor, penyimpanan — melewati orchestrator dokumen it
 
 ```
 delivery/http
-  document_design_handler.go    handshake, empat goroutine per koneksi, dispatch
+  document_design_handler.go    handshake, empat goroutine per koneksi
+  document_design_conn.go       keempat loop, dispatch pesan masuk
+  document_design_element.go    pesan element.* → Service
+  document_design_subscriber.go implementasi port Subscriber
+  document_design_encoder.go    implementasi port MessageEncoder
   document_design_buffer.go     antrean masuk/keluar per klien (sync.Cond)
   document_export_handler.go    POST /api/document-export/:token
-  dto/document_design_dto.go    bentuk kawat: snapshot, presence, cursor, error
+  dto/document_design_dto.go    bentuk kawat seluruh pesan
         │
         ▼  port: MessageEncoder, Subscriber
 usecase/documentdesign
-  service.go                    pintu masuk tunggal; tiket, attach, sync, snapshot
+  service.go                    pintu masuk tunggal; tiket, attach, sync, edit
   manager.go                    peta token → room, masa tenggang, sapu bersih
   room.go                       ORCHESTRATOR — pemilik tunggal state dokumen
+  event.go                      himpunan tertutup kejadian menuju orchestrator
+  element.go                    penerapan perubahan elemen + siarannya
+  presence.go                   daftar orang yang sedang membuka dokumen
+  cursor.go                     denyut dan siaran kursor
+  persist.go                    flush berkala, drain saat berhenti
   ticket.go                     tiket sekali pakai, kuota per user
   connections.go                kuota koneksi per user
   content.go                    benih panduan untuk dokumen kosong
@@ -74,6 +83,7 @@ usecase/document_export_usecase.go   rakit isi + gambar + font → renderer
         │
         ▼  port: DocumentRepository, DocumentRenderer, FontCatalog, ObjectStorage
 domain/design                   model isi dokumen: tipe, validasi, satuan, font
+  edit.go                       operasi penyuntingan yang menjaga invarian isi
 infrastructure/pdf              renderer PDF, registry font, penyandian cp1252
 persistence/postgres            baca/tulis kolom content dengan compare-and-set
 ```
@@ -403,7 +413,31 @@ sehingga urutan pesan itu terhadap jenis pesan lain tetap seperti saat ia pertam
 masuk. Memindahkannya ke ekor akan membuat kursor menyalip snapshot atau
 presence yang datang lebih dulu.
 
-**9. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
+**9. Perubahan elemen: terapkan → naikkan `version` → siarkan, selalu bertiga.**
+Menaikkan `version` tanpa menyiarkan membuat klien melihat celah nomor dan memuat
+ulang seluruh dokumen tanpa sebab. Menyiarkan tanpa menaikkannya membuat dua
+perubahan berbeda mengaku sebagai revisi yang sama, dan deteksi celah di frontend
+berhenti bekerja. Perubahan yang **tidak berlaku** — sasarannya sudah lenyap —
+tidak melakukan ketiganya.
+
+**10. Siaran perubahan memakai `Send`, bukan `SendEphemeral`.** Kebalikan dari
+invarian 7, dan alasannya persis kebalikannya juga: kursor yang hilang tidak
+merugikan siapa pun, sedangkan perubahan yang hilang membuat kanvas klien salah
+selamanya tanpa ada yang tahu. Klien yang tidak sanggup mengikuti diputus, dan
+`document.get` sesudahnya menghasilkan keadaan yang benar.
+
+**11. Pengirim perubahan IKUT menerima siarannya sendiri.** Juga kebalikan dari
+kursor. Melewatinya membuat nomor `version` miliknya tertinggal setiap kali ia
+menyunting, lalu siaran pertama dari orang lain tampak melompat dan ia memuat
+ulang tanpa sebab — makin rajin ia bekerja, makin sering itu terjadi.
+
+**12. `consume()` mendahului `drain()` pada jalur berhenti.** Kejadian yang masih
+mengantre diterapkan sebelum penyimpanan terakhir. Membaliknya membuang suntingan
+yang sudah diterima klien sebagai berhasil. Di dalam `consume`, `syncEvent`
+sengaja **ditolak** alih-alih diterapkan: menerimanya menjadikan seseorang anggota
+room yang sedang mati, dan ia tidak akan pernah tahu.
+
+**13. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
 menunggu channel.** `manager.sync` dan `manager.snapshot` melepas kunci sebelum
 bertanya ke room. Menahannya akan membekukan seluruh dokumen lain.
 
@@ -517,9 +551,18 @@ tanda pisah `—` tercetak sebagai `â€"`, tanpa satu pun galat.
 
 ## 8. Yang belum ada, dan kenapa
 
-**Penyuntingan lewat pesan.** Bentuk pesannya belum diputuskan. Fondasinya sudah
-siap: orchestrator sudah memiliki state, sudah menyiarkan, dan sudah menyimpan
-secara tunda. Yang tersisa adalah penerapan patch dan penyiarannya.
+**Penyuntingan halaman.** `page.add`, `page.delete`, dan `page.reorder` belum ada;
+penyuntingan sejauh ini hanya menyentuh elemen di atas halaman yang sudah
+tersedia.
+
+**Riwayat perubahan.** Backend tidak menyimpan siaran yang sudah lewat dan tidak
+dapat mengirim ulang yang terlewat. Klien yang melihat celah `version` memuat
+ulang seluruh dokumen. Itu memadai selama dokumen berukuran puluhan elemen, dan
+akan terasa mahal bila tidak lagi begitu.
+
+**Kunci elemen saat digeser.** Tidak ada penanda "elemen ini sedang dipegang si
+A". Menang-terakhir sudah menyelesaikan kasusnya tanpa keadaan tambahan yang
+harus dibersihkan ketika orang putus koneksi mendadak.
 
 **`cursor.hide`.** Kursor orang yang menggeser pointer keluar kanvas baru hilang
 ketika ia menutup tab atau pergi. Fondasinya sudah ada — tinggal satu jenis

@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-08 | **Penyuntingan lewat WebSocket**: `element.create`, `element.update`, `element.delete`, `element.reorder`, beserta siaran `element.*` dan kode error `element_rejected` | Fitur baru. `version` kini bergerak setiap ada perubahan — **mulai pakai** deteksi celah nomor di [3.6](#36-versi). Berhenti menyunting `documents.content` langsung di database |
 | 2026-08-07 | Denyut siaran `cursor` dilonggarkan 50 ms → **70 ms** | Tidak ada, bentuk pesannya tetap. Sesuaikan hanya bila durasi interpolasi dipatok pada 50 ms |
 | 2026-08-07 | Pesan `cursor` dan `cursor.move` — kursor langsung antar penyunting | Tambahan. Tangani bila ingin menampilkan kursor orang lain; abaikan dengan aman bila belum |
 | 2026-08-06 | Pesan `presence` — siapa yang sedang membuka dokumen | Tambahan. Tangani bila ingin menampilkan tumpukan avatar; abaikan dengan aman bila belum |
@@ -176,20 +177,105 @@ Mengirim lebih sering daripada denyut tidak menghasilkan satu pun pesan tambahan
 bagi orang lain: backend memadatkan gerakan menjadi satu posisi terakhir per
 orang. Yang didapat dari membatasi hanyalah lalu lintas naik yang lebih hemat.
 
-### 2.3 Yang belum ada
+### 2.3 `element.create`
 
-Penyuntingan **belum dapat dilakukan lewat pesan mana pun**. Jenis di luar kedua
-yang disebut di atas dibalas `unsupported_message_type`.
+```jsonc
+{
+  "type": "element.create",
+  "page": "18f10d20-42f7-4a4c-80df-63dc46ab0022",
+  "element": { "id": "…", "type": "rect", "x": 40, "y": 40, "w": 120, "h": 80, "fill": "#eef" }
+}
+```
+
+| | |
+|---|---|
+| Kapan dikirim | pengguna menambahkan sesuatu ke kanvas |
+| Balasan | `element.created` ke **semua** penghuni, termasuk pengirim |
+| Bila ditolak | `error` dengan kode `element_rejected` |
+
+`page` **wajib** — hanya pesan ini yang membawanya, karena hanya ini yang perlu
+menyebut ke mana elemennya dipasang.
+
+`id` elemen dibuat **frontend**, dan wajib unik se-dokumen termasuk lintas
+halaman. Id yang sudah dipakai ditolak; pakai UUID.
+
+Elemen baru masuk di **akhir** daftar halaman itu, yaitu paling atas.
+
+### 2.4 `element.update`
+
+```jsonc
+{ "type": "element.update", "element": { "id": "…", "type": "rect", "x": 60, "y": 40, "w": 120, "h": 80 } }
+```
+
+| | |
+|---|---|
+| Kapan dikirim | pengguna menggeser, mengubah ukuran, atau menyunting properti |
+| Balasan | `element.updated` ke semua penghuni |
+| Bila sasarannya sudah lenyap | **tidak ada apa-apa** — lihat di bawah |
+
+**Kirim elemen UTUH, bukan hanya field yang berubah.** Elemen berid sama diganti
+seluruhnya. Field yang tidak Anda sertakan kembali ke nilai bawaannya — ini
+bukan patch.
+
+**Letaknya dalam urutan gambar tidak berubah.** Yang memindahkan hanya
+`element.reorder`.
+
+Elemen yang tidak ada **didiamkan**: tanpa error, tanpa siaran, tanpa kenaikan
+`version`. Itu disengaja. Orang lain yang menghapus elemen tepat sebelum
+suntingan Anda tiba adalah kejadian biasa, dan Anda toh sedang menerima
+`element.deleted` untuknya — keadaannya menyatu dengan sendirinya.
+
+### 2.5 `element.delete`
+
+```jsonc
+{ "type": "element.delete", "id": "…" }
+```
+
+Cukup id; halaman dicari backend. Elemen yang sudah tidak ada didiamkan, dengan
+alasan yang sama seperti `element.update`.
+
+### 2.6 `element.reorder`
+
+```jsonc
+{ "type": "element.reorder", "id": "…", "index": 2 }
+```
+
+Urutan elemen di dalam sebuah halaman **adalah** urutan gambar: yang belakangan
+menutupi yang terdahulu. `element.update` tidak memindahkan apa pun, jadi inilah
+satu-satunya cara menaikkan elemen yang tertutup.
+
+`index` dihitung dari nol di dalam halaman elemen itu sendiri. Nol berarti paling
+bawah.
+
+**Index di luar batas tidak ditolak melainkan dijepit** ke ujung terdekat, karena
+batasnya berubah setiap kali ada yang menambah atau menghapus elemen. Siaran
+`element.reordered` membawa letak **sesungguhnya** — pakai angka itu, bukan yang
+Anda kirim.
+
+### 2.7 Menahan laju saat menggeser
+
+Menggeser elemen menghasilkan puluhan `element.update` per detik bila dikirim
+apa adanya. Berbeda dari `cursor`, siaran perubahan **tidak boleh hilang**,
+sehingga klien yang tertinggal terlalu jauh diputus, bukan dilewati.
+
+**Throttle ke sekitar 20–30 per detik selama menggeser, lalu kirim satu
+`element.update` terakhir yang pasti saat tombol dilepas.** Mata tidak dapat
+membedakannya dari 60, dan tanpa itu klien lain yang tersendat sesaat akan
+kehilangan koneksinya.
+
+### 2.8 Yang belum ada
+
+`page.add`, `page.delete`, dan `page.reorder` belum ada — dokumen bekerja pada
+halaman yang sudah tersedia di `snapshot`.
 
 `cursor.hide` juga belum ada: kursor orang yang menggeser pointer keluar kanvas
 baru hilang ketika ia menutup tab, atau ketika ia pergi.
 
-Bentuk pesan untuk menyunting — `element.update`, `page.add`, dan sejenisnya —
-**belum diputuskan**. Jangan menulis pengirimnya berdasarkan tebakan; bentuknya
-akan ditulis di dokumen ini bersamaan dengan implementasinya, bukan sebelumnya.
+**Undo/redo bukan urusan backend.** Di editor kolaboratif, undo yang benar adalah
+membatalkan langkah **sendiri**, bukan langkah terakhir siapa pun — dan itu
+dibangun frontend dari riwayat lokal, lalu dikirim sebagai `element.*` biasa.
 
-Perubahan isi untuk sekarang dilakukan langsung ke kolom `documents.content` di
-database.
+Jenis di luar yang disebut di bab ini dibalas `unsupported_message_type`.
 
 ---
 
@@ -202,6 +288,10 @@ Ringkasannya:
 | `snapshot` | klien mengirim `document.get` | hanya peminta | ganti seluruh keadaan kanvas |
 | `presence` | daftar **orang** berubah, atau `document.get` | semua, atau hanya peminta — lihat 3.2 | perbarui daftar penyunting |
 | `cursor` | denyut 70 ms bila ada yang berubah, atau `document.get` | semua bila penghuni ≥ 2; hanya peminta bila baru bergabung | ganti seluruh keadaan kursor |
+| `element.created` | `element.create` diterapkan | **semua**, pengirim ikut | sisipkan elemen di akhir halaman itu |
+| `element.updated` | `element.update` diterapkan | **semua**, pengirim ikut | ganti elemen berid sama, jangan pindahkan urutannya |
+| `element.deleted` | `element.delete` diterapkan | **semua**, pengirim ikut | buang elemen berid itu |
+| `element.reordered` | `element.reorder` diterapkan | **semua**, pengirim ikut | pindahkan elemen ke `index` |
 | `error` | permintaan ditolak | hanya peminta | **jangan** sambung ulang |
 
 ### 3.1 `snapshot`
@@ -328,7 +418,48 @@ berskala dengan denyutnya.
 mentah, tetapi mulus dengan `transition` CSS atau lerp per frame — dan itu membuat
 tunda rata-rata 25 ms tidak terasa.
 
-### 3.4 `error`
+### 3.4 Siaran perubahan
+
+```jsonc
+{ "type": "element.created",   "version": 43, "page": "…", "element": { /* elemen utuh */ } }
+{ "type": "element.updated",   "version": 44, "element": { /* elemen utuh */ } }
+{ "type": "element.deleted",   "version": 45, "id": "…" }
+{ "type": "element.reordered", "version": 46, "id": "…", "index": 2 }
+```
+
+**Pengirimnya ikut menerima siarannya sendiri.** Ini berbeda dari `cursor`, dan
+disengaja: tanpanya nomor `version` pengirim tertinggal setiap kali ia menyunting,
+lalu siaran pertama dari orang lain terlihat melompat dan ia memuat ulang seluruh
+dokumen tanpa sebab.
+
+Terapkan optimistis di layar lebih dulu; siaran yang kembali cuma menaikkan nomor
+versi Anda — sekaligus menjadi tanda bahwa perubahan itu sungguh diterima.
+
+**Bentuk lampau membedakannya dari perintah.** `element.created` adalah
+pemberitahuan; `element.create` adalah permintaan. Keduanya tidak pernah tertukar.
+
+| Field | Ada pada | Arti |
+|---|---|---|
+| `version` | semuanya | nomor revisi **setelah** perubahan ini; lihat [3.6](#36-versi) |
+| `page` | `created` | halaman tempat elemen dipasang |
+| `element` | `created`, `updated` | elemen **utuh**, bukan hanya yang berubah |
+| `id` | `deleted`, `reordered` | elemen yang dimaksud |
+| `index` | `reordered` | letak **sesungguhnya** setelah dijepit, bukan yang diminta |
+
+Siaran ini **tidak pernah dijatuhkan**. Klien yang antrean keluarnya penuh
+diputus — menerima sebagian menghasilkan kanvas yang salah tanpa ada yang tahu,
+sedangkan diputus lalu `document.get` menghasilkan yang benar.
+
+Putusnya terjadi **tanpa close frame**, sehingga di browser ia muncul sebagai
+`1006` dan tidak dapat dibedakan dari jaringan yang mati. Perlakukan sama:
+sambung ulang, lalu `document.get`. Ini berbeda dari `1011`, yang berarti berhenti
+dan jangan sambung ulang.
+
+Perubahan yang tidak berlaku — `element.update` atas elemen yang sudah dihapus,
+misalnya — **tidak menghasilkan siaran apa pun dan tidak menaikkan `version`**.
+Tidak ada celah nomor yang tercipta karenanya.
+
+### 3.5 `error`
 
 ```jsonc
 { "type": "error", "code": "unsupported_message_type", "message": "…" }
@@ -344,12 +475,13 @@ tunda rata-rata 25 ms tidak terasa.
 | `malformed_message` | JSON tidak dapat diurai | Buang antrean optimistik, kirim `document.get` untuk memulai bersih |
 | `missing_message_type` | Field `type` kosong atau tidak ada | Bug frontend |
 | `unsupported_message_type` | Jenis pesan belum didukung backend | Bug frontend, atau fitur yang memang belum ada |
+| `element_rejected` | Muatan penyuntingan ditolak: elemen tidak sah, properti tak dikenal, halaman tidak ada, atau id sudah dipakai | **Batalkan perubahan optimistik Anda.** Pesannya menyebut persis apa yang salah — ini hampir selalu bug frontend, bukan keadaan yang dapat dicoba lagi |
 
 Bila `document_unavailable` diabaikan, antarmuka akan menggantung dengan kanvas
 kosong tanpa tanda apa pun — koneksinya hidup, hanya isinya yang tidak pernah
 datang.
 
-### 3.5 Versi
+### 3.6 Versi
 
 `version` adalah nomor revisi **dokumen** — satu dokumen, satu penghitung, naik
 setiap kali ada perubahan yang berhasil diterapkan.
@@ -359,10 +491,26 @@ backend.** Frontend menyimpan versi terakhir yang diterimanya, dan setiap kali
 backend mengirim versi yang berbeda, frontend mengganti keadaannya dengan yang
 baru. Tidak ada nomor urut yang perlu dikirim frontend.
 
-Hari ini `version` hanya bergerak ketika dokumen kosong diisi panduan bawaan,
-dan tidak ada siaran perubahan sama sekali. **Simpan nilainya, jangan bangun
-logika rekonsiliasi apa pun di atasnya sekarang** — aturannya akan ditulis di
-sini bersamaan dengan pesan penyuntingan.
+Setiap perubahan yang **berhasil diterapkan** menaikkannya tepat satu. Yang
+tidak berlaku — menyunting elemen yang sudah dihapus orang lain — tidak
+menaikkannya sama sekali.
+
+**Deteksi celah, jangan bangun rekonsiliasi.** Simpan versi terakhir yang Anda
+terima. Bila siaran berikutnya membawa nomor yang bukan `versi+1`, ada yang
+terlewat — kirim `document.get` dan ganti seluruh keadaan Anda dengan snapshot
+yang datang. Itu saja; tidak ada penggabungan, tidak ada pemutaran ulang.
+
+```js
+if (msg.version !== lastVersion + 1) { send({ type: "document.get" }); return; }
+apply(msg);
+lastVersion = msg.version;
+```
+
+Backend tidak menyimpan riwayat dan tidak dapat mengirim ulang siaran yang
+terlewat. `document.get` adalah satu-satunya jalur pemulihan, dan ia memang cukup.
+
+Nomor ini juga naik sekali di luar penyuntingan: ketika dokumen kosong diisi
+panduan bawaan saat pertama dibuka.
 
 ---
 
@@ -378,6 +526,11 @@ Yang benar-benar dijamin backend, dan boleh diandalkan:
   mustahil ada siaran perubahan yang menyalip snapshot pertama.
 - **Urutan pesan dalam satu koneksi dipertahankan.** Tidak ada jalur yang dapat
   menyalip jalur lain.
+- **Semua penghuni menerima siaran perubahan dalam urutan yang sama.** Satu
+  orchestrator menerapkan perubahan satu per satu, jadi urutan `version` adalah
+  urutan penerapan — sama bagi semua orang, tanpa kecuali.
+- **Siaran perubahan tidak pernah dijatuhkan.** Klien yang tidak sanggup
+  mengikutinya diputus, bukan dilewati.
 
 Yang **tidak** dijamin:
 
@@ -389,6 +542,11 @@ Yang **tidak** dijamin:
   yang keluar adalah posisi terakhir per denyut, bukan setiap gerakan.
 - Bahwa setiap `cursor` sampai. Ia satu-satunya pesan yang boleh hilang, dan yang
   baru menggantikan yang masih mengantre.
+- Bahwa setiap pesan penyuntingan menghasilkan siaran. Yang sasarannya sudah
+  lenyap didiamkan — tanpa error, tanpa siaran, tanpa kenaikan `version`.
+- Bahwa dua orang yang menyunting elemen yang **sama** berakhir dengan hasil yang
+  masing-masing kira. Berlaku menang-terakhir per elemen: yang tiba belakangan
+  menang seluruhnya. Tidak ada penggabungan properti.
 
 ---
 

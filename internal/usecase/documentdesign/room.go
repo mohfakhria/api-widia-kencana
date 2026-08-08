@@ -129,6 +129,10 @@ func (r *Room) run(ctx context.Context) {
 	for {
 		select {
 		case <-r.stop:
+			// Menerapkan yang terlanjur mengantre HARUS mendahului penyimpanan
+			// terakhir, kalau tidak perubahan yang sudah diterima klien sebagai
+			// berhasil justru tidak ikut tertulis.
+			r.consume()
 			r.drain(ctx)
 			return
 		case event := <-r.inbox:
@@ -195,6 +199,36 @@ func (r *Room) load(ctx context.Context) {
 		r.version++
 		r.logger.Info("seeded empty document design content",
 			"document", r.token, "version", r.version)
+	}
+}
+
+// consume menghabiskan kejadian yang masih mengantre saat room diminta berhenti.
+//
+// Tanpa ini isi inbox dibuang begitu saja. Hari ini isinya hanya kursor sehingga
+// tidak ada yang hilang, tetapi begitu penyuntingan masuk, suntingan yang tiba
+// tepat sebelum shutdown akan lenyap tanpa jejak — klien sudah menganggapnya
+// berhasil karena memang tidak ada yang memberitahunya sebaliknya.
+//
+// Kejadian yang datang SETELAH ini tetap hilang, terutama selama drain yang bisa
+// memakan beberapa detik. Itulah alasan urutannya begini: dikuras sedekat mungkin
+// dengan penyimpanan terakhir, bukan di awal jalur berhenti.
+func (r *Room) consume() {
+	for {
+		select {
+		case event := <-r.inbox:
+			if e, ok := event.(syncEvent); ok {
+				// Bergabung sengaja DITOLAK, tidak diteruskan ke handle. Menerimanya
+				// berarti menjadikan seseorang anggota room yang sedang mati: ia tidak
+				// akan pernah menerima siaran apa pun dan tidak punya cara mengetahui
+				// itu. Ditolak, ia menyambung ulang dan mendarat di room berikutnya.
+				e.reply <- domain.NewError(domain.ErrUnavailable, "document design room is closed")
+				continue
+			}
+
+			r.handle(event)
+		default:
+			return
+		}
 	}
 }
 
@@ -277,6 +311,14 @@ func (r *Room) handle(event roomEvent) {
 		// siarannya menunggu denyut.
 		r.cursors[e.cursor.UserID] = e.cursor
 		r.cursorsDirty = true
+	case elementCreateEvent:
+		r.applyCreate(e)
+	case elementUpdateEvent:
+		r.applyUpdate(e)
+	case elementDeleteEvent:
+		r.applyDelete(e)
+	case elementReorderEvent:
+		r.applyReorder(e)
 	case snapshotEvent:
 		if r.broken != nil {
 			e.reply <- snapshotResult{err: r.broken}
@@ -427,6 +469,58 @@ func (r *Room) moveCursor(cursor Cursor) {
 func (r *Room) leave(sub Subscriber) {
 	select {
 	case r.inbox <- leaveEvent{subscriber: sub}:
+	case <-r.done:
+	}
+}
+
+// createElement menunggu hasil, berbeda dari ketiga penyuntingan lain.
+//
+// Penambahan dapat ditolak orchestrator, dan penolakan itu wajib sampai ke
+// pengirimnya — elemen yang sudah tergambar optimistis di layarnya tidak akan
+// pernah ada di dokumen bila ia tidak diberi tahu.
+func (r *Room) createElement(ctx context.Context, sub Subscriber, page string, element design.Element) error {
+	reply := make(chan error, 1)
+	event := elementCreateEvent{subscriber: sub, page: page, element: element, reply: reply}
+
+	select {
+	case r.inbox <- event:
+	case <-r.done:
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	select {
+	case err := <-reply:
+		return err
+	case <-r.done:
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+// Ketiga sisanya tidak menunggu apa pun. Yang mungkin terjadi hanyalah
+// perubahannya tidak berlaku karena sasarannya sudah lenyap, dan itu menyatu
+// dengan sendirinya lewat siaran yang sedang menuju pengirimnya.
+
+func (r *Room) updateElement(sub Subscriber, element design.Element) {
+	select {
+	case r.inbox <- elementUpdateEvent{subscriber: sub, element: element}:
+	case <-r.done:
+	}
+}
+
+func (r *Room) deleteElement(sub Subscriber, id string) {
+	select {
+	case r.inbox <- elementDeleteEvent{subscriber: sub, id: id}:
+	case <-r.done:
+	}
+}
+
+func (r *Room) reorderElement(sub Subscriber, id string, index int) {
+	select {
+	case r.inbox <- elementReorderEvent{subscriber: sub, id: id, index: index}:
 	case <-r.done:
 	}
 }
