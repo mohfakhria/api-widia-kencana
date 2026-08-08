@@ -6,12 +6,26 @@ import (
 	"slices"
 )
 
-// Penyuntingan satu elemen di atas isi dokumen.
+// Penyuntingan isi dokumen: elemen dan halaman.
 //
 // Seluruh operasi di berkas ini menjaga invarian yang sama dengan Validate: id
 // elemen unik SE-DOKUMEN, bukan per halaman, dan setiap elemen yang tersimpan
 // sudah lolos pemeriksaan jenisnya. Menjaganya di sini, bukan di pemanggil,
 // membuat mustahil ada jalur penyuntingan yang lupa memeriksanya.
+
+// MaxPages membatasi jumlah halaman satu dokumen.
+//
+// Ada karena halaman berbiaya jauh melampaui isinya: tiap halaman menjadi satu
+// halaman PDF yang digambar dari nol saat ekspor. Jumlah ELEMEN sengaja tidak
+// dibatasi — dokumen sungguhan tidak mendekatinya, dan batas yang tidak pernah
+// tersentuh hanya menambah satu jalur penolakan yang harus dijelaskan ke
+// frontend.
+//
+// Diperiksa di titik PERTUMBUHAN saja, bukan di Validate. Menaruhnya di Validate
+// membuat dokumen lama yang telanjur melewati batas tidak dapat dimuat sama
+// sekali, dan room-nya rusak permanen — hukuman yang jauh lebih berat daripada
+// masalah yang sedang ditutup.
+const MaxPages = 200
 
 // DecodeElement mengurai satu elemen dari muatan pesan penyuntingan.
 //
@@ -129,6 +143,80 @@ func (c *Content) ReorderElement(id string, index int) (effective int, applied b
 	elements = slices.Delete(elements, elementIndex, elementIndex+1)
 	effective = min(max(index, 0), len(elements))
 	c.Pages[pageIndex].Elements = slices.Insert(elements, effective, element)
+
+	return effective, true
+}
+
+// CreatePage menyisipkan halaman kosong.
+//
+// index kosong berarti di akhir. Pointer, bukan int biasa, karena "tidak menyebut
+// posisi" adalah maksud yang sah dan sering — sedangkan int biasa mengubah
+// penghilangan itu menjadi nol, yaitu paling depan, persis kebalikan dari yang
+// dimaksud pengirimnya.
+//
+// Yang melewati batas dijepit, sama seperti ReorderElement, dan letak
+// sesungguhnya itulah yang dikembalikan.
+func (c *Content) CreatePage(id string, index *int) (effective int, err error) {
+	if id == "" {
+		return 0, invalidf("page must have a non-empty id")
+	}
+	if slices.ContainsFunc(c.Pages, func(p Page) bool { return p.ID == id }) {
+		return 0, invalidf("page id %q is already used", id)
+	}
+	if len(c.Pages) >= MaxPages {
+		return 0, invalidf("document already has the maximum of %d pages", MaxPages)
+	}
+
+	// Elements dibuat kosong, bukan dibiarkan nil. Slice nil disandikan JSON
+	// sebagai null, sedangkan kontrak menjanjikan array — dan null memaksa setiap
+	// pembaca memeriksanya lebih dulu.
+	page := Page{ID: id, Elements: []Element{}}
+
+	effective = len(c.Pages)
+	if index != nil {
+		effective = min(max(*index, 0), len(c.Pages))
+	}
+	c.Pages = slices.Insert(c.Pages, effective, page)
+
+	return effective, nil
+}
+
+// DeletePage membuang halaman beserta seluruh elemen di atasnya.
+//
+// Halaman TERAKHIR tidak boleh dibuang, dan itu bukan kerewelan. Dokumen yang
+// tersimpan tanpa halaman akan dianggap kosong saat dimuat berikutnya, lalu
+// ditimpa panduan bawaan oleh Room.load — sehingga template yang dirawat
+// berbulan-bulan berubah menjadi teks tutorial, tanpa error, dan bukan pada saat
+// penghapusannya melainkan ketika orang berikutnya membukanya.
+//
+// applied bernilai false ketika halamannya memang sudah tidak ada, sama seperti
+// operasi elemen.
+func (c *Content) DeletePage(id string) (applied bool, err error) {
+	index := slices.IndexFunc(c.Pages, func(p Page) bool { return p.ID == id })
+	if index < 0 {
+		return false, nil
+	}
+	if len(c.Pages) == 1 {
+		return false, invalidf("the last page cannot be deleted")
+	}
+
+	c.Pages = slices.Delete(c.Pages, index, index+1)
+
+	return true, nil
+}
+
+// ReorderPage memindahkan halaman. Penjepitannya sama persis dengan
+// ReorderElement, termasuk alasan kenapa dijepit setelah pengangkatan.
+func (c *Content) ReorderPage(id string, index int) (effective int, applied bool) {
+	from := slices.IndexFunc(c.Pages, func(p Page) bool { return p.ID == id })
+	if from < 0 {
+		return 0, false
+	}
+
+	page := c.Pages[from]
+	pages := slices.Delete(c.Pages, from, from+1)
+	effective = min(max(index, 0), len(pages))
+	c.Pages = slices.Insert(pages, effective, page)
 
 	return effective, true
 }

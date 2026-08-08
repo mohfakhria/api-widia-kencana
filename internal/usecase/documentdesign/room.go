@@ -319,6 +319,12 @@ func (r *Room) handle(event roomEvent) {
 		r.applyDelete(e)
 	case elementReorderEvent:
 		r.applyReorder(e)
+	case pageCreateEvent:
+		r.applyPageCreate(e)
+	case pageDeleteEvent:
+		r.applyPageDelete(e)
+	case pageReorderEvent:
+		r.applyPageReorder(e)
 	case snapshotEvent:
 		if r.broken != nil {
 			e.reply <- snapshotResult{err: r.broken}
@@ -482,22 +488,7 @@ func (r *Room) createElement(ctx context.Context, sub Subscriber, page string, e
 	reply := make(chan error, 1)
 	event := elementCreateEvent{subscriber: sub, page: page, element: element, reply: reply}
 
-	select {
-	case r.inbox <- event:
-	case <-r.done:
-		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-
-	select {
-	case err := <-reply:
-		return err
-	case <-r.done:
-		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+	return r.await(ctx, event, reply)
 }
 
 // Ketiga sisanya tidak menunggu apa pun. Yang mungkin terjadi hanyalah
@@ -522,5 +513,56 @@ func (r *Room) reorderElement(sub Subscriber, id string, index int) {
 	select {
 	case r.inbox <- elementReorderEvent{subscriber: sub, id: id, index: index}:
 	case <-r.done:
+	}
+}
+
+// createPage dan deletePage menunggu hasil; reorderPage tidak. Keduanya yang
+// menunggu punya jalur penolakan — id kembar atau batas halaman pada yang
+// pertama, halaman terakhir pada yang kedua.
+func (r *Room) createPage(ctx context.Context, sub Subscriber, id string, index *int) error {
+	reply := make(chan error, 1)
+	event := pageCreateEvent{subscriber: sub, id: id, index: index, reply: reply}
+
+	return r.await(ctx, event, reply)
+}
+
+func (r *Room) deletePage(ctx context.Context, sub Subscriber, id string) error {
+	reply := make(chan error, 1)
+	event := pageDeleteEvent{subscriber: sub, id: id, reply: reply}
+
+	return r.await(ctx, event, reply)
+}
+
+func (r *Room) reorderPage(sub Subscriber, id string, index int) {
+	select {
+	case r.inbox <- pageReorderEvent{subscriber: sub, id: id, index: index}:
+	case <-r.done:
+	}
+}
+
+// await menaruh kejadian lalu menunggu balasannya, dengan kedua jalan keluar yang
+// sama di kedua penantian: room yang berhenti, dan permintaan yang dibatalkan.
+//
+// Ada karena ketiga penyuntingan yang membalas menuliskan rangkaian select yang
+// sama persis, dan rangkaian itu punya satu jebakan yang layak ditulis sekali
+// saja: jalan keluar done WAJIB ada di penantian kedua juga. Tanpanya, room yang
+// berhenti tepat setelah kejadian masuk membuat pemanggilnya menggantung selamanya
+// pada balasan yang tidak akan pernah dikirim.
+func (r *Room) await(ctx context.Context, event roomEvent, reply <-chan error) error {
+	select {
+	case r.inbox <- event:
+	case <-r.done:
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	select {
+	case err := <-reply:
+		return err
+	case <-r.done:
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }

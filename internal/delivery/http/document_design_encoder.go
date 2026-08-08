@@ -51,6 +51,18 @@ func (DesignMessageEncoder) EncodeElementReordered(version int64, id string, ind
 	return dto.NewDesignElementReorderedMessage(version, id, index)
 }
 
+func (DesignMessageEncoder) EncodePageCreated(version int64, id string, index int) ([]byte, error) {
+	return dto.NewDesignPageCreatedMessage(version, id, index)
+}
+
+func (DesignMessageEncoder) EncodePageDeleted(version int64, id string) ([]byte, error) {
+	return dto.NewDesignPageDeletedMessage(version, id)
+}
+
+func (DesignMessageEncoder) EncodePageReordered(version int64, id string, index int) ([]byte, error) {
+	return dto.NewDesignPageReorderedMessage(version, id, index)
+}
+
 func (DesignMessageEncoder) EncodePresence(users []documentdesign.PresenceUser) ([]byte, error) {
 	payload := make([]dto.DesignPresenceUser, 0, len(users))
 	for _, user := range users {

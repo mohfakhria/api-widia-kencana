@@ -14,6 +14,9 @@ const (
 	DesignMessageElementUpdate  = "element.update"
 	DesignMessageElementDelete  = "element.delete"
 	DesignMessageElementReorder = "element.reorder"
+	DesignMessagePageCreate     = "page.create"
+	DesignMessagePageDelete     = "page.delete"
+	DesignMessagePageReorder    = "page.reorder"
 )
 
 // Jenis pesan yang dikirim server.
@@ -31,6 +34,9 @@ const (
 	DesignMessageElementUpdated   = "element.updated"
 	DesignMessageElementDeleted   = "element.deleted"
 	DesignMessageElementReordered = "element.reordered"
+	DesignMessagePageCreated      = "page.created"
+	DesignMessagePageDeleted      = "page.deleted"
+	DesignMessagePageReordered    = "page.reordered"
 )
 
 type DocumentDesignTicketResponse struct {
@@ -234,6 +240,100 @@ func NewDesignElementUpdatedMessage(version int64, element design.Element) ([]by
 func NewDesignElementDeletedMessage(version int64, id string) ([]byte, error) {
 	return json.Marshal(DesignElementMessage{
 		Type:    DesignMessageElementDeleted,
+		Version: version,
+		ID:      id,
+	})
+}
+
+// DesignPageCreate adalah muatan pesan page.create.
+//
+// Index BERTIPE POINTER, dan itu bukan kerapian. Tanpa pointer, pesan yang tidak
+// menyebut index diurai Go menjadi nol — yaitu "sisipkan paling depan", persis
+// kebalikan dari yang dimaksud pengirimnya, yang hampir selalu "di akhir".
+// Keduanya harus dapat dibedakan, dan hanya pointer yang membedakannya.
+//
+// Halaman baru selalu KOSONG. Tidak ada penyalinan halaman untuk sekarang.
+type DesignPageCreate struct {
+	ID    string `json:"id"`
+	Index *int   `json:"index"`
+}
+
+// DesignPageDelete adalah muatan pesan page.delete.
+//
+// Halaman terakhir tidak dapat dihapus; permintaannya dibalas error. Dokumen
+// tanpa halaman akan dianggap kosong saat dimuat berikutnya lalu ditimpa panduan
+// bawaan, dan itu terjadi bukan saat penghapusannya melainkan ketika orang
+// berikutnya membuka dokumen.
+type DesignPageDelete struct {
+	ID string `json:"id"`
+}
+
+// DesignPageReorder adalah muatan pesan page.reorder. Index di luar batas
+// dijepit, sama seperti element.reorder.
+type DesignPageReorder struct {
+	ID    string `json:"id"`
+	Index int    `json:"index"`
+}
+
+// Siaran halaman: satu struct per pesan, walau dua di antaranya sebentuk.
+//
+// Tidak digabung menjadi satu bentuk seperti DesignElementMessage. Bentuk yang
+// dipakai bersama menuntut omitempty pada field yang tidak selalu terpakai, dan
+// omitempty pada int membuang nilai nol — sedangkan halaman di posisi nol adalah
+// keadaan yang sah dan sering. Nama yang menyebut satu pesan juga menghapus
+// pertanyaan "yang mana saja yang dicakupnya".
+//
+// Index pada kedua siaran di bawah adalah letak SESUNGGUHNYA setelah penjepitan,
+// bukan yang diminta.
+
+type DesignPageCreatedMessage struct {
+	Type    string `json:"type"`
+	Version int64  `json:"version"`
+	ID      string `json:"id"`
+	Index   int    `json:"index"`
+}
+
+type DesignPageReorderedMessage struct {
+	Type    string `json:"type"`
+	Version int64  `json:"version"`
+	ID      string `json:"id"`
+	Index   int    `json:"index"`
+}
+
+// DesignPageDeletedMessage tidak membawa letak — halaman yang dibuang tidak
+// punya letak lagi.
+//
+// Elemen di atasnya tidak disebutkan satu per satu: klien sudah tahu isi halaman
+// itu dari snapshot dan siaran sebelumnya, jadi menyebutkannya ulang hanya
+// menggemukkan pesan tanpa menambah keterangan. Buang halamannya, dan seluruh
+// elemennya ikut.
+type DesignPageDeletedMessage struct {
+	Type    string `json:"type"`
+	Version int64  `json:"version"`
+	ID      string `json:"id"`
+}
+
+func NewDesignPageCreatedMessage(version int64, id string, index int) ([]byte, error) {
+	return json.Marshal(DesignPageCreatedMessage{
+		Type:    DesignMessagePageCreated,
+		Version: version,
+		ID:      id,
+		Index:   index,
+	})
+}
+
+func NewDesignPageReorderedMessage(version int64, id string, index int) ([]byte, error) {
+	return json.Marshal(DesignPageReorderedMessage{
+		Type:    DesignMessagePageReordered,
+		Version: version,
+		ID:      id,
+		Index:   index,
+	})
+}
+
+func NewDesignPageDeletedMessage(version int64, id string) ([]byte, error) {
+	return json.Marshal(DesignPageDeletedMessage{
+		Type:    DesignMessagePageDeleted,
 		Version: version,
 		ID:      id,
 	})

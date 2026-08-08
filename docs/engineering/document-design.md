@@ -82,7 +82,7 @@ snapshot, jadi frontend tidak perlu mengonversi apa pun.
 
 | Aturan | |
 |---|---|
-| `pages` | array; boleh kosong |
+| `pages` | array; **minimal satu halaman** — halaman terakhir tidak dapat dihapus |
 | Setiap halaman | `id` tidak kosong, `elements` opsional |
 | Setiap elemen | `id` tidak kosong dan `type` yang dikenal |
 | Seluruh `id` | unik dalam satu dokumen, **termasuk lintas halaman** |
@@ -96,7 +96,12 @@ field `page` pada pesan `snapshot`, sudah dalam titik — lihat
 [kontrak WebSocket](websocket-contract.md#31-snapshot).
 
 Urutan elemen adalah urutan gambar: yang belakangan menutupi yang terdahulu, sama
-seperti urutan DOM.
+seperti urutan DOM. Urutan **halaman** adalah urutan cetak, dan keduanya diubah
+lewat pesan `element.reorder` dan `page.reorder`.
+
+Satu dokumen dibatasi **200 halaman**; jumlah elemen tidak dibatasi. Halaman
+berbiaya jauh melampaui isinya karena tiap halaman menjadi satu halaman PDF yang
+digambar dari nol saat ekspor.
 
 ### 1.3 Properti bersama
 

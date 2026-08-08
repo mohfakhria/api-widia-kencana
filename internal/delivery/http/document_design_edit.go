@@ -3,12 +3,13 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
 )
 
-// Pengubahan pesan penyuntingan menjadi tindakan.
+// Pengubahan pesan penyuntingan menjadi tindakan — elemen dan halaman.
 //
 // Berbeda dari cursor.move yang dijatuhkan diam-diam, muatan penyuntingan yang
 // cacat DIBALAS. Suntingan datang dari tindakan sadar pengguna dan sudah
@@ -35,6 +36,10 @@ func (h *DocumentDesignHandler) createElement(ctx context.Context, documentToken
 	// Satu-satunya penyuntingan yang menunggu jawaban orchestrator, karena satu-
 	// satunya yang dapat ditolak di sana: halaman tidak ada, atau id sudah dipakai.
 	if err := h.service.CreateElement(ctx, documentToken, subscriber, message.Page, element); err != nil {
+		if !isEditRejection(err) {
+			return
+		}
+
 		h.logger.Warn("create document design element",
 			"document", documentToken, "element", element.ID, "error", err)
 		// Pesan dari lapisan usecase memang disusun sebagai frasa yang aman
@@ -107,4 +112,82 @@ func (h *DocumentDesignHandler) decodeElement(raw json.RawMessage, subscriber *d
 	}
 
 	return element, nil
+}
+
+func (h *DocumentDesignHandler) createPage(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignPageCreate
+	if err := json.Unmarshal(payload, &message); err != nil {
+		subscriber.sendError("malformed_message", "page.create payload is not valid")
+		return
+	}
+	if message.ID == "" {
+		subscriber.sendError("malformed_message", "page.create requires an id")
+		return
+	}
+
+	// Index diteruskan apa adanya, termasuk ketika nil. Nil berarti "di akhir",
+	// dan lapisan ini tidak tahu berapa jumlah halaman dokumen itu — hanya
+	// orchestrator yang tahu, dan hanya ia yang boleh memutuskannya.
+	if err := h.service.CreatePage(ctx, documentToken, subscriber, message.ID, message.Index); err != nil {
+		if !isEditRejection(err) {
+			return
+		}
+
+		h.logger.Warn("create document design page",
+			"document", documentToken, "page", message.ID, "error", err)
+		subscriber.sendError("page_rejected", err.Error())
+	}
+}
+
+func (h *DocumentDesignHandler) deletePage(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignPageDelete
+	if err := json.Unmarshal(payload, &message); err != nil {
+		subscriber.sendError("malformed_message", "page.delete payload is not valid")
+		return
+	}
+	if message.ID == "" {
+		subscriber.sendError("malformed_message", "page.delete requires an id")
+		return
+	}
+
+	// Menunggu hasil, berbeda dari element.delete. Halaman terakhir tidak boleh
+	// dibuang, dan penolakan itu wajib sampai — dokumen tanpa halaman akan ditimpa
+	// panduan bawaan ketika orang berikutnya membukanya.
+	if err := h.service.DeletePage(ctx, documentToken, subscriber, message.ID); err != nil {
+		if !isEditRejection(err) {
+			return
+		}
+
+		h.logger.Warn("delete document design page",
+			"document", documentToken, "page", message.ID, "error", err)
+		subscriber.sendError("page_rejected", err.Error())
+	}
+}
+
+func (h *DocumentDesignHandler) reorderPage(documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignPageReorder
+	if err := json.Unmarshal(payload, &message); err != nil {
+		subscriber.sendError("malformed_message", "page.reorder payload is not valid")
+		return
+	}
+	if message.ID == "" {
+		subscriber.sendError("malformed_message", "page.reorder requires an id")
+		return
+	}
+
+	h.service.ReorderPage(documentToken, subscriber, message.ID, message.Index)
+}
+
+// isEditRejection memisahkan penolakan yang sesungguhnya dari koneksi yang
+// sedang berakhir.
+//
+// Context yang dibatalkan BUKAN penolakan. Kejadiannya bisa saja sudah masuk
+// inbox orchestrator dan akan tetap diterapkan, sehingga menyampaikannya sebagai
+// penolakan menyuruh klien membatalkan perubahan yang justru mendarat. Teks
+// error-nya pun bukan frasa yang dimaksudkan untuk dibaca siapa pun di luar log.
+//
+// Diam adalah jawaban yang benar di sini: pembatalan hanya terjadi ketika koneksi
+// itu sendiri sedang ditutup, dan tidak ada lagi yang akan membaca balasannya.
+func isEditRejection(err error) bool {
+	return !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded)
 }

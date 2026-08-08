@@ -198,6 +198,30 @@ func (m *manager) reorderElement(token string, sub Subscriber, id string, index 
 	}
 }
 
+func (m *manager) createPage(ctx context.Context, token string, sub Subscriber, id string, index *int) error {
+	room, ok := m.room(token)
+	if !ok {
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	}
+
+	return room.createPage(ctx, sub, id, index)
+}
+
+func (m *manager) deletePage(ctx context.Context, token string, sub Subscriber, id string) error {
+	room, ok := m.room(token)
+	if !ok {
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	}
+
+	return room.deletePage(ctx, sub, id)
+}
+
+func (m *manager) reorderPage(token string, sub Subscriber, id string, index int) {
+	if room, ok := m.room(token); ok {
+		room.reorderPage(sub, id, index)
+	}
+}
+
 // detach mengurangi pencacah dan mulai menghitung mundur begitu koneksi terakhir
 // pergi. Room-nya sendiri belum dibuang di sini — itu tugas sweepIdle setelah
 // roomIdleGrace terlampaui.

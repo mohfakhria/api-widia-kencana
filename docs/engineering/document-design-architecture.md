@@ -59,7 +59,7 @@ penyuntingan, snapshot, ekspor, penyimpanan — melewati orchestrator dokumen it
 delivery/http
   document_design_handler.go    handshake, empat goroutine per koneksi
   document_design_conn.go       keempat loop, dispatch pesan masuk
-  document_design_element.go    pesan element.* → Service
+  document_design_edit.go       pesan element.* dan page.* → Service
   document_design_subscriber.go implementasi port Subscriber
   document_design_encoder.go    implementasi port MessageEncoder
   document_design_buffer.go     antrean masuk/keluar per klien (sync.Cond)
@@ -72,7 +72,7 @@ usecase/documentdesign
   manager.go                    peta token → room, masa tenggang, sapu bersih
   room.go                       ORCHESTRATOR — pemilik tunggal state dokumen
   event.go                      himpunan tertutup kejadian menuju orchestrator
-  element.go                    penerapan perubahan elemen + siarannya
+  edit.go                       penerapan perubahan elemen dan halaman + siarannya
   presence.go                   daftar orang yang sedang membuka dokumen
   cursor.go                     denyut dan siaran kursor
   persist.go                    flush berkala, drain saat berhenti
@@ -83,7 +83,7 @@ usecase/document_export_usecase.go   rakit isi + gambar + font → renderer
         │
         ▼  port: DocumentRepository, DocumentRenderer, FontCatalog, ObjectStorage
 domain/design                   model isi dokumen: tipe, validasi, satuan, font
-  edit.go                       operasi penyuntingan yang menjaga invarian isi
+  edit.go                       operasi penyuntingan elemen dan halaman, batas MaxPages
 infrastructure/pdf              renderer PDF, registry font, penyandian cp1252
 persistence/postgres            baca/tulis kolom content dengan compare-and-set
 ```
@@ -437,7 +437,14 @@ yang sudah diterima klien sebagai berhasil. Di dalam `consume`, `syncEvent`
 sengaja **ditolak** alih-alih diterapkan: menerimanya menjadikan seseorang anggota
 room yang sedang mati, dan ia tidak akan pernah tahu.
 
-**13. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
+**13. Dokumen selalu punya minimal satu halaman.** `design.DeletePage` menolak
+halaman terakhir. Melonggarkannya tidak menghasilkan galat apa pun pada saat
+penghapusan — kerusakannya muncul belakangan, ketika `Room.load` menganggap
+dokumen tanpa halaman sebagai dokumen kosong dan menimpanya dengan panduan
+bawaan. Yang melihatnya adalah orang berikutnya yang membuka dokumen, dan ia
+tidak akan punya cara menghubungkannya dengan penghapusan itu.
+
+**14. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
 menunggu channel.** `manager.sync` dan `manager.snapshot` melepas kunci sebelum
 bertanya ke room. Menahannya akan membekukan seluruh dokumen lain.
 
@@ -551,9 +558,15 @@ tanda pisah `—` tercetak sebagai `â€"`, tanpa satu pun galat.
 
 ## 8. Yang belum ada, dan kenapa
 
-**Penyuntingan halaman.** `page.add`, `page.delete`, dan `page.reorder` belum ada;
-penyuntingan sejauh ini hanya menyentuh elemen di atas halaman yang sudah
-tersedia.
+**Penyalinan halaman.** Halaman baru selalu kosong. Menduplikasi halaman berikut
+isinya butuh penurunan id elemen yang baru, dan bentuk pesannya belum
+diputuskan.
+
+**Batas jumlah elemen.** Halaman dibatasi 200 karena tiap halaman menjadi satu
+halaman PDF yang digambar dari nol saat ekspor. Elemen sengaja tidak dibatasi.
+Konsekuensinya satu halaman dapat menampung elemen sebanyak apa pun, dan yang
+membatasi hanya ukuran satu pesan — bukan penumpukannya. Bila ada dokumen yang
+terasa berat saat ekspor, di sinilah tempat pertama melihat.
 
 **Riwayat perubahan.** Backend tidak menyimpan siaran yang sudah lewat dan tidak
 dapat mengirim ulang yang terlewat. Klien yang melihat celah `version` memuat

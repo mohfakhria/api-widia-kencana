@@ -2,12 +2,18 @@ package documentdesign
 
 import "github.com/mohfakhria/api-widia-kencana/internal/domain"
 
-// Penerapan perubahan elemen beserta siarannya.
+// Penerapan perubahan isi dokumen — elemen dan halaman — beserta siarannya.
 //
 // Ketiga langkahnya selalu berurutan dan tidak boleh dipisah: terapkan ke isi,
 // naikkan version, siarkan. Menaikkan version tanpa menyiarkan membuat klien
 // melihat celah nomor; menyiarkan tanpa menaikkan version membuat dua perubahan
 // berbeda mengaku sebagai revisi yang sama.
+//
+// Pembagian membalas atau tidak mengikuti satu aturan: yang dapat DITOLAK
+// membalas, yang paling banter tidak berlaku tidak membalas. Penolakan berarti
+// layar pengirimnya sudah telanjur berbeda dari dokumen dan hanya ia yang dapat
+// membetulkannya; tidak berlaku berarti keadaannya menyatu dengan sendirinya
+// lewat siaran yang sedang menuju ke sana.
 
 // applyCreate memasang elemen baru lalu menyiarkannya.
 //
@@ -87,6 +93,76 @@ func (r *Room) applyReorder(e elementReorderEvent) {
 
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementReordered(r.version, e.id, effective))
+}
+
+// applyPageCreate menyisipkan halaman kosong.
+//
+// Membalas karena dapat ditolak: id sudah dipakai, atau dokumen sudah menyentuh
+// batas jumlah halaman.
+func (r *Room) applyPageCreate(e pageCreateEvent) {
+	if err := r.editable(e.subscriber); err != nil {
+		e.reply <- err
+		return
+	}
+
+	effective, err := r.content.CreatePage(e.id, e.index)
+	if err != nil {
+		e.reply <- err
+		return
+	}
+
+	r.version++
+	r.broadcastEdit(r.encoder.EncodePageCreated(r.version, e.id, effective))
+
+	e.reply <- nil
+}
+
+// applyPageDelete membuang halaman beserta seluruh elemennya.
+//
+// Membalas, berbeda dari applyDelete pada elemen, karena penghapusan halaman
+// punya satu jalur penolakan yang tidak dimiliki elemen: halaman terakhir. Alasan
+// larangan itu ada di design.DeletePage, dan akibatnya terlalu buruk untuk
+// didiamkan.
+//
+// Kursor orang lain dapat menunjuk halaman yang baru hilang. Tidak ada yang perlu
+// dilakukan: frontend menyembunyikan kursor yang halamannya bukan halaman yang
+// sedang ia lihat, dan gerakan berikutnya menggantinya sendiri.
+func (r *Room) applyPageDelete(e pageDeleteEvent) {
+	if err := r.editable(e.subscriber); err != nil {
+		e.reply <- err
+		return
+	}
+
+	applied, err := r.content.DeletePage(e.id)
+	if err != nil {
+		e.reply <- err
+		return
+	}
+	if !applied {
+		e.reply <- nil
+		return
+	}
+
+	r.version++
+	r.broadcastEdit(r.encoder.EncodePageDeleted(r.version, e.id))
+
+	e.reply <- nil
+}
+
+// applyPageReorder memindahkan halaman. Tidak membalas — tidak ada yang dapat
+// ditolak, dan halaman yang sudah lenyap didiamkan seperti elemen.
+func (r *Room) applyPageReorder(e pageReorderEvent) {
+	if err := r.editable(e.subscriber); err != nil {
+		return
+	}
+
+	effective, applied := r.content.ReorderPage(e.id, e.index)
+	if !applied {
+		return
+	}
+
+	r.version++
+	r.broadcastEdit(r.encoder.EncodePageReordered(r.version, e.id, effective))
 }
 
 // editable menjawab apakah koneksi ini boleh menyunting.

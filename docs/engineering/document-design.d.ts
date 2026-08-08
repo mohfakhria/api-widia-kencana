@@ -195,13 +195,56 @@ export interface DesignElementReorderMessage {
   index: number;
 }
 
+/**
+ * Menyisipkan halaman kosong.
+ *
+ * id dibuat frontend dan wajib unik se-dokumen — pakai UUID.
+ *
+ * index YANG TIDAK DISERTAKAN berarti "di akhir", dan itu BERBEDA dari index: 0
+ * yang berarti "di paling depan". Jangan mengirim 0 ketika yang dimaksud akhir.
+ *
+ * Ditolak (page_rejected) bila id sudah dipakai atau dokumen sudah punya 200
+ * halaman. Halaman baru selalu kosong; belum ada penyalinan halaman.
+ */
+export interface DesignPageCreateMessage {
+  type: 'page.create';
+  id: string;
+  index?: number;
+}
+
+/**
+ * Membuang halaman beserta SELURUH elemen di atasnya.
+ *
+ * HALAMAN TERAKHIR TIDAK DAPAT DIHAPUS — dibalas page_rejected. Matikan tombolnya
+ * ketika dokumen tinggal satu halaman, jangan menunggu penolakan.
+ *
+ * Halaman yang memang sudah tidak ada didiamkan, sama seperti elemen.
+ */
+export interface DesignPageDeleteMessage {
+  type: 'page.delete';
+  id: string;
+}
+
+/**
+ * Memindahkan halaman. index wajib di sini — berbeda dari page.create, karena
+ * memindahkan tanpa menyebut tujuan tidak berarti apa-apa. Di luar batas dijepit.
+ */
+export interface DesignPageReorderMessage {
+  type: 'page.reorder';
+  id: string;
+  index: number;
+}
+
 export type DesignClientMessage =
   | DesignDocumentGetMessage
   | DesignCursorMoveMessage
   | DesignElementCreateMessage
   | DesignElementUpdateMessage
   | DesignElementDeleteMessage
-  | DesignElementReorderMessage;
+  | DesignElementReorderMessage
+  | DesignPageCreateMessage
+  | DesignPageDeleteMessage
+  | DesignPageReorderMessage;
 
 export interface DesignSnapshotMessage {
   type: 'snapshot';
@@ -300,6 +343,35 @@ export interface DesignElementReorderedMessage {
   index: number;
 }
 
+export interface DesignPageCreatedMessage {
+  type: 'page.created';
+  version: number;
+  id: string;
+  /** Selalu ada, termasuk ketika nol. */
+  index: number;
+}
+
+/**
+ * Halaman dibuang. Elemen di atasnya TIDAK disebutkan satu per satu — buang
+ * halamannya dan seluruh elemennya ikut.
+ *
+ * Id elemen yang ikut terbuang kembali bebas: backend tidak menyimpan jejak id
+ * yang pernah dipakai. Pakai UUID dan itu tidak pernah jadi soal.
+ */
+export interface DesignPageDeletedMessage {
+  type: 'page.deleted';
+  version: number;
+  id: string;
+}
+
+export interface DesignPageReorderedMessage {
+  type: 'page.reordered';
+  version: number;
+  id: string;
+  /** Letak SESUNGGUHNYA setelah dijepit. Selalu ada, termasuk ketika nol. */
+  index: number;
+}
+
 /** Pesan error TIDAK menutup koneksi. Menyambung ulang bukan tindakan yang tepat. */
 export interface DesignErrorMessage {
   type: 'error';
@@ -321,7 +393,12 @@ export type DesignErrorCode =
    * tidak ada, atau id sudah dipakai. Batalkan perubahan optimistik Anda —
    * hampir selalu bug frontend, bukan keadaan yang dapat dicoba lagi.
    */
-  | 'element_rejected';
+  | 'element_rejected'
+  /**
+   * Permintaan halaman ditolak: id sudah dipakai, batas 200 halaman tersentuh,
+   * atau halaman TERAKHIR hendak dihapus. Batalkan perubahan optimistik Anda.
+   */
+  | 'page_rejected';
 
 export type DesignServerMessage =
   | DesignSnapshotMessage
@@ -331,6 +408,9 @@ export type DesignServerMessage =
   | DesignElementUpdatedMessage
   | DesignElementDeletedMessage
   | DesignElementReorderedMessage
+  | DesignPageCreatedMessage
+  | DesignPageDeletedMessage
+  | DesignPageReorderedMessage
   | DesignErrorMessage;
 
 /**

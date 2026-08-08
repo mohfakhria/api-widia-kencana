@@ -25,9 +25,13 @@ type syncEvent struct {
 	reply chan<- error
 }
 
+func (syncEvent) isRoomEvent() {}
+
 type leaveEvent struct {
 	subscriber Subscriber
 }
+
+func (leaveEvent) isRoomEvent() {}
 
 // snapshotEvent meminta salinan isi terkini, dipakai ekspor.
 //
@@ -38,6 +42,8 @@ type leaveEvent struct {
 type snapshotEvent struct {
 	reply chan<- snapshotResult
 }
+
+func (snapshotEvent) isRoomEvent() {}
 
 type snapshotResult struct {
 	content json.RawMessage
@@ -52,8 +58,10 @@ type cursorMoveEvent struct {
 	cursor Cursor
 }
 
-// Keempat kejadian penyuntingan membawa subscriber pengirimnya, semata-mata untuk
-// memeriksa keanggotaan. Koneksi yang terbuka tetapi belum meminta dokumen belum
+func (cursorMoveEvent) isRoomEvent() {}
+
+// Seluruh kejadian penyuntingan membawa subscriber pengirimnya, semata-mata
+// untuk memeriksa keanggotaan. Koneksi yang terbuka tetapi belum meminta dokumen belum
 // pernah melihat isinya, jadi suntingan darinya menunjuk keadaan yang tidak pernah
 // ia miliki.
 //
@@ -100,13 +108,41 @@ func (elementDeleteEvent) isRoomEvent() {}
 
 func (elementReorderEvent) isRoomEvent() {}
 
-func (syncEvent) isRoomEvent() {}
+// Penyuntingan halaman. Dua dari tiga membalas, karena dua dari tiga dapat
+// ditolak: id halaman sudah dipakai atau batas jumlah halaman tersentuh pada
+// pembuatan, dan halaman terakhir pada penghapusan.
+//
+// Perhatikan bedanya dengan elemen: elementDeleteEvent tidak membalas, sedangkan
+// pageDeleteEvent membalas. Menghapus elemen tidak punya jalur penolakan sama
+// sekali; menghapus halaman punya satu, dan akibat mendiamkannya adalah dokumen
+// yang ditimpa panduan bawaan ketika orang berikutnya membukanya.
 
-func (leaveEvent) isRoomEvent() {}
+type pageCreateEvent struct {
+	subscriber Subscriber
+	id         string
+	// index kosong berarti di akhir. Pointer, karena "tidak menyebut posisi" dan
+	// "posisi nol" adalah dua maksud yang berbeda dan keduanya sah.
+	index *int
+	reply chan<- error
+}
 
-func (snapshotEvent) isRoomEvent() {}
+type pageDeleteEvent struct {
+	subscriber Subscriber
+	id         string
+	reply      chan<- error
+}
 
-func (cursorMoveEvent) isRoomEvent() {}
+type pageReorderEvent struct {
+	subscriber Subscriber
+	id         string
+	index      int
+}
+
+func (pageCreateEvent) isRoomEvent() {}
+
+func (pageDeleteEvent) isRoomEvent() {}
+
+func (pageReorderEvent) isRoomEvent() {}
 
 // saveResult dikirim goroutine penyimpan kembali ke orchestrator.
 type saveResult struct {

@@ -213,6 +213,30 @@ func (s *Service) ReorderElement(documentToken string, sub Subscriber, id string
 	s.rooms.reorderElement(documentToken, sub, id, index)
 }
 
+// CreatePage menyisipkan halaman kosong. index kosong berarti di akhir.
+//
+// Mengembalikan error karena dapat ditolak: id sudah dipakai, atau dokumen sudah
+// menyentuh batas jumlah halaman.
+func (s *Service) CreatePage(ctx context.Context, documentToken string, sub Subscriber, id string, index *int) error {
+	return s.rooms.createPage(ctx, documentToken, sub, id, index)
+}
+
+// DeletePage membuang halaman beserta seluruh elemennya.
+//
+// Mengembalikan error, berbeda dari DeleteElement, karena halaman TERAKHIR tidak
+// boleh dibuang: dokumen tanpa halaman akan ditimpa panduan bawaan saat dimuat
+// berikutnya, dan itu terjadi bukan pada saat penghapusannya melainkan ketika
+// orang berikutnya membukanya.
+func (s *Service) DeletePage(ctx context.Context, documentToken string, sub Subscriber, id string) error {
+	return s.rooms.deletePage(ctx, documentToken, sub, id)
+}
+
+// ReorderPage memindahkan halaman. Index di luar batas dijepit orchestrator, dan
+// letak sesungguhnya itulah yang disiarkan.
+func (s *Service) ReorderPage(documentToken string, sub Subscriber, id string, index int) {
+	s.rooms.reorderPage(documentToken, sub, id, index)
+}
+
 func (s *Service) Detach(documentToken, userID string, sub Subscriber) {
 	s.rooms.detach(documentToken, sub)
 	s.connections.release(userID)

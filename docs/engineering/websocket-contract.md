@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-08 | `page.create`, `page.delete`, `page.reorder` beserta siaran `page.*` dan kode error `page_rejected` | Tambahan. Halaman kini dapat ditambah dan dibuang saat sesi berjalan — **berhenti** menganggap daftar halaman tetap sepanjang koneksi. Halaman terakhir tidak dapat dihapus |
 | 2026-08-08 | **Penyuntingan lewat WebSocket**: `element.create`, `element.update`, `element.delete`, `element.reorder`, beserta siaran `element.*` dan kode error `element_rejected` | Fitur baru. `version` kini bergerak setiap ada perubahan — **mulai pakai** deteksi celah nomor di [3.6](#36-versi). Berhenti menyunting `documents.content` langsung di database |
 | 2026-08-07 | Denyut siaran `cursor` dilonggarkan 50 ms → **70 ms** | Tidak ada, bentuk pesannya tetap. Sesuaikan hanya bila durasi interpolasi dipatok pada 50 ms |
 | 2026-08-07 | Pesan `cursor` dan `cursor.move` — kursor langsung antar penyunting | Tambahan. Tangani bila ingin menampilkan kursor orang lain; abaikan dengan aman bila belum |
@@ -263,17 +264,68 @@ sehingga klien yang tertinggal terlalu jauh diputus, bukan dilewati.
 membedakannya dari 60, dan tanpa itu klien lain yang tersendat sesaat akan
 kehilangan koneksinya.
 
-### 2.8 Yang belum ada
+### 2.8 `page.create`
 
-`page.add`, `page.delete`, dan `page.reorder` belum ada — dokumen bekerja pada
-halaman yang sudah tersedia di `snapshot`.
+```jsonc
+{ "type": "page.create", "id": "9c1f…", "index": 2 }
+```
 
-`cursor.hide` juga belum ada: kursor orang yang menggeser pointer keluar kanvas
-baru hilang ketika ia menutup tab, atau ketika ia pergi.
+| | |
+|---|---|
+| Kapan dikirim | pengguna menambahkan halaman |
+| Balasan | `page.created` ke **semua** penghuni, termasuk pengirim |
+| Bila ditolak | `error` dengan kode `page_rejected` |
+
+`id` dibuat **frontend** dan wajib unik se-dokumen. Pakai UUID.
+
+**`index` boleh tidak disertakan, dan itu berarti "di akhir".** Perhatikan bahwa
+`index: 0` adalah hal yang berbeda — ia berarti "di paling depan". Jangan
+mengirim `0` ketika yang Anda maksud "di akhir".
+
+Halaman baru **selalu kosong**. Belum ada penyalinan halaman.
+
+Ditolak bila id sudah dipakai, atau bila dokumen sudah punya **200 halaman**.
+
+### 2.9 `page.delete`
+
+```jsonc
+{ "type": "page.delete", "id": "9c1f…" }
+```
+
+Membuang halaman **beserta seluruh elemen di atasnya**. Siarannya hanya menyebut
+id halaman; buang halaman itu dan semua elemennya ikut.
+
+**Halaman terakhir tidak dapat dihapus** — permintaannya dibalas `page_rejected`.
+Sembunyikan atau matikan tombolnya ketika dokumen tinggal satu halaman.
+
+> Alasannya bukan kerewelan: dokumen yang tersimpan tanpa halaman dianggap kosong
+> saat dimuat berikutnya, lalu **ditimpa panduan bawaan** — sehingga template yang
+> dirawat lama berubah menjadi teks tutorial, dan itu terjadi bukan saat
+> penghapusannya melainkan ketika orang berikutnya membuka dokumen.
+
+Halaman yang memang sudah tidak ada didiamkan, sama seperti elemen.
+
+### 2.10 `page.reorder`
+
+```jsonc
+{ "type": "page.reorder", "id": "9c1f…", "index": 0 }
+```
+
+`index` dihitung dari nol dan **wajib** di sini — berbeda dari `page.create`,
+karena memindahkan tanpa menyebut tujuan tidak berarti apa-apa. Di luar batas
+dijepit, dan siaran `page.reordered` membawa letak sesungguhnya.
+
+### 2.11 Yang belum ada
+
+`cursor.hide` belum ada: kursor orang yang menggeser pointer keluar kanvas baru
+hilang ketika ia menutup tab, atau ketika ia pergi.
+
+Penyalinan halaman belum ada — halaman baru selalu kosong.
 
 **Undo/redo bukan urusan backend.** Di editor kolaboratif, undo yang benar adalah
 membatalkan langkah **sendiri**, bukan langkah terakhir siapa pun — dan itu
-dibangun frontend dari riwayat lokal, lalu dikirim sebagai `element.*` biasa.
+dibangun frontend dari riwayat lokal, lalu dikirim sebagai pesan penyuntingan
+biasa.
 
 Jenis di luar yang disebut di bab ini dibalas `unsupported_message_type`.
 
@@ -292,6 +344,9 @@ Ringkasannya:
 | `element.updated` | `element.update` diterapkan | **semua**, pengirim ikut | ganti elemen berid sama, jangan pindahkan urutannya |
 | `element.deleted` | `element.delete` diterapkan | **semua**, pengirim ikut | buang elemen berid itu |
 | `element.reordered` | `element.reorder` diterapkan | **semua**, pengirim ikut | pindahkan elemen ke `index` |
+| `page.created` | `page.create` diterapkan | **semua**, pengirim ikut | sisipkan halaman kosong di `index` |
+| `page.deleted` | `page.delete` diterapkan | **semua**, pengirim ikut | buang halaman itu **beserta seluruh elemennya** |
+| `page.reordered` | `page.reorder` diterapkan | **semua**, pengirim ikut | pindahkan halaman ke `index` |
 | `error` | permintaan ditolak | hanya peminta | **jangan** sambung ulang |
 
 ### 3.1 `snapshot`
@@ -446,6 +501,25 @@ pemberitahuan; `element.create` adalah permintaan. Keduanya tidak pernah tertuka
 | `id` | `deleted`, `reordered` | elemen yang dimaksud |
 | `index` | `reordered` | letak **sesungguhnya** setelah dijepit, bukan yang diminta |
 
+Siaran halaman mengikuti pola yang sama persis:
+
+```jsonc
+{ "type": "page.created",   "version": 60, "id": "…", "index": 2 }
+{ "type": "page.deleted",   "version": 61, "id": "…" }
+{ "type": "page.reordered", "version": 62, "id": "…", "index": 0 }
+```
+
+`page.deleted` **tidak menyebutkan elemen di atasnya satu per satu.** Anda sudah
+tahu isi halaman itu dari `snapshot` dan siaran sebelumnya; buang halamannya, dan
+seluruh elemennya ikut.
+
+Id elemen yang ikut terbuang kembali **bebas** — backend tidak menyimpan jejak id
+yang pernah dipakai, jadi ia akan menerima `element.create` yang memakainya lagi.
+Pakai UUID dan pertanyaan itu tidak pernah muncul.
+
+Pada `page.created` dan `page.reordered`, `index` **selalu ada**, termasuk ketika
+nilainya nol. Halaman di posisi paling depan adalah keadaan yang sah dan sering.
+
 Siaran ini **tidak pernah dijatuhkan**. Klien yang antrean keluarnya penuh
 diputus — menerima sebagian menghasilkan kanvas yang salah tanpa ada yang tahu,
 sedangkan diputus lalu `document.get` menghasilkan yang benar.
@@ -475,6 +549,7 @@ Tidak ada celah nomor yang tercipta karenanya.
 | `malformed_message` | JSON tidak dapat diurai | Buang antrean optimistik, kirim `document.get` untuk memulai bersih |
 | `missing_message_type` | Field `type` kosong atau tidak ada | Bug frontend |
 | `unsupported_message_type` | Jenis pesan belum didukung backend | Bug frontend, atau fitur yang memang belum ada |
+| `page_rejected` | Permintaan halaman ditolak: id sudah dipakai, batas 200 halaman tersentuh, atau **halaman terakhir** hendak dihapus | Batalkan perubahan optimistik Anda. Untuk halaman terakhir, matikan tombolnya alih-alih menunggu penolakan |
 | `element_rejected` | Muatan penyuntingan ditolak: elemen tidak sah, properti tak dikenal, halaman tidak ada, atau id sudah dipakai | **Batalkan perubahan optimistik Anda.** Pesannya menyebut persis apa yang salah — ini hampir selalu bug frontend, bukan keadaan yang dapat dicoba lagi |
 
 Bila `document_unavailable` diabaikan, antarmuka akan menggantung dengan kanvas
@@ -544,6 +619,8 @@ Yang **tidak** dijamin:
   baru menggantikan yang masih mengantre.
 - Bahwa setiap pesan penyuntingan menghasilkan siaran. Yang sasarannya sudah
   lenyap didiamkan — tanpa error, tanpa siaran, tanpa kenaikan `version`.
+- Bahwa daftar halaman tetap sepanjang koneksi. Halaman dapat muncul dan hilang
+  kapan saja; jangan menyimpan indeks halaman sebagai identitas, pakai id-nya.
 - Bahwa dua orang yang menyunting elemen yang **sama** berakhir dengan hasil yang
   masing-masing kira. Berlaku menang-terakhir per elemen: yang tiba belakangan
   menang seluruhnya. Tidak ada penggabungan properti.

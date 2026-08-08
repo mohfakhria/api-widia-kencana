@@ -56,6 +56,9 @@ type MessageEncoder interface {
 	EncodeElementUpdated(version int64, element design.Element) ([]byte, error)
 	EncodeElementDeleted(version int64, id string) ([]byte, error)
 	EncodeElementReordered(version int64, id string, index int) ([]byte, error)
+	EncodePageCreated(version int64, id string, index int) ([]byte, error)
+	EncodePageDeleted(version int64, id string) ([]byte, error)
+	EncodePageReordered(version int64, id string, index int) ([]byte, error)
 }
 
 // Cursor adalah letak kursor satu orang di atas dokumen.

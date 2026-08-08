@@ -212,9 +212,16 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		h.deleteElement(documentToken, payload, subscriber)
 	case dto.DesignMessageElementReorder:
 		h.reorderElement(documentToken, payload, subscriber)
+	case dto.DesignMessagePageCreate:
+		h.createPage(ctx, documentToken, payload, subscriber)
+	case dto.DesignMessagePageDelete:
+		h.deletePage(ctx, documentToken, payload, subscriber)
+	case dto.DesignMessagePageReorder:
+		h.reorderPage(documentToken, payload, subscriber)
 	default:
-		// Penerapan perubahan belum dibangun. Menolak dengan kode yang jelas lebih
-		// baik daripada diam, supaya ketidakcocokan kontrak langsung terlihat.
+		// Menolak dengan kode yang jelas, bukan diam. Jenis yang tidak dikenal
+		// hampir selalu berarti frontend dan backend memegang kontrak yang berbeda,
+		// dan itu jauh lebih murah ditemukan sekarang daripada lewat gejalanya.
 		subscriber.sendError("unsupported_message_type",
 			fmt.Sprintf("message type %q is not handled yet", inbound.Type))
 	}
