@@ -45,6 +45,14 @@ export interface DesignPage {
   /** Tidak kosong, unik se-dokumen. */
   id: string;
   /**
+   * Sebutan halaman DI EDITOR — daftar halaman, panel thumbnail, dan sejenisnya.
+   * Renderer TIDAK menggambarnya: judul yang tampil di atas kertas adalah elemen
+   * teks biasa, dan keduanya boleh berbeda.
+   *
+   * Kosong berarti belum diberi judul. Sediakan sebutan cadangan sendiri.
+   */
+  title?: string;
+  /**
    * Halaman tersembunyi TIDAK IKUT TERCETAK — ekspor melewatinya seluruhnya,
    * termasuk tidak mengunduh asetnya. Bukan sekadar disembunyikan dari editor.
    *
@@ -249,9 +257,13 @@ export interface DesignPageCreateMessage {
  * menimpa seluruh isinya — dua orang yang menyunting elemen di halaman itu akan
  * saling menghapus pekerjaan.
  *
- * KEDUA BOOLEAN WAJIB, SELALU KEDUANYA. Pesan yang hanya menyebut salah satunya
- * ditolak (malformed_message), bukan diperlakukan sebagai false — tanpa aturan
- * itu, mengirim { hidden: true } akan sekalian membuka kunci halaman diam-diam.
+ * KETIGA FIELD WAJIB, SELALU KETIGANYA. Pesan yang hanya menyebut sebagian
+ * ditolak (malformed_message), bukan diperlakukan sebagai nilai kosong — tanpa
+ * aturan itu, mengirim { hidden: true } akan sekalian membuka kunci halaman dan
+ * menghapus judulnya, diam-diam.
+ *
+ * title bertipe string dan "" adalah nilai yang sah, artinya "tidak berjudul".
+ * Karena itu ia tidak boleh tertukar dengan penghilangan.
  *
  * Nilai yang sudah sama persis tidak menghasilkan siaran dan tidak menaikkan
  * version.
@@ -259,6 +271,8 @@ export interface DesignPageCreateMessage {
 export interface DesignPageUpdateMessage {
   type: 'page.update';
   id: string;
+  /** Sebutan di editor, tidak digambar. Lihat DesignPage.title. */
+  title: string;
   /** Tidak ikut tercetak. Lihat DesignPage.hidden. */
   hidden: boolean;
   /** Penanda saja; backend tidak menegakkannya. */
@@ -405,11 +419,12 @@ export interface DesignPageCreatedMessage {
   index: number;
 }
 
-/** Kedua boolean SELALU ada, termasuk ketika bernilai false. */
+/** Ketiganya SELALU ada, termasuk ketika bernilai false atau "". */
 export interface DesignPageUpdatedMessage {
   type: 'page.updated';
   version: number;
   id: string;
+  title: string;
   hidden: boolean;
   locked: boolean;
 }

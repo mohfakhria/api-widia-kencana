@@ -150,16 +150,18 @@ func (h *DocumentDesignHandler) updatePage(documentToken string, payload []byte,
 		return
 	}
 
-	// Kedua field WAJIB ada. Yang hilang tidak diperlakukan sebagai false: klien
-	// yang lupa menyertakan locked akan membuka kunci halaman diam-diam, lalu
-	// penyuntingannya tersiar ke semua orang sebagai perubahan yang sah. Ditolak
-	// di sini, sebelum menyentuh orchestrator.
-	if message.Hidden == nil || message.Locked == nil {
-		subscriber.sendError("malformed_message", "page.update requires both hidden and locked")
+	// KETIGA field WAJIB ada. Yang hilang tidak diperlakukan sebagai nilai kosong:
+	// klien yang lupa menyertakan locked akan membuka kunci halaman diam-diam, dan
+	// yang lupa menyertakan title akan menghapus judulnya — keduanya tersiar ke
+	// semua orang sebagai perubahan yang sah. Ditolak di sini, sebelum menyentuh
+	// orchestrator.
+	if message.Title == nil || message.Hidden == nil || message.Locked == nil {
+		subscriber.sendError("malformed_message", "page.update requires title, hidden, and locked")
 		return
 	}
 
-	h.service.UpdatePage(documentToken, subscriber, message.ID, *message.Hidden, *message.Locked)
+	h.service.UpdatePage(documentToken, subscriber, message.ID,
+		*message.Title, *message.Hidden, *message.Locked)
 }
 
 func (h *DocumentDesignHandler) deletePage(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {

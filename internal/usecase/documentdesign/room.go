@@ -536,9 +536,9 @@ func (r *Room) deletePage(ctx context.Context, sub Subscriber, id string) error 
 }
 
 // updatePage tidak menunggu hasil, sama seperti updateElement.
-func (r *Room) updatePage(sub Subscriber, id string, hidden, locked bool) {
+func (r *Room) updatePage(sub Subscriber, id, title string, hidden, locked bool) {
 	select {
-	case r.inbox <- pageUpdateEvent{subscriber: sub, id: id, hidden: hidden, locked: locked}:
+	case r.inbox <- pageUpdateEvent{subscriber: sub, id: id, title: title, hidden: hidden, locked: locked}:
 	case <-r.done:
 	}
 }

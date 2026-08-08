@@ -138,6 +138,7 @@ type pageDeleteEvent struct {
 type pageUpdateEvent struct {
 	subscriber Subscriber
 	id         string
+	title      string
 	hidden     bool
 	locked     bool
 }

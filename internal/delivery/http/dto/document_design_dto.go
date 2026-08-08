@@ -267,36 +267,44 @@ type DesignPageCreate struct {
 // utuh berarti tiap perubahan hidden ikut menimpa seluruh isinya — dua orang yang
 // menyunting elemen di halaman itu akan saling menghapus pekerjaan.
 //
-// Kedua boolean BERTIPE POINTER supaya "tidak dikirim" dapat dibedakan dari
-// "dikirim bernilai false", lalu ditolak. Tanpa itu, klien yang lupa menyertakan
-// locked akan MEMBUKA KUNCI halaman diam-diam dan menyiarkannya ke semua orang
-// sebagai perubahan yang sah. Dua field, dua kesempatan untuk lupa; lebih baik
-// gagal berisik daripada mengubah sesuatu yang tidak diminta siapa pun.
+// KETIGA field BERTIPE POINTER supaya "tidak dikirim" dapat dibedakan dari
+// "dikirim bernilai kosong", lalu ditolak. Tanpa itu, klien yang lupa
+// menyertakan locked akan MEMBUKA KUNCI halaman diam-diam, dan yang lupa
+// menyertakan title akan MENGHAPUS JUDULNYA — keduanya tersiar ke semua orang
+// sebagai perubahan yang sah.
+//
+// Title ikut berpointer walau bertipe string, dengan alasan yang sama persis:
+// string kosong adalah judul yang sah ("hapus judulnya"), sehingga ia tidak
+// boleh tertukar dengan penghilangan.
 type DesignPageUpdate struct {
-	ID     string `json:"id"`
-	Hidden *bool  `json:"hidden"`
-	Locked *bool  `json:"locked"`
+	ID     string  `json:"id"`
+	Title  *string `json:"title"`
+	Hidden *bool   `json:"hidden"`
+	Locked *bool   `json:"locked"`
 }
 
 // DesignPageUpdatedMessage adalah siarannya.
 //
-// Tanpa omitempty pada kedua boolean: siaran yang mengatakan "sekarang TIDAK
-// tersembunyi" wajib membawa "hidden": false. Dengan omitempty ia terkirim tanpa
-// field itu sama sekali, dan penerima tidak dapat membedakannya dari pesan yang
-// memang tidak menyebut apa-apa.
+// Tanpa omitempty pada ketiganya: siaran yang mengatakan "sekarang TIDAK
+// tersembunyi", atau "judulnya sekarang kosong", wajib membawa field itu apa
+// adanya. Dengan omitempty ia terkirim tanpa field tersebut sama sekali, dan
+// penerima tidak dapat membedakannya dari pesan yang memang tidak menyebut
+// apa-apa.
 type DesignPageUpdatedMessage struct {
 	Type    string `json:"type"`
 	Version int64  `json:"version"`
 	ID      string `json:"id"`
+	Title   string `json:"title"`
 	Hidden  bool   `json:"hidden"`
 	Locked  bool   `json:"locked"`
 }
 
-func NewDesignPageUpdatedMessage(version int64, id string, hidden, locked bool) ([]byte, error) {
+func NewDesignPageUpdatedMessage(version int64, id, title string, hidden, locked bool) ([]byte, error) {
 	return json.Marshal(DesignPageUpdatedMessage{
 		Type:    DesignMessagePageUpdated,
 		Version: version,
 		ID:      id,
+		Title:   title,
 		Hidden:  hidden,
 		Locked:  locked,
 	})

@@ -83,7 +83,7 @@ snapshot, jadi frontend tidak perlu mengonversi apa pun.
 | Aturan | |
 |---|---|
 | `pages` | array; **minimal satu halaman** — halaman terakhir tidak dapat dihapus |
-| Setiap halaman | `id` tidak kosong, `elements` opsional, `hidden` dan `locked` opsional |
+| Setiap halaman | `id` tidak kosong, `elements` opsional, `title`, `hidden`, dan `locked` opsional |
 | Setiap elemen | `locked` dan `groupId` opsional, berlaku untuk semua jenis |
 | Setiap elemen | `id` tidak kosong dan `type` yang dikenal |
 | Seluruh `id` | unik dalam satu dokumen, **termasuk lintas halaman** |
@@ -104,6 +104,10 @@ lewat pesan `element.reorder` dan `page.reorder`.
 termasuk tidak mengunduh aset di atasnya. Dokumen yang seluruh halamannya
 tersembunyi menghasilkan PDF berisi satu halaman kosong, sama seperti dokumen
 yang memang belum punya halaman.
+
+**`title` pada halaman tidak digambar.** Ia sebutan halaman di editor — daftar
+halaman, panel thumbnail — sedangkan judul yang tampil di atas kertas adalah
+elemen teks biasa. Keduanya tidak berhubungan dan boleh berbeda.
 
 **`locked` dan `groupId` tidak digambar sama sekali.** Renderer mengabaikan
 keduanya; mereka ada supaya editor punya tempat menyimpannya, dan supaya ikut

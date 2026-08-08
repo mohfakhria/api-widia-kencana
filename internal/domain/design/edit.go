@@ -193,20 +193,23 @@ func (c *Content) CreatePage(id string, index *int) (effective int, err error) {
 // menaikkan version untuk perubahan yang tidak mengubah apa pun akan membuat
 // klien lain memuat ulang tanpa sebab.
 //
-// Pemeriksaan ini mungkin di sini karena propertinya cuma dua. UpdateElement
+// Pemeriksaan ini mungkin di sini karena propertinya hanya tiga. UpdateElement
 // tidak melakukannya: membandingkan elemen utuh jauh lebih mahal daripada
 // sesekali menyiarkan yang sama.
-func (c *Content) UpdatePage(id string, hidden, locked bool) (changed bool) {
+func (c *Content) UpdatePage(id, title string, hidden, locked bool) (changed bool) {
 	index := slices.IndexFunc(c.Pages, func(p Page) bool { return p.ID == id })
 	if index < 0 {
 		return false
 	}
-	if c.Pages[index].Hidden == hidden && c.Pages[index].Locked == locked {
+
+	page := &c.Pages[index]
+	if page.Title == title && page.Hidden == hidden && page.Locked == locked {
 		return false
 	}
 
-	c.Pages[index].Hidden = hidden
-	c.Pages[index].Locked = locked
+	page.Title = title
+	page.Hidden = hidden
+	page.Locked = locked
 
 	return true
 }

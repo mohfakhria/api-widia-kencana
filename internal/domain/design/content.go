@@ -87,6 +87,13 @@ type Content struct {
 // data untuk bertentangan dengan kertas yang dipilih pengguna.
 type Page struct {
 	ID string `json:"id"`
+	// Title adalah sebutan halaman di dalam editor — daftar halaman, panel
+	// thumbnail, dan sejenisnya. Renderer TIDAK menggambarnya: judul yang tampil
+	// di atas kertas adalah elemen teks biasa, bukan field ini.
+	//
+	// Kosong berarti belum diberi judul, dan itu keadaan yang sah. Frontend yang
+	// menampilkannya bertanggung jawab menyediakan sebutan cadangan sendiri.
+	Title string `json:"title,omitempty"`
 	// Hidden mengeluarkan halaman dari hasil cetak, bukan sekadar dari layar.
 	// Ekspor melewatinya seluruhnya — termasuk tidak mengunduh asetnya.
 	//

@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-09 | `title` pada halaman: field `title?` di `DesignPage`, dan **wajib** pada `page.update` | **Perlu tindakan.** Aturan `page.update` berubah dari dua field wajib menjadi **tiga** — pesan tanpa `title` kini ditolak `malformed_message`. Kirim balik judul yang sedang berlaku, sama seperti `hidden` dan `locked` |
 | 2026-08-09 | Widia Agent dapat menyambung sebagai penyunting | Tambahan. Ia muncul di `presence` sebagai id `99999` bernama `Widia-Agent`. Pakai `name` dari `presence` apa adanya; jangan mengandalkan pencarian ke daftar pengguna. Ia tidak pernah punya kursor; itu sudah didukung |
 | 2026-08-08 | Antrean keluar per klien dinaikkan 64 → **256** pesan | Tidak ada, bentuk pesannya tetap. Klien punya toleransi tersendat empat kali lebih panjang sebelum diputus; throttle saat menggeser tetap dianjurkan |
 | 2026-08-08 | `page.update` beserta siaran `page.updated`; field baru `hidden`/`locked` pada halaman dan `locked`/`groupId` pada elemen | Tambahan, **tetapi**: `element.update` mengganti elemen seutuhnya, jadi mulai kirim balik `locked` dan `groupId` pada setiap update — yang tidak disertakan akan terhapus. Halaman `hidden` **tidak ikut tercetak** |
@@ -322,19 +323,24 @@ Ditolak bila id sudah dipakai, atau bila dokumen sudah punya **200 halaman**.
 ### 2.9 `page.update`
 
 ```jsonc
-{ "type": "page.update", "id": "9c1f…", "hidden": true, "locked": false }
+{ "type": "page.update", "id": "9c1f…", "title": "Lampiran", "hidden": true, "locked": false }
 ```
 
 | | |
 |---|---|
-| Kapan dikirim | pengguna menyembunyikan, menampilkan, mengunci, atau membuka halaman |
+| Kapan dikirim | pengguna mengganti judul halaman, menyembunyikan, menampilkan, mengunci, atau membuka |
 | Balasan | `page.updated` ke **semua** penghuni, termasuk pengirim |
 | Bila muatannya kurang | `error` dengan kode `malformed_message` |
 
-**Kedua boolean WAJIB, selalu keduanya.** Pesan yang hanya menyebut salah satunya
-**ditolak**, bukan diperlakukan sebagai `false`. Tanpa aturan itu, mengirim
-`{"hidden": true}` akan sekalian **membuka kunci** halaman itu diam-diam, dan
-perubahan yang tidak Anda minta tersiar ke semua orang sebagai perubahan yang sah.
+**Ketiganya WAJIB, selalu ketiganya.** Pesan yang hanya menyebut sebagian
+**ditolak**, bukan diperlakukan sebagai nilai kosong. Tanpa aturan itu, mengirim
+`{"hidden": true}` akan sekalian **membuka kunci** halaman itu dan **menghapus
+judulnya** diam-diam, lalu perubahan yang tidak Anda minta tersiar ke semua orang
+sebagai perubahan yang sah.
+
+`title` bertipe string, dan `""` adalah nilai yang sah — artinya "halaman ini
+tidak berjudul". Karena itu ia tidak boleh tertukar dengan penghilangan, dan
+karena itu pula ia wajib disebut.
 
 **Tidak ada field `elements`.** Ini perbedaan pokok dari `element.update`. Elemen
 adalah daun sehingga dikirim utuh; halaman memuat elemen, dan mengirim halaman
@@ -343,6 +349,15 @@ yang menyunting elemen di halaman itu akan saling menghapus pekerjaan.
 
 Nilai yang **sudah sama persis** tidak menghasilkan siaran dan tidak menaikkan
 `version`. Aman mengirimnya berulang, tetapi tidak ada gunanya.
+
+#### `title` — sebutan di editor, bukan di kertas
+
+`title` adalah nama halaman di daftar halaman, panel thumbnail, dan sejenisnya.
+**Renderer tidak menggambarnya.** Judul yang tampil di atas kertas adalah elemen
+teks biasa; keduanya tidak berhubungan dan boleh berbeda.
+
+Kosong berarti belum diberi judul, dan itu keadaan yang wajar. Sediakan sebutan
+cadangan sendiri — "Halaman 3", misalnya.
 
 #### `hidden` — tidak ikut tercetak
 
@@ -420,7 +435,7 @@ Ringkasannya:
 | `element.deleted` | `element.delete` diterapkan | **semua**, pengirim ikut | buang elemen berid itu |
 | `element.reordered` | `element.reorder` diterapkan | **semua**, pengirim ikut | pindahkan elemen ke `index` |
 | `page.created` | `page.create` diterapkan | **semua**, pengirim ikut | sisipkan halaman kosong di `index` |
-| `page.updated` | `page.update` diterapkan | **semua**, pengirim ikut | setel `hidden` dan `locked` halaman itu |
+| `page.updated` | `page.update` diterapkan | **semua**, pengirim ikut | setel `title`, `hidden`, dan `locked` halaman itu |
 | `page.deleted` | `page.delete` diterapkan | **semua**, pengirim ikut | buang halaman itu **beserta seluruh elemennya** |
 | `page.reordered` | `page.reorder` diterapkan | **semua**, pengirim ikut | pindahkan halaman ke `index` |
 | `error` | permintaan ditolak | hanya peminta | **jangan** sambung ulang |
@@ -581,14 +596,15 @@ Siaran halaman mengikuti pola yang sama persis:
 
 ```jsonc
 { "type": "page.created",   "version": 60, "id": "…", "index": 2 }
-{ "type": "page.updated",   "version": 61, "id": "…", "hidden": true, "locked": false }
+{ "type": "page.updated",   "version": 61, "id": "…", "title": "Lampiran", "hidden": true, "locked": false }
 { "type": "page.deleted",   "version": 62, "id": "…" }
 { "type": "page.reordered", "version": 63, "id": "…", "index": 0 }
 ```
 
-Pada `page.updated`, **kedua boolean selalu ada** — termasuk ketika bernilai
-`false`. Siaran yang mengatakan "sekarang tidak tersembunyi" harus dapat
-dibedakan dari siaran yang tidak menyebut apa-apa.
+Pada `page.updated`, **ketiga field selalu ada** — termasuk ketika bernilai
+`false` atau `""`. Siaran yang mengatakan "sekarang tidak tersembunyi", atau
+"judulnya sekarang kosong", harus dapat dibedakan dari siaran yang tidak menyebut
+apa-apa.
 
 `page.deleted` **tidak menyebutkan elemen di atasnya satu per satu.** Anda sudah
 tahu isi halaman itu dari `snapshot` dan siaran sebelumnya; buang halamannya, dan
