@@ -24,7 +24,18 @@ const (
 	// Batas panjang antrean per arah, per klien. Melewatinya berarti klien
 	// tertinggal terlalu jauh atau membanjiri lebih cepat daripada kemampuan
 	// proses, dan koneksinya diputus.
-	designQueueLimit = 64
+	//
+	// Angka ini menakar TERSENDAT, bukan laju. Klien yang benar-benar lebih lambat
+	// daripada arus perubahan tidak akan menyusul berapa pun antreannya; yang
+	// ditutup batas ini adalah jeda sesaat — satu siklus GC, satu render berat —
+	// yang setelahnya klien mengejar dengan cepat. Menaikkannya memperpanjang jeda
+	// yang dapat ditahan, bukan menambah kemampuan siapa pun.
+	//
+	// Dinaikkan dari 64 ketika penyuntingan elemen dan halaman masuk: siaran
+	// perubahan memakai Send, yang MEMUTUS koneksi saat antreannya penuh, dan
+	// penyuntingan ramai menghasilkan siaran jauh lebih deras daripada snapshot
+	// dan presence saja. Slot antrean hanya berisi pointer, jadi ongkosnya sepele.
+	designQueueLimit = 256
 
 	// Jarak antar ping. Tiga puluh detik juga menahan proxy dan load balancer
 	// yang biasanya memutus koneksi menganggur di sekitar satu menit.

@@ -179,12 +179,12 @@ frontend tahu ia perlu menerbitkan tiket baru.
 ```
                     ┌──────────────────── satu koneksi ────────────────────┐
                     │                                                       │
-   socket ─────────►│ readLoop ──► [antrean masuk  64] ──► dispatchLoop ────┼──► Service
+   socket ─────────►│ readLoop ──► [antrean masuk 256] ──► dispatchLoop ────┼──► Service
                     │     │              sync.Cond                          │       │
                     │     │ satu-satunya yang menunggu context              │       ▼
                     │     │                                                 │  ORCHESTRATOR
                     │     ▼ buffer.close() membangunkan dua yang lain       │       │
-   socket ◄─────────│ writeLoop ◄─ [antrean keluar 64] ◄───────────────────┼───────┘
+   socket ◄─────────│ writeLoop ◄─ [antrean keluar 256] ◄──────────────────┼───────┘
                     │              sync.Cond            Send() cuma menaruh │
                     │ pingLoop     denyut 30 dtk, tenggang pong 10 dtk      │
                     └───────────────────────────────────────────────────────┘
@@ -494,7 +494,7 @@ sesudah beban, setelah memberi orchestrator waktu menuntaskan drain-nya.
 | Dokumen dihapus orang lain | `SaveContent` → `ErrNotFound`, permanen | close `1011` beserta alasannya |
 | Versi bergeser (ada penulis lain) | `ErrConflict`, permanen | close `1011` |
 | Database tersendat sesaat | kegagalan sementara, tetap kotor, coba lagi 2 detik lagi | tidak terlihat |
-| Klien tertinggal > 64 pesan | koneksinya dibatalkan | putus, sambung ulang biasa |
+| Klien tertinggal > 256 pesan | koneksinya dibatalkan | putus, sambung ulang biasa |
 | Aplikasi berhenti | drain: tunggu penulisan berjalan, simpan sekali lagi | putus; suntingan terakhir tersimpan |
 | Font tidak terdaftar | ekspor gagal | `400` menyebut nama fontnya |
 | Aset gambar terhapus | elemen dilewati | PDF tanpa gambar itu — sama dengan layar |
@@ -514,7 +514,7 @@ memaksa klien menyambung ulang dan melihat keadaan yang sebenarnya.
 | `maxTicketsPerUser` | 5 | menahan penerbitan berulang tanpa mengunci orang yang membuka banyak tab |
 | `maxConnectionsPerUser` | 10 | tiket habis dipakai, jadi kuota tiket **tidak** membatasi koneksi |
 | `designMaxMessageBytes` | 1 MB | satu klien tidak dapat memaksa alokasi sebesar apa pun |
-| `designQueueLimit` | 64 | klien yang tertinggal lebih jauh diputus, bukan ditumbuhkan antreannya |
+| `designQueueLimit` | 256 | menakar tersendat, bukan laju: klien yang sungguh lebih lambat daripada arus perubahan tidak akan menyusul berapa pun antreannya. Dinaikkan dari 64 ketika penyuntingan masuk, karena siaran perubahan memakai Send yang memutus koneksi saat penuh |
 | `designPingInterval` + `designPongTimeout` | 30 + 10 dtk | koneksi mati terdeteksi paling lambat 40 detik |
 | `designWriteTimeout` | 5 dtk | penulisan memakai context yang lepas dari pembatalan, jadi butuh batasnya sendiri |
 | `roomInboxSize` | 16384 | kelonggaran bagi lonjakan kursor; pengirim yang tertahan di sini berujung pada koneksi klien yang diakhiri. **256 KB per room** dialokasikan di muka, plus ~768 KB bila sungguh terisi penuh |

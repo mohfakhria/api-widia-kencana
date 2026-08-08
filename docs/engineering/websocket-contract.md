@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-08 | Antrean keluar per klien dinaikkan 64 → **256** pesan | Tidak ada, bentuk pesannya tetap. Klien punya toleransi tersendat empat kali lebih panjang sebelum diputus; throttle saat menggeser tetap dianjurkan |
 | 2026-08-08 | `page.update` beserta siaran `page.updated`; field baru `hidden`/`locked` pada halaman dan `locked`/`groupId` pada elemen | Tambahan, **tetapi**: `element.update` mengganti elemen seutuhnya, jadi mulai kirim balik `locked` dan `groupId` pada setiap update — yang tidak disertakan akan terhapus. Halaman `hidden` **tidak ikut tercetak** |
 | 2026-08-08 | `page.create`, `page.delete`, `page.reorder` beserta siaran `page.*` dan kode error `page_rejected` | Tambahan. Halaman kini dapat ditambah dan dibuang saat sesi berjalan — **berhenti** menganggap daftar halaman tetap sepanjang koneksi. Halaman terakhir tidak dapat dihapus |
 | 2026-08-08 | **Penyuntingan lewat WebSocket**: `element.create`, `element.update`, `element.delete`, `element.reorder`, beserta siaran `element.*` dan kode error `element_rejected` | Fitur baru. `version` kini bergerak setiap ada perubahan — **mulai pakai** deteksi celah nomor di [3.6](#36-versi). Berhenti menyunting `documents.content` langsung di database |
@@ -113,7 +114,7 @@ publik, sehingga `localhost.evil.com` tetap ditolak.
 | Ukuran satu pesan | **1 MB** |
 | Koneksi bersamaan per user | **10** |
 | Ping dari server | tiap 30 detik, tenggang pong 10 detik |
-| Antrean keluar | 64 pesan; klien yang tertinggal lebih jauh **diputus** |
+| Antrean keluar | 256 pesan; klien yang tertinggal lebih jauh **diputus** |
 
 Ping dan pong ditangani browser otomatis — tidak ada yang perlu ditulis. Koneksi
 yang tidak responsif diputus paling lambat 40 detik setelah benar-benar mati.
