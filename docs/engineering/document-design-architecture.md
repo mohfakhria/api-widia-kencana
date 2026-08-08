@@ -153,6 +153,31 @@ menyentuh database, sedangkan jalur WebSocket setelahnya harus tetap **bebas
 query** — itulah alasan nama pengguna ikut dititipkan ke dalam tiket alih-alih
 dicari saat koneksi terbuka.
 
+### 1.1.1 Widia Agent
+
+Agent bukan jalur tersendiri di dalam room. Ia menempuh handshake, keanggotaan,
+dan pesan yang sama persis dengan browser — yang berbeda hanya cara ia
+memperoleh tiket: `AgentRequired` memeriksa `WIDIA_AGENT_KEY` alih-alih
+`AuthRequired` memeriksa access token.
+
+Karena itu **tidak ada satu baris pun kode room yang mengenal agent**, dan tidak
+boleh ada. Begitu orchestrator perlu tahu siapa yang menyunting, seluruh alasan
+memakai satu protokol untuk keduanya gugur.
+
+Identitasnya tetap dan tidak berasal dari tabel user: id `99999`, nama
+`Widia-Agent`. Bentuknya angka supaya frontend tidak perlu memperlakukan agent
+sebagai kekecualian di mana pun ia mengurai id, dan nilainya jauh di atas
+jangkauan pemakaian nyata supaya dikenali sekilas di log.
+
+Barisnya dicadangkan di `migration/users.sql` — bukan supaya dibaca, melainkan
+supaya urutan identitas tidak pernah memberikan id itu kepada orang. Agent tetap
+tidak pernah menyentuh tabel user: menjadikannya query berarti agent mati total
+di setiap database yang barisnya belum tersisip, demi keterangan yang sudah
+dipegang sebagai konstanta.
+
+Konsekuensi yang mudah terlewat: `maxConnectionsPerUser` berlaku pada id itu
+seperti pada user lain, sehingga **seluruh agent berbagi jatah sepuluh koneksi**.
+
 ### 1.2 Handshake
 
 ```

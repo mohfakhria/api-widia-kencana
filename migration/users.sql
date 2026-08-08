@@ -7,3 +7,22 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_email_uq_idx ON users (email);
+
+-- Widia Agent. Baris ini MENCADANGKAN id 99999, bukan menyediakan cara login.
+--
+-- Agent masuk dengan WIDIA_AGENT_KEY dan tidak pernah membaca baris ini; nama
+-- yang tampil di presence berasal dari konstanta di kode. Yang dijaga di sini
+-- hanya satu hal: id itu tidak pernah diberikan kepada orang.
+--
+-- password diisi nilai yang tidak mungkin cocok dengan hash bcrypt mana pun,
+-- sehingga tidak ada yang dapat login sebagai dirinya. Bukan kata sandi lemah —
+-- bukan kata sandi sama sekali.
+--
+-- Menyisipkan id eksplisit TIDAK menggeser urutan identitas kolomnya, jadi
+-- pengguna berikutnya tetap mendapat 1, 2, 3, dan seterusnya. Bila suatu hari
+-- urutan itu benar-benar mencapai 99999, penyisipannya gagal oleh primary key —
+-- berisik, dan pengguna berikutnya lolos di 100000. Itu jauh lebih baik daripada
+-- diam-diam menjadi orang yang sama dengan agent.
+INSERT INTO users (id, name, email, password, role)
+VALUES (99999, 'Widia-Agent', 'agent@widia.local', 'x', 'agent')
+ON CONFLICT (id) DO NOTHING;

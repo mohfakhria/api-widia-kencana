@@ -43,6 +43,16 @@ func NewRouter(deps RouterDeps) http.Handler {
 		api.POST("/logout", deps.AuthHandler.Logout)
 	}
 
+	// Grup tersendiri, bukan rute di dalam protected. Widia Agent membuktikan
+	// dirinya dengan kunci dari environment, bukan dengan access token — dan
+	// menaruhnya di grup yang sama berarti setiap rute yang ditambahkan ke sana
+	// nanti diam-diam ikut menerima kunci agent.
+	agent := r.Group("/api/agent")
+	agent.Use(middleware.AgentRequired(deps.Config.WidiaAgentKey))
+	{
+		agent.POST("/document-design-ticket/:token", deps.DocumentDesignHandler.IssueAgentTicket)
+	}
+
 	protected := r.Group("/api")
 	protected.Use(middleware.AuthRequired(deps.TokenSigner))
 	{

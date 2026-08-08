@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-09 | Widia Agent dapat menyambung sebagai penyunting | Tambahan. Ia muncul di `presence` sebagai id `99999` bernama `Widia-Agent`. Pakai `name` dari `presence` apa adanya; jangan mengandalkan pencarian ke daftar pengguna. Ia tidak pernah punya kursor; itu sudah didukung |
 | 2026-08-08 | Antrean keluar per klien dinaikkan 64 → **256** pesan | Tidak ada, bentuk pesannya tetap. Klien punya toleransi tersendat empat kali lebih panjang sebelum diputus; throttle saat menggeser tetap dianjurkan |
 | 2026-08-08 | `page.update` beserta siaran `page.updated`; field baru `hidden`/`locked` pada halaman dan `locked`/`groupId` pada elemen | Tambahan, **tetapi**: `element.update` mengganti elemen seutuhnya, jadi mulai kirim balik `locked` dan `groupId` pada setiap update — yang tidak disertakan akan terhapus. Halaman `hidden` **tidak ikut tercetak** |
 | 2026-08-08 | `page.create`, `page.delete`, `page.reorder` beserta siaran `page.*` dan kode error `page_rejected` | Tambahan. Halaman kini dapat ditambah dan dibuang saat sesi berjalan — **berhenti** menganggap daftar halaman tetap sepanjang koneksi. Halaman terakhir tidak dapat dihapus |
@@ -83,6 +84,29 @@ penyambungan ulang.** Jangan menyimpannya di state.
 Tiket juga membawa nama pemiliknya, dipakai server untuk menyusun daftar
 kehadiran. Tidak ada yang perlu dikirim frontend untuk itu.
 
+#### Tiket Widia Agent
+
+Bagian ini untuk penulis server MCP, bukan untuk frontend.
+
+```http
+POST /api/agent/document-design-ticket/{documentToken}
+X-Widia-Agent-Key: <WIDIA_AGENT_KEY>
+```
+
+Balasannya **sama persis**, dan handshake sesudahnya juga sama persis. Agent
+menempuh jalur yang sama dengan browser: batas pesan yang sama, kuota koneksi
+yang sama, pesan dan siaran yang sama.
+
+| | |
+|---|---|
+| Identitas | id `99999`, nama `Widia-Agent` — tetap, dan tidak berasal dari query |
+| Bila `WIDIA_AGENT_KEY` kosong | `401`; agent **mati**, bukan terbuka |
+| Kuota koneksi | 10, **dibagi seluruh agent** yang berjalan bersamaan |
+
+**Jangan mengirim header `Origin`.** Klien tanpa `Origin` diterima; klien yang
+mengirim `Origin` yang tidak cocok dengan `FRONTEND_URL` ditolak `403`. Sebagian
+pustaka HTTP menambahkannya sendiri — matikan bila ada.
+
 ### 1.2 Membuka koneksi
 
 ```
@@ -101,6 +125,13 @@ localhost      localhost:<port>
 *.localhost    *.localhost:<port>     ← portal.localhost:3000, dan seterusnya
 127.0.0.1      127.0.0.1:<port>
 ```
+
+Permintaan **tanpa** header `Origin` diterima. Itu bukan kelonggaran yang
+terlewat: `Origin` ditegakkan browser, sehingga ia menjaga dari permintaan lintas
+situs **yang datang dari browser** — klien non-browser dapat mengarang header apa
+pun, dan menolak yang kosong hanya akan memblokir klien jujur tanpa menghalangi
+satu pun penyerang. Yang menjaga jalur ini tetap tiketnya: sekali pakai, tiga
+puluh detik, terikat satu dokumen.
 
 Pelonggaran ini **hanya** berlaku pada `APP_ENV=local`; staging dan produksi
 tetap terkurung pada `FRONTEND_URL`. Ia juga tetap terbatas pada loopback:

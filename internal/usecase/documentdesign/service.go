@@ -64,6 +64,28 @@ func NewService(
 	}
 }
 
+// Identitas Widia Agent di dalam ruang penyuntingan.
+//
+// Berbentuk angka seperti id pengguna sungguhan, supaya frontend tidak perlu
+// memperlakukan agent sebagai kekecualian di mana pun ia mengurai atau
+// membandingkan id.
+//
+// Nilainya dipilih jauh di atas jangkauan pemakaian nyata agar dikenali sekilas
+// di log maupun di presence, dan barisnya dicadangkan di migration/users.sql
+// supaya urutan identitas tidak pernah memberikannya kepada orang.
+//
+// Baris itu penanda, BUKAN sumber kebenaran. Agent masuk dengan kunci dari
+// environment dan tidak pernah membacanya — nama di bawah ini satu-satunya
+// sumber sebutannya di presence. Sengaja begitu: menjadikannya query berarti
+// agent mati total di setiap database yang barisnya belum tersisip.
+//
+// Kuota koneksi berlaku pada id ini seperti pada user lain: seluruh agent yang
+// berjalan bersamaan berbagi jatah maxConnectionsPerUser.
+const (
+	AgentUserID   = "99999"
+	AgentUserName = "Widia-Agent"
+)
+
 // IssueTicket memastikan dokumennya ada sebelum menerbitkan tiket handshake.
 //
 // Belum ada pemeriksaan kepemilikan karena dokumen memang belum punya pemilik,
@@ -72,10 +94,7 @@ func (s *Service) IssueTicket(ctx context.Context, documentToken, userID string)
 	if userID == "" {
 		return "", 0, domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
 	}
-	if _, err := uuid.Parse(documentToken); err != nil {
-		return "", 0, domain.NewError(domain.ErrInvalidInput, "invalid document token")
-	}
-	if _, err := s.documents.GetByToken(ctx, documentToken); err != nil {
+	if err := s.ensureDocument(ctx, documentToken); err != nil {
 		return "", 0, err
 	}
 
@@ -87,9 +106,43 @@ func (s *Service) IssueTicket(ctx context.Context, documentToken, userID string)
 		return "", 0, domain.NewError(domain.ErrUnauthorized, "User not found or deleted")
 	}
 
+	return s.issueTicket(documentToken, userID, user.Name)
+}
+
+// IssueAgentTicket menerbitkan tiket untuk Widia Agent.
+//
+// Jalur tersendiri, bukan cabang di dalam IssueTicket, karena yang membedakannya
+// bukan cara memeriksa melainkan SIAPA yang memeriksa: pemanggilnya sudah lolos
+// AgentRequired, bukan AuthRequired. Menyatukannya berarti satu jalur yang harus
+// mengingat dua model autentikasi, dan setiap penyunting berikutnya harus
+// memutuskan cabang mana yang sedang ia sentuh.
+//
+// Tidak ada pencarian ke tabel user: agent tidak punya baris di sana.
+func (s *Service) IssueAgentTicket(ctx context.Context, documentToken string) (string, time.Duration, error) {
+	if err := s.ensureDocument(ctx, documentToken); err != nil {
+		return "", 0, err
+	}
+
+	return s.issueTicket(documentToken, AgentUserID, AgentUserName)
+}
+
+// ensureDocument menolak token yang cacat dan dokumen yang tidak ada, sebelum
+// tiket apa pun dibuat.
+func (s *Service) ensureDocument(ctx context.Context, documentToken string) error {
+	if _, err := uuid.Parse(documentToken); err != nil {
+		return domain.NewError(domain.ErrInvalidInput, "invalid document token")
+	}
+	if _, err := s.documents.GetByToken(ctx, documentToken); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) issueTicket(documentToken, userID, userName string) (string, time.Duration, error) {
 	key, err := s.tickets.issue(Ticket{
 		UserID:        userID,
-		UserName:      user.Name,
+		UserName:      userName,
 		DocumentToken: documentToken,
 	}, time.Now())
 	if err != nil {
