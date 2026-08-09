@@ -145,7 +145,26 @@
             "{{asset_token}}"
           ]
         },
-        "description": "Returns a temporary GET URL for preview or download."
+        "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires."
+      }
+    },
+    {
+      "name": "Get Asset Content",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/asset-content/{{asset_token}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-content",
+            "{{asset_token}}"
+          ]
+        },
+        "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
       }
     },
     {

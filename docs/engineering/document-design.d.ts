@@ -150,7 +150,14 @@ export interface DesignLineElement extends DesignElementBase {
 
 export interface DesignImageElement extends DesignElementBase {
   type: 'image';
-  /** Token aset yang sudah terunggah — bukan URL. Tampilkan lewat GET /api/asset-presign/:token. */
+  /**
+   * Token aset yang sudah terunggah — bukan URL.
+   *
+   * Tampilkan dengan <img src="/api/asset-content/{assetToken}">. URL itu tetap
+   * dan tidak pernah kedaluwarsa; ia mengalihkan ke object storage dengan tanda
+   * tangan yang disusun ulang tiap permintaan. Tidak menuntut Authorization —
+   * tag <img> memang tidak dapat mengirimnya.
+   */
   assetToken: string;
   /** Bawaan: "contain". */
   fit?: DesignImageFit;

@@ -44,6 +44,35 @@ func (h *AssetHandler) CompleteUpload(c *gin.Context) {
 	dto.Success(c, "Asset upload completed successfully", dto.NewAssetDataResponse(asset))
 }
 
+// Content mengalihkan ke isi aset di object storage.
+//
+// Ada supaya frontend dapat menulis <img src="/api/asset-content/{token}"> dan
+// selesai — URL-nya tetap, tidak pernah kedaluwarsa, dan tidak menuntut mesin
+// penyegar. Yang kedaluwarsa adalah sasaran pengalihannya, dan itu disusun ulang
+// pada setiap permintaan.
+//
+// TIDAK DIJAGA AuthRequired, dan memang tidak bisa: tag <img> tidak dapat
+// mengirim header Authorization. Token aset yang menjadi kredensialnya.
+//
+// Byte-nya tidak pernah melewati proses ini — hanya alamatnya. Menyalurkan
+// isinya sendiri akan membuat setiap pembukaan dokumen berisi sepuluh gambar
+// mendorong puluhan megabyte melalui API, yang justru dihindari seluruh
+// rancangan presigned.
+func (h *AssetHandler) Content(c *gin.Context) {
+	url, err := h.asset.ContentURL(c.Request.Context(), c.Param("token"))
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	// no-store, bukan sekadar no-cache. Pengalihan yang tersimpan akan menunjuk
+	// ke URL bertanda tangan yang keburu kedaluwarsa, dan gejalanya gambar yang
+	// gagal dimuat lalu sembuh sendiri beberapa menit kemudian — jenis kesalahan
+	// yang paling sulit dilacak karena tidak dapat diulang.
+	c.Header("Cache-Control", "no-store")
+	c.Redirect(http.StatusFound, url)
+}
+
 func (h *AssetHandler) List(c *gin.Context) {
 	var req dto.AssetListFilterRequest
 	if err := c.ShouldBindQuery(&req); err != nil {

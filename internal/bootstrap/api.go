@@ -70,7 +70,9 @@ func (a *ApiApp) initialize() error {
 		pg.NewPurchaseOrderRepository(a.db),
 		a.objectStorage,
 	)
-	assetUC := usecase.NewAssetUseCase(pg.NewAssetRepository(a.db), a.objectStorage)
+	assetRepo := pg.NewAssetRepository(a.db)
+	assetUC := usecase.NewAssetUseCase(assetRepo, a.objectStorage)
+	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	documentRepo := pg.NewDocumentRepository(a.db)
 	documentUC := usecase.NewDocumentUseCase(documentRepo)
@@ -123,6 +125,7 @@ func (a *ApiApp) initialize() error {
 		server.NewHTTPServer(a.Config, router),
 		refreshTokenStore,
 		documentDesign,
+		assetSweeper,
 	}
 
 	return nil

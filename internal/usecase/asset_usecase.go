@@ -156,7 +156,7 @@ func (uc *assetUseCase) GetByToken(ctx context.Context, token string, uploadedBy
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureAssetOwner(asset, uploadedBy); err != nil {
+	if err := ensureAssetReadable(asset, uploadedBy); err != nil {
 		return nil, err
 	}
 
@@ -173,7 +173,7 @@ func (uc *assetUseCase) PresignGet(ctx context.Context, token string, uploadedBy
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureAssetOwner(asset, uploadedBy); err != nil {
+	if err := ensureAssetReadable(asset, uploadedBy); err != nil {
 		return nil, err
 	}
 	if asset.Status != "uploaded" {
@@ -190,6 +190,38 @@ func (uc *assetUseCase) PresignGet(ctx context.Context, token string, uploadedBy
 		URL:       url,
 		ExpiresIn: int64(defaultAssetPreviewExpiry.Seconds()),
 	}, nil
+}
+
+// ContentURL menyusun URL isi aset tanpa bertanya siapa pemanggilnya.
+//
+// TOKENNYA ADALAH KREDENSIALNYA. Jalur ini dituju langsung oleh tag <img>, dan
+// tag itu tidak dapat mengirim header Authorization — jadi tidak ada tempat lain
+// untuk menaruh bukti identitas selain di dalam URL-nya sendiri.
+//
+// Yang membuatnya dapat diterima: tokennya UUID acak, tidak pernah muncul di
+// daftar milik orang lain, dan satu-satunya cara memperolehnya adalah lewat isi
+// dokumen yang memuatnya. Yang harus disadari: siapa pun yang memegang UUID itu
+// dapat membaca gambarnya, termasuk orang yang tidak pernah login.
+//
+// Sengaja TIDAK memakai ensureAssetReadable. Bukan karena pemeriksaannya
+// dilewati, melainkan karena di sini memang tidak ada siapa pun untuk diperiksa —
+// menyamarkannya sebagai pemeriksaan yang lolos akan membuat pembaca berikutnya
+// mengira jalur ini terjaga.
+func (uc *assetUseCase) ContentURL(ctx context.Context, token string) (string, error) {
+	token = strings.TrimSpace(token)
+	if err := validateAssetUUIDToken(token, "asset token"); err != nil {
+		return "", err
+	}
+
+	asset, err := uc.repo.GetByToken(ctx, token)
+	if err != nil {
+		return "", err
+	}
+	if asset.Status != "uploaded" {
+		return "", domain.NewError(domain.ErrInvalidInput, "asset is not uploaded")
+	}
+
+	return uc.storage.PresignGet(ctx, asset.ObjectName, defaultAssetPreviewExpiry)
 }
 
 func (uc *assetUseCase) Delete(ctx context.Context, token string, uploadedBy *int64) error {
@@ -245,17 +277,56 @@ func sanitizeOptionalAssetScope(scope string) string {
 	return sanitizeAssetScope(scope)
 }
 
-func ensureAssetOwner(asset *entity.Asset, uploadedBy *int64) error {
+// ensureAssetReadable: siapa pun yang login boleh membaca aset, asal ia tahu
+// tokennya.
+//
+// Sengaja tidak dibatasi pengunggahnya. Dokumen di aplikasi ini milik bersama —
+// tidak ada kepemilikan dokumen sama sekali — sehingga gambar yang tokennya sudah
+// masuk ke assetToken sebuah elemen SUDAH menjadi bagian dari dokumen bersama itu.
+// Menjaganya tetap privat sesudah itu hanya menyembunyikannya dari editor, bukan
+// dari orang: ekspor PDF menyematkannya untuk siapa pun yang membuka dokumennya.
+//
+// Sebelum ini kedua pintu itu tidak sepakat, dan akibatnya adalah gambar yang
+// kosong di layar tetapi muncul di hasil cetak — perpecahan yang justru paling
+// ingin dihindari fitur ini.
+//
+// Tokennya UUID acak dan tidak pernah muncul di daftar milik orang lain, jadi
+// yang dapat membacanya tetap hanya orang yang memang diberi tahu — lewat dokumen
+// yang memuatnya.
+func ensureAssetReadable(asset *entity.Asset, viewer *int64) error {
 	if asset == nil {
 		return domain.NewError(domain.ErrNotFound, "asset not found")
 	}
-	if uploadedBy == nil {
+	if viewer == nil {
 		return domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
 	}
-	if asset.UploadedBy == nil {
-		return nil
+
+	return nil
+}
+
+// ensureAssetOwner: hanya pengunggahnya yang boleh mengubah atau membuang.
+//
+// Aset tanpa pemilik ditolak untuk SIAPA PUN. Sebelumnya ia justru diizinkan
+// untuk semua orang, dan itu kebalikan dari yang seharusnya: kolom uploaded_by
+// memakai ON DELETE SET NULL, sehingga menghapus satu baris user akan mengubah
+// seluruh asetnya menjadi milik bersama yang dapat dihapus siapa saja — diam-diam,
+// dan tidak terlihat di daftar siapa pun.
+//
+// Belum ada jalur di aplikasi ini yang menghapus user, jadi keadaan itu belum
+// dapat dicapai lewat API. Satu DELETE manual di database sudah cukup untuk
+// membukanya, dan pintu yang hanya butuh satu perintah untuk terbuka lebih baik
+// ditutup sekarang.
+//
+// Konsekuensinya aset tanpa pemilik tidak dapat dihapus lewat API sama sekali,
+// dan hanya dapat diurus lewat database.
+func ensureAssetOwner(asset *entity.Asset, actor *int64) error {
+	if asset == nil {
+		return domain.NewError(domain.ErrNotFound, "asset not found")
 	}
-	if *asset.UploadedBy != *uploadedBy {
+	if actor == nil {
+		return domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
+	}
+	if asset.UploadedBy == nil || *asset.UploadedBy != *actor {
 		return domain.NewError(domain.ErrForbidden, "asset access forbidden")
 	}
 

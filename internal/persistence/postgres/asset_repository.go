@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
@@ -155,6 +156,43 @@ func (r *AssetRepository) MarkDeleted(ctx context.Context, token string) error {
 	}
 
 	return ensureAssetAffected(result, "asset not found")
+}
+
+// FindExpired menyusun kembali indeks assets_pending_expiry_idx: ketiga syarat
+// di bawah persis syarat parsial indeks itu, sehingga sapuan berkala tidak
+// pernah menyusuri seluruh tabel.
+//
+// presigned_expires_at IS NOT NULL disebut eksplisit. Aset yang dibuat lewat
+// jalur lain — tanpa presigned URL — tidak punya tenggat, dan tidak boleh ikut
+// tersapu hanya karena statusnya kebetulan pending.
+//
+// Batas waktunya diterima sebagai argumen, bukan memakai NOW() milik database.
+// Yang menentukan kedaluwarsa adalah jam yang sama dengan yang menuliskan
+// tenggatnya, dan tenggat itu dihitung di Go saat presigned diterbitkan.
+func (r *AssetRepository) FindExpired(ctx context.Context, before time.Time, limit int) ([]entity.Asset, error) {
+	rows, err := r.db.QueryContext(ctx, assetSelectQuery()+`
+		WHERE deleted_at IS NULL
+			AND status IN ('pending', 'uploading')
+			AND presigned_expires_at IS NOT NULL
+			AND presigned_expires_at < $1
+		ORDER BY presigned_expires_at
+		LIMIT $2
+	`, before, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	assets := make([]entity.Asset, 0, limit)
+	for rows.Next() {
+		var asset entity.Asset
+		if err := scanAsset(rows, &asset); err != nil {
+			return nil, err
+		}
+		assets = append(assets, asset)
+	}
+
+	return assets, rows.Err()
 }
 
 func (r *AssetRepository) MarkFailed(ctx context.Context, token string, code string, message string) error {

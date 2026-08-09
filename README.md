@@ -216,6 +216,7 @@ POST   /api/asset-upload-complete/:token
 GET    /api/asset-list
 GET    /api/asset-detail/:token
 GET    /api/asset-presign/:token
+GET    /api/asset-content/:token      (tanpa auth — token aset yang menjadi kredensial)
 DELETE /api/asset-delete/:token
 
 GET    /api/document-list
@@ -347,3 +348,6 @@ jq empty docs/collection/*.json
 - README structure guideline ada di `docs/engineering/readme-structure.md`.
 - Unit test baru belum menjadi scope utama project ini; `go test ./...` dipakai sebagai compile/smoke verification.
 - Endpoint update/delete pada project dan workflow memakai soft-delete via field `status = deleted` untuk flow delete.
+- Wewenang asset dipisah antara membaca dan mengubah. **Membaca** — `asset-detail` dan `asset-presign` — terbuka bagi siapa pun yang login asal ia tahu tokennya, karena dokumen di aplikasi ini milik bersama: gambar yang tokennya sudah masuk ke `assetToken` sebuah elemen sudah menjadi bagian dokumen bersama itu, dan ekspor PDF memang menyematkannya untuk semua orang. **Mengubah** — `asset-upload-complete` dan `asset-delete` — hanya boleh oleh pengunggahnya, dan aset yang `uploaded_by`-nya kosong ditolak untuk siapa pun. `asset-list` tetap hanya menampilkan milik sendiri.
+- `GET /api/asset-content/:token` mengalihkan (`302`) ke presigned URL yang disusun ulang tiap permintaan, dan **sengaja berada di luar `AuthRequired`**: rute ini dituju langsung oleh tag `<img>`, yang tidak dapat mengirim header `Authorization`. Token asetnya yang menjadi kredensial — UUID acak yang hanya diperoleh lewat isi dokumen. Balasannya `Cache-Control: no-store`, karena pengalihan yang tersimpan akan menunjuk ke tanda tangan yang keburu kedaluwarsa. Byte-nya tidak pernah melewati proses Go; hanya alamatnya.
+- Unggahan asset berjalan tiga langkah — minta presigned URL, unggah langsung ke MinIO, lapor selesai — dan langkah ketiga sepenuhnya bergantung pada klien. Tab yang ditutup di tengah jalan meninggalkan baris `pending` dan kadang objek yang sudah telanjur mendarat. Komponen latar `asset-sweeper` membersihkannya: tiap 5 menit ia mencari unggahan yang tenggat presigned-nya lewat lebih dari 5 menit, menghapus objeknya, lalu menandai barisnya `failed` dengan `failure_code = upload_expired`. Objek yatim karenanya hidup paling lama sekitar 25 menit.

@@ -41,6 +41,11 @@ func NewRouter(deps RouterDeps) http.Handler {
 		api.POST("/login", deps.AuthHandler.Login)
 		api.POST("/refresh-token", deps.AuthHandler.RefreshToken)
 		api.POST("/logout", deps.AuthHandler.Logout)
+
+		// Di grup publik, dan itu keharusan bukan kelalaian: rute ini dituju
+		// langsung oleh tag <img>, yang tidak dapat mengirim header Authorization.
+		// Token aset yang menjadi kredensialnya — lihat AssetHandler.Content.
+		api.GET("/asset-content/:token", deps.AssetHandler.Content)
 	}
 
 	// Grup tersendiri, bukan rute di dalam protected. Widia Agent membuktikan

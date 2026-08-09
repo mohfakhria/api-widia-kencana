@@ -214,8 +214,23 @@ dan **tidak** seperti `border` pada CSS. Cara menggambarnya ada di
 | `fit` | string | `contain`, `cover`, `fill` — sama artinya dengan `object-fit` |
 
 Gambar menunjuk **aset, bukan URL**. Backend tidak pernah mengambil alamat yang
-ditentukan lewat isi dokumen. Untuk menampilkannya, frontend memakai
-`GET /api/asset-presign/:token` seperti biasa.
+ditentukan lewat isi dokumen.
+
+Untuk menampilkannya, tunjuk saja endpoint isinya:
+
+```html
+<img src="/api/asset-content/{assetToken}">
+```
+
+URL itu **tetap dan tidak pernah kedaluwarsa** — yang kedaluwarsa adalah sasaran
+pengalihannya, dan itu disusun ulang pada setiap permintaan. Tidak perlu memanggil
+apa pun lebih dulu, tidak perlu menyimpan URL bertanda tangan, tidak perlu
+menyegarkannya.
+
+Endpoint itu **tidak menuntut `Authorization`**, karena tag `<img>` memang tidak
+dapat mengirimnya; token asetnya yang menjadi kredensial. `GET /api/asset-presign/:token`
+tetap ada dan tetap menuntut login — pakai itu bila Anda memang perlu URL-nya
+sendiri, misalnya untuk mengunduh.
 
 Aset yang sudah terhapus dilewati saat ekspor — sama seperti frontend yang juga
 tidak dapat menampilkannya, sehingga layar dan cetak tetap sama.
@@ -552,9 +567,9 @@ bukan dibiarkan kosong.
 />
 ```
 
-`presignedUrl` diambil dari `GET /api/asset-presign/{assetToken}` seperti aset
-lain di aplikasi ini. Isi dokumen menyimpan token, bukan URL — backend tidak
-pernah mengambil alamat yang ditentukan lewat isi dokumen.
+Sumber gambarnya cukup `/api/asset-content/{assetToken}` — tetap, tanpa masa
+berlaku, tanpa panggilan pendahuluan. Isi dokumen menyimpan token, bukan URL:
+backend tidak pernah mengambil alamat yang ditentukan lewat isi dokumen.
 
 `object-fit` di CSS dan `fit` di backend punya arti yang sama untuk ketiga
 nilainya, dan `object-position: center` cocok dengan backend yang selalu
@@ -711,7 +726,7 @@ editor yang sudah ada?**
 | Kotak teks tumbuh mengikuti isinya | Tinggi tetap dari `h`; isi yang melebihi terpotong | [2.3](#23-elemen-teks) |
 | Kotak digambar dengan `div` + `border` | `<rect>` di dalam SVG | [2.4](#24-kotak-dan-garis-pakai-svg-bukan-div) |
 | Garis digambar dengan `div` tipis | `<line>` di dalam SVG | [2.4](#24-kotak-dan-garis-pakai-svg-bukan-div) |
-| Gambar memakai URL langsung | `assetToken` + `GET /api/asset-presign/:token` | [2.5](#25-gambar) |
+| Gambar memakai URL langsung | `assetToken` + `<img src="/api/asset-content/:token">` | [2.5](#25-gambar) |
 
 ### Yang perlu ditambahkan
 

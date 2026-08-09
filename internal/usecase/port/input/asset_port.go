@@ -13,6 +13,14 @@ type AssetUseCase interface {
 	List(ctx context.Context, query ListAssetQuery) ([]entity.Asset, error)
 	GetByToken(ctx context.Context, token string, uploadedBy *int64) (*entity.Asset, error)
 	PresignGet(ctx context.Context, token string, uploadedBy *int64) (*AssetPresignGetResult, error)
+
+	// ContentURL menyusun URL isi aset TANPA memeriksa siapa pemanggilnya.
+	//
+	// Dipakai jalur yang dituju langsung oleh tag <img>, dan tag itu tidak dapat
+	// mengirim header Authorization — kredensialnya karena itu adalah token aset
+	// itu sendiri. Setiap pemanggil harus sadar bahwa ia sedang membuka jalur yang
+	// tidak bertanya siapa.
+	ContentURL(ctx context.Context, token string) (string, error)
 	Delete(ctx context.Context, token string, uploadedBy *int64) error
 }
 
