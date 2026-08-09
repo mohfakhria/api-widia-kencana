@@ -302,6 +302,28 @@ export interface DesignPageReorderMessage {
   index: number;
 }
 
+/**
+ * Memundurkan atau memajukan SELURUH DOKUMEN satu langkah.
+ *
+ * RIWAYATNYA MILIK DOKUMEN, BUKAN MILIK ANDA. Undo membatalkan kelompok
+ * perubahan terakhir siapa pun — termasuk milik Widia Agent, dan itu memang
+ * tujuannya: riwayat per orang berarti manusia tidak dapat membatalkan kesalahan
+ * agent.
+ *
+ * Balasannya snapshot penuh ke semua penghuni, bukan siaran perubahan. Riwayat
+ * kosong tidak menghasilkan apa-apa dan bukan error.
+ *
+ * Kedalaman 20 langkah, hidup di memori room, hilang sekitar sepuluh detik
+ * setelah penyunting terakhir pergi. Ini BUKAN riwayat versi dokumen.
+ */
+export interface DesignUndoMessage {
+  type: 'undo';
+}
+
+export interface DesignRedoMessage {
+  type: 'redo';
+}
+
 export type DesignClientMessage =
   | DesignDocumentGetMessage
   | DesignCursorMoveMessage
@@ -312,8 +334,15 @@ export type DesignClientMessage =
   | DesignPageCreateMessage
   | DesignPageUpdateMessage
   | DesignPageDeleteMessage
-  | DesignPageReorderMessage;
+  | DesignPageReorderMessage
+  | DesignUndoMessage
+  | DesignRedoMessage;
 
+/**
+ * DAPAT DATANG TANPA DIMINTA. Selain sebagai balasan document.get, snapshot juga
+ * disiarkan ke seluruh penghuni ketika riwayat bergerak karena undo atau redo.
+ * Jangan mengandaikan ia selalu berpasangan dengan permintaan Anda sendiri.
+ */
 export interface DesignSnapshotMessage {
   type: 'snapshot';
   /** Nomor revisi dokumen. Simpan nilainya; jangan bangun rekonsiliasi di atasnya sekarang. */

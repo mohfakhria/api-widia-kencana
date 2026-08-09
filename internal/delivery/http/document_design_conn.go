@@ -231,6 +231,13 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		h.deletePage(ctx, documentToken, payload, subscriber)
 	case dto.DesignMessagePageReorder:
 		h.reorderPage(documentToken, payload, subscriber)
+	case dto.DesignMessageUndo:
+		// Tanpa muatan sama sekali, jadi tidak ada yang perlu diurai. Yang
+		// dibatalkan selalu kelompok perubahan terakhir pada dokumen ini, siapa pun
+		// yang membuatnya.
+		h.service.Undo(documentToken, subscriber)
+	case dto.DesignMessageRedo:
+		h.service.Redo(documentToken, subscriber)
 	default:
 		// Menolak dengan kode yang jelas, bukan diam. Jenis yang tidak dikenal
 		// hampir selalu berarti frontend dan backend memegang kontrak yang berbeda,

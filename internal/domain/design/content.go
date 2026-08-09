@@ -212,6 +212,26 @@ func (c *Content) Encode() (json.RawMessage, error) {
 	return encoded, nil
 }
 
+// Clone menyalin isi dokumen sedalam-dalamnya.
+//
+// BENAR HANYA SELAMA Element tidak memuat tipe rujukan. Seluruh fieldnya
+// sekarang string, angka, dan boolean, sehingga menyalin nilainya sudah menyalin
+// isinya. Menambahkan slice, map, atau pointer ke Element membuat salinan ini
+// diam-diam menjadi dangkal — dan gejalanya bukan galat melainkan riwayat undo
+// yang ikut berubah ketika dokumennya disunting.
+//
+// Dipakai riwayat undo, yang menyimpan keadaan sebelum tiap kelompok perubahan.
+func (c *Content) Clone() *Content {
+	out := &Content{Pages: make([]Page, len(c.Pages))}
+	for i := range c.Pages {
+		out.Pages[i] = c.Pages[i]
+		out.Pages[i].Elements = make([]Element, len(c.Pages[i].Elements))
+		copy(out.Pages[i].Elements, c.Pages[i].Elements)
+	}
+
+	return out
+}
+
 // IsEmpty menandai dokumen yang belum punya halaman sama sekali — kandidat untuk
 // diisi benih.
 func (c *Content) IsEmpty() bool {

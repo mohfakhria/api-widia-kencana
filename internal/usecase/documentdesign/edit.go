@@ -1,6 +1,10 @@
 package documentdesign
 
-import "github.com/mohfakhria/api-widia-kencana/internal/domain"
+import (
+	"time"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/domain"
+)
 
 // Penerapan perubahan isi dokumen — elemen dan halaman — beserta siarannya.
 //
@@ -8,6 +12,12 @@ import "github.com/mohfakhria/api-widia-kencana/internal/domain"
 // naikkan version, siarkan. Menaikkan version tanpa menyiarkan membuat klien
 // melihat celah nomor; menyiarkan tanpa menaikkan version membuat dua perubahan
 // berbeda mengaku sebagai revisi yang sama.
+//
+// Cuplikan riwayat diambil SEBELUM perubahan diterapkan, dan baru disimpan
+// setelah perubahan terbukti berlaku. Urutan itu penting di kedua ujungnya:
+// mengambilnya sesudah berarti yang tersimpan keadaan yang sudah berubah, dan
+// menyimpannya tanpa memeriksa berlaku berarti ada langkah undo yang bila ditekan
+// tidak melakukan apa-apa.
 //
 // Pembagian membalas atau tidak mengikuti satu aturan: yang dapat DITOLAK
 // membalas, yang paling banter tidak berlaku tidak membalas. Penolakan berarti
@@ -25,11 +35,15 @@ func (r *Room) applyCreate(e elementCreateEvent) {
 		return
 	}
 
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	if err := r.content.CreateElement(e.page, e.element); err != nil {
 		e.reply <- err
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementCreated(r.version, e.page, e.element))
 
@@ -47,6 +61,9 @@ func (r *Room) applyUpdate(e elementUpdateEvent) {
 		return
 	}
 
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	applied, err := r.content.UpdateElement(e.element)
 	if err != nil {
 		// Tidak seharusnya terjadi: muatannya sudah divalidasi saat diurai di
@@ -60,6 +77,7 @@ func (r *Room) applyUpdate(e elementUpdateEvent) {
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementUpdated(r.version, e.element))
 }
@@ -68,10 +86,14 @@ func (r *Room) applyDelete(e elementDeleteEvent) {
 	if err := r.editable(e.subscriber); err != nil {
 		return
 	}
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	if !r.content.DeleteElement(e.id) {
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementDeleted(r.version, e.id))
 }
@@ -86,11 +108,15 @@ func (r *Room) applyReorder(e elementReorderEvent) {
 		return
 	}
 
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	effective, applied := r.content.ReorderElement(e.id, e.index)
 	if !applied {
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementReordered(r.version, e.id, effective))
 }
@@ -105,12 +131,16 @@ func (r *Room) applyPageCreate(e pageCreateEvent) {
 		return
 	}
 
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	effective, err := r.content.CreatePage(e.id, e.index)
 	if err != nil {
 		e.reply <- err
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageCreated(r.version, e.id, effective))
 
@@ -130,10 +160,14 @@ func (r *Room) applyPageUpdate(e pageUpdateEvent) {
 	if err := r.editable(e.subscriber); err != nil {
 		return
 	}
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	if !r.content.UpdatePage(e.id, e.title, e.hidden, e.locked) {
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageUpdated(r.version, e.id, e.title, e.hidden, e.locked))
 }
@@ -154,6 +188,9 @@ func (r *Room) applyPageDelete(e pageDeleteEvent) {
 		return
 	}
 
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	applied, err := r.content.DeletePage(e.id)
 	if err != nil {
 		e.reply <- err
@@ -164,6 +201,7 @@ func (r *Room) applyPageDelete(e pageDeleteEvent) {
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageDeleted(r.version, e.id))
 
@@ -177,11 +215,15 @@ func (r *Room) applyPageReorder(e pageReorderEvent) {
 		return
 	}
 
+	now := time.Now()
+	before := r.rememberBefore(now)
+
 	effective, applied := r.content.ReorderPage(e.id, e.index)
 	if !applied {
 		return
 	}
 
+	r.pushHistory(before, now)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageReordered(r.version, e.id, effective))
 }

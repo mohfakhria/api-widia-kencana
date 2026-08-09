@@ -157,6 +157,24 @@ func (pageDeleteEvent) isRoomEvent() {}
 
 func (pageReorderEvent) isRoomEvent() {}
 
+// undoEvent dan redoEvent memindahkan SELURUH dokumen satu langkah, bukan langkah
+// pengirimnya sendiri. Tidak ada argumen: yang dibatalkan selalu kelompok
+// perubahan terakhir, siapa pun yang membuatnya.
+//
+// subscriber tetap dibawa untuk memeriksa keanggotaan, sama seperti penyuntingan.
+
+type undoEvent struct {
+	subscriber Subscriber
+}
+
+type redoEvent struct {
+	subscriber Subscriber
+}
+
+func (undoEvent) isRoomEvent() {}
+
+func (redoEvent) isRoomEvent() {}
+
 // saveResult dikirim goroutine penyimpan kembali ke orchestrator.
 type saveResult struct {
 	version int64

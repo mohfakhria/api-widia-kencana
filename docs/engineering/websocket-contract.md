@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-09 | `undo` dan `redo` — riwayat SATU DOKUMEN, di memori room | Tambahan, **tetapi**: `snapshot` kini dapat datang **tanpa diminta** dan **ke semua penghuni**, bukan hanya ke peminta. Bila penanganan `snapshot` Anda mengandaikan ia balasan `document.get`, perbaiki sekarang |
 | 2026-08-09 | `title` pada halaman: field `title?` di `DesignPage`, dan **wajib** pada `page.update` | **Perlu tindakan.** Aturan `page.update` berubah dari dua field wajib menjadi **tiga** — pesan tanpa `title` kini ditolak `malformed_message`. Kirim balik judul yang sedang berlaku, sama seperti `hidden` dan `locked` |
 | 2026-08-09 | Widia Agent dapat menyambung sebagai penyunting | Tambahan. Ia muncul di `presence` sebagai id `99999` bernama `Widia-Agent`. Pakai `name` dari `presence` apa adanya; jangan mengandalkan pencarian ke daftar pengguna. Ia tidak pernah punya kursor; itu sudah didukung |
 | 2026-08-08 | Antrean keluar per klien dinaikkan 64 → **256** pesan | Tidak ada, bentuk pesannya tetap. Klien punya toleransi tersendat empat kali lebih panjang sebelum diputus; throttle saat menggeser tetap dianjurkan |
@@ -405,7 +406,50 @@ Halaman yang memang sudah tidak ada didiamkan, sama seperti elemen.
 karena memindahkan tanpa menyebut tujuan tidak berarti apa-apa. Di luar batas
 dijepit, dan siaran `page.reordered` membawa letak sesungguhnya.
 
-### 2.12 Yang belum ada
+### 2.12 `undo` dan `redo`
+
+```jsonc
+{ "type": "undo" }
+{ "type": "redo" }
+```
+
+| | |
+|---|---|
+| Kapan dikirim | pengguna menekan Ctrl+Z / Ctrl+Shift+Z |
+| Balasan | `snapshot` ke **semua** penghuni, termasuk pengirim |
+| Bila tidak ada lagi yang bisa dibatalkan | **tidak ada apa-apa** — bukan error |
+
+**Riwayatnya milik DOKUMEN, bukan milik Anda.** Undo membatalkan kelompok
+perubahan terakhir pada dokumen ini, **siapa pun yang membuatnya**. Menekan
+Ctrl+Z dapat membatalkan pekerjaan orang lain — dan itu disengaja: dokumen ini
+disunting bersama Widia Agent, dan riwayat per orang berarti manusia tidak dapat
+membatalkan kesalahan agent.
+
+**Yang datang adalah `snapshot` penuh, bukan siaran perubahan.** Satu langkah undo
+dapat menyentuh apa saja — termasuk mengembalikan halaman beserta seluruh
+elemennya — dan tidak ada bentuk delta yang mewakilinya. Ganti seluruh keadaan
+kanvas seperti biasa.
+
+**Satu gerakan mouse adalah satu langkah undo.** Perubahan yang datang beruntun
+digabungkan server; yang memulai langkah baru adalah jeda sekitar satu detik,
+bukan jumlah pesan. Anda tidak perlu menandai awal dan akhir gerakan.
+
+| Sifat riwayat | |
+|---|---|
+| Kedalaman | **20 langkah** |
+| Cakupan | satu dokumen, seluruh penyunting |
+| Umur | **hidup di memori room** — hilang ±10 detik setelah penyunting terakhir pergi |
+| Redo | dikosongkan oleh perubahan baru apa pun |
+
+Riwayat ini **bukan riwayat versi dokumen.** Ia tidak pernah menyentuh database,
+dan tidak dapat mengembalikan keadaan kemarin — hanya keadaan beberapa langkah
+lalu dalam sesi yang sedang berjalan.
+
+Belum ada cara mengetahui apakah masih ada yang bisa di-undo. Tombolnya belum
+dapat dimatikan secara tepat; menekan undo pada riwayat kosong aman dan tidak
+menghasilkan apa-apa.
+
+### 2.13 Yang belum ada
 
 `cursor.hide` belum ada: kursor orang yang menggeser pointer keluar kanvas baru
 hilang ketika ia menutup tab, atau ketika ia pergi.
@@ -427,7 +471,7 @@ Ringkasannya:
 
 | Pesan | Dipicu oleh | Diterima | Kewajiban penerima |
 |---|---|---|---|
-| `snapshot` | klien mengirim `document.get` | hanya peminta | ganti seluruh keadaan kanvas |
+| `snapshot` | `document.get`, **atau** `undo`/`redo` | peminta saja bila `document.get`; **semua penghuni** bila undo/redo | ganti seluruh keadaan kanvas |
 | `presence` | daftar **orang** berubah, atau `document.get` | semua, atau hanya peminta — lihat 3.2 | perbarui daftar penyunting |
 | `cursor` | denyut 70 ms bila ada yang berubah, atau `document.get` | semua bila penghuni ≥ 2; hanya peminta bila baru bergabung | ganti seluruh keadaan kursor |
 | `element.created` | `element.create` diterapkan | **semua**, pengirim ikut | sisipkan elemen di akhir halaman itu |
@@ -471,6 +515,11 @@ tempat yang bisa meleset.
 
 Isi yang tidak lolos validasi tidak menghasilkan `snapshot` melainkan menutup
 koneksi dengan `1011`, beserta alasan yang menyebut persis apa yang salah.
+
+**`snapshot` dapat datang tanpa Anda minta.** Sejak `undo` dan `redo` ada, ia juga
+disiarkan ke seluruh penghuni ketika riwayat bergerak. Perlakukan sama seperti
+balasan `document.get`: ganti seluruh keadaan kanvas, dan simpan `version`-nya.
+Jangan mengandaikan snapshot selalu berpasangan dengan permintaan Anda sendiri.
 
 ### 3.2 `presence`
 

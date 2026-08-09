@@ -73,6 +73,7 @@ usecase/documentdesign
   room.go                       ORCHESTRATOR — pemilik tunggal state dokumen
   event.go                      himpunan tertutup kejadian menuju orchestrator
   edit.go                       penerapan perubahan elemen dan halaman + siarannya
+  history.go                    riwayat undo/redo satu dokumen, di memori room
   presence.go                   daftar orang yang sedang membuka dokumen
   cursor.go                     denyut dan siaran kursor
   persist.go                    flush berkala, drain saat berhenti
@@ -481,7 +482,20 @@ bukan di dalam perulangan gambar. Bila dibalik, dokumen yang seluruh halamannya
 tersembunyi lolos penjaga itu dan menghasilkan PDF tanpa halaman sama sekali,
 yang bukan berkas sah.
 
-**15. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
+**15. Cuplikan riwayat diambil SEBELUM perubahan, disimpan SESUDAH terbukti
+berlaku.** Mengambilnya sesudah berarti yang tersimpan keadaan yang sudah
+berubah, sehingga undo tidak mengembalikan apa pun. Menyimpannya tanpa memeriksa
+`applied` berarti perubahan yang sasarannya sudah lenyap tetap meninggalkan
+langkah undo — dan langkah itu, bila ditekan, tidak melakukan apa-apa. Keduanya
+gagal diam-diam.
+
+**16. `design.Content.Clone` benar hanya selama `Element` tanpa tipe rujukan.**
+Seluruh fieldnya kini string, angka, dan boolean, sehingga menyalin nilainya
+sudah menyalin isinya. Menambahkan slice, map, atau pointer ke `Element` membuat
+salinan itu menjadi dangkal — dan gejalanya bukan galat melainkan riwayat undo
+yang ikut berubah ketika dokumennya disunting.
+
+**17. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
 menunggu channel.** `manager.sync` dan `manager.snapshot` melepas kunci sebelum
 bertanya ke room. Menahannya akan membekukan seluruh dokumen lain.
 
@@ -609,6 +623,16 @@ terasa berat saat ekspor, di sinilah tempat pertama melihat.
 dapat mengirim ulang yang terlewat. Klien yang melihat celah `version` memuat
 ulang seluruh dokumen. Itu memadai selama dokumen berukuran puluhan elemen, dan
 akan terasa mahal bila tidak lagi begitu.
+
+**Riwayat versi dokumen.** Undo/redo di `history.go` hidup di memori room dan
+mati bersamanya — sepuluh detik setelah penyunting terakhir pergi. Ia tidak dapat
+mengembalikan keadaan kemarin, dan tidak pernah menyentuh database. Dokumen yang
+dirusak lalu ditinggalkan tetap tidak punya jalan pulang; `documents.parent_id`
+masih menunggu dipakai untuk itu.
+
+**Kabar keadaan riwayat.** Tidak ada pesan yang memberitahu klien apakah masih
+ada yang dapat di-undo, sehingga tombolnya tidak dapat dimatikan pada saat yang
+tepat. Menekan undo pada riwayat kosong aman dan tidak menghasilkan apa-apa.
 
 **Kunci elemen saat digeser.** Tidak ada penanda "elemen ini sedang dipegang si
 A". Menang-terakhir sudah menyelesaikan kasusnya tanpa keadaan tambahan yang

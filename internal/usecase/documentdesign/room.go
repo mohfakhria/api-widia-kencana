@@ -88,6 +88,15 @@ type Room struct {
 	// denyut akan mengirim ulang posisi yang sama dua puluh kali per detik walau
 	// tidak ada satu pun yang bergerak.
 	cursorsDirty bool
+	// Riwayat undo/redo, satu tumpukan untuk SELURUH DOKUMEN — bukan per orang.
+	// Hidup di memori saja dan mati bersama room; tidak ada yang tersimpan ke
+	// database. Alasannya ada di history.go.
+	undoStack []*design.Content
+	redoStack []*design.Content
+	// lastChangeAt menandai kapan perubahan terakhir diterapkan, dipakai untuk
+	// menyatukan perubahan beruntun menjadi satu langkah undo. Nol berarti
+	// perubahan berikutnya pasti memulai langkah baru.
+	lastChangeAt time.Time
 }
 
 func newRoom(token string, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Room {
@@ -327,6 +336,10 @@ func (r *Room) handle(event roomEvent) {
 		r.applyPageDelete(e)
 	case pageReorderEvent:
 		r.applyPageReorder(e)
+	case undoEvent:
+		r.applyUndo(e)
+	case redoEvent:
+		r.applyRedo(e)
 	case snapshotEvent:
 		if r.broken != nil {
 			e.reply <- snapshotResult{err: r.broken}
@@ -546,6 +559,23 @@ func (r *Room) updatePage(sub Subscriber, id, title string, hidden, locked bool)
 func (r *Room) reorderPage(sub Subscriber, id string, index int) {
 	select {
 	case r.inbox <- pageReorderEvent{subscriber: sub, id: id, index: index}:
+	case <-r.done:
+	}
+}
+
+// undo dan redo tidak menunggu hasil. Tumpukan yang kosong bukan kegagalan
+// melainkan keadaan biasa — tidak ada lagi yang bisa dibatalkan — dan mendiamkan
+// itu sama seperti mendiamkan sasaran yang sudah lenyap.
+func (r *Room) undo(sub Subscriber) {
+	select {
+	case r.inbox <- undoEvent{subscriber: sub}:
+	case <-r.done:
+	}
+}
+
+func (r *Room) redo(sub Subscriber) {
+	select {
+	case r.inbox <- redoEvent{subscriber: sub}:
 	case <-r.done:
 	}
 }

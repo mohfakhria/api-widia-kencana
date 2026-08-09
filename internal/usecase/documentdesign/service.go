@@ -303,6 +303,22 @@ func (s *Service) ReorderPage(documentToken string, sub Subscriber, id string, i
 	s.rooms.reorderPage(documentToken, sub, id, index)
 }
 
+// Undo memundurkan SELURUH DOKUMEN satu langkah, bukan langkah pemanggilnya.
+//
+// Riwayatnya hidup di memori room dan mati bersamanya — room dibuang sepuluh
+// detik setelah penghuni terakhir pergi, dan riwayatnya ikut. Ini bukan riwayat
+// versi dokumen; ia tidak pernah menyentuh database.
+//
+// Tidak mengembalikan apa pun. Tumpukan yang kosong bukan kegagalan melainkan
+// keadaan biasa: tidak ada lagi yang bisa dibatalkan.
+func (s *Service) Undo(documentToken string, sub Subscriber) {
+	s.rooms.undo(documentToken, sub)
+}
+
+func (s *Service) Redo(documentToken string, sub Subscriber) {
+	s.rooms.redo(documentToken, sub)
+}
+
 func (s *Service) Detach(documentToken, userID string, sub Subscriber) {
 	s.rooms.detach(documentToken, sub)
 	s.connections.release(userID)

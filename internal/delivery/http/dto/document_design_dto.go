@@ -18,6 +18,8 @@ const (
 	DesignMessagePageUpdate     = "page.update"
 	DesignMessagePageDelete     = "page.delete"
 	DesignMessagePageReorder    = "page.reorder"
+	DesignMessageUndo           = "undo"
+	DesignMessageRedo           = "redo"
 )
 
 // Jenis pesan yang dikirim server.

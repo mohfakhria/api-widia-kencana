@@ -222,6 +222,18 @@ func (m *manager) updatePage(token string, sub Subscriber, id, title string, hid
 	}
 }
 
+func (m *manager) undo(token string, sub Subscriber) {
+	if room, ok := m.room(token); ok {
+		room.undo(sub)
+	}
+}
+
+func (m *manager) redo(token string, sub Subscriber) {
+	if room, ok := m.room(token); ok {
+		room.redo(sub)
+	}
+}
+
 func (m *manager) reorderPage(token string, sub Subscriber, id string, index int) {
 	if room, ok := m.room(token); ok {
 		room.reorderPage(sub, id, index)
