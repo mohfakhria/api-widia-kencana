@@ -148,9 +148,7 @@ func (c *canvas) drawRect(element *design.Element) {
 		style += "F"
 	}
 	if element.Stroke != "" && element.StrokeWidth > 0 {
-		red, green, blue, _ := design.ParseColor(element.Stroke)
-		c.pdf.SetDrawColor(red, green, blue)
-		c.pdf.SetLineWidth(element.StrokeWidth)
+		c.applyStroke(element)
 		style += "D"
 	}
 	if style == "" || element.W <= 0 || element.H <= 0 {
@@ -175,13 +173,30 @@ func (c *canvas) drawLine(element *design.Element) {
 		return
 	}
 
-	red, green, blue, _ := design.ParseColor(element.Stroke)
-	c.pdf.SetDrawColor(red, green, blue)
-	c.pdf.SetLineWidth(element.StrokeWidth)
+	c.applyStroke(element)
 	// Garis ditarik dari pangkal ke pangkal ditambah simpangan, dengan ketebalan
 	// terbagi rata di kedua sisi jalurnya — perilaku yang sama dengan stroke pada
 	// SVG.
 	c.pdf.Line(element.X, element.Y, element.X+element.W, element.Y+element.H)
+}
+
+// applyStroke menyetel warna, ketebalan, DAN pola putus-putus sekaligus.
+//
+// Ketiganya disetel bersama, tidak sebagian, karena pola putus-putus pada fpdf
+// adalah keadaan yang bertahan sampai diganti. Menyetelnya hanya ketika elemen
+// memang bergaris putus akan membuat pola itu menetes ke elemen berikutnya —
+// dan ke halaman berikutnya — sampai ada yang kebetulan menggantinya. Gejalanya
+// adalah garis yang seharusnya utuh menjadi putus, di tempat yang tidak ada
+// hubungannya dengan elemen yang menyebabkannya.
+//
+// Dengan menyetel ketiganya di setiap penggambaran, urutan elemen tidak lagi
+// dapat memengaruhi hasil. Pola kosong berarti utuh, jadi elemen solid pun
+// menyatakan dirinya secara eksplisit.
+func (c *canvas) applyStroke(element *design.Element) {
+	red, green, blue, _ := design.ParseColor(element.Stroke)
+	c.pdf.SetDrawColor(red, green, blue)
+	c.pdf.SetLineWidth(element.StrokeWidth)
+	c.pdf.SetDashPattern(design.StrokeDashPattern(element.ResolvedStrokeStyle(), element.StrokeWidth), 0)
 }
 
 func (c *canvas) drawImage(element *design.Element) error {

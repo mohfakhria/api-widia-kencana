@@ -143,6 +143,9 @@ func (e *Element) validateRect() error {
 	if err := finite(e.ID, "radius", e.Radius); err != nil {
 		return err
 	}
+	if err := strokeStyle(e.ID, e.StrokeStyle); err != nil {
+		return err
+	}
 	if err := color(e.ID, "fill", e.Fill); err != nil {
 		return err
 	}
@@ -158,6 +161,9 @@ func (e *Element) validateLine() error {
 		return invalidf("element %q has a negative strokeWidth", e.ID)
 	}
 	if err := finite(e.ID, "strokeWidth", e.StrokeWidth); err != nil {
+		return err
+	}
+	if err := strokeStyle(e.ID, e.StrokeStyle); err != nil {
 		return err
 	}
 
@@ -226,6 +232,13 @@ func color(id, name, value string) error {
 	}
 
 	return nil
+}
+
+// strokeStyle hanya berlaku bagi rect dan line. Teks maupun gambar yang
+// membawanya tidak ditolak, sama seperti properti lain yang bukan miliknya —
+// yang tidak digambar juga tidak dapat membuat layar dan cetak berbeda.
+func strokeStyle(id, value string) error {
+	return oneOf(id, "strokeStyle", value, StrokeSolid, StrokeLongDash, StrokeDash, StrokeDot)
 }
 
 func invalidf(format string, args ...any) error {

@@ -123,3 +123,43 @@ func hexDigit(char byte) (int, bool) {
 		return 0, false
 	}
 }
+
+func (e *Element) ResolvedStrokeStyle() string {
+	if e.StrokeStyle == "" {
+		return DefaultStrokeStyle
+	}
+
+	return e.StrokeStyle
+}
+
+// StrokeDashPattern mengembalikan panjang segmen bergantian — gambar, lewati,
+// gambar, lewati — dalam titik. Kosong berarti garis utuh.
+//
+// SATU-SATUNYA tempat angka ini hidup di backend, dan angkanya tertulis juga di
+// document-design.md supaya frontend menggambar dari rumus yang sama. Dua
+// renderer yang masing-masing menebak polanya pasti menghasilkan garis yang
+// berbeda, dan perbedaan itu baru terlihat setelah dicetak.
+//
+// Kelipatan lebar garis, bukan angka mutlak: pola tetap sebanding ketika garis
+// ditebalkan, persis seperti stroke-dasharray yang ditulis dalam kelipatan w.
+//
+// Ujung segmen dipotong rata — bukan dibulatkan. Itu bawaan SVG maupun PDF, jadi
+// keduanya sepakat tanpa siapa pun perlu menyetel apa pun. Konsekuensinya "dot"
+// adalah kotak kecil, bukan lingkaran; membulatkannya di satu sisi saja justru
+// akan membuat keduanya berbeda.
+func StrokeDashPattern(style string, strokeWidth float64) []float64 {
+	if strokeWidth <= 0 {
+		return nil
+	}
+
+	switch style {
+	case StrokeLongDash:
+		return []float64{4 * strokeWidth, 2 * strokeWidth}
+	case StrokeDash:
+		return []float64{2 * strokeWidth, 2 * strokeWidth}
+	case StrokeDot:
+		return []float64{strokeWidth, 2 * strokeWidth}
+	default:
+		return nil
+	}
+}

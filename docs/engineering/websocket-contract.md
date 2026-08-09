@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-09 | `strokeStyle` pada `rect` dan `line`: `solid`, `longdash`, `dash`, `dot` | Tambahan. Pola segmennya kelipatan `strokeWidth` dan **wajib sama di kedua renderer** — angkanya di [panduan](document-design.md#gaya-garis). Karena `element.update` mengganti elemen seutuhnya, kirim balik `strokeStyle` pada setiap update |
 | 2026-08-09 | `undo` dan `redo` — riwayat SATU DOKUMEN, di memori room | Tambahan, **tetapi**: `snapshot` kini dapat datang **tanpa diminta** dan **ke semua penghuni**, bukan hanya ke peminta. Bila penanganan `snapshot` Anda mengandaikan ia balasan `document.get`, perbaiki sekarang |
 | 2026-08-09 | `title` pada halaman: field `title?` di `DesignPage`, dan **wajib** pada `page.update` | **Perlu tindakan.** Aturan `page.update` berubah dari dua field wajib menjadi **tiga** — pesan tanpa `title` kini ditolak `malformed_message`. Kirim balik judul yang sedang berlaku, sama seperti `hidden` dan `locked` |
 | 2026-08-09 | Widia Agent dapat menyambung sebagai penyunting | Tambahan. Ia muncul di `presence` sebagai id `99999` bernama `Widia-Agent`. Pakai `name` dari `presence` apa adanya; jangan mengandalkan pencarian ke daftar pengguna. Ia tidak pernah punya kursor; itu sudah didukung |

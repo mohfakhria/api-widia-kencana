@@ -33,6 +33,16 @@ export type DesignColor = `#${string}`;
 export type DesignFontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
 
 export type DesignFontStyle = 'normal' | 'italic';
+/**
+ * Gaya garis untuk rect dan line.
+ *
+ * "Tanpa garis" bukan anggota — itu sudah diucapkan strokeWidth: 0, dan dua cara
+ * mengatakan satu hal adalah dua cara untuk tidak sepakat.
+ *
+ * Panjang segmennya kelipatan strokeWidth. Angkanya ada di document-design.md,
+ * dan backend menggambar PDF dari angka yang sama persis.
+ */
+export type DesignStrokeStyle = 'solid' | 'longdash' | 'dash' | 'dot';
 export type DesignAlign = 'left' | 'center' | 'right' | 'justify';
 /** Sama artinya dengan `object-fit` pada CSS. */
 export type DesignImageFit = 'contain' | 'cover' | 'fill';
@@ -122,6 +132,8 @@ export interface DesignRectElement extends DesignElementBase {
   strokeWidth?: Points;
   /** Dibatasi separuh sisi terpendek. */
   radius?: Points;
+  /** Bawaan: "solid". Hanya berarti bila strokeWidth > 0. */
+  strokeStyle?: DesignStrokeStyle;
 }
 
 export interface DesignLineElement extends DesignElementBase {
@@ -132,6 +144,8 @@ export interface DesignLineElement extends DesignElementBase {
    */
   stroke?: DesignColor;
   strokeWidth?: Points;
+  /** Bawaan: "solid". */
+  strokeStyle?: DesignStrokeStyle;
 }
 
 export interface DesignImageElement extends DesignElementBase {

@@ -85,6 +85,7 @@ snapshot, jadi frontend tidak perlu mengonversi apa pun.
 | `pages` | array; **minimal satu halaman** — halaman terakhir tidak dapat dihapus |
 | Setiap halaman | `id` tidak kosong, `elements` opsional, `title`, `hidden`, dan `locked` opsional |
 | Setiap elemen | `locked` dan `groupId` opsional, berlaku untuk semua jenis |
+| `rect` dan `line` | `strokeStyle` opsional: `solid`, `longdash`, `dash`, `dot` |
 | Setiap elemen | `id` tidak kosong dan `type` yang dikenal |
 | Seluruh `id` | unik dalam satu dokumen, **termasuk lintas halaman** |
 
@@ -104,6 +105,33 @@ lewat pesan `element.reorder` dan `page.reorder`.
 termasuk tidak mengunduh aset di atasnya. Dokumen yang seluruh halamannya
 tersembunyi menghasilkan PDF berisi satu halaman kosong, sama seperti dokumen
 yang memang belum punya halaman.
+
+### Gaya garis
+
+`strokeStyle` berlaku pada `rect` dan `line`, dan hanya berarti bila
+`strokeWidth` lebih dari nol. Kosong berarti `solid`.
+
+**Panjang segmennya kelipatan `strokeWidth`**, bukan angka mutlak, supaya polanya
+tetap sebanding ketika garis ditebalkan. Tulis `w` untuk `strokeWidth`:
+
+| Nilai | `stroke-dasharray` | Terlihat seperti |
+|---|---|---|
+| `solid` | — | ———————— |
+| `longdash` | `4w 2w` | —— —— —— |
+| `dash` | `2w 2w` | – – – – |
+| `dot` | `w 2w` | · · · · · |
+
+Angka ini **wajib sama di kedua renderer.** Backend menggambarnya di PDF dari
+`design.StrokeDashPattern`, satu-satunya tempat angkanya hidup di sisi ini; dua
+renderer yang masing-masing menebak polanya pasti berbeda, dan perbedaannya baru
+terlihat setelah dicetak.
+
+**Ujung segmen dipotong rata**, tidak dibulatkan — itu bawaan SVG maupun PDF,
+jadi keduanya sepakat tanpa siapa pun menyetel apa pun. Konsekuensinya `dot`
+adalah kotak kecil, bukan lingkaran. Membulatkannya di satu sisi saja justru
+membuat keduanya berbeda.
+
+Nilai di luar keempatnya ditolak seperti properti asing lain.
 
 **`title` pada halaman tidak digambar.** Ia sebutan halaman di editor — daftar
 halaman, panel thumbnail — sedangkan judul yang tampil di atas kertas adalah

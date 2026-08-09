@@ -52,11 +52,27 @@ const (
 	DefaultLineHeight    = 1.2
 	DefaultLetterSpacing = 0.0
 	DefaultImageFit      = FitContain
+	DefaultStrokeStyle   = StrokeSolid
 )
 
 const (
 	FontStyleNormal = "normal"
 	FontStyleItalic = "italic"
+)
+
+// Gaya garis untuk rect dan line.
+//
+// "Tanpa garis" sengaja BUKAN anggota: itu sudah diucapkan strokeWidth nol, dan
+// dua cara mengatakan satu hal adalah dua cara untuk tidak sepakat.
+//
+// Panjang segmennya kelipatan strokeWidth, bukan angka mutlak, supaya polanya
+// tetap sebanding pada garis tebal — dan supaya frontend menggambar dari rumus
+// yang sama tanpa tabel kedua. Angka persisnya ada di StrokeDashPattern.
+const (
+	StrokeSolid    = "solid"
+	StrokeLongDash = "longdash"
+	StrokeDash     = "dash"
+	StrokeDot      = "dot"
 )
 
 const (
@@ -162,6 +178,8 @@ type Element struct {
 	Stroke      string  `json:"stroke,omitempty"`
 	StrokeWidth float64 `json:"strokeWidth,omitempty"`
 	Radius      float64 `json:"radius,omitempty"`
+	// StrokeStyle hanya berarti bila StrokeWidth > 0. Kosong berarti solid.
+	StrokeStyle string `json:"strokeStyle,omitempty"`
 
 	// Properti gambar. AssetToken menunjuk aset yang sudah terunggah, bukan URL,
 	// supaya renderer tidak pernah mengambil alamat yang ditentukan klien.
