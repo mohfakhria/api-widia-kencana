@@ -93,10 +93,14 @@ type Room struct {
 	// database. Alasannya ada di history.go.
 	undoStack []*design.Content
 	redoStack []*design.Content
-	// lastChangeAt menandai kapan perubahan terakhir diterapkan, dipakai untuk
-	// menyatukan perubahan beruntun menjadi satu langkah undo. Nol berarti
-	// perubahan berikutnya pasti memulai langkah baru.
-	lastChangeAt time.Time
+	// lastChangeAt menandai kapan perubahan terakhir diterapkan; groupStartedAt
+	// menandai kapan kelompok undo yang sedang berjalan dimulai. Yang pertama
+	// mendeteksi jeda, yang kedua membatasi lamanya satu langkah — dan keduanya
+	// perlu, karena aliran yang tidak pernah berhenti tidak pernah berjeda.
+	//
+	// Nol pada keduanya berarti perubahan berikutnya pasti memulai langkah baru.
+	lastChangeAt   time.Time
+	groupStartedAt time.Time
 }
 
 func newRoom(token string, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Room {

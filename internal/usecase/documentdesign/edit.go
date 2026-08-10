@@ -1,8 +1,6 @@
 package documentdesign
 
 import (
-	"time"
-
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 )
 
@@ -13,8 +11,9 @@ import (
 // melihat celah nomor; menyiarkan tanpa menaikkan version membuat dua perubahan
 // berbeda mengaku sebagai revisi yang sama.
 //
-// Cuplikan riwayat diambil SEBELUM perubahan diterapkan, dan baru disimpan
-// setelah perubahan terbukti berlaku. Urutan itu penting di kedua ujungnya:
+// beginChange selalu mendahului perubahan dan commitChange selalu mengikutinya,
+// dan commitChange hanya dijalankan setelah perubahan terbukti berlaku. Urutan
+// itu penting di kedua ujungnya:
 // mengambilnya sesudah berarti yang tersimpan keadaan yang sudah berubah, dan
 // menyimpannya tanpa memeriksa berlaku berarti ada langkah undo yang bila ditekan
 // tidak melakukan apa-apa.
@@ -35,15 +34,14 @@ func (r *Room) applyCreate(e elementCreateEvent) {
 		return
 	}
 
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(discreteChange)
 
 	if err := r.content.CreateElement(e.page, e.element); err != nil {
 		e.reply <- err
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementCreated(r.version, e.page, e.element))
 
@@ -61,8 +59,7 @@ func (r *Room) applyUpdate(e elementUpdateEvent) {
 		return
 	}
 
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(streamedChange)
 
 	applied, err := r.content.UpdateElement(e.element)
 	if err != nil {
@@ -77,7 +74,7 @@ func (r *Room) applyUpdate(e elementUpdateEvent) {
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementUpdated(r.version, e.element))
 }
@@ -86,14 +83,13 @@ func (r *Room) applyDelete(e elementDeleteEvent) {
 	if err := r.editable(e.subscriber); err != nil {
 		return
 	}
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(discreteChange)
 
 	if !r.content.DeleteElement(e.id) {
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementDeleted(r.version, e.id))
 }
@@ -108,15 +104,14 @@ func (r *Room) applyReorder(e elementReorderEvent) {
 		return
 	}
 
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(discreteChange)
 
 	effective, applied := r.content.ReorderElement(e.id, e.index)
 	if !applied {
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodeElementReordered(r.version, e.id, effective))
 }
@@ -131,8 +126,7 @@ func (r *Room) applyPageCreate(e pageCreateEvent) {
 		return
 	}
 
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(discreteChange)
 
 	effective, err := r.content.CreatePage(e.id, e.index)
 	if err != nil {
@@ -140,7 +134,7 @@ func (r *Room) applyPageCreate(e pageCreateEvent) {
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageCreated(r.version, e.id, effective))
 
@@ -160,14 +154,13 @@ func (r *Room) applyPageUpdate(e pageUpdateEvent) {
 	if err := r.editable(e.subscriber); err != nil {
 		return
 	}
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(streamedChange)
 
 	if !r.content.UpdatePage(e.id, e.title, e.hidden, e.locked) {
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageUpdated(r.version, e.id, e.title, e.hidden, e.locked))
 }
@@ -188,8 +181,7 @@ func (r *Room) applyPageDelete(e pageDeleteEvent) {
 		return
 	}
 
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(discreteChange)
 
 	applied, err := r.content.DeletePage(e.id)
 	if err != nil {
@@ -201,7 +193,7 @@ func (r *Room) applyPageDelete(e pageDeleteEvent) {
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageDeleted(r.version, e.id))
 
@@ -215,15 +207,14 @@ func (r *Room) applyPageReorder(e pageReorderEvent) {
 		return
 	}
 
-	now := time.Now()
-	before := r.rememberBefore(now)
+	mark := r.beginChange(discreteChange)
 
 	effective, applied := r.content.ReorderPage(e.id, e.index)
 	if !applied {
 		return
 	}
 
-	r.pushHistory(before, now)
+	r.commitChange(mark)
 	r.version++
 	r.broadcastEdit(r.encoder.EncodePageReordered(r.version, e.id, effective))
 }

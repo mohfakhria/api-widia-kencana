@@ -336,6 +336,12 @@ export interface DesignPageReorderMessage {
  *
  * Kedalaman 20 langkah, hidup di memori room, hilang sekitar sepuluh detik
  * setelah penyunting terakhir pergi. Ini BUKAN riwayat versi dokumen.
+ *
+ * Satu klik adalah satu langkah; satu gerakan menggeser juga satu langkah.
+ * element.create/delete/reorder dan page.create/delete/reorder selalu berdiri
+ * sendiri, sedangkan element.update dan page.update digabungkan selama datang
+ * beruntun — dipotong oleh jeda 400 ms atau setelah 2 detik, mana yang lebih
+ * dulu. Anda tidak perlu menandai awal dan akhir gerakan.
  */
 export interface DesignUndoMessage {
   type: 'undo';

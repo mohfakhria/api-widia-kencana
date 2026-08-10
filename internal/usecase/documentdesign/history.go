@@ -15,43 +15,106 @@ const (
 	// pengguna, dengan harga memori yang berbeda-beda antar dokumen.
 	historyLimit = 20
 
-	// historyCoalesceWindow menyatukan perubahan yang datang beruntun menjadi satu
-	// langkah undo.
+	// historyCoalesceWindow adalah jeda yang mengakhiri satu aliran perubahan.
 	//
-	// Tanpa ini satu tarikan mouse menjadi puluhan langkah — menggeser elemen
-	// menghasilkan element.update dua puluh kali per detik, dan pengguna harus
-	// menekan Ctrl+Z tiga puluh kali untuk mengembalikan satu gerakan. Yang
-	// memulai langkah baru adalah JEDA, bukan jumlah: selama perubahan terus
-	// mengalir, semuanya masuk satu langkah.
-	historyCoalesceWindow = time.Second
+	// Hanya mengatur perubahan yang memang berupa aliran — lihat streamedChange.
+	// Karena itu ia boleh pendek: yang perlu disatukan cuma pesan-pesan dari satu
+	// gerakan yang sama, dan gerakan yang berhenti seperempat detik sudah selesai.
+	historyCoalesceWindow = 400 * time.Millisecond
+
+	// historyGroupMaxSpan membatasi berapa lama satu langkah undo boleh menampung.
+	//
+	// Tanpa batas ini, menggeser tanpa melepas mouse selama semenit menjadi SATU
+	// langkah, dan satu Ctrl+Z membuang seluruh menit itu. Jeda saja tidak cukup
+	// sebagai pembatas, karena aliran yang tidak pernah berhenti tidak pernah
+	// menghasilkan jeda.
+	historyGroupMaxSpan = 2 * time.Second
 )
 
-// rememberBefore mengambil cuplikan keadaan sekarang bila kelompok perubahan baru
-// dimulai.
+// changeKind memisahkan perubahan yang berdiri sendiri dari yang datang mengalir.
 //
-// Mengembalikan nil bila perubahan ini masih menyambung kelompok sebelumnya —
-// pemanggil meneruskannya apa adanya ke pushHistory, yang mengabaikannya.
-//
-// Dipanggil SEBELUM perubahan diterapkan, dan hasilnya baru disimpan setelah
-// perubahan terbukti berlaku. Urutan itu penting: perubahan yang ternyata tidak
-// berlaku — sasarannya sudah lenyap — tidak boleh meninggalkan langkah undo yang
-// bila ditekan tidak melakukan apa-apa.
-func (r *Room) rememberBefore(now time.Time) *design.Content {
-	if !r.lastChangeAt.IsZero() && now.Sub(r.lastChangeAt) < historyCoalesceWindow {
-		return nil
-	}
+// Pembedaan ini yang menentukan benar-tidaknya pengelompokan. Sebelumnya seluruh
+// perubahan diperlakukan sama dan dikelompokkan semata-mata berdasarkan jeda,
+// dan akibatnya terukur: dua klik berjarak 300 ms menjadi satu langkah, dan dua
+// orang yang masing-masing menyunting tiap 1,2 detik — keduanya merasa santai —
+// menghasilkan satu langkah untuk dua belas tindakan, karena dokumennya tidak
+// pernah sunyi walau tidak ada seorang pun yang tergesa.
+type changeKind int
 
-	return r.content.Clone()
+const (
+	// discreteChange adalah satu perbuatan sadar: menambah, menghapus, memindah
+	// urutan. Tidak pernah datang sebagai aliran, jadi tidak pernah digabungkan —
+	// tiap satu selalu memulai langkah undo tersendiri.
+	discreteChange changeKind = iota
+
+	// streamedChange adalah satu gerakan yang terpecah menjadi banyak pesan:
+	// menggeser elemen, mengetik judul halaman. Puluhan pesan per detik, dan
+	// pengguna menganggapnya satu tindakan.
+	streamedChange
+)
+
+// historyMark adalah keadaan dokumen tepat sebelum satu perubahan, beserta jenis
+// dan waktu perubahan itu.
+//
+// Ketiganya dibawa bersama supaya jenisnya cukup disebut SEKALI di tiap pemanggil.
+// Dulu ia disebut dua kali — saat mengambil cuplikan dan saat menyimpannya — dan
+// tidak ada yang memeriksa kedua sebutan itu cocok; pemanggil kesembilan yang
+// keliru tidak akan menghasilkan galat apa pun, hanya riwayat yang aneh.
+type historyMark struct {
+	at   time.Time
+	kind changeKind
+	// before nil berarti perubahan ini menyambung kelompok yang sedang berjalan
+	// dan karena itu tidak memulai langkah undo tersendiri.
+	before *design.Content
 }
 
-// pushHistory menyimpan cuplikan yang tadi diambil, lalu menandai bahwa dokumen
+// beginChange mengambil cuplikan keadaan sekarang bila kelompok perubahan baru
+// dimulai.
+//
+// Dipanggil SEBELUM perubahan diterapkan, dan hasilnya baru disimpan lewat
+// commitChange setelah perubahan terbukti berlaku. Urutan itu penting: perubahan
+// yang ternyata tidak berlaku — sasarannya sudah lenyap — tidak boleh meninggalkan
+// langkah undo yang bila ditekan tidak melakukan apa-apa.
+func (r *Room) beginChange(kind changeKind) historyMark {
+	now := time.Now()
+	mark := historyMark{at: now, kind: kind}
+
+	if !r.continuesGroup(now, kind) {
+		mark.before = r.content.Clone()
+	}
+
+	return mark
+}
+
+// continuesGroup menjawab apakah perubahan ini masih bagian dari kelompok yang
+// sedang berjalan. Tiga syarat, dan ketiganya harus terpenuhi.
+func (r *Room) continuesGroup(now time.Time, kind changeKind) bool {
+	// Satu: yang berdiri sendiri tidak menyambung apa pun, DAN tidak pernah ada
+	// kelompok terbuka miliknya untuk disambung — lihat commitChange. Kelompok yang
+	// terbuka selalu kelompok aliran, dan groupStartedAt nol berarti tidak ada.
+	if kind != streamedChange || r.groupStartedAt.IsZero() {
+		return false
+	}
+
+	// Dua: aliran yang sempat berhenti sudah selesai.
+	if r.lastChangeAt.IsZero() || now.Sub(r.lastChangeAt) >= historyCoalesceWindow {
+		return false
+	}
+
+	// Tiga: kelompok yang sudah terlalu panjang dipotong walau alirannya belum
+	// berhenti. Ini yang menjaga agar satu Ctrl+Z tidak pernah membuang lebih
+	// dari beberapa detik pekerjaan.
+	return now.Sub(r.groupStartedAt) < historyGroupMaxSpan
+}
+
+// commitChange menyimpan cuplikan yang tadi diambil, lalu menandai bahwa dokumen
 // baru saja berubah.
 //
-// Tumpukan redo dikosongkan oleh SETIAP perubahan baru. Tanpa itu, redo setelah
-// menyunting akan memasang keadaan yang tidak lagi menyambung dengan apa pun yang
-// ada di layar.
-func (r *Room) pushHistory(before *design.Content, now time.Time) {
-	r.lastChangeAt = now
+// Tumpukan redo dikosongkan oleh SETIAP perubahan baru, termasuk yang tergabung.
+// Tanpa itu, redo setelah menyunting akan memasang keadaan yang tidak lagi
+// menyambung dengan apa pun yang ada di layar.
+func (r *Room) commitChange(m historyMark) {
+	r.lastChangeAt = m.at
 
 	// clear sebelum dipotong, bukan dipotong saja. Memotong panjangnya tidak
 	// melepas apa pun: array di baliknya tetap memegang pointer ke isi dokumen,
@@ -60,11 +123,26 @@ func (r *Room) pushHistory(before *design.Content, now time.Time) {
 	clear(r.redoStack)
 	r.redoStack = r.redoStack[:0]
 
-	if before == nil {
+	if m.before == nil {
 		return
 	}
 
-	r.undoStack = append(r.undoStack, before)
+	// HANYA aliran yang membuka kelompok. Tindakan yang berdiri sendiri menutup
+	// dirinya seketika, supaya perubahan berikutnya tidak ikut terserap.
+	//
+	// Membuka kelompok untuknya juga pernah dicoba dan salah: memulai langkah baru
+	// di AWAL tindakan diskret tidak ada gunanya bila langkah itu lalu menelan
+	// geseran yang datang sesudahnya. Terukur waktu itu — membuat elemen lalu
+	// segera menggesernya menjadi satu langkah, sehingga satu Ctrl+Z menghapus
+	// elemennya alih-alih mengembalikan posisinya; dan pada dokumen berdua,
+	// tindakan satu orang menelan sisa geseran orang lain.
+	if m.kind == streamedChange {
+		r.groupStartedAt = m.at
+	} else {
+		r.groupStartedAt = time.Time{}
+	}
+
+	r.undoStack = append(r.undoStack, m.before)
 	if len(r.undoStack) > historyLimit {
 		// Yang tertua dibuang dengan menggeser sisanya ke depan, bukan dengan
 		// memotong dari kepala. Memotong dari kepala membuat slice merayap
@@ -126,11 +204,13 @@ func (r *Room) applyRedo(e redoEvent) {
 // delta yang mewakilinya. Ongkosnya sepadan karena undo adalah tekan tombol,
 // bukan aliran seperti kursor.
 //
-// lastChangeAt dinolkan supaya perubahan berikutnya PASTI memulai langkah baru.
+// Kedua penanda waktu dinolkan supaya perubahan berikutnya PASTI memulai langkah
+// baru.
 // Menyambungkannya ke kelompok sebelum undo akan membuat satu langkah undo
 // mencampur keadaan dari dua sisi perjalanan.
 func (r *Room) commitHistoryMove() {
 	r.lastChangeAt = time.Time{}
+	r.groupStartedAt = time.Time{}
 	r.version++
 
 	payload, err := r.encodeSnapshot()

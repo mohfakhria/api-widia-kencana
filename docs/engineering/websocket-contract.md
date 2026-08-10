@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-09 | Pengelompokan langkah `undo` diperbaiki | Tidak ada, bentuk pesannya tetap — tetapi **perilakunya berubah nyata**: sebelumnya seluruh perubahan digabungkan semata-mata berdasarkan jeda, sehingga dua klik berjarak 300 ms menjadi satu langkah, dan dua orang yang menyunting bergantian menghasilkan **satu** langkah untuk selusin tindakan. Sekarang tindakan diskret selalu berdiri sendiri |
 | 2026-08-09 | `GET /api/asset-content/:token` — pengalihan ke isi aset | Tambahan, dan **menyederhanakan**: pasang `<img src="/api/asset-content/{assetToken}">` dan selesai. URL-nya tetap, tidak kedaluwarsa, tidak perlu presign lebih dulu maupun disegarkan. `asset-presign` tetap ada untuk keperluan lain |
 | 2026-08-09 | `strokeStyle` pada `rect` dan `line`: `solid`, `longdash`, `dash`, `dot` | Tambahan. Pola segmennya kelipatan `strokeWidth` dan **wajib sama di kedua renderer** — angkanya di [panduan](document-design.md#gaya-garis). Karena `element.update` mengganti elemen seutuhnya, kirim balik `strokeStyle` pada setiap update |
 | 2026-08-09 | `undo` dan `redo` — riwayat SATU DOKUMEN, di memori room | Tambahan, **tetapi**: `snapshot` kini dapat datang **tanpa diminta** dan **ke semua penghuni**, bukan hanya ke peminta. Bila penanganan `snapshot` Anda mengandaikan ia balasan `document.get`, perbaiki sekarang |
@@ -432,9 +433,18 @@ dapat menyentuh apa saja — termasuk mengembalikan halaman beserta seluruh
 elemennya — dan tidak ada bentuk delta yang mewakilinya. Ganti seluruh keadaan
 kanvas seperti biasa.
 
-**Satu gerakan mouse adalah satu langkah undo.** Perubahan yang datang beruntun
-digabungkan server; yang memulai langkah baru adalah jeda sekitar satu detik,
-bukan jumlah pesan. Anda tidak perlu menandai awal dan akhir gerakan.
+**Satu gerakan mouse adalah satu langkah undo, satu klik juga satu langkah.**
+Anda tidak perlu menandai awal dan akhir gerakan; server yang memutuskan, dengan
+tiga aturan:
+
+| | |
+|---|---|
+| `element.create`, `element.delete`, `element.reorder`, seluruh `page.*` selain `page.update` | **selalu** memulai langkah baru — masing-masing satu perbuatan sadar |
+| `element.update` dan `page.update` | digabungkan selama datang beruntun, karena itu bentuk satu gerakan yang terpecah jadi banyak pesan |
+| gabungan mana pun | dipotong setelah **2 detik**, sehingga satu Ctrl+Z tidak pernah membuang lebih dari itu |
+
+Yang mengakhiri gabungan adalah jeda **400 ms** tanpa `update`, atau batas 2 detik
+di atas — mana yang lebih dulu.
 
 | Sifat riwayat | |
 |---|---|

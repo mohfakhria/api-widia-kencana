@@ -482,20 +482,31 @@ bukan di dalam perulangan gambar. Bila dibalik, dokumen yang seluruh halamannya
 tersembunyi lolos penjaga itu dan menghasilkan PDF tanpa halaman sama sekali,
 yang bukan berkas sah.
 
-**15. Cuplikan riwayat diambil SEBELUM perubahan, disimpan SESUDAH terbukti
+**15. Pengelompokan langkah undo memisahkan yang diskret dari yang mengalir.**
+Menggabungkan semata-mata berdasarkan jeda pernah dicoba dan salah: `lastChangeAt`
+bergeser pada setiap perubahan, sehingga langkah baru hanya lahir setelah dokumen
+sunyi total — dan pada dokumen yang dipakai bersama, kesunyian itu tidak pernah
+datang. Terukur waktu itu: dua orang yang masing-masing menyunting tiap 1,2 detik,
+keduanya merasa santai, menghasilkan SATU langkah untuk dua belas tindakan, karena
+suntingan mereka berselang-seling di bawah satu detik.
+
+Yang berdiri sendiri — create, delete, reorder — tidak pernah digabungkan.
+Yang mengalir dibatasi dua kali: oleh jeda, dan oleh lama kelompoknya.
+
+**16. Cuplikan riwayat diambil SEBELUM perubahan, disimpan SESUDAH terbukti
 berlaku.** Mengambilnya sesudah berarti yang tersimpan keadaan yang sudah
 berubah, sehingga undo tidak mengembalikan apa pun. Menyimpannya tanpa memeriksa
 `applied` berarti perubahan yang sasarannya sudah lenyap tetap meninggalkan
 langkah undo — dan langkah itu, bila ditekan, tidak melakukan apa-apa. Keduanya
 gagal diam-diam.
 
-**16. `design.Content.Clone` benar hanya selama `Element` tanpa tipe rujukan.**
+**17. `design.Content.Clone` benar hanya selama `Element` tanpa tipe rujukan.**
 Seluruh fieldnya kini string, angka, dan boolean, sehingga menyalin nilainya
 sudah menyalin isinya. Menambahkan slice, map, atau pointer ke `Element` membuat
 salinan itu menjadi dangkal — dan gejalanya bukan galat melainkan riwayat undo
 yang ikut berubah ketika dokumennya disunting.
 
-**17. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
+**18. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
 menunggu channel.** `manager.sync` dan `manager.snapshot` melepas kunci sebelum
 bertanya ke room. Menahannya akan membekukan seluruh dokumen lain.
 
@@ -561,6 +572,8 @@ memaksa klien menyambung ulang dan melihat keadaan yang sebenarnya.
 | `contentLoadTimeout` | 5 dtk | |
 | `contentSaveTimeout` | 3 dtk | lebih dari cukup untuk memperbarui satu baris |
 | `cursorTickInterval` | 70 ms | laju siaran kursor terikat pada denyut ini, berapa pun derasnya masukan. Terukur **pada denyut 50 ms**: 521 gerakan dalam 3 detik menjadi 61 pesan, latensi p99 45 ms — angkanya berskala dengan denyut |
+| `historyCoalesceWindow` | 400 ms | jeda yang mengakhiri satu aliran perubahan. Hanya mengatur element.update dan page.update — yang berdiri sendiri tidak pernah digabungkan |
+| `historyGroupMaxSpan` | 2 dtk | batas lama satu langkah undo. Jeda saja tidak cukup: aliran yang tidak pernah berhenti tidak pernah berjeda |
 | `roomIdleGrace` | 10 dtk | menutup refresh halaman dan wifi berkedip |
 | `janitorInterval` | 5 dtk | **harus lebih kecil** dari `roomIdleGrace`, kalau tidak sampah bertahan hampir dua kali lipat |
 
