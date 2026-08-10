@@ -65,6 +65,18 @@ func (e *Element) ResolvedLineHeight() float64 {
 	return e.LineHeight
 }
 
+// ResolvedOpacity mengembalikan ketembusan yang berlaku.
+//
+// nil berarti tidak disebutkan, bukan nol. Perbedaan itulah alasan field-nya
+// berupa pointer — lihat Element.Opacity.
+func (e *Element) ResolvedOpacity() float64 {
+	if e.Opacity == nil {
+		return DefaultOpacity
+	}
+
+	return *e.Opacity
+}
+
 func (e *Element) ResolvedFit() string {
 	if e.Fit == "" {
 		return DefaultImageFit

@@ -475,11 +475,20 @@ berubah, sehingga undo tidak mengembalikan apa pun. Menyimpannya tanpa memeriksa
 langkah undo — dan langkah itu, bila ditekan, tidak melakukan apa-apa. Keduanya
 gagal diam-diam.
 
-**17. `design.Content.Clone` benar hanya selama `Element` tanpa tipe rujukan.**
-Seluruh fieldnya kini string, angka, dan boolean, sehingga menyalin nilainya
-sudah menyalin isinya. Menambahkan slice, map, atau pointer ke `Element` membuat
-salinan itu menjadi dangkal — dan gejalanya bukan galat melainkan riwayat undo
-yang ikut berubah ketika dokumennya disunting.
+**17. Setiap field bertipe rujukan pada `Element` wajib disalin sendiri di
+`design.Content.Clone`.** Dulu invarian ini berbunyi "jangan pernah menambahkan
+tipe rujukan", dan itu bertahan sampai `opacity` membutuhkannya: nol adalah
+ketembusan yang sah, sehingga ia tidak dapat memakai nilai nol sebagai penanda
+"tidak disebutkan" seperti field lain, dan pointer menjadi satu-satunya jalan.
+
+`copy` pada slice elemen menyalin nilai field satu per satu, sehingga pointer
+berakhir menunjuk objek yang sama dengan aslinya. `Clone` karena itu menyalin
+`Opacity` secara eksplisit, dan setiap field rujukan berikutnya harus ikut
+disalin di sana.
+
+Melewatkannya tidak menghasilkan galat apa pun. Cuplikan undo hanya akan
+diam-diam ikut berubah bersama isi yang hidup, dan Ctrl+Z mengembalikan keadaan
+yang sudah tidak ada lagi.
 
 **18. Urutan kunci: `manager.mu` lebih dulu, dan tidak pernah ditahan saat
 menunggu channel.** `manager.sync` dan `manager.snapshot` melepas kunci sebelum

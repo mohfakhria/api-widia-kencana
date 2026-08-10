@@ -83,9 +83,9 @@ snapshot, jadi frontend tidak perlu mengonversi apa pun.
 | Aturan | |
 |---|---|
 | `pages` | array; **minimal satu halaman** — halaman terakhir tidak dapat dihapus |
-| Setiap halaman | `id` tidak kosong, `elements` opsional, `title`, `hidden`, dan `locked` opsional |
-| Setiap elemen | `locked` dan `groupId` opsional, berlaku untuk semua jenis |
-| `rect` dan `line` | `strokeStyle` opsional: `solid`, `longdash`, `dash`, `dot` |
+| Setiap halaman | `id` tidak kosong, `elements` opsional; `title`, `background`, `hidden`, dan `locked` opsional |
+| Setiap elemen | `locked`, `groupId`, `rotation`, dan `opacity` opsional, berlaku untuk semua jenis |
+| `rect`, `ellipse`, dan `line` | `strokeStyle` opsional: `solid`, `longdash`, `dash`, `dot` |
 | Setiap elemen | `id` tidak kosong dan `type` yang dikenal |
 | Seluruh `id` | unik dalam satu dokumen, **termasuk lintas halaman** |
 
@@ -157,11 +157,23 @@ digambar dari nol saat ekspor.
 | Properti | Tipe | Keterangan |
 |---|---|---|
 | `id` | string | tidak kosong, unik se-dokumen |
-| `type` | string | `text`, `rect`, `line`, `image` |
+| `type` | string | `text`, `rect`, `ellipse`, `line`, `image` |
 | `x`, `y` | number | sudut kiri atas kotak, relatif terhadap sudut kiri atas halaman |
 | `w`, `h` | number | lebar dan tinggi; tidak boleh negatif kecuali pada `line` |
+| `rotation` | number | derajat, **searah jarum jam**, terhadap titik tengah kotak |
+| `opacity` | number | `0` tembus pandang sampai `1` pekat; bawaan `1` |
 
 Nilai di luar ±100000 ditolak.
+
+`rotation` disamakan dengan `transform: rotate(Ndeg)` berpasangan dengan
+`transform-origin: center`, jadi frontend tidak perlu menerjemahkan apa pun.
+Nilainya tidak dinormalkan — `370` dikembalikan sebagai `370`. Pada `line`, titik
+tengah kotak kebetulan juga titik tengah garisnya.
+
+**`opacity` bernilai `0` adalah nilai yang sah**, dan berbeda dari tidak
+menyebutkannya. Kirim `0` bila memang ingin tembus pandang, dan hilangkan
+field-nya bila ingin bawaan; jangan mengirim `0` untuk mengatakan "bawaan". Di
+luar `0..1` ditolak `element_rejected`.
 
 ### 1.4 `text`
 
@@ -191,6 +203,26 @@ penafsiran sebagian itulah yang membuat layar dan cetak berbeda.
 | `radius` | number | ≥ 0; dibatasi separuh sisi terpendek |
 
 Kotak tanpa `fill` maupun `stroke` tidak digambar sama sekali.
+
+### 1.5.1 `ellipse`
+
+Properti yang sama persis dengan `rect`, tanpa `radius` — sudut membulat tidak
+berarti apa-apa pada bidang yang tidak bersudut. `radius` yang telanjur terbawa
+diabaikan, bukan ditolak, supaya mengubah `rect` menjadi `ellipse` tidak menuntut
+pembersihan properti yang tidak terlihat pengaruhnya.
+
+Bidangnya **pas di dalam kotak** `x`/`y`/`w`/`h`, sama seperti `<ellipse>` di SVG
+yang `cx`, `cy`, `rx`, dan `ry`-nya diturunkan dari kotak itu:
+
+```jsx
+<ellipse
+  cx={el.x + el.w / 2} cy={el.y + el.h / 2}
+  rx={el.w / 2} ry={el.h / 2}
+/>
+```
+
+Lingkaran adalah kotak yang `w` dan `h`-nya sama. Tidak ada jenis `circle`
+tersendiri: dua cara menyatakan satu bentuk adalah dua cara untuk tidak sepakat.
 
 ### 1.6 `line`
 
@@ -549,24 +581,50 @@ function ShapeElement({ el, page }) {
         overflow: 'visible', pointerEvents: 'none',
       }}
     >
-      {el.type === 'rect' ? (
-        <rect
-          x={el.x} y={el.y} width={el.w} height={el.h} rx={el.radius || 0}
-          fill={el.fill || 'none'}
-          stroke={el.stroke || 'none'}
-          strokeWidth={el.strokeWidth || 0}
-        />
-      ) : (
-        <line
-          x1={el.x} y1={el.y} x2={el.x + el.w} y2={el.y + el.h}
-          stroke={el.stroke || 'none'}
-          strokeWidth={el.strokeWidth || 0}
-        />
-      )}
+      <g
+        transform={
+          el.rotation
+            ? `rotate(${el.rotation} ${el.x + el.w / 2} ${el.y + el.h / 2})`
+            : undefined
+        }
+        opacity={el.opacity ?? 1}
+      >
+        {el.type === 'rect' ? (
+          <rect
+            x={el.x} y={el.y} width={el.w} height={el.h} rx={el.radius || 0}
+            fill={el.fill || 'none'}
+            stroke={el.stroke || 'none'}
+            strokeWidth={el.strokeWidth || 0}
+          />
+        ) : el.type === 'ellipse' ? (
+          <ellipse
+            cx={el.x + el.w / 2} cy={el.y + el.h / 2}
+            rx={el.w / 2} ry={el.h / 2}
+            fill={el.fill || 'none'}
+            stroke={el.stroke || 'none'}
+            strokeWidth={el.strokeWidth || 0}
+          />
+        ) : (
+          <line
+            x1={el.x} y1={el.y} x2={el.x + el.w} y2={el.y + el.h}
+            stroke={el.stroke || 'none'}
+            strokeWidth={el.strokeWidth || 0}
+          />
+        )}
+      </g>
     </svg>
   );
 }
 ```
+
+**`el.opacity ?? 1`, bukan `el.opacity || 1`.** Nol adalah nilai yang sah, dan
+nol itu falsy — `||` akan mengubah elemen yang sengaja dibuat tembus pandang
+menjadi pekat sepenuhnya. Jebakan yang sama berlaku di mana pun `opacity`
+dibaca.
+
+`rotate()` di SVG **wajib menyertakan titik pusatnya**. `rotate(45)` telanjang
+berputar terhadap titik asal koordinat, bukan terhadap elemen, dan hasilnya
+elemen terlempar jauh dari tempatnya.
 
 `viewBox` seukuran halaman membuat satuan SVG menjadi titik, sehingga koordinat
 dipakai apa adanya. Satu `<svg>` **per elemen**, bukan satu untuk semua, supaya
@@ -634,7 +692,38 @@ font, di sinilah tempat memeriksanya.**
 **Rata penuh** hanya meregangkan jarak antar kata, dan **tidak** diterapkan pada
 baris terakhir sebuah paragraf — sama seperti `text-align: justify` bawaan.
 
-### 2.7 Halaman jamak
+### 2.7 Putaran, transparansi, dan latar halaman
+
+Ketiganya ditambahkan belakangan dan mudah tergambar berbeda antara layar dan
+cetak, karena masing-masing punya lebih dari satu cara yang "masuk akal".
+
+**Putaran** searah jarum jam terhadap titik tengah kotak. Di CSS berarti:
+
+```css
+transform: rotate(45deg);
+transform-origin: center;
+```
+
+Di SVG, `transform="rotate(45, cx, cy)"` dengan `cx`/`cy` titik tengah kotak —
+bukan `rotate(45)` telanjang, yang berputar terhadap titik asal koordinat.
+
+Putaran **tidak** mengubah `x`, `y`, `w`, dan `h`: keduanya tetap kotak sebelum
+diputar. Kotak pemilihan dan pegangan ubah-ukuran di editor karena itu perlu ikut
+diputar, bukan dihitung ulang dari kotak yang membungkus hasil putarannya.
+
+**Transparansi** memakai `opacity` CSS pada elemen — bukan warna ber-alpha.
+Backend menerapkannya pada seluruh elemen sekaligus, isi dan garis tepi bersama,
+sama seperti `opacity` di CSS dan berbeda dari `fill-opacity`.
+
+**Latar halaman** digambar sebelum elemen mana pun. Kosong berarti tidak digambar
+sama sekali, dan itu **tidak sama dengan putih**: dicetak di atas kertas berwarna,
+keduanya berbeda. Jangan menirunya dengan `rect` seukuran halaman — latar tidak
+boleh ikut terpilih atau tergeser saat pengguna menekan pilih-semua.
+
+Latar disetel lewat `page.update`, yang mewajibkan **keempat** field-nya dikirim
+bersama. Lihat [kontrak WebSocket](websocket-contract.md).
+
+### 2.8 Halaman jamak
 
 Seluruh halaman satu dokumen berukuran sama, jadi `page` dari snapshot berlaku
 untuk semuanya. Tampilkan bertumpuk ke bawah; jarak antar halaman sepenuhnya
@@ -752,6 +841,10 @@ editor yang sudah ada?**
 | Kotak teks tumbuh mengikuti isinya | Tinggi tetap dari `h`; isi yang melebihi terpotong | [2.3](#23-elemen-teks) |
 | Kotak digambar dengan `div` + `border` | `<rect>` di dalam SVG | [2.4](#24-kotak-dan-garis-pakai-svg-bukan-div) |
 | Garis digambar dengan `div` tipis | `<line>` di dalam SVG | [2.4](#24-kotak-dan-garis-pakai-svg-bukan-div) |
+| `rotate()` tanpa `transform-origin: center` | Terhadap titik tengah kotak | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
+| `x`/`y`/`w`/`h` dihitung ulang setelah diputar | Tetap kotak sebelum diputar | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
+| Transparansi lewat warna ber-alpha | `opacity` pada elemen | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
+| Latar halaman ditiru dengan `rect` seukuran halaman | `background` pada halaman | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
 | Gambar memakai URL langsung | `assetToken` + `<img src="/api/asset-content/:token">` | [2.5](#25-gambar) |
 
 ### Yang perlu ditambahkan

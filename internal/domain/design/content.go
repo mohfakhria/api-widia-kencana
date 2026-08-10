@@ -34,10 +34,11 @@ import (
 type ElementType string
 
 const (
-	ElementText  ElementType = "text"
-	ElementRect  ElementType = "rect"
-	ElementLine  ElementType = "line"
-	ElementImage ElementType = "image"
+	ElementText    ElementType = "text"
+	ElementRect    ElementType = "rect"
+	ElementEllipse ElementType = "ellipse"
+	ElementLine    ElementType = "line"
+	ElementImage   ElementType = "image"
 )
 
 // Nilai bawaan untuk properti teks yang tidak disebutkan. Wajib sama dengan
@@ -53,6 +54,7 @@ const (
 	DefaultLetterSpacing = 0.0
 	DefaultImageFit      = FitContain
 	DefaultStrokeStyle   = StrokeSolid
+	DefaultOpacity       = 1.0
 )
 
 const (
@@ -119,6 +121,15 @@ type Page struct {
 	Hidden bool `json:"hidden,omitempty"`
 	Locked bool `json:"locked,omitempty"`
 
+	// Background adalah warna latar halaman, digambar sebelum elemen mana pun.
+	// Kosong berarti tidak digambar sama sekali — kertasnya sendiri yang terlihat,
+	// dan itu tidak sama dengan putih: PDF di atas kertas berwarna akan berbeda.
+	//
+	// Ada di halaman, bukan sebagai elemen rect seukuran halaman, karena latar
+	// bukan sesuatu yang boleh ikut terpilih, tergeser, atau terhapus saat orang
+	// menekan pilih-semua.
+	Background string `json:"background,omitempty"`
+
 	Elements []Element `json:"elements"`
 }
 
@@ -160,6 +171,31 @@ type Element struct {
 	// dari grup, diam-diam.
 	Locked  bool   `json:"locked,omitempty"`
 	GroupID string `json:"groupId,omitempty"`
+
+	// Rotation adalah putaran elemen dalam derajat, SEARAH jarum jam, terhadap
+	// titik tengah kotaknya. Sama seperti transform: rotate() di CSS dengan
+	// transform-origin: center — disamakan supaya frontend tidak perlu
+	// menerjemahkan apa pun.
+	//
+	// Berlaku untuk semua jenis elemen. Pada garis, titik tengah kotak kebetulan
+	// juga titik tengah garisnya, karena w dan h di sana adalah simpangan ujung
+	// terhadap pangkal.
+	//
+	// Nol berarti tegak. Nilainya tidak dinormalkan: 370 dan 10 menghasilkan
+	// gambar yang sama, dan memaksa salah satunya hanya akan membuat nilai yang
+	// dikirim klien berbeda dari yang dikembalikan.
+	Rotation float64 `json:"rotation,omitempty"`
+
+	// Opacity adalah ketembusan elemen, 0 tembus pandang sampai 1 pekat.
+	//
+	// POINTER, dan itu disengaja. Nol adalah nilai yang sah — elemen yang
+	// sepenuhnya tembus pandang — sehingga ia tidak dapat dipakai untuk menandai
+	// "tidak disebutkan" seperti properti lain di struct ini. nil berarti tidak
+	// disebutkan, dan yang berlaku DefaultOpacity.
+	//
+	// Karena ini tipe rujukan, Content.Clone WAJIB menyalinnya secara eksplisit.
+	// Lihat catatan di sana.
+	Opacity *float64 `json:"opacity,omitempty"`
 
 	// Properti teks.
 	Text          string  `json:"text,omitempty"`
@@ -245,6 +281,20 @@ func (c *Content) Clone() *Content {
 		out.Pages[i] = c.Pages[i]
 		out.Pages[i].Elements = make([]Element, len(c.Pages[i].Elements))
 		copy(out.Pages[i].Elements, c.Pages[i].Elements)
+
+		// copy di atas menyalin nilai field satu per satu, sehingga field
+		// bertipe RUJUKAN berakhir menunjuk objek yang sama dengan aslinya.
+		// Setiap field semacam itu harus disalin sendiri di bawah ini.
+		//
+		// Melewatkannya tidak menghasilkan galat apa pun: cuplikan undo hanya
+		// akan diam-diam ikut berubah bersama isi yang hidup, dan Ctrl+Z
+		// mengembalikan keadaan yang sudah tidak ada lagi.
+		for j := range out.Pages[i].Elements {
+			if opacity := out.Pages[i].Elements[j].Opacity; opacity != nil {
+				salinan := *opacity
+				out.Pages[i].Elements[j].Opacity = &salinan
+			}
+		}
 	}
 
 	return out

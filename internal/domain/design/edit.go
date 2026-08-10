@@ -181,6 +181,19 @@ func (c *Content) CreatePage(id string, index *int) (effective int, err error) {
 	return effective, nil
 }
 
+// PageProps adalah seluruh properti halaman yang dapat disetel page.update.
+//
+// Dibungkus struct, bukan diteruskan sebagai deretan parameter, karena title dan
+// background sama-sama string: tertukar di salah satu dari lima lapisan yang
+// dilewatinya akan tetap dapat dikompilasi, dan gejalanya berupa judul halaman
+// yang berubah menjadi kode warna.
+type PageProps struct {
+	Title      string
+	Background string
+	Hidden     bool
+	Locked     bool
+}
+
 // UpdatePage menyetel properti halaman, dan HANYA properti halaman.
 //
 // Sengaja tidak menerima halaman utuh seperti UpdateElement menerima elemen utuh.
@@ -193,23 +206,25 @@ func (c *Content) CreatePage(id string, index *int) (effective int, err error) {
 // menaikkan version untuk perubahan yang tidak mengubah apa pun akan membuat
 // klien lain memuat ulang tanpa sebab.
 //
-// Pemeriksaan ini mungkin di sini karena propertinya hanya tiga. UpdateElement
+// Pemeriksaan ini mungkin di sini karena propertinya sedikit. UpdateElement
 // tidak melakukannya: membandingkan elemen utuh jauh lebih mahal daripada
 // sesekali menyiarkan yang sama.
-func (c *Content) UpdatePage(id, title string, hidden, locked bool) (changed bool) {
+func (c *Content) UpdatePage(id string, props PageProps) (changed bool) {
 	index := slices.IndexFunc(c.Pages, func(p Page) bool { return p.ID == id })
 	if index < 0 {
 		return false
 	}
 
 	page := &c.Pages[index]
-	if page.Title == title && page.Hidden == hidden && page.Locked == locked {
+	if page.Title == props.Title && page.Background == props.Background &&
+		page.Hidden == props.Hidden && page.Locked == props.Locked {
 		return false
 	}
 
-	page.Title = title
-	page.Hidden = hidden
-	page.Locked = locked
+	page.Title = props.Title
+	page.Background = props.Background
+	page.Hidden = props.Hidden
+	page.Locked = props.Locked
 
 	return true
 }

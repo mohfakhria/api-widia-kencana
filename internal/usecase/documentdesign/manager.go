@@ -216,9 +216,9 @@ func (m *manager) deletePage(ctx context.Context, token string, sub Subscriber, 
 	return room.deletePage(ctx, sub, id)
 }
 
-func (m *manager) updatePage(token string, sub Subscriber, id, title string, hidden, locked bool) {
+func (m *manager) updatePage(token string, sub Subscriber, id string, props design.PageProps) {
 	if room, ok := m.room(token); ok {
-		room.updatePage(sub, id, title, hidden, locked)
+		room.updatePage(sub, id, props)
 	}
 }
 

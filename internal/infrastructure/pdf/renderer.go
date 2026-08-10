@@ -131,6 +131,8 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 		}
 
 		doc.AddPageFormat("P", size)
+		c.drawPageBackground(page.Background, width, height)
+
 		for index := range page.Elements {
 			if err := c.drawElement(&page.Elements[index]); err != nil {
 				return nil, err
@@ -169,11 +171,16 @@ func (r *Renderer) reportSubstitutions(token string, counted map[substitution]in
 // elemen di dalam halaman, sehingga yang belakangan menutupi yang terdahulu —
 // aturan yang sama dengan urutan DOM di frontend.
 func (c *canvas) drawElement(element *design.Element) error {
+	restore := c.beginElement(element)
+	defer restore()
+
 	switch element.Type {
 	case design.ElementText:
 		return c.drawText(element)
 	case design.ElementRect:
 		c.drawRect(element)
+	case design.ElementEllipse:
+		c.drawEllipse(element)
 	case design.ElementLine:
 		c.drawLine(element)
 	case design.ElementImage:
@@ -181,6 +188,70 @@ func (c *canvas) drawElement(element *design.Element) error {
 	}
 
 	return nil
+}
+
+// beginElement memasang putaran dan transparansi, lalu mengembalikan fungsi yang
+// mengembalikan kanvas ke keadaan semula.
+//
+// Keduanya adalah KEADAAN pada fpdf, bukan sifat satu perintah gambar — persis
+// seperti pola garis putus-putus. Yang tidak dikembalikan akan menetes ke elemen
+// berikutnya dan ke halaman berikutnya, dan gejalanya muncul di tempat yang tidak
+// ada hubungannya dengan elemen yang menyebabkannya. Karena itu pengembaliannya
+// lewat defer di pemanggil, bukan diserahkan kepada masing-masing penggambar.
+//
+// Elemen tanpa putaran dan tanpa transparansi tidak menyentuh keduanya sama
+// sekali, sehingga berkas PDF dokumen biasa tidak bertambah satu perintah pun.
+func (c *canvas) beginElement(element *design.Element) func() {
+	rotated := math.Mod(element.Rotation, 360) != 0
+	opacity := element.ResolvedOpacity()
+	faded := opacity < 1
+
+	if !rotated && !faded {
+		return func() {}
+	}
+
+	if faded {
+		// Mode dinyatakan eksplisit, bukan dikosongkan. Dokumentasi fpdf menjanjikan
+		// string kosong diganti "Normal", tetapi penggantian itu hanya berlaku pada
+		// variabel lokal yang lalu dibuang — yang tersimpan argumen mentahnya, dan
+		// ExtGState-nya keluar sebagai /BM / alih-alih /BM /Normal. Sah secara
+		// sintaks, tetapi menyerahkan artinya kepada kelonggaran pembaca PDF.
+		c.pdf.SetAlpha(opacity, "Normal")
+	}
+	if rotated {
+		c.pdf.TransformBegin()
+		// TANDANYA DIBALIK. fpdf mengukur sudut berlawanan arah jarum jam dari
+		// posisi jam tiga, sedangkan rotation pada model ini — dan pada CSS
+		// maupun SVG yang dipakai frontend — searah jarum jam. Tanpa pembalikan
+		// ini, elemen yang sama miring ke arah berlawanan di layar dan di
+		// cetakan, dan itu jenis kesalahan yang terlihat hanya bila kebetulan
+		// dibandingkan berdampingan.
+		c.pdf.TransformRotate(-element.Rotation,
+			element.X+element.W/2, element.Y+element.H/2)
+	}
+
+	return func() {
+		if rotated {
+			c.pdf.TransformEnd()
+		}
+		if faded {
+			c.pdf.SetAlpha(1, "Normal")
+		}
+	}
+}
+
+// drawPageBackground mengisi seluruh halaman sebelum elemen mana pun digambar.
+//
+// Kosong berarti tidak menggambar apa pun, dan itu TIDAK sama dengan menggambar
+// putih: PDF yang dicetak di atas kertas berwarna akan menunjukkan bedanya.
+func (c *canvas) drawPageBackground(background string, width, height float64) {
+	if background == "" {
+		return
+	}
+
+	red, green, blue, _ := design.ParseColor(background)
+	c.pdf.SetFillColor(red, green, blue)
+	c.pdf.Rect(0, 0, width, height, "F")
 }
 
 func (c *canvas) drawRect(element *design.Element) {
@@ -209,6 +280,35 @@ func (c *canvas) drawRect(element *design.Element) {
 	}
 
 	c.pdf.Rect(element.X, element.Y, element.W, element.H, style)
+}
+
+// drawEllipse menggambar bidang lonjong yang PAS di dalam kotak elemen, sama
+// seperti <ellipse> pada SVG yang cx, cy, rx, dan ry-nya diturunkan dari kotak
+// itu. Dengan begitu memindahkan dan mengubah ukuran elips memakai kotak yang
+// sama persis dengan rect, dan frontend tidak perlu memperlakukannya khusus.
+//
+// Sudut putarnya selalu nol di sini: putaran elemen sudah diurus beginElement,
+// dan mengulangnya di dua tempat berarti elemen yang diputar berputar dua kali.
+func (c *canvas) drawEllipse(element *design.Element) {
+	style := ""
+	if element.Fill != "" {
+		red, green, blue, _ := design.ParseColor(element.Fill)
+		c.pdf.SetFillColor(red, green, blue)
+		style += "F"
+	}
+	if element.Stroke != "" && element.StrokeWidth > 0 {
+		c.applyStroke(element)
+		style += "D"
+	}
+	if style == "" || element.W <= 0 || element.H <= 0 {
+		return
+	}
+
+	c.pdf.Ellipse(
+		element.X+element.W/2, element.Y+element.H/2,
+		element.W/2, element.H/2,
+		0, style,
+	)
 }
 
 func (c *canvas) drawLine(element *design.Element) {

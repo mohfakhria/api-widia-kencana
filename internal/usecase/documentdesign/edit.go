@@ -141,7 +141,7 @@ func (r *Room) applyPageCreate(e pageCreateEvent) {
 	e.reply <- nil
 }
 
-// applyPageUpdate menyetel title, hidden, dan locked.
+// applyPageUpdate menyetel properti halaman.
 //
 // Tidak membalas: yang dapat ditolak — muatan tanpa salah satu field — sudah
 // ditahan di lapisan delivery. Yang tersisa di sini paling banter tidak berlaku,
@@ -156,13 +156,13 @@ func (r *Room) applyPageUpdate(e pageUpdateEvent) {
 	}
 	mark := r.beginChange(streamedChange)
 
-	if !r.content.UpdatePage(e.id, e.title, e.hidden, e.locked) {
+	if !r.content.UpdatePage(e.id, e.props) {
 		return
 	}
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodePageUpdated(r.version, e.id, e.title, e.hidden, e.locked))
+	r.broadcastEdit(r.encoder.EncodePageUpdated(r.version, e.id, e.props))
 }
 
 // applyPageDelete membuang halaman beserta seluruh elemennya.

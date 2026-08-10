@@ -49,6 +49,11 @@ func (c *Content) Validate() error {
 				return err
 			}
 		}
+
+		if !IsColor(page.Background) {
+			return invalidf("page %q has background %q, expected #rgb or #rrggbb",
+				page.ID, page.Background)
+		}
 	}
 
 	return nil
@@ -74,11 +79,27 @@ func (e *Element) validate() error {
 		return err
 	}
 
+	// Rotation dan opacity berlaku untuk SEMUA jenis, jadi diperiksa di sini
+	// alih-alih diulang di keempat pemeriksa di bawah.
+	if err := finite(e.ID, "rotation", e.Rotation); err != nil {
+		return err
+	}
+	if e.Opacity != nil {
+		if err := finite(e.ID, "opacity", *e.Opacity); err != nil {
+			return err
+		}
+		if *e.Opacity < 0 || *e.Opacity > 1 {
+			return invalidf("element %q has opacity %v, expected between 0 and 1", e.ID, *e.Opacity)
+		}
+	}
+
 	switch e.Type {
 	case ElementText:
 		return e.validateText()
 	case ElementRect:
 		return e.validateRect()
+	case ElementEllipse:
+		return e.validateEllipse()
 	case ElementLine:
 		return e.validateLine()
 	case ElementImage:
@@ -128,19 +149,33 @@ func (e *Element) validateText() error {
 }
 
 func (e *Element) validateRect() error {
+	if e.Radius < 0 {
+		return invalidf("element %q has a negative radius", e.ID)
+	}
+	if err := finite(e.ID, "radius", e.Radius); err != nil {
+		return err
+	}
+
+	return e.validateShape()
+}
+
+// validateEllipse tidak memeriksa radius: sudut membulat tidak berarti apa-apa
+// pada bidang yang memang tidak bersudut. Nilainya diabaikan renderer, bukan
+// ditolak — menolaknya berarti mengubah rect menjadi ellipse mustahil dilakukan
+// tanpa membersihkan properti yang tidak terlihat pengaruhnya.
+func (e *Element) validateEllipse() error {
+	return e.validateShape()
+}
+
+// validateShape adalah bagian yang sama antara rect dan ellipse.
+func (e *Element) validateShape() error {
 	if err := e.requireBox(); err != nil {
 		return err
 	}
 	if e.StrokeWidth < 0 {
 		return invalidf("element %q has a negative strokeWidth", e.ID)
 	}
-	if e.Radius < 0 {
-		return invalidf("element %q has a negative radius", e.ID)
-	}
 	if err := finite(e.ID, "strokeWidth", e.StrokeWidth); err != nil {
-		return err
-	}
-	if err := finite(e.ID, "radius", e.Radius); err != nil {
 		return err
 	}
 	if err := strokeStyle(e.ID, e.StrokeStyle); err != nil {
@@ -214,24 +249,38 @@ func oneOf(id, name, value string, allowed ...string) error {
 // sengaja ditolak: menerimanya berarti backend harus menafsirkan sebagian CSS,
 // dan justru penafsiran sebagian itulah yang membuat layar dan cetak berbeda.
 func color(id, name, value string) error {
-	if value == "" {
+	if IsColor(value) {
 		return nil
+	}
+
+	return invalidf("element %q has %s %q, expected #rgb or #rrggbb", id, name, value)
+}
+
+// IsColor menjawab apakah nilainya warna yang dikenal. Kosong dianggap sah:
+// "tidak digambar" adalah keadaan yang berarti, bukan nilai yang hilang.
+//
+// Diekspor karena lapisan delivery memakainya juga: page.update memeriksa
+// background di sana, sejalan dengan cara ia menolak muatan cacat lainnya —
+// sebelum menyentuh orchestrator, dan tanpa membuat page.update perlu membalas.
+func IsColor(value string) bool {
+	if value == "" {
+		return true
 	}
 
 	digits, ok := strings.CutPrefix(value, "#")
 	if !ok || (len(digits) != 3 && len(digits) != 6) {
-		return invalidf("element %q has %s %q, expected #rgb or #rrggbb", id, name, value)
+		return false
 	}
 	for _, char := range digits {
 		isHex := (char >= '0' && char <= '9') ||
 			(char >= 'a' && char <= 'f') ||
 			(char >= 'A' && char <= 'F')
 		if !isHex {
-			return invalidf("element %q has %s %q, expected #rgb or #rrggbb", id, name, value)
+			return false
 		}
 	}
 
-	return nil
+	return true
 }
 
 // strokeStyle hanya berlaku bagi rect dan line. Teks maupun gambar yang

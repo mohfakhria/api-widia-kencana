@@ -72,6 +72,16 @@ export interface DesignPage {
   hidden?: boolean;
   /** Penanda saja; backend TIDAK menegakkannya. Lihat DesignPageUpdateMessage. */
   locked?: boolean;
+  /**
+   * Warna latar halaman, digambar sebelum elemen mana pun.
+   *
+   * Kosong berarti TIDAK digambar sama sekali, dan itu tidak sama dengan putih:
+   * dicetak di atas kertas berwarna, keduanya berbeda.
+   *
+   * Ada di halaman, bukan sebagai rect seukuran halaman, supaya latar tidak
+   * ikut terpilih atau tergeser saat pengguna menekan pilih-semua.
+   */
+  background?: DesignColor;
   /** Urutan elemen adalah urutan gambar: yang belakangan menutupi yang terdahulu. */
   elements?: DesignElement[];
 }
@@ -90,6 +100,23 @@ interface DesignElementBase {
    * bukan mencegah klien yang memang mengirim perubahan.
    */
   locked?: boolean;
+  /**
+   * Putaran dalam derajat, SEARAH jarum jam, terhadap titik tengah kotak —
+   * sama persis dengan `transform: rotate(Ndeg)` berpasangan dengan
+   * `transform-origin: center`.
+   *
+   * Berlaku untuk semua jenis elemen. Tidak dinormalkan: 370 dikembalikan
+   * sebagai 370, bukan 10.
+   */
+  rotation?: number;
+  /**
+   * 0 tembus pandang sampai 1 pekat. Bawaan: 1.
+   *
+   * NOL ADALAH NILAI YANG SAH dan berbeda dari tidak menyebutkannya. Kirim
+   * `0` bila memang ingin tembus pandang; hilangkan field-nya bila ingin
+   * bawaan. Di luar 0..1 ditolak `element_rejected`.
+   */
+  opacity?: number;
   /**
    * Pengelompokan, DATAR — tidak bersarang. Grup di dalam grup belum ada.
    *
@@ -166,9 +193,24 @@ export interface DesignImageElement extends DesignElementBase {
   fit?: DesignImageFit;
 }
 
+export interface DesignEllipseElement extends DesignElementBase {
+  type: 'ellipse';
+  /**
+   * Bidang lonjong yang PAS di dalam kotak x/y/w/h — sama seperti <ellipse> SVG
+   * yang cx, cy, rx, ry-nya diturunkan dari kotak itu. Lingkaran adalah kotak
+   * yang w dan h-nya sama.
+   */
+  fill?: DesignColor;
+  stroke?: DesignColor;
+  strokeWidth?: Points;
+  /** Bawaan: "solid". Hanya berarti bila strokeWidth > 0. */
+  strokeStyle?: DesignStrokeStyle;
+}
+
 export type DesignElement =
   | DesignTextElement
   | DesignRectElement
+  | DesignEllipseElement
   | DesignLineElement
   | DesignImageElement;
 
@@ -297,6 +339,8 @@ export interface DesignPageUpdateMessage {
   id: string;
   /** Sebutan di editor, tidak digambar. Lihat DesignPage.title. */
   title: string;
+  /** Warna latar halaman; kosong berarti tanpa latar. Lihat DesignPage.background. */
+  background: DesignColor | '';
   /** Tidak ikut tercetak. Lihat DesignPage.hidden. */
   hidden: boolean;
   /** Penanda saja; backend tidak menegakkannya. */
@@ -484,6 +528,7 @@ export interface DesignPageUpdatedMessage {
   version: number;
   id: string;
   title: string;
+  background: DesignColor | '';
   hidden: boolean;
   locked: boolean;
 }

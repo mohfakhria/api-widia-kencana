@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-10 | `rotation` dan `opacity` pada semua elemen, jenis baru `ellipse`, `background` pada halaman | **Perlu tindakan pada dua hal.** Pertama, `page.update` kini mewajibkan **empat** field — pesan tanpa `background` ditolak `malformed_message`. Kedua, `element.update` mengganti elemen seutuhnya, jadi mulai kirim balik `rotation` dan `opacity` pada setiap update; yang tidak disertakan akan menegakkan dan memekatkan elemen itu diam-diam. `opacity: 0` adalah nilai yang sah dan berbeda dari tidak menyebutkannya. Aturan menggambarnya di [panduan](document-design.md#27-putaran-transparansi-dan-latar-halaman) |
 | 2026-08-10 | `FRONTEND_URL` diganti `ALLOWED_ORIGINS`, dan pemeriksaan `Origin` tidak lagi memeriksa skema | Tidak ada di sisi kode frontend — tetapi **beri tahu yang memasang server**. Nilainya kini daftar host dipisah koma, boleh berpola, dan **kosong berarti tidak ada yang diizinkan**; sebelumnya bawaannya `http://localhost:3000`. Daftar yang sama sekarang juga yang menentukan CORS, jadi kedua jalur tidak bisa lagi berbeda pendapat |
 | 2026-08-10 | `GET /api/document-design-fonts` **dihapus** | **Perlu tindakan bila Anda memanggilnya.** Tidak ada lagi daftar font dari backend: pakai satu keluarga lewat CSS, dan batasi ketebalan pada 400 dan 700. Tumpukan `font-family` yang wajib dipakai ada di [panduan](document-design.md#22-font-berkas-yang-sama-di-kedua-sisi) |
 | 2026-08-10 | Ekspor PDF **tidak lagi gagal** karena font yang tidak terdaftar | **Perlu tindakan.** Dulu `fontFamily` atau `fontWeight` yang tidak terdaftar menggagalkan seluruh ekspor `400`; sekarang dibulatkan diam-diam ke yang terdekat. Berhenti mengandalkan galat itu sebagai validasi — batasi pilihan ketebalan di toolbar pada 400 dan 700. Aturan lengkapnya di [panduan](document-design.md#22-font-berkas-yang-sama-di-kedua-sisi) |
@@ -314,24 +315,28 @@ Ditolak bila id sudah dipakai, atau bila dokumen sudah punya **200 halaman**.
 ### 2.9 `page.update`
 
 ```jsonc
-{ "type": "page.update", "id": "9c1f…", "title": "Lampiran", "hidden": true, "locked": false }
+{ "type": "page.update", "id": "9c1f…", "title": "Lampiran", "background": "#f5f5f5", "hidden": true, "locked": false }
 ```
 
 | | |
 |---|---|
-| Kapan dikirim | pengguna mengganti judul halaman, menyembunyikan, menampilkan, mengunci, atau membuka |
+| Kapan dikirim | pengguna mengganti judul halaman atau warna latarnya, menyembunyikan, menampilkan, mengunci, atau membuka |
 | Balasan | `page.updated` ke **semua** penghuni, termasuk pengirim |
 | Bila muatannya kurang | `error` dengan kode `malformed_message` |
 
-**Ketiganya WAJIB, selalu ketiganya.** Pesan yang hanya menyebut sebagian
+**Keempatnya WAJIB, selalu keempatnya.** Pesan yang hanya menyebut sebagian
 **ditolak**, bukan diperlakukan sebagai nilai kosong. Tanpa aturan itu, mengirim
-`{"hidden": true}` akan sekalian **membuka kunci** halaman itu dan **menghapus
-judulnya** diam-diam, lalu perubahan yang tidak Anda minta tersiar ke semua orang
-sebagai perubahan yang sah.
+`{"hidden": true}` akan sekalian **membuka kunci** halaman itu, **menghapus
+judulnya**, dan **membuang latarnya** diam-diam, lalu perubahan yang tidak Anda
+minta tersiar ke semua orang sebagai perubahan yang sah.
 
-`title` bertipe string, dan `""` adalah nilai yang sah — artinya "halaman ini
-tidak berjudul". Karena itu ia tidak boleh tertukar dengan penghilangan, dan
-karena itu pula ia wajib disebut.
+`title` dan `background` bertipe string, dan `""` adalah nilai yang sah pada
+keduanya — "tidak berjudul" dan "tanpa latar". Karena itu keduanya tidak boleh
+tertukar dengan penghilangan, dan karena itu pula wajib disebut.
+
+`background` menerima `#rgb` atau `#rrggbb`, atau `""`. Bentuk lain ditolak
+`malformed_message` — bukan didiamkan, karena latar yang cacat akan tercetak
+hitam tanpa ada yang pernah memintanya.
 
 **Tidak ada field `elements`.** Ini perbedaan pokok dari `element.update`. Elemen
 adalah daun sehingga dikirim utuh; halaman memuat elemen, dan mengirim halaman

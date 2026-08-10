@@ -245,17 +245,18 @@ func (s *Service) DeletePage(ctx context.Context, documentToken string, sub Subs
 	return s.rooms.deletePage(ctx, documentToken, sub, id)
 }
 
-// UpdatePage menyetel title, hidden, dan locked pada satu halaman.
+// UpdatePage menyetel properti satu halaman.
 //
-// Dari ketiganya hanya hidden yang mengubah hasil cetak: ekspor melewati halaman
-// tersembunyi seluruhnya, termasuk tidak mengunduh asetnya. title dan locked
-// keterangan bagi editor — tidak pernah digambar, dan locked tidak ditegakkan
-// backend di mana pun.
+// Dari keempatnya hanya hidden dan background yang mengubah hasil cetak: ekspor
+// melewati halaman tersembunyi seluruhnya termasuk tidak mengunduh asetnya, dan
+// background diisi sebelum elemen mana pun digambar. title dan locked keterangan
+// bagi editor — tidak pernah digambar, dan locked tidak ditegakkan backend di
+// mana pun.
 //
 // Tidak mengembalikan apa pun. Halaman yang sudah lenyap, dan nilai yang memang
 // sudah sama, sama-sama didiamkan tanpa menaikkan version.
-func (s *Service) UpdatePage(documentToken string, sub Subscriber, id, title string, hidden, locked bool) {
-	s.rooms.updatePage(documentToken, sub, id, title, hidden, locked)
+func (s *Service) UpdatePage(documentToken string, sub Subscriber, id string, props design.PageProps) {
+	s.rooms.updatePage(documentToken, sub, id, props)
 }
 
 // ReorderPage memindahkan halaman. Index di luar batas dijepit orchestrator, dan

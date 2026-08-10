@@ -150,18 +150,31 @@ func (h *DocumentDesignHandler) updatePage(documentToken string, payload []byte,
 		return
 	}
 
-	// KETIGA field WAJIB ada. Yang hilang tidak diperlakukan sebagai nilai kosong:
+	// KEEMPAT field WAJIB ada. Yang hilang tidak diperlakukan sebagai nilai kosong:
 	// klien yang lupa menyertakan locked akan membuka kunci halaman diam-diam, dan
 	// yang lupa menyertakan title akan menghapus judulnya — keduanya tersiar ke
 	// semua orang sebagai perubahan yang sah. Ditolak di sini, sebelum menyentuh
 	// orchestrator.
-	if message.Title == nil || message.Hidden == nil || message.Locked == nil {
-		subscriber.sendError("malformed_message", "page.update requires title, hidden, and locked")
+	if message.Title == nil || message.Background == nil || message.Hidden == nil || message.Locked == nil {
+		subscriber.sendError("malformed_message", "page.update requires title, background, hidden, and locked")
 		return
 	}
 
-	h.service.UpdatePage(documentToken, subscriber, message.ID,
-		*message.Title, *message.Hidden, *message.Locked)
+	// Warna diperiksa di sini juga, sejalan dengan penolakan di atas: page.update
+	// sengaja tidak membalas pengirimnya, sehingga apa pun yang dapat ditolak
+	// harus ditahan sebelum menyentuh orchestrator. Latar yang cacat yang lolos
+	// akan tercetak hitam tanpa ada yang pernah memintanya.
+	if !design.IsColor(*message.Background) {
+		subscriber.sendError("malformed_message", "page.update background must be #rgb or #rrggbb")
+		return
+	}
+
+	h.service.UpdatePage(documentToken, subscriber, message.ID, design.PageProps{
+		Title:      *message.Title,
+		Background: *message.Background,
+		Hidden:     *message.Hidden,
+		Locked:     *message.Locked,
+	})
 }
 
 func (h *DocumentDesignHandler) deletePage(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {
