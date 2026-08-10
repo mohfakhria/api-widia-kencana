@@ -39,6 +39,19 @@ ALLOW_DIRTY=${ALLOW_DIRTY:-0}
 repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo"
 
+# ssh dan scp dibungkus supaya penerusan port dari ~/.ssh/config tidak ikut
+# terbawa. Host yang punya LocalForward — misalnya untuk menjangkau Postgres dari
+# laptop — membuat setiap koneksi baru mencoba mengikat port lokal yang sama, dan
+# yang kedua seterusnya gagal dengan "Address already in use". Perintahnya tetap
+# berjalan, tetapi keluarannya dipenuhi galat yang tidak ada hubungannya dengan
+# deploy — dan galat sungguhan menjadi tidak terlihat di antaranya.
+#
+# Dibungkus sebagai fungsi, bukan ditambahkan di tiap pemanggilan, supaya tidak
+# ada satu pun yang terlewat. command menghindari fungsi ini memanggil dirinya
+# sendiri, dan tetap menghormati PATH.
+ssh() { command ssh -o ClearAllForwardings=yes "$@"; }
+scp() { command scp -o ClearAllForwardings=yes "$@"; }
+
 langkah() { printf '\n\033[1m▸ %s\033[0m\n' "$1"; }
 mati() { printf '\n\033[31m✗ %s\033[0m\n' "$1" >&2; exit 1; }
 
