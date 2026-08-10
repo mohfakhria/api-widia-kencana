@@ -78,7 +78,15 @@ func Load() Config {
 		// disajikan ke frontend: nama keluarga yang sama tidak cukup, karena
 		// Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda
 		// dan perbedaan itu menggeser pemenggalan baris.
-		DesignFontDir: getEnv("DESIGN_FONT_DIR", "assets/fonts"),
+		// Kosong berarti ekspor memakai Helvetica inti PDF, dan itu keadaan yang
+		// didukung — bukan keadaan darurat. Jalur bawaan yang menunjuk direktori
+		// tertentu berarti direktori itu dapat menyalakan pemuatan font tanpa ada
+		// yang pernah memintanya, dan sekarang tidak ada satu pun berkas
+		// konfigurasi yang menyebutkan namanya.
+		//
+		// Isi hanya bila mendaftarkan berkas font sendiri. Caranya di
+		// docs/engineering/document-design.md.
+		DesignFontDir: getEnv("DESIGN_FONT_DIR", ""),
 	}
 }
 

@@ -82,7 +82,6 @@ MINIO_ROOT_PASSWORD=minioadmin
 MINIO_BUCKET=widia-assets
 MINIO_USE_SSL=false
 
-DESIGN_FONT_DIR=assets/fonts
 ```
 
 Catatan:
@@ -95,7 +94,8 @@ Catatan:
 - Flag `Secure` pada cookie mengikuti skema `APP_BASEURL` secara otomatis: `https://` menghasilkan `Secure=true`. Bila TLS diterminasi di reverse proxy dan `APP_BASEURL` menunjuk alamat internal `http://`, set `COOKIE_SECURE=true` secara eksplisit.
 - Aplikasi menolak start bila `APP_ENV=production` tetapi cookie tidak `Secure`.
 - Cookie memakai `SameSite=Strict`. Ini bekerja selama frontend dan API berada pada registrable domain yang sama, misal `app.example.com` dengan `api.example.com`. Bila keduanya benar-benar beda domain, `SameSite` perlu diturunkan ke `None` dan `Secure` menjadi wajib.
-- `DESIGN_FONT_DIR` menunjuk direktori berkas font untuk export PDF, beserta manifes `fonts.json` di dalamnya. Direktori yang tidak ada bukan error: export tetap berjalan dengan keluarga bawaan `helvetica`. Manifes yang cacat atau berkas yang disebut manifes tetapi tidak ditemukan **menolak start**, karena keduanya berarti export akan memakai huruf yang berbeda dari tampilan editor — jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
+- `DESIGN_FONT_DIR` **kosong secara bawaan**, dan tidak perlu diisi. Export PDF memakai Helvetica inti — keadaan yang didukung, bukan keadaan darurat. Yang menjadi syaratnya ada di sisi frontend: `font-family` dipaku ke daftar yang lebar majunya sepadan dengan Helvetica, tidak diserahkan ke `sans-serif` telanjang. Aturan lengkapnya di [`document-design.md`](docs/engineering/document-design.md#22-font-berkas-yang-sama-di-kedua-sisi).
+- Isi `DESIGN_FONT_DIR` hanya bila mendaftarkan berkas font sendiri; ia menunjuk direktori berkas font beserta manifes `fonts.json` di dalamnya, dan berkas yang sama wajib disajikan ke frontend lewat `@font-face`. Jalur relatif diselesaikan terhadap direktori kerja proses — di systemd berarti `WorkingDirectory`. Manifes yang cacat atau berkas yang disebut manifes tetapi tidak ditemukan **menolak start**, karena keduanya berarti export akan memakai huruf yang berbeda dari tampilan editor — jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
 - Berkas font yang sama wajib disajikan ke frontend. Nama keluarga yang sama tidak cukup: Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda, dan selisihnya menumpuk menjadi pemenggalan baris yang berbeda antara layar dan hasil cetak. Detailnya ada di `docs/engineering/document-design.md`.
 - MinIO local yang umum dipakai di project ini: console `9001`, API `9002`.
 - `MINIO_ROOT_USER` dan `MINIO_ROOT_PASSWORD` digunakan sebagai credential MinIO.
@@ -197,17 +197,17 @@ jauh lebih baik diketahui lewat satu perintah daripada lewat gejala.
 ```text
 /opt/widia-api/
   widia-api                  binary, milik root, mode 0755
-  assets/fonts/              font export PDF + fonts.json  ← lihat catatan
 /etc/widia-api/
   api.env                    konfigurasi, milik root, mode 0600
 ```
 
-`DESIGN_FONT_DIR` bawaannya **relatif** (`assets/fonts`), dan diselesaikan
-terhadap `WorkingDirectory` unit systemd — karena itu `WorkingDirectory` di unit
-file bukan hiasan. Font dimuat sekali saat start; direktori yang hilang **tidak**
-menghentikan aplikasi, tetapi membuat ekspor PDF diam-diam jatuh ke font inti dan
-hasil cetak berbeda dari layar. Isilah, atau setel `DESIGN_FONT_DIR` ke jalur
-absolut.
+Tidak ada berkas pendamping yang perlu ikut dikirim — satu binary saja. Export
+PDF memakai Helvetica inti, yang metriknya melekat pada spesifikasi PDF dan tidak
+perlu disematkan.
+
+`WorkingDirectory` di unit systemd tetap disetel: ia yang menentukan letak
+direktori font seandainya suatu hari `DESIGN_FONT_DIR` diisi dengan jalur
+relatif.
 
 ### 3. Konfigurasi
 
