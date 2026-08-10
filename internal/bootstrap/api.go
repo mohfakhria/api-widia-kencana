@@ -66,10 +66,6 @@ func (a *ApiApp) initialize() error {
 		refreshTokenStore,
 		tokenSigner,
 	)
-	purchaseOrderUC := usecase.NewPurchaseOrderUseCase(
-		pg.NewPurchaseOrderRepository(a.db),
-		a.objectStorage,
-	)
 	assetRepo := pg.NewAssetRepository(a.db)
 	assetUC := usecase.NewAssetUseCase(assetRepo, a.objectStorage)
 	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
@@ -99,10 +95,6 @@ func (a *ApiApp) initialize() error {
 		a.objectStorage,
 		pdfrender.NewRenderer(fonts, a.ServiceLogger),
 	)
-	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
-	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))
-	workflowStageUC := usecase.NewWorkflowStageUseCase(pg.NewWorkflowStageRepository(a.db))
-	workflowStepUC := usecase.NewWorkflowStepUseCase(pg.NewWorkflowStepRepository(a.db))
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
 		Config:          a.Config,
@@ -115,11 +107,6 @@ func (a *ApiApp) initialize() error {
 		),
 		DocumentExportHandler: deliveryhttp.NewDocumentExportHandler(documentExportUC, a.ServiceLogger),
 		ProjectHandler:        deliveryhttp.NewProjectHandler(projectUC),
-		PurchaseOrderHandler:  deliveryhttp.NewPurchaseOrderHandler(purchaseOrderUC),
-		QuotationHandler:      deliveryhttp.NewQuotationHandler(quotationUC),
-		WorkflowHandler:       deliveryhttp.NewWorkflowHandler(workflowUC),
-		WorkflowStageHandler:  deliveryhttp.NewWorkflowStageHandler(workflowStageUC),
-		WorkflowStepHandler:   deliveryhttp.NewWorkflowStepHandler(workflowStepUC),
 	})
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),

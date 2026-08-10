@@ -21,11 +21,6 @@ type RouterDeps struct {
 	DocumentDesignHandler *DocumentDesignHandler
 	DocumentExportHandler *DocumentExportHandler
 	ProjectHandler        *ProjectHandler
-	PurchaseOrderHandler  *PurchaseOrderHandler
-	QuotationHandler      *QuotationHandler
-	WorkflowHandler       *WorkflowHandler
-	WorkflowStageHandler  *WorkflowStageHandler
-	WorkflowStepHandler   *WorkflowStepHandler
 }
 
 func NewRouter(deps RouterDeps) http.Handler {
@@ -71,29 +66,6 @@ func NewRouter(deps RouterDeps) http.Handler {
 		protected.POST("/project-add", deps.ProjectHandler.Create)
 		protected.PUT("/project-update/:id", deps.ProjectHandler.Update)
 		protected.DELETE("/project-delete/:id", deps.ProjectHandler.Delete)
-		protected.GET("/workflow-list", deps.WorkflowHandler.List)
-		protected.GET("/workflow-detail/:id", deps.WorkflowHandler.Get)
-		protected.POST("/workflow-add", deps.WorkflowHandler.Create)
-		protected.PUT("/workflow-update/:id", deps.WorkflowHandler.Update)
-		protected.DELETE("/workflow-delete/:id", deps.WorkflowHandler.Delete)
-		protected.GET("/workflow-stage-list/:workflowID", deps.WorkflowStageHandler.ListByWorkflowID)
-		protected.GET("/workflow-stage-detail/:id", deps.WorkflowStageHandler.Get)
-		protected.POST("/workflow-stage-add", deps.WorkflowStageHandler.Create)
-		protected.PUT("/workflow-stage-update/:id", deps.WorkflowStageHandler.Update)
-		protected.PUT("/workflow-stage-sort", deps.WorkflowStageHandler.Sort)
-		protected.DELETE("/workflow-stage-delete/:id", deps.WorkflowStageHandler.Delete)
-		protected.GET("/workflow-step-list/:workflowStageID", deps.WorkflowStepHandler.ListByWorkflowStageID)
-		protected.GET("/workflow-step-detail/:id", deps.WorkflowStepHandler.Get)
-		protected.POST("/workflow-step-add", deps.WorkflowStepHandler.Create)
-		protected.PUT("/workflow-step-update/:id", deps.WorkflowStepHandler.Update)
-		protected.PUT("/workflow-step-sort", deps.WorkflowStepHandler.Sort)
-		protected.DELETE("/workflow-step-delete/:id", deps.WorkflowStepHandler.Delete)
-		protected.POST("/purchase-order-upsert", deps.PurchaseOrderHandler.Upsert)
-		protected.GET("/purchase-order/:quotationID", deps.PurchaseOrderHandler.GetByQuotationID)
-		protected.GET("/quotation-list", deps.QuotationHandler.List)
-		protected.GET("/quotation-detail/:id", deps.QuotationHandler.Get)
-		protected.PUT("/quotation-update/:id", deps.QuotationHandler.Update)
-		protected.POST("/quotation-add", deps.QuotationHandler.Create)
 	}
 
 	// Handshake WebSocket dilayani di luar gin. Upgrade harus mengambil alih

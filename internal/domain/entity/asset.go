@@ -28,12 +28,3 @@ type Asset struct {
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
 }
-
-type PurchaseOrderAsset struct {
-	ID              int64
-	PurchaseOrderID int64
-	AssetID         int64
-	Category        string
-	Asset           *Asset
-	CreatedAt       time.Time
-}

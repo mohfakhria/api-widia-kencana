@@ -59,8 +59,6 @@ Gunakan `scope` untuk folder object storage. Contoh scope yang disarankan:
 
 ```text
 documents
-quotations
-purchase-orders
 users/avatar
 ```
 

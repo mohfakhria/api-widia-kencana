@@ -9,10 +9,7 @@ Backend API untuk aplikasi Widia Kencana. Project ini memetakan flow bisnis utam
 - Export dokumen ke PDF, digambar langsung di Go tanpa headless browser.
 - Encrypted JWT subject claim untuk menghindari expose raw user id di token.
 - Asset management dengan presigned upload/download URL.
-- Quotation management dengan list/detail/create/update.
-- Purchase order by quotation, termasuk upsert item dan optional asset upload ke MinIO.
 - Project CRUD.
-- Workflow master CRUD, termasuk stage dan step.
 - SQL migration manual per table di folder `migration/`.
 - Postman collection di folder `docs/collection/`.
 
@@ -112,6 +109,29 @@ ALTER TABLE users
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 ```
 
+Fitur workflow, quotation, dan purchase order dihapus pada 2026-08-10. Berkas
+migration-nya ikut hilang dari repo, tetapi tabelnya **tetap ada** di database
+yang sudah terlanjur dipasang. Buang manual, anak lebih dulu:
+
+```sql
+DROP TABLE IF EXISTS purchase_order_assets;
+DROP TABLE IF EXISTS purchase_order_detail;
+DROP TABLE IF EXISTS purchase_order;
+DROP TABLE IF EXISTS quotation_details;
+DROP TABLE IF EXISTS quotation_items;
+DROP TABLE IF EXISTS quotation_sections;
+DROP TABLE IF EXISTS quotations;
+DROP TABLE IF EXISTS workflow_steps;
+DROP TABLE IF EXISTS workflow_stages;
+DROP TABLE IF EXISTS workflows;
+```
+
+Urutannya sengaja anak sebelum induk, dan sengaja **tanpa** `CASCADE`. Kalau ada
+yang masih merujuk salah satunya, perintahnya gagal dan menyebutkan siapa —
+sedangkan `CASCADE` akan diam-diam ikut membuang apa pun yang tersangkut. Tidak
+ada tabel tersisa yang merujuk ketiganya, jadi seharusnya lancar; kalau ternyata
+gagal, itu justru keterangan yang Anda butuhkan.
+
 `ALTER TABLE users` di atas belum memasang trigger `updated_at`-nya. Jalankan
 bagian `CREATE OR REPLACE FUNCTION` sampai `CREATE TRIGGER` di `users.sql`
 sesudahnya — ketiganya aman dijalankan ulang. Tanpa trigger itu, `updated_at`
@@ -126,19 +146,9 @@ Urutan baseline yang aman:
 ```text
 users.sql
 projects.sql
-workflows.sql
-workflow_stages.sql
-workflow_steps.sql
 document_papers.sql
 documents.sql
-quotations.sql
-quotation_sections.sql
-quotation_items.sql
-quotation_details.sql
-purchase_order.sql
-purchase_order_detail.sql
 assets.sql
-purchase_order_assets.sql
 ```
 
 Contoh menjalankan manual dengan `psql`:
@@ -346,10 +356,7 @@ Postman collection tersedia di:
 - `docs/collection/asset.json`
 - `docs/collection/document.json`
 - `docs/collection/document_design.json`
-- `docs/collection/quotation.json`
-- `docs/collection/purchase_order.json`
 - `docs/collection/project.json`
-- `docs/collection/workflow.json`
 - `docs/collection/all.json`
 
 Regenerate collection gabungan:
@@ -384,13 +391,6 @@ POST   /api/document-design-ticket/:token
 WS     /document-design/:token?ticket=
 POST   /api/document-export/:token
 
-GET    /api/quotation-list
-GET    /api/quotation-detail/:id
-POST   /api/quotation-add
-PUT    /api/quotation-update/:id
-
-POST   /api/purchase-order-upsert
-GET    /api/purchase-order/:quotationID
 
 GET    /api/project-list
 GET    /api/project-detail/:id
@@ -398,23 +398,6 @@ POST   /api/project-add
 PUT    /api/project-update/:id
 DELETE /api/project-delete/:id
 
-GET    /api/workflow-list
-GET    /api/workflow-detail/:id
-POST   /api/workflow-add
-PUT    /api/workflow-update/:id
-DELETE /api/workflow-delete/:id
-
-GET    /api/workflow-stage-list/:workflowID
-GET    /api/workflow-stage-detail/:id
-POST   /api/workflow-stage-add
-PUT    /api/workflow-stage-update/:id
-DELETE /api/workflow-stage-delete/:id
-
-GET    /api/workflow-step-list/:workflowStageID
-GET    /api/workflow-step-detail/:id
-POST   /api/workflow-step-add
-PUT    /api/workflow-step-update/:id
-DELETE /api/workflow-step-delete/:id
 ```
 
 ## Response Convention
@@ -448,9 +431,9 @@ Payload response tidak meletakkan object atau array langsung pada `data`, tetapi
   "status": "ok",
   "message": "Success",
   "data": {
-    "workflow": {
+    "project": {
       "id": 1,
-      "name": "Standard Project Flow"
+      "name": "Renovasi Kantor Pusat"
     }
   }
 }
@@ -501,7 +484,7 @@ jq empty docs/collection/*.json
 - Clean Architecture reference ada di `docs/engineering/Clean_Architecture.md`.
 - README structure guideline ada di `docs/engineering/readme-structure.md`.
 - Unit test baru belum menjadi scope utama project ini; `go test ./...` dipakai sebagai compile/smoke verification.
-- Endpoint update/delete pada project dan workflow memakai soft-delete via field `status = deleted` untuk flow delete.
+- Endpoint update/delete pada project memakai soft-delete via field `status = deleted` untuk flow delete.
 - Wewenang asset dipisah antara membaca dan mengubah. **Membaca** — `asset-detail` dan `asset-presign` — terbuka bagi siapa pun yang login asal ia tahu tokennya, karena dokumen di aplikasi ini milik bersama: gambar yang tokennya sudah masuk ke `assetToken` sebuah elemen sudah menjadi bagian dokumen bersama itu, dan ekspor PDF memang menyematkannya untuk semua orang. **Mengubah** — `asset-upload-complete` dan `asset-delete` — hanya boleh oleh pengunggahnya, dan aset yang `uploaded_by`-nya kosong ditolak untuk siapa pun. `asset-list` tetap hanya menampilkan milik sendiri.
 - `GET /api/asset-content/:token` mengalihkan (`302`) ke presigned URL yang disusun ulang tiap permintaan, dan **sengaja berada di luar `AuthRequired`**: rute ini dituju langsung oleh tag `<img>`, yang tidak dapat mengirim header `Authorization`. Token asetnya yang menjadi kredensial — UUID acak yang hanya diperoleh lewat isi dokumen. Balasannya `Cache-Control: no-store`, karena pengalihan yang tersimpan akan menunjuk ke tanda tangan yang keburu kedaluwarsa. Byte-nya tidak pernah melewati proses Go; hanya alamatnya.
 - Unggahan asset berjalan tiga langkah — minta presigned URL, unggah langsung ke MinIO, lapor selesai — dan langkah ketiga sepenuhnya bergantung pada klien. Tab yang ditutup di tengah jalan meninggalkan baris `pending` dan kadang objek yang sudah telanjur mendarat. Komponen latar `asset-sweeper` membersihkannya: tiap 5 menit ia mencari unggahan yang tenggat presigned-nya lewat lebih dari 5 menit, menghapus objeknya, lalu menandai barisnya `failed` dengan `failure_code = upload_expired`. Objek yatim karenanya hidup paling lama sekitar 25 menit.

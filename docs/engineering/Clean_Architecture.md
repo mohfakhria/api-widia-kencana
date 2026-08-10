@@ -271,14 +271,10 @@ project-root/
 │
 ├── migration/
 │   ├── users.sql
-│   ├── quotations.sql
-│   ├── quotation_sections.sql
-│   ├── quotation_items.sql
-│   ├── quotation_details.sql
-│   ├── purchase_order.sql
-│   ├── purchase_order_detail.sql
-│   ├── assets.sql
-│   └── purchase_order_assets.sql
+│   ├── projects.sql
+│   ├── document_papers.sql
+│   ├── documents.sql
+│   └── assets.sql
 │
 ├── go.mod
 ├── go.sum
