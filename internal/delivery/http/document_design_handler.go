@@ -11,19 +11,16 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
-	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
 
 	"github.com/coder/websocket"
 	"github.com/gin-gonic/gin"
 )
 
-// Permukaan HTTP untuk document design: penerbitan tiket, daftar font, dan
-// handshake WebSocket.
+// Permukaan HTTP untuk document design: penerbitan tiket dan handshake WebSocket.
 
 type DocumentDesignHandler struct {
 	service *documentdesign.Service
-	fonts   output.FontCatalog
 	logger  *slog.Logger
 	origins []string
 
@@ -36,7 +33,6 @@ type DocumentDesignHandler struct {
 func NewDocumentDesignHandler(
 	appCtx context.Context,
 	service *documentdesign.Service,
-	fonts output.FontCatalog,
 	cfg config.Config,
 	logger *slog.Logger,
 ) *DocumentDesignHandler {
@@ -54,21 +50,10 @@ func NewDocumentDesignHandler(
 
 	return &DocumentDesignHandler{
 		service: service,
-		fonts:   fonts,
 		logger:  logger,
 		origins: origins,
 		appCtx:  appCtx,
 	}
-}
-
-// ListFonts menyebut font yang benar-benar terdaftar di backend.
-//
-// Ada supaya pilihan font di editor terisi dari sumber yang sama dengan yang
-// menggambar hasil cetak. Daftar yang dipatok di frontend akan melenceng begitu
-// ada yang menambah atau mengganti berkas font, dan melencengnya baru ketahuan
-// ketika ekspor gagal.
-func (h *DocumentDesignHandler) ListFonts(c *gin.Context) {
-	dto.Success(c, "Success", dto.NewDocumentDesignFontsResponse(h.fonts.Catalog()))
 }
 
 func (h *DocumentDesignHandler) IssueTicket(c *gin.Context) {

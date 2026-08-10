@@ -96,7 +96,8 @@ Catatan:
 - Cookie memakai `SameSite=Strict`. Ini bekerja selama frontend dan API berada pada registrable domain yang sama, misal `app.example.com` dengan `api.example.com`. Bila keduanya benar-benar beda domain, `SameSite` perlu diturunkan ke `None` dan `Secure` menjadi wajib.
 - `DESIGN_FONT_DIR` **kosong secara bawaan**, dan tidak perlu diisi. Export PDF memakai Helvetica inti — keadaan yang didukung, bukan keadaan darurat. Yang menjadi syaratnya ada di sisi frontend: `font-family` dipaku ke daftar yang lebar majunya sepadan dengan Helvetica, tidak diserahkan ke `sans-serif` telanjang. Aturan lengkapnya di [`document-design.md`](docs/engineering/document-design.md#22-font-berkas-yang-sama-di-kedua-sisi).
 - Isi `DESIGN_FONT_DIR` hanya bila mendaftarkan berkas font sendiri; ia menunjuk direktori berkas font beserta manifes `fonts.json` di dalamnya, dan berkas yang sama wajib disajikan ke frontend lewat `@font-face`. Jalur relatif diselesaikan terhadap direktori kerja proses — di systemd berarti `WorkingDirectory`. Manifes yang cacat atau berkas yang disebut manifes tetapi tidak ditemukan **menolak start**, karena keduanya berarti export akan memakai huruf yang berbeda dari tampilan editor — jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
-- Berkas font yang sama wajib disajikan ke frontend. Nama keluarga yang sama tidak cukup: Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda, dan selisihnya menumpuk menjadi pemenggalan baris yang berbeda antara layar dan hasil cetak. Detailnya ada di `docs/engineering/document-design.md`.
+- Yang menentukan hasil cetak sama dengan layar adalah **lebar maju** yang sama, bukan nama keluarga yang sama. Arial justru diciptakan sebagai pengganti Helvetica dengan lebar maju yang sama persis, dan Liberation Sans serta Nimbus Sans dirancang selebar itu pula — yang berbeda bentuk glifnya. Yang merusak adalah font yang lebarnya memang lain, seperti DejaVu Sans yang menjadi pilihan `sans-serif` bawaan di banyak Linux. Detailnya ada di `docs/engineering/document-design.md`.
+- Export PDF **tidak pernah gagal** karena font. Ketebalan atau keluarga yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log, beserta jumlah elemen yang terpengaruh. Karena itu editor hanya boleh menawarkan ketebalan 400 dan 700.
 - MinIO local yang umum dipakai di project ini: console `9001`, API `9002`.
 - `MINIO_ROOT_USER` dan `MINIO_ROOT_PASSWORD` digunakan sebagai credential MinIO.
 
@@ -340,7 +341,6 @@ POST   /api/document-add
 PUT    /api/document-update/:token
 DELETE /api/document-delete/:token
 
-GET    /api/document-design-fonts
 POST   /api/document-design-ticket/:token
 WS     /document-design/:token?ticket=
 POST   /api/document-export/:token

@@ -382,40 +382,13 @@ lebar, di Android ke Roboto, di macOS `system-ui` berarti San Francisco. Ketigan
 bermetrik lain, dan hasilnya teks yang di layar muat satu baris menjadi dua baris
 di PDF.
 
-**Daftar font diambil dari backend**, bukan dipatok di frontend:
+**Ketebalannya hanya 400 dan 700.** Helvetica inti tidak punya yang lain, dan
+permintaan di luar keduanya dibulatkan saat cetak — lihat bagian pembulatan di
+bawah. Karena itu yang benar di toolbar adalah tombol **B** dua keadaan, bukan
+pemilih sembilan tingkat: tingkat yang tidak dapat dicetak hanya menjanjikan
+sesuatu yang tidak akan muncul di PDF.
 
-```http
-GET /api/document-design-fonts
-Authorization: Bearer <access_token>
-```
-
-```jsonc
-{
-  "status": "ok",
-  "message": "Success",
-  "data": {
-    "fonts": [
-      {
-        "name": "helvetica",
-        "faces": [
-          { "weight": 400, "style": "italic" },
-          { "weight": 400, "style": "normal" },
-          { "weight": 700, "style": "italic" },
-          { "weight": 700, "style": "normal" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Isinya persis yang benar-benar terdaftar di backend, dan `faces` menyebut
-kombinasi ketebalan dan gaya yang benar-benar ada. Tanpa berkas font apa pun,
-isinya satu keluarga seperti di atas — **400 dan 700 saja**.
-
-Bangun pilihan font DAN pilihan ketebalan di editor dari daftar ini. Daftar yang
-dipatok akan melenceng begitu ada yang menambah berkas font, dan melencengnya
-tidak akan mengeluarkan pesan apa pun — lihat bagian pembulatan di bawah.
+Miring tersedia penuh, tegak maupun tebal.
 
 #### Bila suatu saat memakai font sendiri
 
@@ -773,9 +746,8 @@ editor yang sudah ada?**
 | `fontWeight: "bold"` | `fontWeight: 700` | [1.4](#14-text) |
 | `color: "red"`, `rgba(…)`, `hsl(…)` | `#rrggbb` atau `#rgb` | [1.4](#14-text) |
 | Ukuran halaman ditebak atau dihitung sendiri | Dari `page` pada snapshot | [2.1](#21-ukuran-halaman-zoom-dan-koordinat) |
-| Daftar font dan ketebalan dipatok di frontend | Dari `GET /api/document-design-fonts`, termasuk `faces` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
 | `font-family: sans-serif` atau `system-ui` | Dipaku ke `Helvetica, Arial, "Liberation Sans", "Nimbus Sans", sans-serif` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
-| Pemilih ketebalan sembilan tingkat | Hanya yang disebut `faces`; dengan font inti berarti tombol B saja | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
+| Pemilih ketebalan sembilan tingkat | Tombol B: 400 atau 700 | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
 | Berkas font sendiri diambil dari Google Fonts | Berkas yang sama persis dengan backend, lewat `@font-face` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
 | Kotak teks tumbuh mengikuti isinya | Tinggi tetap dari `h`; isi yang melebihi terpotong | [2.3](#23-elemen-teks) |
 | Kotak digambar dengan `div` + `border` | `<rect>` di dalam SVG | [2.4](#24-kotak-dan-garis-pakai-svg-bukan-div) |
@@ -800,9 +772,9 @@ berbeda dari hasil cetak **tanpa satu pun pesan kesalahan**:
 2. **Ratakan `props`.** Properti visual naik satu tingkat ke elemen, dan nama
    yang berbeda disesuaikan menurut [1.4](#14-text) sampai [1.7](#17-image).
    Properti yang tidak ada di daftar itu **ditolak backend**, bukan diabaikan.
-3. **Pasang font.** Taruh berkasnya di `DESIGN_FONT_DIR` beserta `fonts.json`,
-   sajikan berkas yang sama lewat `@font-face`, dan isi pilihan font dari
-   endpoint daftar font.
+3. **Paku font.** Setel `font-family` ke daftar yang lebar majunya sepadan
+   dengan Helvetica menurut [2.2](#22-font-berkas-yang-sama-di-kedua-sisi), dan
+   batasi pilihan ketebalan pada 400 dan 700.
 4. **Terapkan aturan CSS wajib** pada elemen teks, lalu ganti kotak dan garis ke
    SVG.
 5. **Bandingkan.** Buka satu dokumen di editor, ekspor PDF-nya, tumpuk keduanya.

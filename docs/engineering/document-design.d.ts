@@ -104,7 +104,10 @@ export interface DesignTextElement extends DesignElementBase {
   type: 'text';
   /** `\n` menjadi pergantian baris; deretan spasi dipadatkan jadi satu. */
   text?: string;
-  /** Nama keluarga dari GET /api/document-design-fonts. Bawaan: "helvetica". */
+  /**
+   * Bawaan "helvetica", dan untuk saat ini satu-satunya yang tercetak seperti
+   * di layar. Nilai lain diterima tetapi dicetak sebagai helvetica.
+   */
   fontFamily?: string;
   /** Bawaan: 12. */
   fontSize?: Points;
@@ -590,24 +593,6 @@ export interface DesignTicketResponse {
   };
 }
 
-/** GET /api/document-design-fonts */
-export interface DesignFontsResponse {
-  status: 'ok';
-  message: string;
-  data: {
-    fonts: DesignFontFamily[];
-  };
-}
-
-export interface DesignFontFamily {
-  name: string;
-  faces: DesignFontFace[];
-}
-
-export interface DesignFontFace {
-  weight: DesignFontWeight;
-  style: DesignFontStyle;
-}
 
 /**
  * POST /api/document-export/:token

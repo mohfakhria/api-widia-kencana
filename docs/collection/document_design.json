@@ -3,49 +3,9 @@
     "_postman_id": "5c1f2a90-8d63-4b71-9a2e-7f6c0d4e2b18",
     "name": "Widia Kencana - Document Design",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Realtime document designer.\n\nAlur:\n\n0. `List Design Fonts` menyebut font yang tersedia, untuk mengisi pilihan font di editor.\n1. Panggil `Issue Design Ticket` untuk mendapat tiket sekali pakai. Skrip test-nya menyimpan tiket ke variabel `design_ticket` dan menyusun URL lengkapnya ke `design_socket_url`.\n2. Buka WebSocket ke `design_socket_url` dalam 30 detik. Tiket hangus setelah dipakai sekali dan setelah kedaluwarsa.\n3. Pesan pertama dari server selalu `snapshot` berisi seluruh isi dokumen.\n\nHandshake tidak memakai header `Authorization` karena `WebSocket` di browser tidak dapat mengirimnya. Tiket dipakai sebagai gantinya, dan access token sengaja tidak ditaruh di query string karena query string masuk ke access log dan log proxy.\n\nHeader `Origin` diperiksa terhadap `FRONTEND_URL`, tetapi hanya bila header itu ada. Klien non-browser seperti Postman tidak mengirimkannya dan tetap diterima; pemeriksaan `Origin` memang perisai terhadap serangan lintas situs dari browser, bukan pengganti tiket.\n\nCATATAN: koneksi WebSocket tidak dapat dijalankan dari item koleksi ini. Skema Postman v2.1.0 yang dipakai seluruh berkas di folder ini tidak mendefinisikan request WebSocket. Buat `New > WebSocket Request` di aplikasi Postman lalu tempel isi `design_socket_url`.\n\nPesan server ke klien:\n\n```\n{\"type\":\"snapshot\",\"version\":0,\"content\":{\"pages\":[]}}\n{\"type\":\"error\",\"seq\":7,\"code\":\"unsupported_message_type\",\"message\":\"...\"}\n```\n\nPesan klien ke server harus JSON dalam text frame. Batas satu pesan 1 MB.\n\nKode error di dalam pesan: `malformed_message`, `missing_message_type`, `unsupported_message_type`.\n\nClose code yang dipakai server:\n\n```\n1003  frame biner; kontraknya JSON dalam text frame\n1008  tiket tidak sah, sudah dipakai, atau kedaluwarsa\n1013  koneksi realtime per user sudah mencapai batas\n1011  server gagal menyiapkan sesi\n```\n\nOrigin yang tidak diizinkan ditolak dengan HTTP 403 sebelum upgrade, sehingga tiket tidak ikut hangus. Kegagalan tiket sengaja disampaikan setelah upgrade sebagai close frame beralasan: browser tidak dapat membaca status HTTP dari handshake WebSocket yang gagal, sedangkan `CloseEvent.code` dan `CloseEvent.reason` terbaca. Frontend memakai itu untuk memutuskan menerbitkan tiket baru lalu mencoba lagi.\n\nPenerapan perubahan belum dibangun, sehingga semua jenis pesan masih dibalas `unsupported_message_type`.\n\nServer mengirim ping tiap 30 detik dan menunggu pong 10 detik. Koneksi yang tidak membalas diputus.\n\n4. `Export Document PDF` menggambar dokumen menjadi PDF di backend. Tidak membutuhkan tiket maupun koneksi WebSocket."
+    "description": "Realtime document designer.\n\nAlur:\n\n1. Panggil `Issue Design Ticket` untuk mendapat tiket sekali pakai. Skrip test-nya menyimpan tiket ke variabel `design_ticket` dan menyusun URL lengkapnya ke `design_socket_url`.\n2. Buka WebSocket ke `design_socket_url` dalam 30 detik. Tiket hangus setelah dipakai sekali dan setelah kedaluwarsa.\n3. Pesan pertama dari server selalu `snapshot` berisi seluruh isi dokumen.\n\nHandshake tidak memakai header `Authorization` karena `WebSocket` di browser tidak dapat mengirimnya. Tiket dipakai sebagai gantinya, dan access token sengaja tidak ditaruh di query string karena query string masuk ke access log dan log proxy.\n\nHeader `Origin` diperiksa terhadap `FRONTEND_URL`, tetapi hanya bila header itu ada. Klien non-browser seperti Postman tidak mengirimkannya dan tetap diterima; pemeriksaan `Origin` memang perisai terhadap serangan lintas situs dari browser, bukan pengganti tiket.\n\nCATATAN: koneksi WebSocket tidak dapat dijalankan dari item koleksi ini. Skema Postman v2.1.0 yang dipakai seluruh berkas di folder ini tidak mendefinisikan request WebSocket. Buat `New > WebSocket Request` di aplikasi Postman lalu tempel isi `design_socket_url`.\n\nPesan server ke klien:\n\n```\n{\"type\":\"snapshot\",\"version\":0,\"content\":{\"pages\":[]}}\n{\"type\":\"error\",\"seq\":7,\"code\":\"unsupported_message_type\",\"message\":\"...\"}\n```\n\nPesan klien ke server harus JSON dalam text frame. Batas satu pesan 1 MB.\n\nKode error di dalam pesan: `malformed_message`, `missing_message_type`, `unsupported_message_type`, `element_rejected`, `page_rejected`.\n\nClose code yang dipakai server:\n\n```\n1003  frame biner; kontraknya JSON dalam text frame\n1008  tiket tidak sah, sudah dipakai, atau kedaluwarsa\n1013  koneksi realtime per user sudah mencapai batas\n1011  server gagal menyiapkan sesi\n```\n\nOrigin yang tidak diizinkan ditolak dengan HTTP 403 sebelum upgrade, sehingga tiket tidak ikut hangus. Kegagalan tiket sengaja disampaikan setelah upgrade sebagai close frame beralasan: browser tidak dapat membaca status HTTP dari handshake WebSocket yang gagal, sedangkan `CloseEvent.code` dan `CloseEvent.reason` terbaca. Frontend memakai itu untuk memutuskan menerbitkan tiket baru lalu mencoba lagi.\n\nPenyuntingan sudah berjalan penuh: `element.create`, `element.update`, `element.delete`, `element.reorder`, seluruh `page.*`, `undo`, dan `redo`. Bentuk tiap pesan ada di `docs/engineering/websocket-contract.md`.\n\nServer mengirim ping tiap 30 detik dan menunggu pong 10 detik. Koneksi yang tidak membalas diputus.\n\n4. `Export Document PDF` menggambar dokumen menjadi PDF di backend. Tidak membutuhkan tiket maupun koneksi WebSocket."
   },
   "item": [
-    {
-      "name": "List Design Fonts",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/api/document-design-fonts",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "document-design-fonts"
-          ]
-        },
-        "description": "Menyebut keluarga font beserta ketebalan dan gaya yang benar-benar terdaftar di backend, untuk mengisi pilihan font di editor.\n\nKeluarga `helvetica` selalu ada karena metriknya melekat pada spesifikasi PDF, tetapi ia tidak menjamin tampilan editor sama dengan hasil cetak — browser akan memakai Helvetica atau Arial milik sistem. Keluarga lain berasal dari manifes `fonts.json` di dalam `DESIGN_FONT_DIR`.\n\nKetebalan yang tidak ada di daftar ini menggagalkan export dengan 400, tidak dibulatkan ke yang terdekat."
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Fonts response lists at least the core family\", function () {",
-              "  var jsonData = pm.response.json();",
-              "  pm.expect(jsonData.data).to.have.property(\"fonts\");",
-              "  var names = jsonData.data.fonts.map(function (f) { return f.name; });",
-              "  pm.expect(names).to.include(\"helvetica\");",
-              "});"
-            ]
-          }
-        }
-      ],
-      "response": []
-    },
     {
       "name": "Issue Design Ticket",
       "request": {
@@ -123,7 +83,7 @@
             "{{document_token}}"
           ]
         },
-        "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah, satuan kertas tidak dikenal, atau font yang diminta tidak terdaftar di `DESIGN_FONT_DIR`. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya."
+        "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya."
       },
       "event": [
         {

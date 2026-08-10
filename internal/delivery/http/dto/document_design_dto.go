@@ -459,38 +459,6 @@ func NewDesignSnapshotMessage(content json.RawMessage, version int64, width, hei
 	})
 }
 
-// DocumentDesignFontsResponse menyebut font yang benar-benar dapat dipakai.
-//
-// Editor membutuhkannya untuk mengisi pilihan font. Tanpa daftar ini frontend
-// hanya dapat menebak, dan tebakan yang salah baru ketahuan saat ekspor gagal.
-type DocumentDesignFontsResponse struct {
-	Fonts []DesignFontFamily `json:"fonts"`
-}
-
-type DesignFontFamily struct {
-	Name  string           `json:"name"`
-	Faces []DesignFontFace `json:"faces"`
-}
-
-type DesignFontFace struct {
-	Weight int    `json:"weight"`
-	Style  string `json:"style"`
-}
-
-func NewDocumentDesignFontsResponse(families []design.FontFamily) DocumentDesignFontsResponse {
-	response := DocumentDesignFontsResponse{Fonts: make([]DesignFontFamily, 0, len(families))}
-
-	for _, family := range families {
-		faces := make([]DesignFontFace, 0, len(family.Faces))
-		for _, face := range family.Faces {
-			faces = append(faces, DesignFontFace{Weight: face.Weight, Style: face.Style})
-		}
-		response.Fonts = append(response.Fonts, DesignFontFamily{Name: family.Name, Faces: faces})
-	}
-
-	return response
-}
-
 func NewDesignErrorMessage(code, message string) ([]byte, error) {
 	return json.Marshal(DesignErrorMessage{
 		Type:    DesignMessageError,
