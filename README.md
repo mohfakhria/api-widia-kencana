@@ -106,6 +106,21 @@ ALTER TABLE documents
     ADD COLUMN IF NOT EXISTS content_version BIGINT NOT NULL DEFAULT 0;
 ```
 
+```sql
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+```
+
+`ALTER TABLE users` di atas belum memasang trigger `updated_at`-nya. Jalankan
+bagian `CREATE OR REPLACE FUNCTION` sampai `CREATE TRIGGER` di `users.sql`
+sesudahnya — ketiganya aman dijalankan ulang. Tanpa trigger itu, `updated_at`
+akan diam pada nilai saat kolomnya ditambahkan dan tidak pernah bergerak lagi.
+
+Baris yang sudah ada mendapat `NOW()` sebagai nilai awal kedua kolom, yaitu waktu
+`ALTER` dijalankan — bukan waktu barisnya benar-benar dibuat, yang memang tidak
+tersimpan di mana pun.
+
 Urutan baseline yang aman:
 
 ```text

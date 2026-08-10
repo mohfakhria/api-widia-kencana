@@ -3,7 +3,37 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     password TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user'
+    role TEXT NOT NULL DEFAULT 'user',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_email_uq_idx ON users (email);
+
+-- Cap waktu dijaga TRIGGER, bukan oleh aplikasi.
+--
+-- Tidak ada satu pun jalur di aplikasi yang menulis ke tabel ini — user dibuat
+-- dan diubah manual lewat SQL. Kalau updated_at diserahkan ke pemanggil, ia
+-- hanya akan benar pada baris yang kebetulan diubah oleh orang yang ingat
+-- menyertakannya, dan kolom yang benar sebagian lebih menyesatkan daripada
+-- kolom yang tidak ada.
+--
+-- Fungsinya diulang di sini, bukan diambil dari assets.sql yang juga
+-- mendefinisikannya. Berkas migration di repo ini dijalankan manual satu per
+-- satu, dan users.sql dijalankan LEBIH DULU menurut urutan baseline — berkas
+-- yang hanya berhasil bila berkas lain sudah dijalankan adalah jebakan.
+-- CREATE OR REPLACE membuat pengulangannya tidak berakibat apa pun.
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS users_set_updated_at_trg ON users;
+
+CREATE TRIGGER users_set_updated_at_trg
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
