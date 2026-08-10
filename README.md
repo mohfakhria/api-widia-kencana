@@ -41,6 +41,10 @@ go mod download
 cp .env.example .env
 ```
 
+`.env.example` memuat seluruh variabel yang dibaca aplikasi beserta keterangan
+tiap yang tidak jelas dengan sendirinya. Nilai bawaannya sudah benar untuk
+pengembangan di mesin sendiri, kecuali dua kunci di bawah.
+
 Generate key untuk encrypted JWT subject:
 
 ```bash
@@ -55,36 +59,25 @@ JWT_SUB_ENCRYPTION_KEY=replace-with-generated-key
 
 ## Configuration
 
-Konfigurasi runtime dibaca dari `.env`.
+Konfigurasi runtime dibaca dari `.env`, yang disalin dari
+[`.env.example`](.env.example) pada langkah pemasangan di atas.
 
-```env
-APP_ENV=local
-APP_PORT=8080
-APP_BASEURL=http://localhost:8080
-FRONTEND_URL=http://localhost:3000
-LOG_LEVEL=info
+**Daftar variabelnya ada di berkas itu, dan sengaja tidak disalin ke sini.**
+Salinan yang kedua selalu kalah cepat dari yang pertama: sebelum catatan ini
+ditulis, salinan di README sudah kehilangan seluruh komentar `.env.example` —
+termasuk yang menjelaskan kapan `COOKIE_SECURE` perlu diisi — sementara orang yang
+membaca README saja tidak punya cara tahu ada yang hilang.
 
-PG_HOST=localhost
-PG_PORT=5432
-PG_USER=postgres
-PG_PASSWORD=postgres
-PG_DB=widia_kencana
+Nilai bawaannya aman untuk mesin sendiri dan tidak aman di tempat lain. Yang
+harus diganti sebelum dipakai di luar itu disebut di [Deployment](#deployment),
+bersama yang lain yang hanya berlaku di sana.
 
-COOKIE_DOMAIN=
-# COOKIE_SECURE=true
+Satu variabel dibaca aplikasi tetapi **tidak** ada di `.env.example`, dan itu
+disengaja: `DESIGN_FONT_DIR` bukan konfigurasi hari pertama — lihat catatan
+tentang font di bawah.
 
-JWT_SECRET=change-this-in-env
-JWT_SUB_ENCRYPTION_KEY=replace-with-base64-encoded-32-byte-key
-
-MINIO_ENDPOINT=localhost:9002
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=minioadmin
-MINIO_BUCKET=widia-assets
-MINIO_USE_SSL=false
-
-```
-
-Catatan:
+Catatan berikut menjelaskan hal-hal yang tidak muat sebagai komentar di berkas
+contoh:
 
 - Refresh token session disimpan di memory proses. Session hilang setiap restart, sehingga semua user perlu login ulang setelah deploy.
 - Karena session tidak dibagi antar proses, API harus dijalankan sebagai satu instance. Untuk multi-instance, store perlu dipindah ke PostgreSQL.
