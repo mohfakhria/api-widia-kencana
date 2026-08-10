@@ -246,14 +246,37 @@ di server: konfigurasi datang lewat `EnvironmentFile`, bukan lewat berkas `.env`
 ### 5. Memperbarui
 
 ```bash
-task build:linux
-scp dist/widia-api server:/tmp/widia-api
-ssh server 'sudo install -m 0755 /tmp/widia-api /opt/widia-api/widia-api && sudo systemctl restart widia-api'
+./script/deploy.sh
+```
+
+Skrip itu **berhenti setelah mengirim**. Ia membangun ulang, mengirim ke
+`/root/deployment/widia-api`, memastikan berkasnya sampai utuh dengan
+membandingkan sidik jari, lalu mencetak langkah manual berikutnya. Ia juga
+menolak berjalan dari pohon kerja yang kotor — binary yang tidak dapat ditelusuri
+ke satu commit menghapus satu-satunya cara membuktikan apa yang sedang berjalan
+di server. Host, jalur, dan arsitektur dapat diubah lewat environment; daftarnya
+ada di komentar paling atas berkasnya.
+
+Memasang dan menjalankan ulang sengaja tidak ikut, karena keduanya **memutus
+semua sesi penyuntingan yang sedang terbuka** — keputusan yang pantas diambil
+sadar, bukan sebagai kelanjutan otomatis dari sebuah upload. Di server:
+
+```bash
+install -o root -g root -m 0755 /root/deployment/widia-api /opt/widia-api/widia-api
+```
+
+```bash
+systemctl restart widia-api && systemctl status widia-api --no-pager
 ```
 
 `install` menulis berkas baru lalu menggantinya secara atomik, jadi aman
 dilakukan selagi layanan berjalan — berbeda dengan `cp` yang menimpa berkas yang
-sedang dieksekusi.
+sedang dieksekusi dan ditolak Linux dengan `ETXTBSY`.
+
+Berkas mendarat di `/root/deployment` lalu dipasang ke `/opt/widia-api`, dan
+kedua jalur itu tidak boleh ditukar: unit systemd memakai `ProtectHome=true`,
+yang membuat `/root` kosong dan tidak terjangkau bagi proses layanan. Binary yang
+dijalankan langsung dari sana tidak akan pernah ditemukan.
 
 Restart **tidak** boleh dipercepat dengan `SIGKILL`. `TimeoutStopSec=30s` di unit
 file ada karena orchestrator dokumen butuh sampai 8 detik untuk menyimpan
