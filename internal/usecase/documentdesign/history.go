@@ -157,8 +157,9 @@ func (r *Room) commitChange(m historyMark) {
 // applyUndo memasang kembali keadaan sebelum kelompok perubahan terakhir.
 //
 // Berlaku untuk SELURUH DOKUMEN, bukan untuk langkah orang yang menekannya. Itu
-// keputusan sadar: dokumen ini disunting bersama manusia dan agent, dan undo per
-// orang berarti manusia tidak dapat membatalkan kesalahan agent.
+// keputusan sadar: dokumen ini disunting bersama-sama, dan riwayat per orang
+// berarti kesalahan yang terlihat oleh semua orang hanya dapat dibatalkan oleh
+// satu orang — yang kebetulan boleh jadi sudah menutup tabnya.
 func (r *Room) applyUndo(e undoEvent) {
 	if err := r.editable(e.subscriber); err != nil {
 		return

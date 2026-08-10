@@ -81,22 +81,6 @@ func (h *DocumentDesignHandler) IssueTicket(c *gin.Context) {
 	dto.Success(c, "Design ticket issued successfully", dto.NewDocumentDesignTicketResponse(ticket, int64(ttl.Seconds())))
 }
 
-// IssueAgentTicket menerbitkan tiket untuk Widia Agent.
-//
-// Bentuk balasannya sama persis dengan IssueTicket, dan begitu pula handshake
-// sesudahnya: agent menempuh jalur WebSocket yang sama dengan browser, tunduk
-// pada batas yang sama, dan muncul di presence seperti penyunting lain. Yang
-// berbeda hanya cara ia membuktikan dirinya.
-func (h *DocumentDesignHandler) IssueAgentTicket(c *gin.Context) {
-	ticket, ttl, err := h.service.IssueAgentTicket(c.Request.Context(), c.Param("token"))
-	if err != nil {
-		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
-		return
-	}
-
-	dto.Success(c, "Design ticket issued successfully", dto.NewDocumentDesignTicketResponse(ticket, int64(ttl.Seconds())))
-}
-
 // Connect adalah handler net/http biasa, bukan gin.
 //
 // coder/websocket menulis status 101 lewat ResponseWriter sebelum mengambil alih

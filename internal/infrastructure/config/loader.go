@@ -31,7 +31,6 @@ type Config struct {
 	MinIOBucket         string
 	MinIOUseSSL         bool
 	DesignFontDir       string
-	WidiaAgentKey       string
 }
 
 func Load() Config {
@@ -80,15 +79,6 @@ func Load() Config {
 		// Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda
 		// dan perbedaan itu menggeser pemenggalan baris.
 		DesignFontDir: getEnv("DESIGN_FONT_DIR", "assets/fonts"),
-
-		// Kunci yang dipegang Widia Agent untuk masuk sebagai dirinya sendiri,
-		// tanpa melewati login berpassword.
-		//
-		// Kosong berarti agent MATI, bukan terbuka. Nilai bawaan yang mengizinkan
-		// akan membuat setiap lingkungan yang lupa menyetelnya justru menjadi yang
-		// paling terbuka — dan lingkungan yang lupa menyetel sesuatu persis
-		// lingkungan yang paling tidak diawasi.
-		WidiaAgentKey: getEnv("WIDIA_AGENT_KEY", ""),
 	}
 }
 
@@ -109,25 +99,10 @@ func (c Config) IsLocal() bool {
 	return strings.EqualFold(c.AppEnv, "local")
 }
 
-// AgentEnabled menjawab apakah Widia Agent boleh masuk.
-//
-// Satu tempat yang memutuskan, supaya tidak ada jalur yang memeriksanya dengan
-// cara sendiri — dan supaya "kunci kosong" tidak pernah tersamar menjadi "kunci
-// yang kebetulan cocok dengan permintaan yang juga kosong".
-func (c Config) AgentEnabled() bool {
-	return c.WidiaAgentKey != ""
-}
-
 // Validate menolak kombinasi konfigurasi yang diam-diam melemahkan keamanan.
 func (c Config) Validate() error {
 	if c.IsProduction() && !c.CookieSecure {
 		return errors.New("APP_ENV=production membutuhkan refresh cookie yang Secure: arahkan APP_BASEURL ke URL https://, atau set COOKIE_SECURE=true bila TLS diterminasi di proxy")
-	}
-
-	// Kunci pendek dapat ditebak dengan mencoba, dan tidak ada pembatas laju di
-	// depannya. Tiga puluh dua karakter acak menutup itu tanpa perlu apa pun.
-	if c.WidiaAgentKey != "" && len(c.WidiaAgentKey) < 32 {
-		return errors.New("WIDIA_AGENT_KEY terlalu pendek: pakai minimal 32 karakter acak, misalnya keluaran `openssl rand -base64 32`")
 	}
 
 	return nil

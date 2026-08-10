@@ -76,8 +76,6 @@ COOKIE_DOMAIN=
 JWT_SECRET=change-this-in-env
 JWT_SUB_ENCRYPTION_KEY=replace-with-base64-encoded-32-byte-key
 
-WIDIA_AGENT_KEY=
-
 MINIO_ENDPOINT=localhost:9002
 MINIO_ROOT_USER=minioadmin
 MINIO_ROOT_PASSWORD=minioadmin
@@ -113,18 +111,6 @@ ALTER TABLE documents
     ADD COLUMN IF NOT EXISTS content JSONB NOT NULL DEFAULT '{"pages": []}',
     ADD COLUMN IF NOT EXISTS content_version BIGINT NOT NULL DEFAULT 0;
 ```
-
-### Widia Agent
-
-`migration/users.sql` sekaligus mencadangkan id `99999` untuk Widia Agent. Baris
-itu **bukan cara login** — agent masuk dengan `WIDIA_AGENT_KEY` dan tidak pernah
-membacanya; yang dijaga hanya satu hal, yaitu id tersebut tidak pernah diberikan
-kepada orang.
-
-Database yang tabel `users`-nya sudah ada tidak mendapatkannya, karena berkas
-migration memakai `CREATE TABLE IF NOT EXISTS`. Jalankan bagian `INSERT`-nya
-sendiri, atau jalankan ulang seluruh berkasnya — keduanya aman, `INSERT`-nya
-memakai `ON CONFLICT (id) DO NOTHING`.
 
 Urutan baseline yang aman:
 
@@ -236,7 +222,7 @@ sudo -e /etc/widia-api/api.env
 ```
 
 Yang wajib diganti dari contoh: `JWT_SECRET`, `JWT_SUB_ENCRYPTION_KEY`,
-`PG_PASSWORD`, `MINIO_ROOT_PASSWORD`, dan `WIDIA_AGENT_KEY`. Setel juga
+`PG_PASSWORD`, dan `MINIO_ROOT_PASSWORD`. Setel juga
 `APP_ENV=production`, `APP_BASEURL` ke URL publik yang sesungguhnya, dan
 `FRONTEND_URL` ke origin frontend — nilai terakhir itu yang memutuskan handshake
 WebSocket diterima atau ditolak `403`.

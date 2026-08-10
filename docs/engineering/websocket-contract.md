@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-10 | Widia Agent **dihapus**: `POST /api/agent/document-design-ticket/:token` tidak ada lagi | **Perlu tindakan bila Anda sudah menanganinya.** Buang penanganan khusus untuk penyunting id `99999` bernama `Widia-Agent` — ia tidak akan pernah muncul lagi di `presence`. Sisanya tidak berubah: agent memang tidak pernah punya pesan sendiri. Akses non-manusia akan kembali lewat server MCP nanti, dan bentuknya akan diumumkan di baris tersendiri |
 | 2026-08-09 | Pengelompokan langkah `undo` diperbaiki | Tidak ada, bentuk pesannya tetap — tetapi **perilakunya berubah nyata**: sebelumnya seluruh perubahan digabungkan semata-mata berdasarkan jeda, sehingga dua klik berjarak 300 ms menjadi satu langkah, dan dua orang yang menyunting bergantian menghasilkan **satu** langkah untuk selusin tindakan. Sekarang tindakan diskret selalu berdiri sendiri |
 | 2026-08-09 | `GET /api/asset-content/:token` — pengalihan ke isi aset | Tambahan, dan **menyederhanakan**: pasang `<img src="/api/asset-content/{assetToken}">` dan selesai. URL-nya tetap, tidak kedaluwarsa, tidak perlu presign lebih dulu maupun disegarkan. `asset-presign` tetap ada untuk keperluan lain |
 | 2026-08-09 | `strokeStyle` pada `rect` dan `line`: `solid`, `longdash`, `dash`, `dot` | Tambahan. Pola segmennya kelipatan `strokeWidth` dan **wajib sama di kedua renderer** — angkanya di [panduan](document-design.md#gaya-garis). Karena `element.update` mengganti elemen seutuhnya, kirim balik `strokeStyle` pada setiap update |
@@ -88,29 +89,6 @@ penyambungan ulang.** Jangan menyimpannya di state.
 
 Tiket juga membawa nama pemiliknya, dipakai server untuk menyusun daftar
 kehadiran. Tidak ada yang perlu dikirim frontend untuk itu.
-
-#### Tiket Widia Agent
-
-Bagian ini untuk penulis server MCP, bukan untuk frontend.
-
-```http
-POST /api/agent/document-design-ticket/{documentToken}
-X-Widia-Agent-Key: <WIDIA_AGENT_KEY>
-```
-
-Balasannya **sama persis**, dan handshake sesudahnya juga sama persis. Agent
-menempuh jalur yang sama dengan browser: batas pesan yang sama, kuota koneksi
-yang sama, pesan dan siaran yang sama.
-
-| | |
-|---|---|
-| Identitas | id `99999`, nama `Widia-Agent` — tetap, dan tidak berasal dari query |
-| Bila `WIDIA_AGENT_KEY` kosong | `401`; agent **mati**, bukan terbuka |
-| Kuota koneksi | 10, **dibagi seluruh agent** yang berjalan bersamaan |
-
-**Jangan mengirim header `Origin`.** Klien tanpa `Origin` diterima; klien yang
-mengirim `Origin` yang tidak cocok dengan `FRONTEND_URL` ditolak `403`. Sebagian
-pustaka HTTP menambahkannya sendiri — matikan bila ada.
 
 ### 1.2 Membuka koneksi
 
@@ -425,8 +403,8 @@ dijepit, dan siaran `page.reordered` membawa letak sesungguhnya.
 **Riwayatnya milik DOKUMEN, bukan milik Anda.** Undo membatalkan kelompok
 perubahan terakhir pada dokumen ini, **siapa pun yang membuatnya**. Menekan
 Ctrl+Z dapat membatalkan pekerjaan orang lain — dan itu disengaja: dokumen ini
-disunting bersama Widia Agent, dan riwayat per orang berarti manusia tidak dapat
-membatalkan kesalahan agent.
+disunting bersama-sama, dan riwayat per orang berarti kesalahan yang dilihat
+semua orang hanya dapat dibatalkan oleh satu orang, yang boleh jadi sudah pergi.
 
 **Yang datang adalah `snapshot` penuh, bukan siaran perubahan.** Satu langkah undo
 dapat menyentuh apa saja — termasuk mengembalikan halaman beserta seluruh

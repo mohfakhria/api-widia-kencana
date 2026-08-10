@@ -327,9 +327,9 @@ export interface DesignPageReorderMessage {
  * Memundurkan atau memajukan SELURUH DOKUMEN satu langkah.
  *
  * RIWAYATNYA MILIK DOKUMEN, BUKAN MILIK ANDA. Undo membatalkan kelompok
- * perubahan terakhir siapa pun — termasuk milik Widia Agent, dan itu memang
- * tujuannya: riwayat per orang berarti manusia tidak dapat membatalkan kesalahan
- * agent.
+ * perubahan terakhir siapa pun, dan itu memang tujuannya: riwayat per orang
+ * berarti kesalahan yang dilihat semua orang hanya dapat dibatalkan oleh satu
+ * orang, yang boleh jadi sudah menutup tabnya.
  *
  * Balasannya snapshot penuh ke semua penghuni, bukan siaran perubahan. Riwayat
  * kosong tidak menghasilkan apa-apa dan bukan error.
