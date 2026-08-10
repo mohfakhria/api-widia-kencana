@@ -14,8 +14,7 @@ type Config struct {
 	AppEnv              string
 	AppPort             string
 	LogLevel            string
-	AppBaseURL          string
-	FrontendURL         string
+	AllowedOrigins      []string
 	PGHost              string
 	PGPort              string
 	PGUser              string
@@ -38,22 +37,39 @@ func Load() Config {
 		log.Println("warning: .env file not found, using system env")
 	}
 
-	appBaseURL := getEnv("APP_BASEURL", "http://localhost:8080")
-
 	return Config{
 		AppEnv:  getEnv("APP_ENV", "local"),
 		AppPort: getEnv("APP_PORT", "8080"),
 		// debug menyalakan jejak pesan WebSocket per klien. Sengaja tidak menyala
 		// secara bawaan: begitu penyuntingan mengalir, satu geseran elemen
 		// menghasilkan puluhan pesan per detik.
-		LogLevel:    getEnv("LOG_LEVEL", "info"),
-		AppBaseURL:  appBaseURL,
-		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:3000"),
-		PGHost:      getEnv("PG_HOST", "localhost"),
-		PGPort:      getEnv("PG_PORT", "5432"),
-		PGUser:      getEnv("PG_USER", "postgres"),
-		PGPassword:  getEnv("PG_PASSWORD", "postgres"),
-		PGDB:        getEnv("PG_DB", "postgres"),
+		LogLevel: getEnv("LOG_LEVEL", "info"),
+
+		// Asal yang boleh bicara dengan API ini, dipisah koma. Menjaga DUA hal
+		// sekaligus: CORS pada jalur HTTP biasa, dan pemeriksaan Origin pada
+		// handshake WebSocket.
+		//
+		// Yang dibandingkan HOST beserta portnya, bukan origin utuh. Skema
+		// sengaja tidak ikut: di belakang reverse proxy, yang menentukan http
+		// atau https adalah proxy-nya. Menulisnya tetap boleh dan diterima —
+		// https://app.example.com dan app.example.com sama saja — karena orang
+		// akan menulisnya apa pun yang tertulis di sini, dan gagal diam-diam
+		// gara-gara skema adalah cara paling membingungkan untuk salah.
+		//
+		// Pola glob berlaku, dan * mencakup titik: *.example.com juga menerima
+		// a.b.example.com. Sama persis dengan pustaka WebSocket, supaya kedua
+		// penjaga tidak pernah berbeda pendapat.
+		//
+		// Kosong berarti TIDAK ADA yang diizinkan, bukan semua. Lingkungan yang
+		// lupa menyetelnya menjadi yang paling tertutup. Saat APP_ENV=local,
+		// seluruh host loopback ikut diizinkan tanpa perlu menyetel apa pun.
+		AllowedOrigins: parseOrigins(getEnv("ALLOWED_ORIGINS", "")),
+
+		PGHost:     getEnv("PG_HOST", "localhost"),
+		PGPort:     getEnv("PG_PORT", "5432"),
+		PGUser:     getEnv("PG_USER", "postgres"),
+		PGPassword: getEnv("PG_PASSWORD", "postgres"),
+		PGDB:       getEnv("PG_DB", "postgres"),
 
 		// Domain kosong membuat cookie host-only: terikat persis ke host yang
 		// men-set-nya, dan benar tanpa dikonfigurasi baik di localhost maupun
@@ -61,10 +77,14 @@ func Load() Config {
 		// ke beberapa subdomain.
 		CookieDomain: getEnv("COOKIE_DOMAIN", ""),
 
-		// Cookie hanya boleh melintas HTTPS saat API dilayani lewat HTTPS.
-		// COOKIE_SECURE dipakai bila TLS diterminasi di proxy dan APP_BASEURL
-		// terlanjur menunjuk ke alamat internal http://.
-		CookieSecure: getBoolEnv("COOKIE_SECURE", isHTTPSURL(appBaseURL)),
+		// Disetel eksplisit, tanpa nilai yang diturunkan dari mana pun. Dulu ia
+		// mengikuti skema APP_BASEURL, dan itu menyesatkan justru pada susunan
+		// yang paling umum: di belakang reverse proxy, APP_BASEURL menunjuk
+		// alamat internal http:// sementara browser bicara https, sehingga
+		// tebakannya selalu salah arah.
+		//
+		// APP_ENV=production menuntutnya true — lihat Validate.
+		CookieSecure: getBoolEnv("COOKIE_SECURE", false),
 
 		JWTSecret:           getEnv("JWT_SECRET", "change-this-in-env"),
 		JWTSubEncryptionKey: getEnv("JWT_SUB_ENCRYPTION_KEY", ""),
@@ -110,7 +130,7 @@ func (c Config) IsLocal() bool {
 // Validate menolak kombinasi konfigurasi yang diam-diam melemahkan keamanan.
 func (c Config) Validate() error {
 	if c.IsProduction() && !c.CookieSecure {
-		return errors.New("APP_ENV=production membutuhkan refresh cookie yang Secure: arahkan APP_BASEURL ke URL https://, atau set COOKIE_SECURE=true bila TLS diterminasi di proxy")
+		return errors.New("APP_ENV=production membutuhkan refresh cookie yang Secure: set COOKIE_SECURE=true")
 	}
 
 	return nil
@@ -141,8 +161,31 @@ func getEnv(key, fallback string) string {
 	return value
 }
 
-func isHTTPSURL(raw string) bool {
-	return strings.HasPrefix(strings.ToLower(strings.TrimSpace(raw)), "https://")
+// parseOrigins memecah daftar dipisah koma menjadi pola host.
+//
+// Skema dibuang bila ditulis, sehingga https://app.example.com dan
+// app.example.com menghasilkan pola yang sama. Jalur di belakangnya juga
+// dibuang: origin tidak pernah punya jalur, dan yang telanjur menuliskannya
+// lebih baik dimaafkan daripada ditolak diam-diam.
+func parseOrigins(raw string) []string {
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+
+	for _, part := range parts {
+		pattern := strings.TrimSpace(part)
+		if pattern == "" {
+			continue
+		}
+		if index := strings.Index(pattern, "://"); index >= 0 {
+			pattern = pattern[index+3:]
+		}
+		pattern = strings.TrimSuffix(strings.SplitN(pattern, "/", 2)[0], ".")
+		if pattern != "" {
+			out = append(out, pattern)
+		}
+	}
+
+	return out
 }
 
 func getBoolEnv(key string, fallback bool) bool {

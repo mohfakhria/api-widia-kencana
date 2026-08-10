@@ -19,6 +19,7 @@ mengubah sesuatu?**
 
 | Tanggal | Perubahan | Perlu tindakan |
 |---|---|---|
+| 2026-08-10 | `FRONTEND_URL` diganti `ALLOWED_ORIGINS`, dan pemeriksaan `Origin` tidak lagi memeriksa skema | Tidak ada di sisi kode frontend — tetapi **beri tahu yang memasang server**. Nilainya kini daftar host dipisah koma, boleh berpola, dan **kosong berarti tidak ada yang diizinkan**; sebelumnya bawaannya `http://localhost:3000`. Daftar yang sama sekarang juga yang menentukan CORS, jadi kedua jalur tidak bisa lagi berbeda pendapat |
 | 2026-08-10 | `GET /api/document-design-fonts` **dihapus** | **Perlu tindakan bila Anda memanggilnya.** Tidak ada lagi daftar font dari backend: pakai satu keluarga lewat CSS, dan batasi ketebalan pada 400 dan 700. Tumpukan `font-family` yang wajib dipakai ada di [panduan](document-design.md#22-font-berkas-yang-sama-di-kedua-sisi) |
 | 2026-08-10 | Ekspor PDF **tidak lagi gagal** karena font yang tidak terdaftar | **Perlu tindakan.** Dulu `fontFamily` atau `fontWeight` yang tidak terdaftar menggagalkan seluruh ekspor `400`; sekarang dibulatkan diam-diam ke yang terdekat. Berhenti mengandalkan galat itu sebagai validasi — batasi pilihan ketebalan di toolbar pada 400 dan 700. Aturan lengkapnya di [panduan](document-design.md#22-font-berkas-yang-sama-di-kedua-sisi) |
 | 2026-08-10 | Widia Agent **dihapus**: `POST /api/agent/document-design-ticket/:token` tidak ada lagi | **Perlu tindakan bila Anda sudah menanganinya.** Buang penanganan khusus untuk penyunting id `99999` bernama `Widia-Agent` — ia tidak akan pernah muncul lagi di `presence`. Sisanya tidak berubah: agent memang tidak pernah punya pesan sendiri. Akses non-manusia akan kembali lewat server MCP nanti, dan bentuknya akan diumumkan di baris tersendiri |
@@ -98,12 +99,18 @@ kehadiran. Tidak ada yang perlu dikirim frontend untuk itu.
 ws://localhost:8081/document-design/{documentToken}?ticket={ticket}
 ```
 
-Header `Origin` diperiksa terhadap `FRONTEND_URL`. Bila tidak cocok, handshake
-ditolak **HTTP 403 sebelum upgrade** — dan browser tidak dapat membaca status
-itu, sehingga gejalanya sama persis dengan jaringan mati.
+Header `Origin` diperiksa terhadap `ALLOWED_ORIGINS`, daftar yang sama yang
+menjaga CORS. Bila tidak cocok, handshake ditolak **HTTP 403 sebelum upgrade** —
+dan browser tidak dapat membaca status itu, sehingga gejalanya sama persis dengan
+jaringan mati.
+
+Yang dibandingkan **host beserta portnya**, bukan origin utuh: `http://` dan
+`https://` pada host yang sama sama-sama diterima, karena yang menentukan skema
+adalah reverse proxy. Pola glob berlaku, dan `*` mencakup titik — `*.example.com`
+juga menerima `a.b.example.com`.
 
 Saat `APP_ENV=local`, seluruh host loopback ikut diizinkan tanpa perlu menyetel
-`FRONTEND_URL` setiap kali port atau subdomain berganti:
+`ALLOWED_ORIGINS` setiap kali port atau subdomain berganti:
 
 ```
 localhost      localhost:<port>
@@ -119,7 +126,7 @@ satu pun penyerang. Yang menjaga jalur ini tetap tiketnya: sekali pakai, tiga
 puluh detik, terikat satu dokumen.
 
 Pelonggaran ini **hanya** berlaku pada `APP_ENV=local`; staging dan produksi
-tetap terkurung pada `FRONTEND_URL`. Ia juga tetap terbatas pada loopback:
+tetap terkurung pada `ALLOWED_ORIGINS`. Ia juga tetap terbatas pada loopback:
 `.localhost` adalah TLD yang dicadangkan RFC 6761 dan tidak dapat didaftarkan
 publik, sehingga `localhost.evil.com` tetap ditolak.
 
@@ -925,7 +932,7 @@ masa depan tidak merusak klien yang belum diperbarui.
 wajib mengambil tiket baru.
 
 **Kegagalan `Origin` tidak terlihat dari browser.** Tidak ada status, tidak ada
-`reason`. Periksa `FRONTEND_URL` — atau pastikan `APP_ENV=local` bila frontend
+`reason`. Periksa `ALLOWED_ORIGINS` — atau pastikan `APP_ENV=local` bila frontend
 dijalankan di host loopback selain itu. Log backend menyebutkan `Origin` yang
 ditolak beserta `Host` yang diharapkan.
 

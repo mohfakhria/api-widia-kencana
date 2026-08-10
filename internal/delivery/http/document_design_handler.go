@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"sync"
 	"time"
 
@@ -184,50 +183,14 @@ func (h *DocumentDesignHandler) Connect(w http.ResponseWriter, r *http.Request) 
 
 // designOriginPatterns membatasi handshake ke host frontend.
 //
-// Bila tidak ada satu pun pola yang terkumpul, nil dikembalikan dan pustaka
-// hanya mengizinkan same-origin — default paling aman.
+// Daftarnya sama persis dengan yang dipakai CORS — lihat origin.go. Bila tidak
+// ada satu pun pola yang terkumpul, nil dikembalikan dan pustaka hanya
+// mengizinkan same-origin, default paling aman.
 func designOriginPatterns(cfg config.Config) []string {
-	patterns := make([]string, 0, 7)
-
-	if parsed, err := url.Parse(cfg.FrontendURL); err == nil && parsed.Host != "" {
-		patterns = append(patterns, parsed.Host)
-	}
-
-	if cfg.IsLocal() {
-		patterns = append(patterns, localOriginPatterns()...)
-	}
-
+	patterns := allowedOriginPatterns(cfg)
 	if len(patterns) == 0 {
 		return nil
 	}
 
 	return patterns
-}
-
-// localOriginPatterns adalah host yang ikut diizinkan saat APP_ENV=local.
-//
-// Di mesin sendiri, port dan subdomain berganti mengikuti cara frontend
-// dijalankan — localhost:3000, portal.localhost:3000, dan seterusnya — sehingga
-// menyetel ulang FRONTEND_URL setiap kali hanya menghambat.
-//
-// Pelonggarannya tetap terkurung pada loopback. Akhiran .localhost adalah TLD
-// yang dicadangkan RFC 6761 dan tidak dapat didaftarkan publik, jadi tidak ada
-// host luar yang bisa menyamar lewat pola ini.
-//
-// Pencocokannya memakai path.Match, tempat * mencakup apa saja selain garis
-// miring. Karena itu pola seperti "localhost*" sengaja dihindari: ia juga akan
-// cocok dengan localhost.evil.com. Setiap pola di bawah menambatkan nama host
-// secara utuh, dan hanya bagian port yang dibebaskan.
-//
-// IPv6 tidak disertakan: path.Match memperlakukan "[" sebagai pembuka kelas
-// karakter, sehingga pola untuk [::1] akan diartikan sama sekali lain.
-func localOriginPatterns() []string {
-	return []string{
-		"localhost",
-		"localhost:*",
-		"*.localhost",
-		"*.localhost:*",
-		"127.0.0.1",
-		"127.0.0.1:*",
-	}
 }

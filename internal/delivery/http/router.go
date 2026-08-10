@@ -2,7 +2,6 @@ package http
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/middleware"
@@ -81,24 +80,31 @@ func NewRouter(deps RouterDeps) http.Handler {
 }
 
 func corsMiddleware(cfg config.Config) gin.HandlerFunc {
+	patterns := allowedOriginPatterns(cfg)
+
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		allowedOrigin := os.Getenv("FRONTEND_URL")
-		if allowedOrigin == "" {
-			allowedOrigin = cfg.FrontendURL
-		}
 
-		if origin == allowedOrigin {
+		// Vary WAJIB ada begitu jawabannya bergantung pada Origin. Tanpa itu,
+		// cache di depan API dapat menyimpan jawaban beserta header
+		// Allow-Origin milik satu situs, lalu menyajikannya kepada situs lain.
+		c.Writer.Header().Add("Vary", "Origin")
+
+		if originAllowed(patterns, origin) {
+			// Yang dipantulkan origin ASLI dari permintaan, bukan polanya.
+			// Access-Control-Allow-Origin tidak mengenal glob, dan browser
+			// membandingkannya persis dengan origin miliknya sendiri.
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		}
 
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
+
 		c.Next()
 	}
 }

@@ -79,9 +79,10 @@ contoh:
 - Refresh token session disimpan di memory proses. Session hilang setiap restart, sehingga semua user perlu login ulang setelah deploy.
 - Karena session tidak dibagi antar proses, API harus dijalankan sebagai satu instance. Untuk multi-instance, store perlu dipindah ke PostgreSQL.
 - `LOG_LEVEL=debug` menyalakan jejak setiap pesan WebSocket yang masuk dan keluar — arah, jenis pesan, dan ukurannya, tanpa isi payload. Sengaja tidak menyala secara bawaan karena satu geseran elemen menghasilkan puluhan pesan per detik.
-- Saat `APP_ENV=local`, pemeriksaan `Origin` pada handshake WebSocket melonggar ke seluruh host loopback — `localhost`, `*.localhost`, dan `127.0.0.1`, dengan port apa pun — sehingga `FRONTEND_URL` tidak perlu disetel ulang tiap kali port atau subdomain berganti. Di luar `local`, hanya `FRONTEND_URL` yang diizinkan.
+- `ALLOWED_ORIGINS` menjaga **dua** hal dengan satu daftar: CORS pada jalur HTTP biasa, dan pemeriksaan `Origin` pada handshake WebSocket. Yang dibandingkan host beserta portnya, bukan origin utuh — skema boleh ditulis dan diabaikan, karena yang menentukan `http` atau `https` adalah reverse proxy, bukan konfigurasi ini. Pola glob berlaku, dan `*` mencakup titik: `*.example.com` juga menerima `a.b.example.com`.
+- **Kosong berarti tidak ada yang diizinkan**, bukan semua. Lingkungan yang lupa menyetelnya menjadi yang paling tertutup, bukan yang paling terbuka. Saat `APP_ENV=local`, seluruh host loopback — `localhost`, `*.localhost`, `127.0.0.1`, dengan port apa pun — sudah diizinkan tanpa perlu diisi.
 - `COOKIE_DOMAIN` sebaiknya dibiarkan kosong. Cookie menjadi host-only, terikat persis ke host yang men-set-nya, dan benar di localhost maupun production tanpa dikonfigurasi. Isi hanya bila cookie perlu dibagi ke beberapa subdomain, contoh `.example.com`.
-- Flag `Secure` pada cookie mengikuti skema `APP_BASEURL` secara otomatis: `https://` menghasilkan `Secure=true`. Bila TLS diterminasi di reverse proxy dan `APP_BASEURL` menunjuk alamat internal `http://`, set `COOKIE_SECURE=true` secara eksplisit.
+- Flag `Secure` pada cookie disetel eksplisit lewat `COOKIE_SECURE`, bawaannya `false`. Dulu ia diturunkan dari skema `APP_BASEURL`, dan itu menebak salah justru pada susunan paling umum: di belakang reverse proxy, alamat internalnya `http://` sementara browser bicara `https`.
 - Aplikasi menolak start bila `APP_ENV=production` tetapi cookie tidak `Secure`.
 - Cookie memakai `SameSite=Strict`. Ini bekerja selama frontend dan API berada pada registrable domain yang sama, misal `app.example.com` dengan `api.example.com`. Bila keduanya benar-benar beda domain, `SameSite` perlu diturunkan ke `None` dan `Secure` menjadi wajib.
 - `DESIGN_FONT_DIR` **kosong secara bawaan**, dan tidak perlu diisi. Export PDF memakai Helvetica inti — keadaan yang didukung, bukan keadaan darurat. Yang menjadi syaratnya ada di sisi frontend: `font-family` dipaku ke daftar yang lebar majunya sepadan dengan Helvetica, tidak diserahkan ke `sans-serif` telanjang. Aturan lengkapnya di [`document-design.md`](docs/engineering/document-design.md#22-font-berkas-yang-sama-di-kedua-sisi).
@@ -242,9 +243,9 @@ sudo -e /etc/widia-api/api.env
 
 Yang wajib diganti dari contoh: `JWT_SECRET`, `JWT_SUB_ENCRYPTION_KEY`,
 `PG_PASSWORD`, dan `MINIO_ROOT_PASSWORD`. Setel juga
-`APP_ENV=production`, `APP_BASEURL` ke URL publik yang sesungguhnya, dan
-`FRONTEND_URL` ke origin frontend — nilai terakhir itu yang memutuskan handshake
-WebSocket diterima atau ditolak `403`.
+`APP_ENV=production`, `COOKIE_SECURE=true`, dan `ALLOWED_ORIGINS` ke host
+frontend — nilai terakhir itu yang memutuskan CORS dan handshake WebSocket
+diterima atau ditolak `403`.
 
 ### 4. Pasang unit systemd
 
