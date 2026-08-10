@@ -5,13 +5,22 @@
 // keduanya mesin yang berbeda, kesamaan itu tidak datang sendiri — ia dijaga oleh
 // tiga hal yang harus ditegakkan di kedua sisi:
 //
-//  1. Berkas font yang persis sama. Bukan sekadar nama keluarga yang sama:
-//     Helvetica di macOS dan Arial di Windows punya lebar glif yang berbeda,
-//     dan perbedaan itu menumpuk menjadi pemenggalan baris yang berbeda.
+//  1. Font dengan LEBAR MAJU yang sama. Bukan sekadar nama keluarga yang sama,
+//     tetapi juga bukan harus berkas yang identik: Arial justru diciptakan
+//     sebagai pengganti Helvetica dengan lebar maju yang sama persis, dan
+//     Liberation Sans serta Nimbus Sans dirancang selebar itu pula. Yang
+//     berbeda pada ketiganya bentuk glifnya, bukan lebarnya.
+//
+//     Yang merusak adalah font yang lebarnya memang lain — DejaVu Sans, yang
+//     menjadi pilihan sans-serif bawaan di banyak Linux, dan Roboto di Android.
+//     Karena itu frontend harus memaku font-family ke daftar yang lebarnya
+//     sepadan, bukan menyerahkannya ke `sans-serif` telanjang.
+//
 //  2. Kerning dan ligatur dimatikan di frontend, lewat font-kerning: none dan
 //     font-feature-settings: "liga" 0. Renderer ini menjumlahkan lebar glif
 //     apa adanya tanpa penyesuaian pasangan huruf, jadi browser harus diminta
 //     berhenti melakukannya juga.
+//
 //  3. Aturan pemenggalan baris yang sama: rakus, patah di spasi, tanpa tanda
 //     hubung otomatis.
 //
@@ -40,10 +49,9 @@ const ManifestName = "fonts.json"
 // CoreFamily adalah satu-satunya keluarga yang selalu tersedia tanpa berkas apa
 // pun, karena metriknya melekat pada spesifikasi PDF.
 //
-// Ia ada supaya aplikasi tetap dapat mengekspor sebelum font sungguhan
-// disiapkan. Kesamaan dengan tampilan layar TIDAK dijamin di sini: browser akan
-// memakai Helvetica atau Arial milik sistem, yang metriknya berbeda antar sistem
-// operasi. Untuk dokumen yang sungguh dipakai, daftarkan berkas font sendiri.
+// Ia dua hal sekaligus: keluarga bawaan bila tidak ada font yang didaftarkan,
+// dan penadah terakhir bagi permintaan yang tidak dapat dipenuhi apa adanya.
+// Lihat resolve.
 const CoreFamily = "helvetica"
 
 // Metrik vertikal Helvetica, dalam seperseribu em, dari berkas AFM Adobe yang
@@ -219,22 +227,94 @@ func (f *Fonts) Catalog() []design.FontFamily {
 	return catalog
 }
 
-// resolve mencari potongan font yang persis diminta.
+// resolution menyebut potongan font yang benar-benar akan dipakai menggambar.
+type resolution struct {
+	// used adalah potongan yang dipakai; ia boleh berbeda dari yang diminta.
+	used faceKey
+	// data nil untuk keluarga inti, yang metriknya melekat pada spesifikasi PDF
+	// dan tidak perlu disematkan ke dalam berkas.
+	data []byte
+	core bool
+}
+
+// resolve memilih potongan font yang akan dipakai, dan TIDAK PERNAH gagal.
 //
-// Tidak ada pencarian ketebalan terdekat maupun penebalan buatan. Keduanya
-// adalah cara paling halus untuk merusak kesamaan: browser akan memakai font
-// yang benar sementara renderer memakai penggantinya, dan hasilnya berbeda tanpa
-// satu pun pesan kesalahan. Lebih baik ekspor gagal dengan keterangan jelas
-// daripada berhasil dengan huruf yang salah.
-func (f *Fonts) resolve(family string, weight int, style string) (data []byte, core bool, err error) {
-	if family == CoreFamily {
-		return nil, true, nil
+// Ini pembalikan keputusan yang disengaja. Sebelumnya permintaan yang tidak
+// dapat dipenuhi menggagalkan seluruh ekspor, dengan alasan lebih baik gagal
+// jelas daripada berhasil dengan huruf yang salah. Yang membuatnya tidak sepadan
+// adalah bentuk kegagalannya: `fontFamily` dan `fontWeight` tidak diperiksa di
+// mana pun saat menyunting, sehingga nilai yang mustahil dicetak diterima,
+// disiarkan, dan tersimpan — lalu meledak berjam-jam kemudian sebagai dokumen
+// yang tidak dapat dicetak sama sekali, jauh dari orang yang menyebabkannya.
+//
+// Alasan yang sama sudah dipakai untuk gambar yang asetnya hilang: dilewati,
+// bukan menggagalkan seluruh ekspor. Lihat output.RenderDocument.
+//
+// Tiga langkah, dari yang paling setia:
+//
+//  1. Potongan yang persis diminta.
+//  2. Ketebalan terdekat pada keluarga dan gaya yang sama. Menjaga rupa huruf
+//     tetap benar; yang bergeser hanya tebalnya.
+//  3. Keluarga inti, dengan ketebalan dibulatkan ke 400 atau 700.
+//
+// Yang dipakai dikembalikan apa adanya lewat resolution.used, supaya pemanggil
+// dapat mencatat setiap penggantian. Penggantian yang senyap adalah persis yang
+// dikhawatirkan keputusan lama, dan catatan itu jawabannya.
+func (f *Fonts) resolve(family string, weight int, style string) resolution {
+	asked := faceKey{family: family, weight: weight, style: style}
+
+	if family != CoreFamily {
+		if data, ok := f.faces[asked]; ok {
+			return resolution{used: asked, data: data}
+		}
+		if nearest, ok := f.nearestWeight(family, weight, style); ok {
+			return resolution{used: nearest, data: f.faces[nearest]}
+		}
 	}
 
-	data, ok := f.faces[faceKey{family: family, weight: weight, style: style}]
-	if !ok {
-		return nil, false, fmt.Errorf("font %s %d %s is not available", family, weight, style)
+	core := faceKey{family: CoreFamily, weight: snapCoreWeight(weight), style: style}
+
+	return resolution{used: core, core: true}
+}
+
+// nearestWeight mencari ketebalan terdekat yang benar-benar terdaftar pada satu
+// keluarga dan gaya.
+//
+// Seri diputus ke arah yang lebih ringan, sekadar supaya hasilnya pasti dan tidak
+// bergantung pada urutan penelusuran map — yang di Go memang diacak.
+func (f *Fonts) nearestWeight(family string, weight int, style string) (faceKey, bool) {
+	var (
+		best  faceKey
+		found bool
+	)
+
+	for key := range f.faces {
+		if key.family != family || key.style != style {
+			continue
+		}
+		if !found || jarak(key.weight, weight) < jarak(best.weight, weight) ||
+			(jarak(key.weight, weight) == jarak(best.weight, weight) && key.weight < best.weight) {
+			best, found = key, true
+		}
 	}
 
-	return data, false, nil
+	return best, found
+}
+
+// snapCoreWeight membulatkan ke satu-satunya dua ketebalan yang dimiliki font
+// inti PDF. Terdekat, dengan seri ke arah yang lebih ringan.
+func snapCoreWeight(weight int) int {
+	if jarak(weight, 700) < jarak(weight, 400) {
+		return 700
+	}
+
+	return 400
+}
+
+func jarak(a, b int) int {
+	if a > b {
+		return a - b
+	}
+
+	return b - a
 }

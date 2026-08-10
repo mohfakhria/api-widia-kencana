@@ -248,35 +248,43 @@ func (c *canvas) drawString(text string, x, baseline, letterSpacing float64) {
 // karena fpdf hanya menyediakan empat slot gaya per keluarga sedangkan model isi
 // dokumen mengenal sembilan tingkat ketebalan.
 func (c *canvas) selectFont(family string, weight int, style string) (selectedFont, error) {
-	key := faceKey{family: family, weight: weight, style: style}
-	if registered, ok := c.registeredFonts[key]; ok {
+	asked := faceKey{family: family, weight: weight, style: style}
+
+	// resolve dijalankan untuk SETIAP elemen, bukan sekali lalu disimpan bersama
+	// hasil pendaftaran. Kalau ia ikut dilewati oleh cache, penggantian hanya
+	// terhitung pada elemen pertama — dan catatan yang menyebut satu elemen
+	// padahal dua ratus yang terpengaruh lebih menyesatkan daripada tidak ada
+	// catatan sama sekali. Ongkosnya satu pencarian map pada peta yang isinya
+	// sedikit, di jalur yang toh sedang menggambar PDF.
+	chosen := c.fonts.resolve(family, weight, style)
+	if chosen.used != asked {
+		c.substitutions[substitution{asked: asked, used: chosen.used}]++
+	}
+
+	// Yang di-cache pendaftarannya, dikunci pada potongan yang DIPAKAI. Beberapa
+	// permintaan berbeda kerap bermuara ke potongan yang sama — 500 dan 100
+	// keduanya menjadi 400 — dan mendaftarkannya sekali sudah cukup.
+	if registered, ok := c.registeredFonts[chosen.used]; ok {
 		return registered, nil
 	}
 
-	data, core, err := c.fonts.resolve(family, weight, style)
-	if err != nil {
-		return selectedFont{}, domain.NewError(domain.ErrInvalidInput, err.Error())
-	}
-
-	font, err := c.registerFont(key, data, core)
+	font, err := c.registerFont(chosen.used, chosen.data, chosen.core)
 	if err != nil {
 		return selectedFont{}, err
 	}
-	c.registeredFonts[key] = font
+	c.registeredFonts[chosen.used] = font
 
 	return font, nil
 }
 
+// registerFont mendaftarkan satu potongan yang SUDAH terpilih.
+//
+// key di sini selalu potongan yang benar-benar ada — resolve yang memastikannya.
+// Galat yang tersisa hanya galat sungguhan: berkas font terdaftar yang ternyata
+// tidak dapat diurai fpdf, atau yang tidak punya metrik vertikal. Keduanya bug
+// pemasangan, bukan kesalahan pemakai, dan memang harus menggagalkan ekspor.
 func (c *canvas) registerFont(key faceKey, data []byte, core bool) (selectedFont, error) {
 	if core {
-		// Keluarga inti hanya punya tegak dan tebal. Ketebalan lain ditolak alih-alih
-		// dibulatkan ke yang terdekat, supaya tidak ada dokumen yang tercetak dengan
-		// ketebalan berbeda dari yang tampil di layar.
-		if key.weight != 400 && key.weight != 700 {
-			return selectedFont{}, domain.NewError(domain.ErrInvalidInput, fmt.Sprintf(
-				"font %s only provides weight 400 and 700, not %d", CoreFamily, key.weight))
-		}
-
 		style := ""
 		if key.weight == 700 {
 			style += "B"

@@ -8,10 +8,11 @@ import (
 
 // DocumentRenderer menggambar isi dokumen menjadi berkas.
 //
-// Renderer sengaja tidak melakukan I/O apa pun. Gambar sudah diambil pemanggil
-// dan diserahkan lewat Images, sehingga renderer tidak pernah menyentuh jaringan
-// maupun database — dan karenanya tidak pernah dapat diarahkan mengambil alamat
-// yang ditentukan klien lewat isi dokumen.
+// Renderer sengaja tidak mengambil apa pun sendiri. Gambar sudah diambil
+// pemanggil dan diserahkan lewat Images, sehingga renderer tidak pernah menyentuh
+// jaringan maupun database — dan karenanya tidak pernah dapat diarahkan mengambil
+// alamat yang ditentukan klien lewat isi dokumen. Satu-satunya keluarannya selain
+// berkas PDF adalah catatan log tentang font yang harus diganti.
 type DocumentRenderer interface {
 	RenderPDF(ctx context.Context, document RenderDocument) ([]byte, error)
 }
@@ -21,6 +22,10 @@ type DocumentRenderer interface {
 // Ukuran halaman sudah dalam titik, sama seperti seluruh koordinat di dalam
 // Content. Konversi dari satuan asli kertas terjadi sebelum sampai ke sini.
 type RenderDocument struct {
+	// Token dipakai renderer hanya untuk menyebut dokumen mana yang fontnya
+	// harus diganti. Tanpa itu, catatannya tidak dapat ditelusuri kembali ke
+	// dokumen yang bersangkutan pada server yang melayani banyak orang.
+	Token      string
 	Content    *design.Content
 	PageWidth  float64
 	PageHeight float64

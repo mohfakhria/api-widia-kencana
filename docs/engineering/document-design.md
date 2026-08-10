@@ -354,9 +354,33 @@ seperti `23.760000000000002` tidak menumpuk di dalam data.
 
 ### 2.2 Font: berkas yang sama di kedua sisi
 
-Ini kewajiban yang paling mudah terlewat dan paling mahal akibatnya. Helvetica di
-macOS dan Arial di Windows punya lebar glif yang berbeda, dan selisih sekecil apa
-pun menumpuk menjadi pemenggalan baris yang berbeda antara layar dan cetak.
+Yang menentukan hasil cetak sama dengan layar bukan nama font yang sama, melainkan
+**lebar maju yang sama**. Selisih sekecil apa pun menumpuk menjadi pemenggalan
+baris yang berbeda antara layar dan cetak.
+
+#### Mode bawaan: tanpa berkas font sama sekali
+
+Backend berjalan tanpa satu berkas font pun. Dalam keadaan itu ia memakai
+Helvetica inti PDF, yang metriknya melekat pada spesifikasi PDF dan tidak perlu
+disematkan. Ini keadaan yang didukung, bukan keadaan darurat.
+
+CSS Anda harus menunjuk font yang lebarnya sepadan dengan Helvetica:
+
+```css
+font-family: Helvetica, Arial, "Liberation Sans", "Nimbus Sans", sans-serif;
+font-kerning: none;
+font-feature-settings: "liga" 0;
+```
+
+Bukan kebetulan ketiganya berderet: Arial memang diciptakan sebagai pengganti
+Helvetica dengan lebar maju yang sama persis, dan Liberation Sans serta Nimbus
+Sans dirancang selebar itu pula. Yang berbeda bentuk glifnya, bukan lebarnya.
+
+**Jangan menulis `sans-serif` telanjang, dan jangan `system-ui`.** Keduanya
+menyerahkan pilihan ke sistem: di banyak Linux jatuh ke DejaVu Sans yang lebih
+lebar, di Android ke Roboto, di macOS `system-ui` berarti San Francisco. Ketiganya
+bermetrik lain, dan hasilnya teks yang di layar muat satu baris menjadi dua baris
+di PDF.
 
 **Daftar font diambil dari backend**, bukan dipatok di frontend:
 
@@ -385,12 +409,20 @@ Authorization: Bearer <access_token>
 }
 ```
 
-Isinya persis yang benar-benar terdaftar di backend. Pilihan font di editor harus
-dibangun dari daftar ini — daftar yang dipatok akan melenceng begitu ada yang
-menambah berkas font, dan melencengnya baru ketahuan ketika ekspor gagal `400`.
+Isinya persis yang benar-benar terdaftar di backend, dan `faces` menyebut
+kombinasi ketebalan dan gaya yang benar-benar ada. Tanpa berkas font apa pun,
+isinya satu keluarga seperti di atas — **400 dan 700 saja**.
 
-**Berkas yang sama disajikan lewat `@font-face`**, bukan Google Fonts, bukan font
-sistem:
+Bangun pilihan font DAN pilihan ketebalan di editor dari daftar ini. Daftar yang
+dipatok akan melenceng begitu ada yang menambah berkas font, dan melencengnya
+tidak akan mengeluarkan pesan apa pun — lihat bagian pembulatan di bawah.
+
+#### Bila suatu saat memakai font sendiri
+
+Selama backend belum mendaftarkan berkas font, bagian ini tidak berlaku dan
+tumpukan CSS di atas sudah cukup. Begitu ada berkas yang didaftarkan, **berkas
+yang sama persis** wajib disajikan ke browser lewat `@font-face` — bukan Google
+Fonts, bukan font sistem, karena keduanya dapat berbeda revisi:
 
 ```css
 @font-face {
@@ -433,10 +465,30 @@ Backend memuat berkasnya dari `DESIGN_FONT_DIR` menurut manifes `fonts.json`:
 }
 ```
 
-Ketebalan yang tidak terdaftar **menggagalkan ekspor**, tidak dibulatkan ke yang
-terdekat. Penebalan buatan oleh browser sementara backend memakai penggantinya
-adalah cara paling halus untuk menghasilkan dua tampilan yang berbeda; lebih baik
-gagal dengan keterangan jelas.
+#### Yang diminta tidak ada: dibulatkan, tidak menggagalkan
+
+Ekspor **tidak pernah gagal** karena font. Permintaan yang tidak dapat dipenuhi
+apa adanya diturunkan bertahap:
+
+| Yang diminta | Yang dicetak |
+|---|---|
+| Potongan yang terdaftar | Itu juga |
+| Ketebalan yang tidak terdaftar, keluarga dan gaya terdaftar | Ketebalan **terdekat** pada keluarga yang sama — rupa hurufnya tetap benar |
+| Keluarga atau gaya yang tidak terdaftar | Helvetica inti, ketebalan dibulatkan ke 400 atau 700 |
+
+Seri dibulatkan ke arah yang lebih ringan: `500` menjadi `400`, `600` menjadi
+`700`.
+
+**Ini terjadi diam-diam bagi pengguna.** Tidak ada pesan kesalahan, tidak ada
+tanda di PDF-nya. Yang ada hanya satu baris log peringatan di server per pasangan
+diminta-dipakai, beserta jumlah elemen yang terpengaruh.
+
+Karena itu tanggung jawabnya berpindah ke editor: **jangan menawarkan ketebalan
+yang tidak disebut `faces`.** Toolbar dengan sembilan tingkat ketebalan di atas
+backend tanpa berkas font akan mencetak Medium 500 sebagai Regular dan Semibold
+600 sebagai Bold — dan pengguna baru menyadarinya setelah dokumennya jadi. Dengan
+font inti saja, yang benar adalah tombol **B** dua keadaan, bukan pemilih
+ketebalan.
 
 > **Keluarga `helvetica` selalu tersedia tanpa berkas apa pun**, karena metriknya
 > melekat pada spesifikasi PDF. Tetapi ia punya dua batas: browser akan memakai
@@ -721,8 +773,10 @@ editor yang sudah ada?**
 | `fontWeight: "bold"` | `fontWeight: 700` | [1.4](#14-text) |
 | `color: "red"`, `rgba(…)`, `hsl(…)` | `#rrggbb` atau `#rgb` | [1.4](#14-text) |
 | Ukuran halaman ditebak atau dihitung sendiri | Dari `page` pada snapshot | [2.1](#21-ukuran-halaman-zoom-dan-koordinat) |
-| Daftar font dipatok di frontend | Dari `GET /api/document-design-fonts` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
-| Font dari Google Fonts atau font sistem | Berkas yang sama dengan backend, lewat `@font-face` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
+| Daftar font dan ketebalan dipatok di frontend | Dari `GET /api/document-design-fonts`, termasuk `faces` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
+| `font-family: sans-serif` atau `system-ui` | Dipaku ke `Helvetica, Arial, "Liberation Sans", "Nimbus Sans", sans-serif` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
+| Pemilih ketebalan sembilan tingkat | Hanya yang disebut `faces`; dengan font inti berarti tombol B saja | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
+| Berkas font sendiri diambil dari Google Fonts | Berkas yang sama persis dengan backend, lewat `@font-face` | [2.2](#22-font-berkas-yang-sama-di-kedua-sisi) |
 | Kotak teks tumbuh mengikuti isinya | Tinggi tetap dari `h`; isi yang melebihi terpotong | [2.3](#23-elemen-teks) |
 | Kotak digambar dengan `div` + `border` | `<rect>` di dalam SVG | [2.4](#24-kotak-dan-garis-pakai-svg-bukan-div) |
 | Garis digambar dengan `div` tipis | `<line>` di dalam SVG | [2.4](#24-kotak-dan-garis-pakai-svg-bukan-div) |

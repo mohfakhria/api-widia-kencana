@@ -81,6 +81,7 @@ func (uc *documentExportUseCase) ExportPDF(ctx context.Context, documentToken st
 	}
 
 	rendered, err := uc.renderer.RenderPDF(ctx, output.RenderDocument{
+		Token:      documentToken,
 		Content:    parsed,
 		PageWidth:  width,
 		PageHeight: height,

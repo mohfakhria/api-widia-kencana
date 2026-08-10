@@ -97,7 +97,7 @@ func (a *ApiApp) initialize() error {
 		documentDesign,
 		pg.NewAssetRepository(a.db),
 		a.objectStorage,
-		pdfrender.NewRenderer(fonts),
+		pdfrender.NewRenderer(fonts, a.ServiceLogger),
 	)
 	quotationUC := usecase.NewQuotationUseCase(pg.NewQuotationRepository(a.db))
 	workflowUC := usecase.NewWorkflowUseCase(pg.NewWorkflowRepository(a.db))

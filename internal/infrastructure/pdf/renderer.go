@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"math"
 	"strings"
 
@@ -23,11 +24,27 @@ const maxPageSide = 14400
 // Aman dipakai bersamaan dari banyak goroutine: setiap pemanggilan RenderPDF
 // membuat dokumen fpdf sendiri, dan Fonts hanya dibaca setelah dimuat saat start.
 type Renderer struct {
-	fonts *Fonts
+	fonts  *Fonts
+	logger *slog.Logger
 }
 
-func NewRenderer(fonts *Fonts) *Renderer {
-	return &Renderer{fonts: fonts}
+// NewRenderer menerima logger hanya untuk melaporkan penggantian font.
+//
+// Itu satu-satunya keluaran renderer selain berkas PDF-nya. Ia tetap tidak
+// menyentuh jaringan, database, maupun berkas — sifat yang menjaganya tidak dapat
+// diarahkan mengambil alamat yang ditentukan klien lewat isi dokumen.
+func NewRenderer(fonts *Fonts, logger *slog.Logger) *Renderer {
+	if logger == nil {
+		logger = slog.Default()
+	}
+
+	return &Renderer{fonts: fonts, logger: logger}
+}
+
+// substitution adalah satu permintaan font yang tidak dapat dipenuhi apa adanya.
+type substitution struct {
+	asked faceKey
+	used  faceKey
 }
 
 // canvas adalah keadaan satu kali penggambaran.
@@ -42,6 +59,12 @@ type canvas struct {
 
 	registeredFonts  map[faceKey]selectedFont
 	registeredImages map[string]imageRegistration
+
+	// substitutions menghitung berapa elemen yang fontnya diganti, per pasangan
+	// diminta-dipakai. Dilaporkan sekali di akhir, bukan saat terjadi, supaya satu
+	// ekspor menghasilkan catatan sebanyak ragam penggantiannya — bukan sebanyak
+	// elemennya.
+	substitutions map[substitution]int
 
 	// textEncoder mengikuti font yang sedang terpasang, sama seperti fpdf yang
 	// juga menyimpan font terpilih sebagai keadaan. Disetel di drawText, sebelum
@@ -86,6 +109,7 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 		images:           document.Images,
 		registeredFonts:  make(map[faceKey]selectedFont),
 		registeredImages: make(map[string]imageRegistration),
+		substitutions:    make(map[substitution]int),
 	}
 
 	// Disaring lebih dulu, bukan dilewati di dalam perulangan. Penjaga di bawah
@@ -119,7 +143,26 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 		return nil, fmt.Errorf("write pdf: %w", err)
 	}
 
+	r.reportSubstitutions(document.Token, c.substitutions)
+
 	return buffer.Bytes(), nil
+}
+
+// reportSubstitutions mencatat font yang tidak dapat dipenuhi apa adanya.
+//
+// Ini satu-satunya jejak bahwa hasil cetak berbeda dari layar. Tanpanya,
+// pertanyaan "kenapa cetakannya tidak sama" hanya dapat dijawab dengan tebakan —
+// dan itu ongkos yang harus dibayar karena penggantian dipilih menggantikan
+// kegagalan. Level warn, bukan info: ini bukan kabar rutin, melainkan pertanda
+// pilihan di editor melampaui apa yang dapat dicetak.
+func (r *Renderer) reportSubstitutions(token string, counted map[substitution]int) {
+	for swap, elements := range counted {
+		r.logger.Warn("document export substituted a font",
+			"document", token,
+			"asked", fmt.Sprintf("%s %d %s", swap.asked.family, swap.asked.weight, swap.asked.style),
+			"used", fmt.Sprintf("%s %d %s", swap.used.family, swap.used.weight, swap.used.style),
+			"elements", elements)
+	}
 }
 
 // drawElement menggambar satu elemen. Urutan penggambaran mengikuti urutan
