@@ -224,13 +224,21 @@ WebSocket diterima atau ditolak `403`.
 ### 4. Pasang unit systemd
 
 ```bash
-sudo useradd --system --no-create-home --shell /usr/sbin/nologin widia
-sudo install -d -o widia -g widia /opt/widia-api
-sudo install -o root -g root -m 0755 dist/widia-api /opt/widia-api/widia-api
+sudo install -d /opt/widia-api
+sudo install -m 0755 dist/widia-api /opt/widia-api/widia-api
 sudo install -m 0644 deploy/widia-api.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now widia-api
 ```
+
+Tidak ada user layanan yang perlu dibuat: unit dijalankan sebagai root, demi
+pemasangan yang sederhana. Yang menjaganya tetap masuk akal adalah
+`CapabilityBoundingSet=` dan `AmbientCapabilities=` yang **kosong** di unit file —
+prosesnya ber-UID 0 tetapi tidak memegang satu pun capability, jadi ia tidak dapat
+mengikat port di bawah 1024, memuat modul kernel, maupun menembus izin berkas.
+Digabung `ProtectSystem=strict`, yang tersisa dari "root" tinggal namanya untuk
+sebagian besar hal yang berbahaya. Jangan mengisi kedua baris itu tanpa alasan
+jelas.
 
 Periksa:
 

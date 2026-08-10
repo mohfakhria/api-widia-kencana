@@ -9,8 +9,24 @@ Wants=network-online.target
 
 [Service]
 Type=exec
-User=widia
-Group=widia
+
+# Berjalan sebagai root, dan itu pilihan sadar demi kesederhanaan pemasangan —
+# tidak ada user layanan yang perlu dibuat dan tidak ada kepemilikan berkas yang
+# perlu diatur.
+#
+# Yang membuatnya masih dapat diterima adalah CapabilityBoundingSet dan
+# AmbientCapabilities yang KOSONG di bawah: proses ini ber-UID 0 tetapi tidak
+# memegang satu pun capability, sehingga ia tidak dapat mengikat port di bawah
+# 1024, memuat modul kernel, mengubah kepemilikan berkas milik orang lain, maupun
+# menembus izin berkas lewat CAP_DAC_OVERRIDE. Digabung dengan ProtectSystem=strict
+# yang membuat seluruh sistem berkas hanya-baca, yang tersisa dari "root" tinggal
+# namanya untuk sebagian besar hal yang berbahaya.
+#
+# Karena itu JANGAN mengisi kedua baris capability itu tanpa alasan yang jelas.
+# Menjalankan sebagai root DAN memegang capability penuh adalah gabungan yang
+# menghapus hampir seluruh pengerasan di berkas ini sekaligus.
+User=root
+Group=root
 
 WorkingDirectory=/opt/widia-api
 ExecStart=/opt/widia-api/widia-api
