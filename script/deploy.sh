@@ -1,25 +1,38 @@
 #!/usr/bin/env bash
 #
-# Bangun binary lalu kirim ke server. Berhenti di situ.
+# Bangun, kirim, pasang, jalankan ulang. Satu perintah.
 #
 #   ./script/deploy.sh
 #
-# Pemasangan dan menjalankan ulang layanan sengaja TIDAK dikerjakan skrip ini —
-# keduanya dilakukan manual di server. Yang dijamin skrip ini cuma satu hal:
-# berkas yang mendarat di sana benar-benar berasal dari commit yang sedang Anda
-# pegang, dan sampai tanpa cacat.
+# PERLU DIINGAT: langkah restart MEMUTUS SEMUA SESI PENYUNTINGAN yang sedang
+# terbuka. Suntingannya tidak hilang — orchestrator dokumen menyimpan yang
+# terakhir sebelum berhenti, dan itu alasan TimeoutStopSec=30s pada unit
+# systemd — tetapi orang yang sedang menggambar akan melihat editornya terputus
+# lalu menyambung ulang. Pilih waktunya.
 #
 # Yang dapat diubah lewat environment:
 #
 #   HOST=widia-server                     nama host di ~/.ssh/config
 #   STAGING=/root/deployment/widia-api    tempat berkas mendarat
+#   TARGET=/opt/widia-api/widia-api       tempat berkas dijalankan
+#   SERVICE=widia-api                     nama unit systemd
+#   ENV_FILE=/etc/widia-api/api.env       dibaca hanya untuk tahu APP_PORT
 #   ARCH=amd64                            amd64 atau arm64
-#   ALLOW_DIRTY=1                         izinkan kirim dari pohon kerja kotor
+#   ALLOW_DIRTY=1                         izinkan deploy dari pohon kerja kotor
+#
+# STAGING dan TARGET sengaja berbeda, dan bukan sekadar kebiasaan. Unit systemd
+# memakai ProtectHome=true, yang membuat /root kosong dan tidak terjangkau bagi
+# proses layanan — binary yang dijalankan LANGSUNG dari sana tidak akan pernah
+# ditemukan, dan systemd menjawabnya dengan 203/EXEC yang tidak menyebut sama
+# sekali bahwa penyebabnya pengerasan.
 
 set -euo pipefail
 
 HOST=${HOST:-widia-server}
 STAGING=${STAGING:-/root/deployment/widia-api}
+TARGET=${TARGET:-/opt/widia-api/widia-api}
+SERVICE=${SERVICE:-widia-api}
+ENV_FILE=${ENV_FILE:-/etc/widia-api/api.env}
 ARCH=${ARCH:-amd64}
 ALLOW_DIRTY=${ALLOW_DIRTY:-0}
 
@@ -40,7 +53,7 @@ if [ -n "$(git status --porcelain)" ] && [ "$ALLOW_DIRTY" != "1" ]; then
 fi
 
 commit=$(git rev-parse --short HEAD)
-langkah "Kirim $commit → $HOST"
+langkah "Deploy $commit → $HOST"
 
 # ── 2. Server terjangkau? ───────────────────────────────────────────────────
 #
@@ -94,6 +107,15 @@ printf '  %s  %s\n' "$(du -h dist/widia-api | cut -f1)" "${lokal:0:16}…"
 langkah "Mengirim ke $HOST:$STAGING"
 ssh "$HOST" "${sudo_jauh}mkdir -p $(dirname "$STAGING")"
 
+# STAGING harus berupa BERKAS, bukan direktori. Bila direktori dengan nama itu
+# sudah ada, scp akan menaruh berkasnya DI DALAMNYA tanpa mengeluh, dan sisa
+# skrip ini bekerja pada jalur yang isinya bukan yang dikira. Sudah pernah
+# terjadi, dan gejalanya muncul jauh kemudian sebagai "install: omitting
+# directory".
+if ssh "$HOST" "test -d $STAGING"; then
+	mati "$STAGING sudah ada sebagai DIREKTORI — hapus dulu: ssh $HOST 'rmdir $STAGING'"
+fi
+
 # scp berjalan sebagai user SSH, TANPA sudo — tidak ada cara menyisipkannya di
 # tengah scp. Direktori yang barusan dibuat lewat sudo karena itu boleh jadi milik
 # root dan tidak dapat ditulisi. Diperiksa di sini supaya jawabannya menyebut apa
@@ -104,41 +126,71 @@ fi
 
 scp -q dist/widia-api "$HOST:$STAGING"
 
-# ── 5. Sampai utuh? ─────────────────────────────────────────────────────────
-#
-# Diperiksa di sini, bukan diserahkan ke langkah manual, karena inilah satu-satunya
-# hal yang skrip ini janjikan. Pengiriman yang terpotong menghasilkan berkas yang
-# ada dan berukuran wajar, dan gejalanya baru muncul sebagai layanan yang gagal
-# start dengan pesan yang tidak menyebut-nyebut soal pengiriman.
-langkah "Memeriksa berkas yang mendarat"
 jauh=$(ssh "$HOST" "${sudo_jauh}sha256sum $STAGING" | cut -d' ' -f1)
 if [ "$jauh" != "$lokal" ]; then
-	mati "sidik jari berbeda — di server ${jauh:0:16}…, yang dikirim ${lokal:0:16}…"
+	mati "pengiriman tidak utuh — di server ${jauh:0:16}…, yang dikirim ${lokal:0:16}…"
+fi
+echo "  sampai utuh"
+
+# ── 5. Pasang lalu jalankan ulang ───────────────────────────────────────────
+#
+# install, bukan cp: ia menulis berkas baru lalu menggantinya secara atomik,
+# sehingga aman dijalankan selagi layanannya hidup. cp menimpa berkas yang sedang
+# dieksekusi, dan Linux menolaknya dengan ETXTBSY.
+#
+# install -d lebih dulu karena install BIASA tidak membuat direktori tujuan, dan
+# pada pemasangan pertama /opt/widia-api memang belum ada.
+langkah "Memasang ke $TARGET"
+ssh "$HOST" "${sudo_jauh}install -d $(dirname "$TARGET") && ${sudo_jauh}install -o root -g root -m 0755 $STAGING $TARGET"
+
+terpasang=$(ssh "$HOST" "${sudo_jauh}sha256sum $TARGET" | cut -d' ' -f1)
+if [ "$terpasang" != "$lokal" ]; then
+	mati "yang terpasang bukan yang dikirim — ${terpasang:0:16}… vs ${lokal:0:16}…"
 fi
 echo "  sidik jari cocok"
 
-printf '\n\033[32m✓ %s ada di %s:%s\033[0m\n' "$commit" "$HOST" "$STAGING"
+langkah "Menjalankan ulang $SERVICE"
+echo "  sesi penyuntingan yang sedang terbuka akan terputus"
+ssh "$HOST" "${sudo_jauh}systemctl restart $SERVICE"
 
-# Langkah manual dicetak lengkap supaya tidak perlu diingat maupun dicari di
-# README. Sengaja tidak dijalankan: memasang dan menjalankan ulang layanan
-# memutus semua sesi penyuntingan yang sedang terbuka, dan itu keputusan yang
-# pantas diambil sadar, bukan sebagai kelanjutan otomatis dari sebuah upload.
-cat <<PETUNJUK
+# ── 6. Benarkah ia hidup ────────────────────────────────────────────────────
+#
+# Ditunggu, bukan ditanya sekali. Berhentinya sendiri dapat memakan delapan
+# detik — orchestrator dokumen menyimpan suntingan terakhir tiap sesi — dan
+# layanan yang gagal start berulang menghabiskan RestartSec di antara
+# percobaannya, sehingga satu pertanyaan tepat setelah restart hampir selalu
+# menjawab "activating" apa pun keadaan sebenarnya.
+langkah "Memeriksa hasilnya"
+hidup=0
+for _ in $(seq 1 10); do
+	if ssh "$HOST" "systemctl is-active --quiet $SERVICE"; then
+		hidup=1
+		break
+	fi
+	sleep 2
+done
 
-Selanjutnya, di server:
+if [ "$hidup" != "1" ]; then
+	ssh "$HOST" "${sudo_jauh}journalctl -u $SERVICE -n 30 --no-pager" || true
+	mati "$SERVICE tidak hidup setelah dijalankan ulang"
+fi
+echo "  unit aktif"
 
-  install -o root -g root -m 0755 $STAGING /opt/widia-api/widia-api
-  systemctl restart widia-api
-  systemctl status widia-api --no-pager
+# Health check adalah satu-satunya bukti aplikasinya benar-benar melayani, bukan
+# sekadar prosesnya ada. Portnya dibaca dari berkas konfigurasi di server supaya
+# tidak ada angka yang perlu diulang di dua tempat.
+port=$(ssh "$HOST" "${sudo_jauh}grep -oE '^APP_PORT=.*' $ENV_FILE 2>/dev/null | cut -d= -f2" || true)
+port=${port:-8080}
 
-install, bukan cp — ia menulis berkas baru lalu menggantinya secara atomik,
-sehingga aman dijalankan selagi layanannya hidup. cp menimpa berkas yang sedang
-dieksekusi dan ditolak Linux dengan ETXTBSY.
+if ssh "$HOST" "command -v curl >/dev/null 2>&1"; then
+	kode=$(ssh "$HOST" "curl -sS -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:$port/health" || true)
+	if [ "$kode" != "200" ]; then
+		ssh "$HOST" "${sudo_jauh}journalctl -u $SERVICE -n 30 --no-pager" || true
+		mati "health menjawab ${kode:-tidak ada} pada port $port, bukan 200"
+	fi
+	echo "  health 200 di port $port"
+else
+	echo "  curl tidak ada di server — health check dilewati"
+fi
 
-Jangan menjalankan binary langsung dari $(dirname "$STAGING"): unit systemd
-memakai ProtectHome=true, yang membuat /root kosong dan tidak terjangkau bagi
-proses layanan.
-
-Berhentinya memakan waktu sampai delapan detik — orchestrator dokumen menyimpan
-suntingan terakhir tiap sesi yang sedang terbuka.
-PETUNJUK
+printf '\n\033[32m✓ %s berjalan di %s pada commit %s\033[0m\n' "$SERVICE" "$HOST" "$commit"
