@@ -1,0 +1,74 @@
+[Unit]
+Description=API Widia Kencana
+After=network-online.target
+Wants=network-online.target
+# Postgres dan MinIO yang satu mesin disebut di sini; yang di mesin lain tidak
+# perlu, karena aplikasi ini toh sudah harus tahan terhadap keduanya belum siap.
+# After= bukan jaminan layanannya sudah menerima koneksi, hanya sudah dimulai.
+# After=postgresql.service minio.service
+
+[Service]
+Type=exec
+User=widia
+Group=widia
+
+WorkingDirectory=/opt/widia-api
+ExecStart=/opt/widia-api/widia-api
+
+# Konfigurasi masuk sebagai environment sungguhan, bukan lewat berkas .env di
+# direktori kerja. Aplikasi tetap memanggil godotenv saat start dan akan menulis
+# satu baris "warning: .env file not found, using system env" ke log — itu wajar
+# di server dan bukan tanda ada yang salah.
+#
+# Berkas ini memuat JWT_SECRET, JWT_SUB_ENCRYPTION_KEY, WIDIA_AGENT_KEY, dan
+# kata sandi database. Milik root, mode 0600.
+EnvironmentFile=/etc/widia-api/api.env
+
+Restart=on-failure
+RestartSec=5s
+
+# main.go memasang signal.NotifyContext untuk SIGINT dan SIGTERM, jadi SIGTERM
+# bawaan systemd sudah memicu shutdown bersih.
+#
+# TimeoutStopSec HARUS di atas jalur berhenti terpanjang, yaitu roomStopTimeout
+# 8 detik pada usecase/documentdesign — batas menunggu seluruh orchestrator
+# dokumen menyimpan suntingan terakhirnya. Server HTTP berhenti paralel dengan
+# batasnya sendiri 5 detik. Angka di bawah 8 detik membuat systemd membunuh
+# proses tepat di tengah penyimpanan itu, dan yang hilang adalah suntingan
+# terakhir pengguna. Bila roomStopTimeout dinaikkan, naikkan juga yang ini.
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+
+# --- Pengerasan -------------------------------------------------------------
+# Aplikasi ini tidak menulis apa pun ke disk: unggahan mendarat di MinIO, data
+# di Postgres, log ke journald. Karena itu seluruh sistem berkas boleh dikunci
+# hanya-baca tanpa perlu satu pengecualian pun.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+# Kosong berarti proses ini TIDAK BISA mengikat port di bawah 1024. Disengaja:
+# APP_PORT semestinya 8080 di belakang reverse proxy. Bila suatu saat perlu
+# mengikat :80 langsung, tambahkan CAP_NET_BIND_SERVICE di kedua baris — jangan
+# menjalankannya sebagai root.
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

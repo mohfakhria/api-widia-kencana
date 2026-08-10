@@ -164,10 +164,139 @@ Health check:
 curl http://localhost:8080/health
 ```
 
+## Deployment
+
+Aplikasi dijalankan sebagai **binary biasa di bawah systemd**, bukan sebagai
+container. Docker dipakai hanya sebagai kotak build supaya binary yang mendarat
+di server selalu dibangun oleh toolchain yang sama.
+
+### 1. Bangun binary-nya
+
+```bash
+task build:linux
+```
+
+Hasilnya `dist/widia-api` — ELF statis (`CGO_ENABLED=0`), sekitar 25 MB, tanpa
+tuntutan glibc atau pustaka apa pun, jadi berjalan di Debian, Ubuntu, maupun
+Alpine. Untuk server ARM:
+
+```bash
+task build:linux ARCH=arm64
+```
+
+Tanpa Task, perintahnya:
+
+```bash
+docker build --target binary --output type=local,dest=./dist .
+```
+
+Build ini **dapat diulang**: `-trimpath`, `-buildvcs=false`, dan versi Go yang
+dipatok di Dockerfile membuat sumber yang sama selalu menghasilkan berkas yang
+sama persis, terlepas dari mesin mana yang membangunnya. Terverifikasi — hasil
+Docker dan hasil `go build` lokal dengan bendera yang sama identik byte per byte.
+
+Gunanya saat ada keraguan tentang apa yang sebenarnya berjalan di server:
+
+```bash
+ssh server 'sha256sum /opt/widia-api/widia-api'
+git checkout <commit> && task build:linux && sha256sum dist/widia-api
+```
+
+Sidik jari yang sama berarti binary di server memang berasal dari commit itu.
+Berbeda berarti ada yang men-deploy sesuatu yang tidak ada di repo — dan itu
+jauh lebih baik diketahui lewat satu perintah daripada lewat gejala.
+
+### 2. Tata letak di server
+
+```text
+/opt/widia-api/
+  widia-api                  binary, milik root, mode 0755
+  assets/fonts/              font export PDF + fonts.json  ← lihat catatan
+/etc/widia-api/
+  api.env                    konfigurasi, milik root, mode 0600
+```
+
+`DESIGN_FONT_DIR` bawaannya **relatif** (`assets/fonts`), dan diselesaikan
+terhadap `WorkingDirectory` unit systemd — karena itu `WorkingDirectory` di unit
+file bukan hiasan. Font dimuat sekali saat start; direktori yang hilang **tidak**
+menghentikan aplikasi, tetapi membuat ekspor PDF diam-diam jatuh ke font inti dan
+hasil cetak berbeda dari layar. Isilah, atau setel `DESIGN_FONT_DIR` ke jalur
+absolut.
+
+### 3. Konfigurasi
+
+`/etc/widia-api/api.env` memakai format `KEY=value` seperti `.env.example`,
+tetapi **bukan** berkas shell: tidak ada `export`, tidak ada substitusi
+`${VAR}`, dan komentar hanya boleh satu baris penuh — bukan di belakang nilai.
+
+```bash
+sudo install -d -m 0755 /etc/widia-api
+sudo install -m 0600 /dev/null /etc/widia-api/api.env
+sudo -e /etc/widia-api/api.env
+```
+
+Yang wajib diganti dari contoh: `JWT_SECRET`, `JWT_SUB_ENCRYPTION_KEY`,
+`PG_PASSWORD`, `MINIO_ROOT_PASSWORD`, dan `WIDIA_AGENT_KEY`. Setel juga
+`APP_ENV=production`, `APP_BASEURL` ke URL publik yang sesungguhnya, dan
+`FRONTEND_URL` ke origin frontend — nilai terakhir itu yang memutuskan handshake
+WebSocket diterima atau ditolak `403`.
+
+### 4. Pasang unit systemd
+
+```bash
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin widia
+sudo install -d -o widia -g widia /opt/widia-api
+sudo install -o root -g root -m 0755 dist/widia-api /opt/widia-api/widia-api
+sudo install -m 0644 deploy/widia-api.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now widia-api
+```
+
+Periksa:
+
+```bash
+systemctl status widia-api
+journalctl -u widia-api -f
+curl http://127.0.0.1:8080/health
+```
+
+Baris `warning: .env file not found, using system env` di awal log adalah wajar
+di server: konfigurasi datang lewat `EnvironmentFile`, bukan lewat berkas `.env`.
+
+### 5. Memperbarui
+
+```bash
+task build:linux
+scp dist/widia-api server:/tmp/widia-api
+ssh server 'sudo install -m 0755 /tmp/widia-api /opt/widia-api/widia-api && sudo systemctl restart widia-api'
+```
+
+`install` menulis berkas baru lalu menggantinya secara atomik, jadi aman
+dilakukan selagi layanan berjalan — berbeda dengan `cp` yang menimpa berkas yang
+sedang dieksekusi.
+
+Restart **tidak** boleh dipercepat dengan `SIGKILL`. `TimeoutStopSec=30s` di unit
+file ada karena orchestrator dokumen butuh sampai 8 detik untuk menyimpan
+suntingan terakhir setiap sesi penyuntingan yang sedang terbuka; mematikannya
+lebih cepat berarti membuang pekerjaan pengguna yang belum sempat ditulis.
+
+### Yang tidak diurus berkas-berkas ini
+
+- **Migration.** SQL murni di `migration/`, dijalankan manual — lihat
+  [Database Migration](#database-migration). Tidak ada migrator otomatis saat
+  start, disengaja.
+- **TLS dan reverse proxy.** Aplikasi mengikat `:APP_PORT` di **semua**
+  antarmuka, jadi batasi dengan firewall dan letakkan nginx atau Caddy di
+  depannya. Proxy-nya wajib meneruskan header `Upgrade` dan `Connection` untuk
+  `/document-design/`, dan `proxy_read_timeout`-nya harus lebih panjang dari
+  koneksi WebSocket yang menganggur.
+- **Backup.** Postgres dan MinIO, di luar cakupan repo ini.
+
 ## Project Structure
 
 ```text
 cmd/api/                         API entry point
+deploy/                          unit systemd untuk deploy
 internal/bootstrap/              Application wiring
 internal/delivery/http/          HTTP handlers, router, middleware, DTO
 internal/domain/                 Domain errors and entities

@@ -1,0 +1,17 @@
+# Daftar IZIN, bukan daftar larangan.
+#
+# Semua ditolak lebih dulu, lalu yang benar-benar dibutuhkan build dibuka satu
+# per satu. Arahnya sengaja dibalik: dengan daftar larangan, berkas rahasia yang
+# muncul belakangan ikut terkirim ke daemon Docker sampai ada yang ingat
+# menambahkannya ke sini — dan .env adalah berkas yang paling mungkin terlupa.
+#
+# Berkas baru yang memang dibutuhkan build akan membuat build GAGAL, bukan
+# bocor. Itu arah kegagalan yang benar.
+
+*
+
+!go.mod
+!go.sum
+!cmd/
+!internal/
+!pkg/

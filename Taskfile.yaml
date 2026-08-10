@@ -16,3 +16,22 @@ tasks:
         --build.exclude_regex ".*_test\\.go"
         --build.include_ext "go,yaml,yml,json,env"
         --misc.clean_on_exit "true"
+
+  build:linux:
+    desc: Build a static Linux binary via Docker into ./dist (ARCH=amd64|arm64)
+    vars:
+      ARCH: '{{.ARCH | default "amd64"}}'
+    env:
+      DOCKER_BUILDKIT: "1"
+    preconditions:
+      - sh: docker info >/dev/null 2>&1
+        msg: "docker daemon is not running"
+    cmds:
+      - >
+        docker build
+        --target binary
+        --build-arg TARGET_ARCH={{.ARCH}}
+        --output type=local,dest=./dist
+        .
+      - cmd: ls -lh ./dist/widia-api
+        silent: true
