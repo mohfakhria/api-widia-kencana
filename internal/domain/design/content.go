@@ -222,19 +222,12 @@ type Element struct {
 	// VerticalAlign meratakan seluruh blok teks di dalam kotaknya. Bawaan "top".
 	VerticalAlign string `json:"verticalAlign,omitempty"`
 
-	// Sisi dalam kotak teks, dalam titik. Empat field terpisah, TANPA bentuk
-	// ringkas "padding": model ini datar dan sudah melarang properti bersarang,
-	// dan menyediakan keduanya berarti aturan presedensi yang harus disepakati
-	// dua sisi — dua cara menyatakan satu hal.
-	//
-	// Mengecilkan ruang tempat teks dipenggal, jadi ia ikut mengubah jumlah baris
-	// — bukan sekadar menggeser. Kliping tetap memakai kotak PENUH, sama seperti
-	// overflow hidden di CSS yang memotong pada kotak padding, bukan pada kotak
-	// isi.
-	PaddingTop    float64 `json:"paddingTop,omitempty"`
-	PaddingRight  float64 `json:"paddingRight,omitempty"`
-	PaddingBottom float64 `json:"paddingBottom,omitempty"`
-	PaddingLeft   float64 `json:"paddingLeft,omitempty"`
+	// TIDAK ADA sisi dalam di sini, dan itu keputusan yang sengaja diambil
+	// setelah sempat ada. Kotak elemen teks tidak pernah digambar — tanpa isi
+	// maupun garis tepi — sehingga menggeser teks ke dalam dengan sisi dalam
+	// menghasilkan piksel yang persis sama dengan mengecilkan kotaknya lalu
+	// memindahkan pangkalnya. Dua cara menyatakan satu hal, dan yang kedua sudah
+	// dimiliki setiap elemen.
 	LineHeight    float64 `json:"lineHeight,omitempty"`
 	LetterSpacing float64 `json:"letterSpacing,omitempty"`
 

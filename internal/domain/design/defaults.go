@@ -77,21 +77,6 @@ func (e *Element) ResolvedVerticalAlign() string {
 	return e.VerticalAlign
 }
 
-// ContentBox adalah kotak tempat teks benar-benar digambar: kotak elemen
-// dikurangi sisi dalamnya.
-//
-// SATU-SATUNYA tempat pengurangan itu terjadi, supaya pemenggalan baris dan
-// penempatan garis dasar tidak pernah berangkat dari kotak yang berbeda.
-//
-// Lebar atau tinggi yang menjadi nol atau negatif dikembalikan apa adanya, tidak
-// dijepit. Pemanggil yang memutuskan artinya.
-func (e *Element) ContentBox() (x, y, width, height float64) {
-	return e.X + e.PaddingLeft,
-		e.Y + e.PaddingTop,
-		e.W - e.PaddingLeft - e.PaddingRight,
-		e.H - e.PaddingTop - e.PaddingBottom
-}
-
 func (e *Element) ResolvedOpacity() float64 {
 	if e.Opacity == nil {
 		return DefaultOpacity
