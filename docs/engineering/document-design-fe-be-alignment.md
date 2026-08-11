@@ -118,8 +118,19 @@ melainkan hal-hal yang memang tidak bisa dinyatakan oleh sebuah bentuk.
   dilakukan backend harus tercatat di [§5](#5-perbedaan-yang-disengaja) —
   pembulatan diam-diam akan dikirim balik oleh frontend pada update
   berikutnya dan menetap selamanya.
-- Perubahan disiarkan ke penyunting lain, dan **tidak dipantulkan** ke
-  pengirimnya sebagai perubahan.
+- Perubahan disiarkan ke **seluruh** penghuni — **termasuk pengirimnya.**
+  Backend sengaja tidak melewati pengirim: kalau ia dilewati, nomor `version`
+  miliknya tertinggal setiap kali ia menyunting, lalu siaran pertama dari orang
+  lain terlihat melompat dan ia memuat ulang seluruh dokumen tanpa sebab.
+  Mengirimkannya kembali jauh lebih murah daripada itu.
+
+  Jadi frontend akan menerima suntingannya sendiri kembali, dan harus
+  mengabaikannya alih-alih memperlakukannya sebagai perubahan orang lain.
+  **Kursor sama saja** — satu muatan berisi seluruh kursor dikirim ke semua
+  penghuni, jadi kursor sendiri ikut kembali. Yang membedakan keduanya bukan
+  siapa yang menerima, melainkan jaminannya: perubahan wajib tiba dan klien
+  yang tertinggal diputus, sedangkan kursor boleh dibuang dan yang terbaru
+  menimpa yang tertunda.
 - Ekspor PDF menggambar tepat seperti [§3](#3-style-yang-dipakai-frontend) dan
   [§4](#4-behavior-tampil-yang-harus-ditiru) menyebutkan.
 - Penolakan menyebutkan **field mana** yang salah, bukan hanya bahwa pesannya
@@ -199,7 +210,7 @@ mencarinya.
 | Garis tepi | `stroke` | Heksadesimal, `""` berarti tanpa garis | Digambar hanya bila `strokeWidth > 0` |
 | Tebal garis | `strokeWidth` | Point | **Terpusat pada jalurnya**, seperti SVG — bukan seperti `border` CSS yang menaruh seluruhnya di satu sisi |
 | Gaya garis | `strokeStyle` | `solid` \| `longdash` \| `dash` \| `dot` | Kelipatan tebal garis: `longdash` = 4/2, `dash` = 2/2, `dot` = 1/2. Ujung segmen **dipotong rata**, bukan dibulatkan |
-| Sudut membulat | `radius` | Point, hanya `rect` | Dibatasi separuh sisi terpendek |
+| Sudut membulat | `radius` | Point | Dibatasi separuh sisi terpendek. Berlaku pada `rect` **dan gambar** — pada gambar ia memotong, seperti `border-radius` pada `<img>` |
 
 Garis (`line`) adalah kasus khusus: `h` selalu 0, dan `y` yang dikirim
 frontend sudah digeser separuh tebalnya, supaya kotak elemen mengapit
@@ -232,7 +243,7 @@ Hanya yang **mengubah piksel**. Behavior interaksi tidak ada di sini.
 | Kerning | **Dimatikan.** Browser merapatkan pasangan huruf tertentu atas inisiatifnya sendiri; backend tidak |
 | Ligatur | **Dimatikan.** `fi` tidak menyatu jadi satu glyph |
 | Baseline | Half-leading: teks mengalir dari tepi **atas** kotak. Tidak ada penengahan vertikal |
-| Margin, padding, border | Nol. Rumus baseline backend mengandaikan teks dimulai persis di tepi atas |
+| Margin, padding, border | Frontend memakai nol. Backend **punya** `paddingTop`/`Right`/`Bottom`/`Left` dan `verticalAlign`, dan rumus baseline-nya berangkat dari kotak isi — bukan kotak elemen. Selama frontend tidak mengirim keduanya, hasilnya identik |
 | Pemotongan | Di `w` dan `h`, per elemen. Halaman juga memotong elemen yang keluar dari kertas |
 | Satuan | Wire dalam point; kanvas dalam paper px pada 96 dpi. Keduanya menggambarkan ukuran fisik yang sama, jadi hubungannya 1:1 dengan PDF — bukan pendekatan |
 
@@ -275,6 +286,11 @@ pernah sama-sama terlihat.
 | `text.measure` / `text.measured` | **Dicabut** | **Dicabut** | 2026-08-11 |
 | Pemenggalan kata panjang | Belum | Selesai (kanvas) | 2026-08-11 |
 | Daftar font dari backend | **Dihapus** | Menyesuaikan — satu keluarga lewat CSS | 2026-08-10 |
+| `underline` dan `strikethrough` pada teks | Selesai | Belum dipakai | 2026-08-11 |
+| `verticalAlign` dan empat sisi `padding` pada teks | Selesai | Belum dipakai | 2026-08-11 |
+| `radius` pada gambar | Selesai | Belum dipakai | 2026-08-11 |
+| `fit: "fill"` pada gambar | Selesai | Belum dipakai — frontend memakai `contain` dan `cover` | 2026-08-11 |
+| Penanganan `element_rejected` dan `page_rejected` | Dikirim sejak 2026-08-08 | Belum ditangani | 2026-08-11 |
 
 ---
 
@@ -291,6 +307,7 @@ harus menindaklanjuti.
 | 2026-08-11 | `text.measure` dicabut di kedua sisi. Konsekuensinya perlu dicatat: **tidak ada lagi cara memverifikasi bahwa kanvas dan PDF sepakat** selain membandingkan ekspor dengan mata | Backend, diikuti frontend |
 | 2026-08-11 | Tinggi kotak teks diturunkan dari isinya di sisi frontend; lebar tetap milik pengguna. Backend menerima keduanya sebagai angka jadi | Frontend |
 | 2026-08-11 | §9 ditambahkan, disusun ulang dari implementasi frontend karena sumber aslinya sudah tidak disimpan. **Menunggu pemeriksaan backend** — angka yang tidak cocok akan muncul sebagai koneksi terputus di produksi, bukan sebagai galat | Frontend menyusun, backend memeriksa |
+| 2026-08-11 | §9 diperiksa backend terhadap kode. §9.1 dan §9.4 cocok seluruhnya. Tiga koreksi ditulis: siaran perubahan **memantul ke pengirimnya** dan §2.1 sebelumnya menyatakan sebaliknya; `1006` punya arti ketiga — server membuang klien yang tertinggal; dan §9.5 kekurangan empat dari enam kode galat yang dikirim backend | Backend |
 | 2026-08-11 | Kontrak disederhanakan jadi **satu** dokumen: yang ini. Deklarasi tipe terbitan backend dihentikan, dan bersamanya pin konformansi di frontend ikut dibuang — sebuah pin yang dipegang terhadap salinan beku selalu hijau apa pun yang berubah di hulu, yang lebih buruk daripada tidak ada pin. **Konsekuensinya: tidak ada lagi pemeriksaan otomatis atas perubahan kontrak.** Yang tersisa hanyalah §8 ini | Keduanya |
 
 ---
@@ -304,9 +321,12 @@ lama sebuah tiket hidup. Semua itu ada di sini.
 > **Bagian ini disusun ulang dari implementasi frontend yang berjalan**, karena
 > sumber aslinya sudah tidak disimpan. Setiap angka di bawah diambil dari
 > `design-socket.ts` dan `use-document-state.ts`, bukan dari ingatan.
-> **Backend perlu memeriksanya**: yang tidak cocok berarti frontend sedang
-> salah, dan itu jenis kesalahan yang muncul sebagai koneksi terputus di
-> produksi, bukan sebagai galat.
+>
+> **Sudah diperiksa backend, 2026-08-11.** §9.1 dan §9.4 cocok seluruhnya
+> dengan kode — termasuk kelima angka pengelompokan undo. Kelima close code di
+> §9.2 memang yang dikirim server. Dua hal yang kurang sudah ditambahkan pada
+> tempatnya: arti ketiga `1006`, dan empat kode galat yang belum tercantum di
+> §9.5.
 
 ### 9.1 Tiket dan penyambungan
 
@@ -330,7 +350,8 @@ alamat yang tidak menjawab akan tetap tidak menjawab tiga puluh detik lagi.
 | `1013` | Sepuluh koneksi hidup untuk pengguna ini | Backoff, tidak sebelum 5 detik. Menyambung lebih cepat tidak bisa menolong — sesuatu harus tertutup dulu |
 | `1011` | Ruangnya berhenti bisa melayani kita di tengah sesi, misal dokumennya dihapus orang lain | **Berhenti.** Membiarkan orang menyunting apa yang tidak akan pernah tersimpan lebih buruk daripada berhenti |
 | `1003` | Frontend mengirim frame biner | **Berhenti.** Itu bug frontend, dan menyambung ulang hanya mengulanginya |
-| `1006` | **Dua arti yang berlawanan**, dan browser tidak bisa membedakannya | Yang membedakan hanyalah apakah socket-nya pernah terbuka. Handshake yang ditolak sebelum upgrade — Origin ditolak, URL salah, backend mati — tidak menghasilkan close frame sama sekali; begitu pula jaringan yang putus di tengah sesi. Yang pertama tidak layak disambung ulang, yang kedua layak |
+| `1006` | **Tiga arti**, dan browser tidak bisa membedakannya | Yang membedakan hanyalah apakah socket-nya pernah terbuka. Handshake yang ditolak sebelum upgrade — Origin ditolak, URL salah, backend mati — tidak menghasilkan close frame sama sekali; begitu pula jaringan yang putus di tengah sesi. Yang pertama tidak layak disambung ulang, yang kedua layak |
+| `1006` (lanjutan) | **Arti ketiga: server membuang klien ini karena tertinggal** | Antrean keluar penuh membuat backend membatalkan koneksi **tanpa** close frame, jadi ia tiba sebagai `1006` juga — lihat §9.3. Sambung ulang memang jawaban yang benar di sini, dan koneksi baru datang dengan antrean kosong. Yang perlu diketahui hanya diagnosisnya: `1006` di tengah sesi belum tentu jaringan |
 | `1000` dari sisi server | Penutupan normal | Diperlakukan sebagai putus biasa dan disambung ulang |
 
 ### 9.3 Laju dan tekanan balik
@@ -370,5 +391,14 @@ membuat Cmd+Z bergantung pada secepat apa seseorang menarik pointer.
 
 | Kode | Arti | Yang dilakukan frontend |
 |---|---|---|
-| `malformed_message` | Pesan ditolak apa adanya | Minta ulang seluruh dokumen — pesan yang ditolak berarti keadaan lokal mungkin sudah tidak sejalan |
+| `malformed_message` | Muatan pesan tidak sah atau kekurangan field wajib | Minta ulang seluruh dokumen — pesan yang ditolak berarti keadaan lokal mungkin sudah tidak sejalan |
 | `document_unavailable` | Dokumen sementara tidak bisa dilayani | Coba lagi setiap 15 detik, maksimum 4 kali |
+| `element_rejected` | **Pembuatan elemen tidak jadi** — muatannya tidak sah, id sudah dipakai, atau halamannya tidak ada. Hanya `element.create` yang membalas; `element.update`, `delete`, dan `reorder` yang sasarannya sudah lenyap **didiamkan**, karena itu lomba yang wajar pada menang-terakhir dan siaran penghapusannya toh sedang menuju ke sana | Belum ditangani. Ini yang paling perlu, karena artinya pekerjaan pengguna tidak tersimpan sementara layarnya menunjukkan sudah |
+| `page_rejected` | **Perubahan halaman tidak jadi** — id sudah dipakai, batas 200 halaman tercapai, atau menghapus halaman terakhir. Hanya `page.create` dan `page.delete` yang membalas | Belum ditangani |
+| `missing_message_type` | Pesan tanpa field `type` | Belum ditangani; ini bug frontend bila muncul |
+| `unsupported_message_type` | Jenis pesan tidak dikenal server | Belum ditangani; muncul bila frontend berjalan lebih dulu dari backend |
+
+Keenamnya dikirim backend hari ini. Empat yang terakhir belum punya penanganan
+di frontend — ditambahkan backend 2026-08-11 supaya keberadaannya diketahui,
+bukan sebagai keluhan. Yang mendesak hanya `element_rejected` dan
+`page_rejected`: keduanya berarti suntingan tidak terjadi.
