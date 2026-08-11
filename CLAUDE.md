@@ -32,9 +32,21 @@ kedua**: bila §8 tidak ditambah, tidak ada satu pun cara frontend mengetahui
 sesuatu berubah selain diberi tahu secara lisan.
 
 Karena berkas itu di luar repo, ia juga tidak dapat ikut dalam commit yang
-mengubah kodenya. Yang menggantikan jaminan tersebut: sunting berkas bersama
-**pada saat yang sama** dengan kodenya, bukan setelah pekerjaan Go selesai —
-lalu sebut di ringkasan bahwa ia sudah disunting.
+mengubah kodenya. Yang menggantikan jaminan tersebut adalah dua langkah, dan
+keduanya wajib:
+
+**Baca berkas itu SEBELUM mulai.** Frontend menyuntingnya di antara sesi, dan
+tidak ada notifikasi apa pun ketika mereka melakukannya. Apa yang diingat dari
+percakapan sebelumnya boleh jadi sudah tidak berlaku — §7 dapat berubah dari
+"Menunggu" menjadi "Selesai", dan sebuah permintaan di §6 dapat sudah terjawab
+oleh pihak sana. Mengerjakan sesuatu di atas ingatan yang basi menghasilkan
+pekerjaan yang benar untuk kontrak yang sudah tidak ada.
+
+**Sunting berkas itu SESUDAHNYA, pada saat yang sama dengan kodenya** — bukan
+setelah pekerjaan Go dianggap selesai — lalu sebut di ringkasan bahwa ia sudah
+disunting.
+
+Berlaku untuk setiap perubahan yang menyentuh kontrak, sekecil apa pun.
 
 ## Sebelum mengubah document design
 
