@@ -40,6 +40,15 @@ func (c *canvas) drawText(element *design.Element) error {
 		return nil
 	}
 
+	// contentY tidak dipakai di sini: baseline() menghitungnya sendiri dari kotak
+	// isi yang sama, supaya tidak ada dua tempat yang menurunkan titik awal teks.
+	contentX, _, contentWidth, contentHeight := element.ContentBox()
+	if contentWidth <= 0 || contentHeight <= 0 {
+		// Sisi dalam menghabiskan kotaknya. Tidak ada ruang untuk satu huruf pun,
+		// dan memaksakannya hanya menghasilkan teks yang seluruhnya terpotong.
+		return nil
+	}
+
 	lines, font, err := c.layoutText(element)
 	if err != nil {
 		return err
@@ -53,6 +62,8 @@ func (c *canvas) drawText(element *design.Element) error {
 	c.pdf.SetFillColor(red, green, blue)
 
 	baseline, step := c.baseline(font, element)
+	baseline += verticalOffset(element.ResolvedVerticalAlign(),
+		contentHeight, float64(len(lines))*step)
 	align := element.ResolvedAlign()
 
 	c.pdf.ClipRect(element.X, element.Y, element.W, element.H, false)
@@ -63,7 +74,7 @@ func (c *canvas) drawText(element *design.Element) error {
 		// browser. Meratakannya akan meregangkan sisa kalimat pendek sampai
 		// selebar kotaknya.
 		last := index == len(lines)-1
-		c.drawTextLine(element, line, element.X, baseline, element.W, align, element.LetterSpacing, last)
+		c.drawTextLine(element, line, contentX, baseline, contentWidth, align, element.LetterSpacing, last)
 		baseline += step
 	}
 
@@ -92,7 +103,28 @@ func (c *canvas) layoutText(element *design.Element) ([]string, selectedFont, er
 	c.pdf.SetFont(font.name, font.style, element.ResolvedFontSize())
 	c.textEncoder = font.encode
 
-	return c.wrapText(element.Text, element.W, element.LetterSpacing), font, nil
+	_, _, contentWidth, _ := element.ContentBox()
+
+	return c.wrapText(element.Text, contentWidth, element.LetterSpacing), font, nil
+}
+
+// verticalOffset menggeser seluruh blok teks di dalam kotak isinya.
+//
+// Blok yang lebih tinggi daripada kotaknya menghasilkan geseran negatif pada
+// middle dan bottom, sehingga bagian atasnya yang terpotong kliping — sama
+// seperti kotak flex yang isinya meluap di CSS. Tidak dijepit ke nol: menjepitnya
+// berarti middle diam-diam berubah menjadi top tepat ketika isinya bertambah satu
+// baris, dan pergeseran yang tidak diminta itu lebih membingungkan daripada
+// terpotong.
+func verticalOffset(align string, contentHeight, blockHeight float64) float64 {
+	switch align {
+	case design.VAlignMiddle:
+		return (contentHeight - blockHeight) / 2
+	case design.VAlignBottom:
+		return contentHeight - blockHeight
+	default:
+		return 0
+	}
 }
 
 // baseline menghitung posisi garis dasar baris pertama dan jarak antar baris.
@@ -113,7 +145,9 @@ func (c *canvas) baseline(font selectedFont, element *design.Element) (first, st
 	step = size * element.ResolvedLineHeight()
 	halfLeading := (step - (ascent + descent)) / 2
 
-	return element.Y + halfLeading + ascent, step
+	_, contentY, _, _ := element.ContentBox()
+
+	return contentY + halfLeading + ascent, step
 }
 
 // wrapText memenggal teks menjadi baris-baris yang muat di dalam lebar kotak.

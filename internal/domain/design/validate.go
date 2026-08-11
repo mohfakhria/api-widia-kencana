@@ -144,6 +144,29 @@ func (e *Element) validateText() error {
 	if err := oneOf(e.ID, "align", e.Align, AlignLeft, AlignCenter, AlignRight, AlignJustify); err != nil {
 		return err
 	}
+	if err := oneOf(e.ID, "verticalAlign", e.VerticalAlign, VAlignTop, VAlignMiddle, VAlignBottom); err != nil {
+		return err
+	}
+
+	// Sisi dalam yang negatif akan MELEBARKAN kotak isi melampaui kotak
+	// elemennya, sehingga teks tergambar di luar batas lalu terpotong kliping.
+	// Ditolak, bukan dijepit: itu selalu keliru, bukan penghilangan.
+	for _, side := range [...]struct {
+		name  string
+		value float64
+	}{
+		{"paddingTop", e.PaddingTop},
+		{"paddingRight", e.PaddingRight},
+		{"paddingBottom", e.PaddingBottom},
+		{"paddingLeft", e.PaddingLeft},
+	} {
+		if side.value < 0 {
+			return invalidf("element %q has a negative %s", e.ID, side.name)
+		}
+		if err := finite(e.ID, side.name, side.value); err != nil {
+			return err
+		}
+	}
 
 	return color(e.ID, "color", e.Color)
 }

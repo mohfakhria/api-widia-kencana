@@ -43,6 +43,8 @@ export type DesignFontStyle = 'normal' | 'italic';
  * dan backend menggambar PDF dari angka yang sama persis.
  */
 export type DesignStrokeStyle = 'solid' | 'longdash' | 'dash' | 'dot';
+export type DesignVerticalAlign = 'top' | 'middle' | 'bottom';
+
 export type DesignAlign = 'left' | 'center' | 'right' | 'justify';
 /** Sama artinya dengan `object-fit` pada CSS. */
 export type DesignImageFit = 'contain' | 'cover' | 'fill';
@@ -156,6 +158,30 @@ export interface DesignTextElement extends DesignElementBase {
   underline?: boolean;
   /** Di CSS: `text-decoration: line-through`. Boleh bersamaan dengan underline. */
   strikethrough?: boolean;
+  /**
+   * Meratakan SELURUH blok teks di dalam kotaknya. Bawaan: "top".
+   *
+   * Berbeda dari `align`, yang meratakan tiap baris secara mendatar. Blok yang
+   * lebih tinggi daripada kotaknya tetap digeser, sehingga pada "middle" dan
+   * "bottom" bagian ATASNYA yang terpotong.
+   */
+  verticalAlign?: DesignVerticalAlign;
+  /**
+   * Sisi dalam kotak teks, dalam titik. Tidak boleh negatif.
+   *
+   * TIDAK ADA bentuk ringkas `padding` — model ini datar, dan menyediakan
+   * keduanya berarti aturan presedensi yang harus disepakati dua sisi.
+   *
+   * Mengecilkan ruang tempat teks dipenggal, sehingga ikut mengubah jumlah
+   * baris — bukan sekadar menggeser.
+   *
+   * Kliping tetap memakai kotak penuh, sama seperti `overflow: hidden` di CSS
+   * yang memotong pada kotak padding.
+   */
+  paddingTop?: Points;
+  paddingRight?: Points;
+  paddingBottom?: Points;
+  paddingLeft?: Points;
   /** Pengali ukuran huruf, misal 1.5. Bawaan: 1.2. */
   lineHeight?: number;
   /** Titik; boleh negatif. Bawaan: 0. */

@@ -55,11 +55,20 @@ const (
 	DefaultImageFit      = FitContain
 	DefaultStrokeStyle   = StrokeSolid
 	DefaultOpacity       = 1.0
+	DefaultVerticalAlign = VAlignTop
 )
 
 const (
 	FontStyleNormal = "normal"
 	FontStyleItalic = "italic"
+)
+
+// Perataan tegak isi teks di dalam kotaknya. Berbeda dari align, yang meratakan
+// tiap baris secara mendatar.
+const (
+	VAlignTop    = "top"
+	VAlignMiddle = "middle"
+	VAlignBottom = "bottom"
 )
 
 // Gaya garis untuk rect dan line.
@@ -208,8 +217,24 @@ type Element struct {
 	// Underline dan Strikethrough berlaku pada SELURUH isi elemen, bukan sebagian.
 	// Menggarisbawahi satu kata di tengah paragraf menuntut teks kaya, dan itu
 	// belum ada — lihat catatan rich text di dokumen arsitektur.
-	Underline     bool    `json:"underline,omitempty"`
-	Strikethrough bool    `json:"strikethrough,omitempty"`
+	Underline     bool `json:"underline,omitempty"`
+	Strikethrough bool `json:"strikethrough,omitempty"`
+	// VerticalAlign meratakan seluruh blok teks di dalam kotaknya. Bawaan "top".
+	VerticalAlign string `json:"verticalAlign,omitempty"`
+
+	// Sisi dalam kotak teks, dalam titik. Empat field terpisah, TANPA bentuk
+	// ringkas "padding": model ini datar dan sudah melarang properti bersarang,
+	// dan menyediakan keduanya berarti aturan presedensi yang harus disepakati
+	// dua sisi — dua cara menyatakan satu hal.
+	//
+	// Mengecilkan ruang tempat teks dipenggal, jadi ia ikut mengubah jumlah baris
+	// — bukan sekadar menggeser. Kliping tetap memakai kotak PENUH, sama seperti
+	// overflow hidden di CSS yang memotong pada kotak padding, bukan pada kotak
+	// isi.
+	PaddingTop    float64 `json:"paddingTop,omitempty"`
+	PaddingRight  float64 `json:"paddingRight,omitempty"`
+	PaddingBottom float64 `json:"paddingBottom,omitempty"`
+	PaddingLeft   float64 `json:"paddingLeft,omitempty"`
 	LineHeight    float64 `json:"lineHeight,omitempty"`
 	LetterSpacing float64 `json:"letterSpacing,omitempty"`
 

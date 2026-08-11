@@ -188,6 +188,8 @@ luar `0..1` ditolak `element_rejected`.
 | `align` | string | `left`, `center`, `right`, `justify` |
 | `underline` | boolean | seluruh isi elemen |
 | `strikethrough` | boolean | seluruh isi elemen; boleh bersamaan dengan `underline` |
+| `verticalAlign` | string | `top`, `middle`, `bottom` |
+| `paddingTop` … `paddingLeft` | number | ≥ 0; empat sisi terpisah, tanpa bentuk ringkas |
 | `lineHeight` | number | pengali ukuran huruf, misal `1.5` |
 | `letterSpacing` | number | titik; boleh negatif |
 
@@ -562,6 +564,38 @@ otomatis saat pengguna mengetik — akan menampilkan seluruh teks di layar
 sementara backend **memotongnya** pada `h`. Kalau editor perlu menumbuhkan kotak,
 tumbuhkan `h` di dalam data, bukan hanya tampilannya.
 
+#### Sisi dalam dan perataan tegak
+
+```css
+padding: 8px 12px;      /* paddingTop/Bottom 8, paddingLeft/Right 12 */
+```
+
+Empat sisi terpisah, **tanpa bentuk ringkas `padding`** di dalam data. Model ini
+datar, dan menyediakan keduanya berarti aturan presedensi yang harus disepakati
+dua sisi.
+
+Sisi dalam **mengecilkan ruang tempat teks dipenggal**, jadi ia ikut mengubah
+jumlah baris — bukan sekadar menggeser. Kotak yang sudah pas isinya dapat
+mendadak kekurangan satu baris begitu sisi dalamnya ditambah.
+
+Kliping tetap memakai **kotak penuh**, sama seperti `overflow: hidden` di CSS
+yang memotong pada kotak padding, bukan pada kotak isi.
+
+Perataan tegak memakai flex, bukan `vertical-align` — yang di CSS hanya berlaku
+pada sel tabel dan elemen sebaris:
+
+```css
+display: flex;
+flex-direction: column;
+justify-content: flex-start;  /* top    */
+justify-content: center;      /* middle */
+justify-content: flex-end;    /* bottom */
+```
+
+Blok yang lebih tinggi daripada kotaknya **tetap digeser**, sehingga pada
+`middle` dan `bottom` bagian atasnya yang terpotong. Itu disengaja: menjepitnya ke
+`top` berarti perataan berubah diam-diam tepat ketika isinya bertambah satu baris.
+
 #### Garis bawah dan coret
 
 ```css
@@ -900,6 +934,8 @@ editor yang sudah ada?**
 | `rotate()` tanpa `transform-origin: center` | Terhadap titik tengah kotak | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
 | `x`/`y`/`w`/`h` dihitung ulang setelah diputar | Tetap kotak sebelum diputar | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
 | Transparansi lewat warna ber-alpha | `opacity` pada elemen | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
+| `vertical-align` untuk meratakan tegak | `display: flex` + `justify-content` | [2.3](#23-elemen-teks) |
+| Sisi dalam ditiru dengan menggeser `x` dan mengecilkan `w` | `paddingLeft` dan kawan-kawan | [2.3](#23-elemen-teks) |
 | Latar halaman ditiru dengan `rect` seukuran halaman | `background` pada halaman | [2.7](#27-putaran-transparansi-dan-latar-halaman) |
 | Gambar memakai URL langsung | `assetToken` + `<img src="/api/asset-content/:token">` | [2.5](#25-gambar) |
 
