@@ -83,11 +83,18 @@ type MessageEncoder interface {
 // parameternya sudah penuh string sejenis — id, page, token. Dua di antaranya
 // tertukar tidak akan menghasilkan galat kompilasi bila semuanya string.
 //
-// Per KONEKSI, bukan per pengguna. Satu orang boleh memegang sepuluh koneksi dan
-// dua tab pada dokumen yang sama itu biasa; dengan penanda berupa id pengguna,
-// suntingan dari tab A tiba di tab B membawa penanda yang sama dan tab B akan
-// melewatinya sebagai gemanya sendiri — padahal itu suntingan yang wajib ia
-// terapkan. Yang menjamin sifat itu klien, bukan server: server hanya menyalin.
+// Yang WAJIB dijamin klien: satu token per editor yang terbuka, BUKAN per
+// pengguna. Satu orang boleh memegang sepuluh koneksi dan dua tab pada dokumen
+// yang sama itu biasa; dengan penanda berupa id pengguna, suntingan dari tab A
+// tiba di tab B membawa penanda yang sama dan tab B akan melewatinya sebagai
+// gemanya sendiri — padahal itu suntingan yang wajib ia terapkan.
+//
+// Frontend memilih per editor, bukan per koneksi, sehingga tokennya bertahan
+// melewati sambungan ulang: yang punya keadaan lokal untuk dilindungi dari gema
+// basi adalah editornya, dan editor hidup lebih lama daripada koneksi mana pun.
+//
+// Server tidak mengetahui maupun menegakkan satu pun dari itu. Ia menyalin, dan
+// hanya menyalin — termasuk bila suatu saat klien memilih satuan yang lain.
 type Origin string
 
 // Cursor adalah letak kursor satu orang di atas dokumen.

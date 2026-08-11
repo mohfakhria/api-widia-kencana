@@ -77,10 +77,12 @@ func (cursorMoveEvent) isRoomEvent() {}
 // tidak elemen yang sudah tergambar optimistis di layarnya tidak akan pernah ada
 // di dokumen. Ketiga sisanya paling banter tidak berlaku, dan itu menyatu dengan
 // sendirinya.
-// origin dibawa PER KEJADIAN, bukan diingat per koneksi, walau klien memakai
-// token yang sama sepanjang koneksinya. Mengingatnya berarti server menyimpulkan
-// sesuatu tentang token yang ia janjikan tidak pernah ditafsirkan — dan
-// simpulan itu akan salah pada klien mana pun yang berperilaku lain.
+// origin dibawa PER KEJADIAN, bukan diingat per koneksi, walau klien mengirim
+// token yang sama berulang-ulang. Mengingatnya berarti server menyimpulkan
+// sesuatu tentang token yang ia janjikan tidak pernah ditafsirkan — dan simpulan
+// itu akan salah pada klien mana pun yang berperilaku lain. Bukan kemungkinan
+// teoretis: satuan token itu sudah sekali berubah, dari per koneksi menjadi per
+// editor, tanpa satu baris pun di sini perlu ikut berubah.
 type elementCreateEvent struct {
 	subscriber Subscriber
 	origin     Origin
