@@ -20,6 +20,7 @@ const (
 	DesignMessagePageReorder    = "page.reorder"
 	DesignMessageUndo           = "undo"
 	DesignMessageRedo           = "redo"
+	DesignMessageTextMeasure    = "text.measure"
 )
 
 // Jenis pesan yang dikirim server.
@@ -33,6 +34,7 @@ const (
 	DesignMessagePresence         = "presence"
 	DesignMessageCursor           = "cursor"
 	DesignMessageError            = "error"
+	DesignMessageTextMeasured     = "text.measured"
 	DesignMessageElementCreated   = "element.created"
 	DesignMessageElementUpdated   = "element.updated"
 	DesignMessageElementDeleted   = "element.deleted"
@@ -467,5 +469,61 @@ func NewDesignErrorMessage(code, message string) ([]byte, error) {
 		Type:    DesignMessageError,
 		Code:    code,
 		Message: message,
+	})
+}
+
+// DesignTextMeasure adalah muatan pesan text.measure.
+//
+// SATU-SATUNYA pesan yang bertanya alih-alih memerintah, dan satu-satunya yang
+// balasannya hanya kembali ke pengirim. Ia tidak menyentuh isi dokumen sama
+// sekali — tidak menaikkan version, tidak menyiarkan apa pun ke penghuni lain.
+type DesignTextMeasure struct {
+	// RequestID dipantulkan apa adanya pada balasannya.
+	//
+	// Ada karena protokol ini tidak punya cara lain mencocokkan jawaban dengan
+	// pertanyaannya: seluruh pesan lain berupa perintah yang jawabannya siaran,
+	// sehingga urutan kedatangan sudah cukup. Pengukuran boleh diajukan beberapa
+	// kali sekaligus, dan tanpa penanda ini pengirim tidak dapat tahu jawaban
+	// mana milik pertanyaan mana.
+	//
+	// Isinya bebas dan tidak pernah ditafsirkan server.
+	RequestID string `json:"requestId"`
+	// Elements dibiarkan mentah, diurai design.DecodeElement seperti
+	// element.create — supaya model tertutup dan seluruh aturan nilainya berlaku
+	// sama persis.
+	Elements []json.RawMessage `json:"elements"`
+}
+
+// DesignTextMeasuredMessage adalah balasannya, hanya ke pengirim.
+type DesignTextMeasuredMessage struct {
+	Type      string                  `json:"type"`
+	RequestID string                  `json:"requestId"`
+	Elements  []DesignTextMeasureItem `json:"elements"`
+}
+
+// DesignTextMeasureItem adalah hasil satu elemen.
+//
+// Tanpa omitempty pada ketiganya: teks kosong menghasilkan lebar nol, dan
+// jawaban yang menghilangkan field-nya tidak dapat dibedakan dari jawaban yang
+// tidak menyebut apa-apa.
+type DesignTextMeasureItem struct {
+	ID     string  `json:"id"`
+	Lines  int     `json:"lines"`
+	Height float64 `json:"height"`
+	Width  float64 `json:"width"`
+}
+
+func NewDesignTextMeasuredMessage(requestID string, measurements []design.TextMeasurement) ([]byte, error) {
+	items := make([]DesignTextMeasureItem, 0, len(measurements))
+	for _, m := range measurements {
+		items = append(items, DesignTextMeasureItem{
+			ID: m.ID, Lines: m.Lines, Height: m.Height, Width: m.Width,
+		})
+	}
+
+	return json.Marshal(DesignTextMeasuredMessage{
+		Type:      DesignMessageTextMeasured,
+		RequestID: requestID,
+		Elements:  items,
 	})
 }

@@ -606,6 +606,14 @@ tanda pisah `—` tercetak sebagai `â€"`, tanpa satu pun galat.
 
 ## 8. Yang belum ada, dan kenapa
 
+**Cache font untuk pengukuran.** `MeasureText` membuat dokumen fpdf baru tiap
+panggilan, sehingga berkas font ikut diurai ulang setiap kali. Dengan font inti
+itu tidak terasa — 53 µs per panggilan — tetapi dengan satu font tersemat
+terukur 1,2 ms, dua puluh tiga kali lebih mahal. Belum diperbaiki karena belum
+ada font tersemat yang dipakai, dan memperbaikinya berarti menyimpan dokumen
+fpdf antar panggilan, yang harus aman dipakai bersamaan. Yang perlu diingat:
+biayanya melonjak tepat pada hari font brand dipasang, bukan sebelum itu.
+
 **Penyalinan halaman.** Halaman baru selalu kosong. Menduplikasi halaman berikut
 isinya butuh penurunan id elemen yang baru, dan bentuk pesannya belum
 diputuskan.

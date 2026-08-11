@@ -734,6 +734,38 @@ kertas **sah** menurut validasi backend — hanya nilai di luar ±100000 yang
 ditolak — tetapi tidak akan tergambar di PDF karena berada di luar area cetak.
 Tanpa kliping, layar akan menampilkan sesuatu yang tidak pernah ikut tercetak.
 
+### 2.9 Mengukur teks sebelum menempatkannya
+
+Lewat WebSocket, bukan HTTP — satu jalur dengan penyuntingan:
+
+```jsonc
+{ "type": "text.measure", "requestId": "m-1",
+  "elements": [ { "id": "syarat", "type": "text", "x": 40, "y": 0, "w": 300, "h": 0,
+                  "text": "Harga berlaku empat belas hari…", "fontSize": 10 } ] }
+```
+
+```jsonc
+{ "type": "text.measured", "requestId": "m-1",
+  "elements": [ { "id": "syarat", "lines": 4, "height": 48, "width": 297.3 } ] }
+```
+
+`height` adalah tinggi kotak yang dibutuhkan, dan itulah nilai yang dipasang ke
+`h`. Bentuk lengkap pesannya beserta aturannya ada di
+[kontrak 2.13](websocket-contract.md#213-textmeasure).
+
+**Dua kegunaannya.**
+
+Tombol **"sesuaikan tinggi kotak dengan isinya"**. Frontend bisa menghitung
+sendiri, tetapi hasilnya hanya sebaik kecocokan pemenggalannya dengan backend —
+dan itu justru kelas ketidakcocokan yang paling sering membuat cetakan berbeda
+dari layar. Bertanya ke backend menghapusnya.
+
+**Penempatan terprogram.** Penyusun yang bukan manusia tidak dapat melihat di
+mana satu blok berakhir; ia bekerja menurun — taruh judul, tanyakan tingginya,
+taruh berikutnya di bawahnya. Tanpa ini, panjang teks yang tidak diketahui di
+muka membuat seluruh tata letak menjadi tebakan. Selisihnya nyata: teks yang sama
+menjadi 2 baris pada `w: 300` dan 5 baris pada `w: 150`.
+
 ---
 
 ## 3. Panduan bawaan untuk dokumen kosong

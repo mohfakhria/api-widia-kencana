@@ -398,6 +398,38 @@ export interface DesignRedoMessage {
   type: 'redo';
 }
 
+/**
+ * Menanyakan setinggi apa elemen teks setelah teksnya dipenggal — TANPA
+ * mengubah apa pun.
+ *
+ * Satu-satunya pesan yang bertanya alih-alih memerintah. Ia tidak menaikkan
+ * `version`, tidak menyiarkan apa pun ke penghuni lain, dan balasannya hanya
+ * kembali ke pengirim.
+ *
+ * Ada untuk penyusun yang tidak dapat melihat hasilnya — manusia menaruh elemen
+ * berikutnya dengan melihat di mana yang sebelumnya berakhir, program harus
+ * menghitungnya. Berguna juga untuk tombol "sesuaikan tinggi dengan isi": aturan
+ * pemenggalannya sama persis dengan yang mencetak.
+ */
+export interface DesignTextMeasureMessage {
+  type: 'text.measure';
+  /**
+   * Dipantulkan apa adanya pada balasan. Isinya bebas dan tidak pernah
+   * ditafsirkan server.
+   *
+   * Ada karena beberapa pengukuran boleh melayang bersamaan, dan tanpa penanda
+   * ini jawaban tidak dapat dicocokkan dengan pertanyaannya. Pesan lain tidak
+   * membutuhkannya: jawabannya berupa siaran, bukan balasan.
+   */
+  requestId: string;
+  /**
+   * Maksimal 200, dan HANYA `type: "text"`. Aturannya sama persis dengan
+   * element.create, termasuk model tertutup — field tak dikenal menolak seluruh
+   * pesan. `h` boleh nol: ia justru yang sedang dicari.
+   */
+  elements: DesignTextElement[];
+}
+
 export type DesignClientMessage =
   | DesignDocumentGetMessage
   | DesignCursorMoveMessage
@@ -410,7 +442,8 @@ export type DesignClientMessage =
   | DesignPageDeleteMessage
   | DesignPageReorderMessage
   | DesignUndoMessage
-  | DesignRedoMessage;
+  | DesignRedoMessage
+  | DesignTextMeasureMessage;
 
 /**
  * DAPAT DATANG TANPA DIMINTA. Selain sebagai balasan document.get, snapshot juga
@@ -582,6 +615,31 @@ export type DesignErrorCode =
    */
   | 'page_rejected';
 
+/** Balasan text.measure, HANYA ke pengirimnya. */
+export interface DesignTextMeasuredMessage {
+  type: 'text.measured';
+  /** Persis seperti yang dikirim pada permintaannya. */
+  requestId: string;
+  /** Berurutan sama dengan permintaannya. */
+  elements: DesignTextMeasurement[];
+}
+
+export interface DesignTextMeasurement {
+  id: string;
+  /** Jumlah baris setelah dipenggal. Baris kosong ikut terhitung. */
+  lines: number;
+  /**
+   * Tinggi kotak yang dibutuhkan — `lines` dikali jarak antar baris. Inilah
+   * nilai yang dipasang ke `h`.
+   */
+  height: Points;
+  /**
+   * Lebar baris TERPANJANG, bukan lebar yang diminta. Berguna untuk mengecilkan
+   * kotak sampai sepas isinya.
+   */
+  width: Points;
+}
+
 export type DesignServerMessage =
   | DesignSnapshotMessage
   | DesignPresenceMessage
@@ -594,6 +652,7 @@ export type DesignServerMessage =
   | DesignPageUpdatedMessage
   | DesignPageDeletedMessage
   | DesignPageReorderedMessage
+  | DesignTextMeasuredMessage
   | DesignErrorMessage;
 
 /**

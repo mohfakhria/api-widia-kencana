@@ -305,3 +305,23 @@ func (c *Content) Clone() *Content {
 func (c *Content) IsEmpty() bool {
 	return len(c.Pages) == 0
 }
+
+// TextMeasurement adalah hasil pengukuran satu elemen teks: berapa tinggi kotak
+// yang dibutuhkannya setelah teksnya dipenggal menurut lebar yang diberikan.
+//
+// Ada di paket domain, bukan di sisi renderer, karena penyusun dokumen yang
+// bukan manusia membutuhkannya untuk menempatkan elemen berikutnya — dan
+// penempatan adalah bagian dari kosakata model isi dokumen, bukan urusan
+// pencetakan.
+type TextMeasurement struct {
+	ID string
+	// Lines adalah jumlah baris setelah dipenggal. Baris kosong ikut terhitung:
+	// ia memang memakan satu tinggi baris saat dicetak.
+	Lines int
+	// Height adalah Lines dikali jarak antar baris — tinggi kotak yang dibutuhkan,
+	// bukan tinggi hurufnya. Inilah nilai yang dipasang ke field h.
+	Height float64
+	// Width adalah lebar baris TERPANJANG, bukan lebar kotak yang diminta.
+	// Berguna untuk mengecilkan kotak sampai sepas isinya.
+	Width float64
+}

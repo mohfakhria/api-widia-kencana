@@ -10,6 +10,7 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
 
 	"github.com/coder/websocket"
@@ -20,6 +21,12 @@ import (
 
 type DocumentDesignHandler struct {
 	service *documentdesign.Service
+	// measure TIDAK lewat Service maupun orchestrator. Pengukuran tidak menyentuh
+	// isi dokumen, jadi ia dilayani di goroutine koneksi pengirimnya sendiri —
+	// menaruhnya di antrean room berarti menghitung tata letak di jalur yang sama
+	// dengan setiap geseran elemen orang lain, dan geseran itulah yang paling
+	// tidak boleh tersendat.
+	measure input.DocumentMeasureUseCase
 	logger  *slog.Logger
 	origins []string
 
@@ -32,6 +39,7 @@ type DocumentDesignHandler struct {
 func NewDocumentDesignHandler(
 	appCtx context.Context,
 	service *documentdesign.Service,
+	measure input.DocumentMeasureUseCase,
 	cfg config.Config,
 	logger *slog.Logger,
 ) *DocumentDesignHandler {
@@ -49,6 +57,7 @@ func NewDocumentDesignHandler(
 
 	return &DocumentDesignHandler{
 		service: service,
+		measure: measure,
 		logger:  logger,
 		origins: origins,
 		appCtx:  appCtx,
