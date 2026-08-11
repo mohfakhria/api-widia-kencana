@@ -153,8 +153,10 @@ func (c *canvas) baseline(font selectedFont, element *design.Element) (first, st
 // menghasilkan pemenggalan yang sama persis — algoritma yang lebih pandai, seperti
 // perataan Knuth-Plass, tidak akan pernah cocok dengan yang dilakukan browser.
 //
-// Kata yang lebih lebar daripada kotaknya dibiarkan meluber, tidak dipatahkan di
-// tengah. Itu perilaku bawaan CSS dengan overflow-wrap: normal.
+// Kata yang lebih lebar daripada kotaknya DIPATAHKAN, mengikuti frontend yang
+// memakai overflow-wrap: anywhere. Dulu ia dibiarkan meluber — dan yang meluber
+// lalu hilang dipotong kliping, tanpa satu pun tanda di PDF bahwa ada yang tidak
+// tercetak. Kasus nyatanya bukan teks uji melainkan URL panjang.
 func (c *canvas) wrapText(text string, maxWidth, letterSpacing float64) []string {
 	normalized := strings.ReplaceAll(text, "\r\n", "\n")
 
@@ -177,19 +179,70 @@ func (c *canvas) wrapParagraph(paragraph string, maxWidth, letterSpacing float64
 	}
 
 	lines := make([]string, 0, 1)
-	current := words[0]
+	current := ""
 
-	for _, word := range words[1:] {
-		candidate := current + " " + word
-		if c.measure(candidate, letterSpacing) > maxWidth {
+	for _, word := range words {
+		candidate := word
+		if current != "" {
+			candidate = current + " " + word
+		}
+		if c.measure(candidate, letterSpacing) <= maxWidth {
+			current = candidate
+			continue
+		}
+
+		// Tidak muat. Baris berjalan ditutup lebih dulu, lalu katanya dicoba
+		// sendirian di baris baru.
+		if current != "" {
 			lines = append(lines, current)
+			current = ""
+		}
+		if c.measure(word, letterSpacing) <= maxWidth {
 			current = word
 			continue
 		}
-		current = candidate
+
+		// Sendirian pun tidak muat: patahkan.
+		potongan := c.breakWord(word, maxWidth, letterSpacing)
+		lines = append(lines, potongan[:len(potongan)-1]...)
+		current = potongan[len(potongan)-1]
 	}
 
 	return append(lines, current)
+}
+
+// breakWord memotong satu kata yang lebih lebar daripada kotaknya menjadi
+// beberapa potongan yang masing-masing muat.
+//
+// Dipotong di antara RUNE, bukan byte — memotong di tengah rune menghasilkan
+// byte yang bukan aksara apa pun.
+//
+// Potongan terakhir dikembalikan bersama yang lain dan menjadi baris berjalan di
+// pemanggil, supaya kata berikutnya masih dapat menyambung di baris yang sama.
+// Itulah yang dilakukan browser: setelah URL panjang patah, kata sesudahnya
+// duduk di sisa baris terakhirnya, bukan di baris baru.
+//
+// Satu rune yang sendirian pun tidak muat tetap dikeluarkan sebagai satu
+// potongan. Kotak yang lebih sempit daripada satu huruf tidak punya jawaban yang
+// benar, dan perulangan yang tidak pernah maju jauh lebih buruk daripada satu
+// huruf yang meluber.
+func (c *canvas) breakWord(word string, maxWidth, letterSpacing float64) []string {
+	runes := []rune(word)
+	potongan := make([]string, 0, 2)
+
+	mulai := 0
+	for mulai < len(runes) {
+		akhir := mulai + 1
+		for akhir < len(runes) &&
+			c.measure(string(runes[mulai:akhir+1]), letterSpacing) <= maxWidth {
+			akhir++
+		}
+
+		potongan = append(potongan, string(runes[mulai:akhir]))
+		mulai = akhir
+	}
+
+	return potongan
 }
 
 // measure menghitung lebar teks dalam titik.

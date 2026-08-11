@@ -221,7 +221,8 @@ jalurnya persis seperti stroke.
 | Style | Field wire | Nilai | Yang harus digambar |
 |---|---|---|---|
 | Berkas | `assetToken` | Token aset | — |
-| Cara mengisi | `fit` | `contain` \| `cover` | `contain` memuat seluruh gambar di dalam kotak; `cover` mengisi kotak dan memotong kelebihannya |
+| Cara mengisi | `fit` | `contain` \| `cover` \| `fill` | `contain` memuat seluruh gambar di dalam kotak; `cover` mengisi kotak dan memotong kelebihannya; `fill` meregangkannya ke bentuk kotak. Toolbar menamainya Contain, Cover, dan **Stretch** |
+| Sudut membulat | `radius` | Point | Memotong gambarnya, seperti `border-radius` pada `<img>` — bukan membulatkan bentuk yang digambar, seperti pada `rect`. Dibatasi separuh sisi terpendek oleh browser dan backend masing-masing, jadi tidak ada yang membatasinya di tengah |
 
 ### 3.5 Halaman
 
@@ -239,6 +240,7 @@ Hanya yang **mengubah piksel**. Behavior interaksi tidak ada di sini.
 | Aturan | Yang dilakukan kedua sisi |
 |---|---|
 | Pemenggalan baris | Rakus: kata ditambahkan selama masih muat, pindah baris begitu tidak. Tanpa tanda hubung otomatis |
+| Kata yang lebih lebar dari kotaknya | **Dipatahkan** antar aksara, setara `overflow-wrap: anywhere`. Potongan terakhirnya tetap menjadi baris berjalan, sehingga kata sesudahnya duduk di sisa baris itu — bukan di baris baru |
 | Spasi | Deretan spasi dan tab menjadi satu pemisah; `\n` dihormati; baris kosong tetap memakan satu tinggi baris. Setara `white-space: pre-line` |
 | Kerning | **Dimatikan.** Browser merapatkan pasangan huruf tertentu atas inisiatifnya sendiri; backend tidak |
 | Ligatur | **Dimatikan.** `fi` tidak menyatu jadi satu glyph |
@@ -261,7 +263,11 @@ alasan mengapa ia dibiarkan terbuka.
 
 | Aturan | Frontend | Backend | Alasan | Pemilik | Status |
 |---|---|---|---|---|---|
-| Kata lebih lebar dari kotaknya | **Dipatahkan** (`overflow-wrap: anywhere`) | Dibiarkan meluber, tidak dipatahkan | Menyamakannya tidak menyelamatkan apa pun: deretan tak terpatahkan sudah hilang dari PDF dengan cara apa pun. Yang didapat dari kesetiaan cuma kotak teks yang gagal memuat kata-katanya sendiri saat diketik — terbaca sebagai editor rusak, bukan sebagai peringatan cetak | Backend | Terbuka — lihat [§6](#6-permintaan-terbuka) |
+| — | — | — | Tidak ada perbedaan yang tersisa | — | — |
+
+Satu baris pernah ada di sini dan **sudah tertutup**: kata yang lebih lebar
+daripada kotaknya dibiarkan meluber di backend sementara frontend
+mematahkannya. Ditutup backend 2026-08-11 — lihat [§8](#8-riwayat-keputusan).
 
 ---
 
@@ -269,7 +275,79 @@ alasan mengapa ia dibiarkan terbuka.
 
 | Permintaan | Dari | Untuk | Alasan | Status |
 |---|---|---|---|---|
-| Patahkan kata yang lebih lebar dari kotaknya | Frontend | Backend | Menutup satu-satunya perbedaan di [§5](#5-perbedaan-yang-disengaja). Kasus nyatanya bukan teks uji melainkan **URL panjang**, yang pasti muncul di dokumen sungguhan dan saat ini hilang dari PDF tanpa tanda apa pun | Diajukan 2026-08-11 |
+| Patahkan kata yang lebih lebar dari kotaknya | Frontend | Backend | Menutup satu-satunya perbedaan di [§5](#5-perbedaan-yang-disengaja). Kasus nyatanya bukan teks uji melainkan **URL panjang**, yang pasti muncul di dokumen sungguhan dan saat ini hilang dari PDF tanpa tanda apa pun | **Selesai 2026-08-11** |
+| Sebutkan bentuk `underline`, `strikethrough`, `verticalAlign`, dan keempat `padding` | Frontend | Backend | [§7](#7-status-implementasi) menyebut keempatnya selesai di backend dan [§4](#4-behavior-tampil-yang-harus-ditiru) menyebut namanya, tetapi tidak satu pun menyebut **bentuk nilainya**: boolean atau enum, `verticalAlign` isinya apa saja, `padding` dalam point. Frontend tidak akan menebak bentuk wire. Baris di [§3](#3-style-yang-dipakai-frontend) — nama, nilai, dan yang harus digambar — sudah cukup | **Dijawab 2026-08-11**, lihat 6.1 |
+| Sebutkan penyunting pada setiap siaran perubahan | Frontend | Backend | Konsekuensi dari koreksi [§2.1](#21-frontend--backend): siaran memantul ke pengirimnya, tetapi tidak membawa penanda siapa penyuntingnya, jadi frontend tidak bisa membedakan gemanya sendiri dari suntingan orang lain. Yang menggigit adalah mengetik — setiap ketukan dikirim, gemanya kembali satu round-trip kemudian membawa isi yang sudah usang, dan kotak teks yang tingginya diturunkan dari isi itu tertinggal di belakang jari. Satu field cukup: frontend melewati gemanya sendiri sambil tetap menaikkan `version`, yang memang alasan gema itu ada | **Dijawab 2026-08-11**, lihat 6.2 — bentuknya perlu disepakati sebelum dikerjakan |
+
+### 6.1 Bentuk keempat properti teks — jawaban backend
+
+Sudah dapat digambar hari ini. Baris di bawah siap dipindahkan ke
+[§3.2](#32-teks) begitu frontend memakainya; ia tidak ditaruh di sana sekarang
+karena §3 adalah deklarasi frontend atas apa yang **dipakai**, bukan daftar apa
+yang **tersedia**.
+
+| Style | Field wire | Nilai yang diterima backend | Yang digambar |
+|---|---|---|---|
+| Garis bawah | `underline` | Boolean, bawaan `false` | Bidang terisi 0,1 em **di bawah** garis dasar, tebal 0,05 em |
+| Coret | `strikethrough` | Boolean, bawaan `false` | Bidang terisi 0,4 em **di atas** garis dasar, tebal sama. Boleh bersamaan dengan `underline` |
+| Perataan tegak | `verticalAlign` | `top` \| `middle` \| `bottom`, bawaan `top` | Menggeser **seluruh blok** teks di dalam kotak isi |
+| Sisi dalam | `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | Point, **≥ 0**, bawaan 0. Negatif ditolak | Mengecilkan kotak tempat teks dipenggal |
+
+Empat hal yang tidak terbaca dari tabel itu:
+
+- **Keduanya berlaku pada seluruh isi elemen, bukan sebagian.** Menggarisbawahi
+  satu kata di tengah paragraf menuntut teks kaya, dan itu belum ada.
+- **Garisnya menerus mengikuti lebar teks** — termasuk pada perataan penuh yang
+  selanya melebar, dan pada teks yang diberi jarak antar huruf. Pada baris
+  terakhir paragraf berperataan penuh, yang memang tidak diregangkan, garisnya
+  berhenti di ujung teks bukan di tepi kotak.
+- **Sisi dalam mengubah jumlah baris**, bukan sekadar menggeser. Kotak yang
+  sudah pas isinya dapat mendadak kekurangan satu baris begitu sisi dalamnya
+  ditambah. Kliping tetap memakai kotak **penuh**, seperti `overflow: hidden`
+  yang memotong pada kotak padding.
+- **Blok yang lebih tinggi daripada kotaknya tetap digeser**, sehingga pada
+  `middle` dan `bottom` bagian **atasnya** yang terpotong. Tidak dijepit ke
+  `top`: menjepitnya berarti perataan berubah diam-diam tepat ketika isinya
+  bertambah satu baris.
+
+Angka 0,1 dan 0,05 em itu metrik AFM Helvetica. Untuk keluarga inti ia persis;
+`fpdf` menyimpan metrik garis bawah pada struct yang tidak diekspor, sehingga
+tidak ada cara membacanya per font. Jangan menyetel `text-underline-offset`
+maupun `text-decoration-thickness` di CSS — menyetelnya sendiri justru yang
+membuat layar dan cetak berbeda.
+
+### 6.2 Penanda penyunting — jawaban backend
+
+Bisa dikerjakan dan murah; room sudah tahu siapa pengirim tiap kejadian. Dua hal
+membuat bentuk naifnya salah, dan keduanya perlu disepakati lebih dulu.
+
+**Id pengguna tidak cukup — penandanya harus per koneksi.** Satu pengguna boleh
+memegang **sepuluh** koneksi, dan dua tab pada dokumen yang sama itu biasa.
+Dengan penanda berupa id pengguna, suntingan dari tab A tiba di tab B membawa id
+yang sama, dan tab B akan melewatinya sebagai gemanya sendiri — padahal itu
+suntingan yang wajib ia terapkan. Dua tab milik satu orang berhenti sinkron.
+
+**Tiga siaran membawa keputusan server, bukan yang dikirim.**
+`element.reordered`, `page.created`, dan `page.reordered` menyiarkan indeks
+**sesungguhnya setelah dijepit**, yang dapat berbeda dari yang diminta. Jadi
+aturannya bukan "lewati gema sendiri", melainkan: lewati muatannya untuk
+`create`, `update`, dan `delete`; **tetap pakai** untuk ketiga yang membawa
+indeks efektif.
+
+Bentuk yang backend usulkan: **token buram dari klien**, bukan identitas
+terbitan server. Frontend menaruh `origin` — string bebas, misalnya satu UUID
+per koneksi — pada tiap pesan sunting, dan server menyalinnya apa adanya ke
+siaran yang dihasilkan tanpa pernah menafsirkannya. Tidak ada konsep identitas
+baru di server, tidak perlu memberi tahu klien id koneksinya saat handshake, dan
+kasus dua tab selesai dengan sendirinya karena tiap tab memilih tokennya sendiri.
+
+Ongkosnya, supaya diketahui berdua: satu field pada sembilan pesan sunting masuk
+dan delapan siaran keluar.
+
+Alternatif yang sudah ditimbang dan gugur: server berhenti memantulkan ke
+pengirim dan menggantinya dengan balasan ringan berisi `version` saja. Ia gugur
+oleh poin kedua — pengirim tetap membutuhkan indeks efektif, sehingga balasan itu
+akan tumbuh menjadi siaran yang sama juga.
 
 ---
 
@@ -284,13 +362,13 @@ pernah sama-sama terlihat.
 |---|---|---|---|
 | Putaran, transparansi, elipsis, latar halaman | Selesai | Selesai | 2026-08-10 |
 | `text.measure` / `text.measured` | **Dicabut** | **Dicabut** | 2026-08-11 |
-| Pemenggalan kata panjang | Belum | Selesai (kanvas) | 2026-08-11 |
+| Pemenggalan kata panjang | **Selesai** | Selesai (kanvas) | 2026-08-11 |
 | Daftar font dari backend | **Dihapus** | Menyesuaikan — satu keluarga lewat CSS | 2026-08-10 |
-| `underline` dan `strikethrough` pada teks | Selesai | Belum dipakai | 2026-08-11 |
-| `verticalAlign` dan empat sisi `padding` pada teks | Selesai | Belum dipakai | 2026-08-11 |
-| `radius` pada gambar | Selesai | Belum dipakai | 2026-08-11 |
-| `fit: "fill"` pada gambar | Selesai | Belum dipakai — frontend memakai `contain` dan `cover` | 2026-08-11 |
-| Penanganan `element_rejected` dan `page_rejected` | Dikirim sejak 2026-08-08 | Belum ditangani | 2026-08-11 |
+| `underline` dan `strikethrough` pada teks | Selesai | **Terhalang** — bentuk nilainya belum disebutkan, lihat [§6](#6-permintaan-terbuka) | 2026-08-11 |
+| `verticalAlign` dan empat sisi `padding` pada teks | Selesai | **Terhalang** — sama | 2026-08-11 |
+| `radius` pada gambar | Selesai | **Selesai** — dikirim, dibaca, digambar, dan ada di toolbar bersama sudut rect | 2026-08-11 |
+| `fit: "fill"` pada gambar | Selesai | **Sudah dipakai sejak awal** — baris ini sebelumnya keliru tentang frontend; toolbar menawarkannya sebagai "Stretch" | 2026-08-11 |
+| Penanganan `element_rejected` dan `page_rejected` | Dikirim sejak 2026-08-08 | **Selesai** — minta ulang dokumen dan beri tahu penggunanya | 2026-08-11 |
 
 ---
 
@@ -308,6 +386,11 @@ harus menindaklanjuti.
 | 2026-08-11 | Tinggi kotak teks diturunkan dari isinya di sisi frontend; lebar tetap milik pengguna. Backend menerima keduanya sebagai angka jadi | Frontend |
 | 2026-08-11 | §9 ditambahkan, disusun ulang dari implementasi frontend karena sumber aslinya sudah tidak disimpan. **Menunggu pemeriksaan backend** — angka yang tidak cocok akan muncul sebagai koneksi terputus di produksi, bukan sebagai galat | Frontend menyusun, backend memeriksa |
 | 2026-08-11 | §9 diperiksa backend terhadap kode. §9.1 dan §9.4 cocok seluruhnya. Tiga koreksi ditulis: siaran perubahan **memantul ke pengirimnya** dan §2.1 sebelumnya menyatakan sebaliknya; `1006` punya arti ketiga — server membuang klien yang tertinggal; dan §9.5 kekurangan empat dari enam kode galat yang dikirim backend | Backend |
+| 2026-08-11 | `radius` pada gambar diimplementasikan frontend. `fit: "fill"` ternyata sudah dipakai sejak awal dan barisnya di §7 diperbaiki. Dua sisanya terhalang: bentuk nilainya belum disebutkan di mana pun, dan menebak bentuk wire adalah hal yang justru dijaga dokumen ini | Frontend |
+| 2026-08-11 | Backend mematahkan kata yang lebih lebar daripada kotaknya, menutup satu-satunya perbedaan di [§5](#5-perbedaan-yang-disengaja). Diverifikasi lewat piksel: URL sepanjang satu baris penuh kini menjadi empat baris yang seluruhnya termuat, sementara teks biasa tidak ikut terpatahkan | Backend |
+| 2026-08-11 | Backend menjawab kedua permintaan di [§6](#6-permintaan-terbuka). Bentuk keempat properti teks ditulis di 6.1 — kelalaian backend: §7 dan §4 sebelumnya menyebut namanya tanpa pernah menyebut bentuk nilainya. Penanda penyunting dijawab di 6.2 beserta dua hal yang membuat bentuk naifnya salah; bentuknya **belum disepakati**, jadi belum dikerjakan | Backend |
+| 2026-08-11 | Frontend menindaklanjuti ketiga koreksi backend. `element_rejected` dan `page_rejected` kini memicu permintaan ulang dokumen plus pesan ke pengguna; komentar `1006` di `design-socket.ts` mencantumkan arti ketiga; dan komentar yang menyebut `unsupported_message_type` sebagai lalu lintas normal dicabut — dulu benar saat hanya `document.get` yang diterima, sekarang membuat kesalahan sungguhan terlihat wajar | Frontend |
+| 2026-08-11 | Koreksi §2.1 memunculkan permintaan baru di [§6](#6-permintaan-terbuka): siaran memantul ke pengirimnya tanpa menyebut siapa penyuntingnya, sehingga frontend tidak bisa melewati gemanya sendiri | Frontend |
 | 2026-08-11 | Kontrak disederhanakan jadi **satu** dokumen: yang ini. Deklarasi tipe terbitan backend dihentikan, dan bersamanya pin konformansi di frontend ikut dibuang — sebuah pin yang dipegang terhadap salinan beku selalu hijau apa pun yang berubah di hulu, yang lebih buruk daripada tidak ada pin. **Konsekuensinya: tidak ada lagi pemeriksaan otomatis atas perubahan kontrak.** Yang tersisa hanyalah §8 ini | Keduanya |
 
 ---
@@ -393,12 +476,17 @@ membuat Cmd+Z bergantung pada secepat apa seseorang menarik pointer.
 |---|---|---|
 | `malformed_message` | Muatan pesan tidak sah atau kekurangan field wajib | Minta ulang seluruh dokumen — pesan yang ditolak berarti keadaan lokal mungkin sudah tidak sejalan |
 | `document_unavailable` | Dokumen sementara tidak bisa dilayani | Coba lagi setiap 15 detik, maksimum 4 kali |
-| `element_rejected` | **Pembuatan elemen tidak jadi** — muatannya tidak sah, id sudah dipakai, atau halamannya tidak ada. Hanya `element.create` yang membalas; `element.update`, `delete`, dan `reorder` yang sasarannya sudah lenyap **didiamkan**, karena itu lomba yang wajar pada menang-terakhir dan siaran penghapusannya toh sedang menuju ke sana | Belum ditangani. Ini yang paling perlu, karena artinya pekerjaan pengguna tidak tersimpan sementara layarnya menunjukkan sudah |
-| `page_rejected` | **Perubahan halaman tidak jadi** — id sudah dipakai, batas 200 halaman tercapai, atau menghapus halaman terakhir. Hanya `page.create` dan `page.delete` yang membalas | Belum ditangani |
-| `missing_message_type` | Pesan tanpa field `type` | Belum ditangani; ini bug frontend bila muncul |
-| `unsupported_message_type` | Jenis pesan tidak dikenal server | Belum ditangani; muncul bila frontend berjalan lebih dulu dari backend |
+| `element_rejected` | **Pembuatan elemen tidak jadi** — muatannya tidak sah, id sudah dipakai, atau halamannya tidak ada. Hanya `element.create` yang membalas; `element.update`, `delete`, dan `reorder` yang sasarannya sudah lenyap **didiamkan**, karena itu lomba yang wajar pada menang-terakhir dan siaran penghapusannya toh sedang menuju ke sana | Minta ulang seluruh dokumen, dan tampilkan pesan server apa adanya ke pengguna |
+| `page_rejected` | **Perubahan halaman tidak jadi** — id sudah dipakai, batas 200 halaman tercapai, atau menghapus halaman terakhir. Hanya `page.create` dan `page.delete` yang membalas | Sama |
+| `missing_message_type` | Pesan tanpa field `type` | Dicatat saja; ini bug frontend bila muncul |
+| `unsupported_message_type` | Jenis pesan tidak dikenal server | Dicatat saja; muncul bila frontend berjalan lebih dulu dari backend |
 
-Keenamnya dikirim backend hari ini. Empat yang terakhir belum punya penanganan
-di frontend — ditambahkan backend 2026-08-11 supaya keberadaannya diketahui,
-bukan sebagai keluhan. Yang mendesak hanya `element_rejected` dan
-`page_rejected`: keduanya berarti suntingan tidak terjadi.
+Dua yang ditolak diperlakukan sama dengan `malformed_message` — minta ulang
+dokumen — dan alasannya sama: yang ada di sini dan yang ada di sana terbukti
+sudah berbeda, dan kontrak tidak menyebutkan seberapa jauh. Bedanya satu hal,
+dan itu yang membuat keduanya ditampilkan ke pengguna sementara
+`malformed_message` tidak: pada penolakan, server memahami kita dengan
+sempurna dan **menolak**. Elemen yang ditolak sudah tergambar di kanvas secara
+optimistis, dan permintaan ulang dokumen akan mengambilnya kembali beberapa
+saat kemudian — elemen yang lenyap tanpa penjelasan lebih buruk daripada
+penolakannya sendiri.
