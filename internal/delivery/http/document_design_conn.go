@@ -114,11 +114,36 @@ func (h *DocumentDesignHandler) logMessage(documentToken, direction string, payl
 		return
 	}
 
+	messageType := designMessageType(payload)
+	if noisyDesignMessage(messageType) {
+		return
+	}
+
 	h.logger.Debug("document design message",
 		"document", documentToken,
 		"direction", direction,
-		"type", designMessageType(payload),
+		"type", messageType,
 		"bytes", len(payload))
+}
+
+// noisyDesignMessage menyaring lalu lintas kursor dari catatan debug.
+//
+// Kursor bergerak puluhan kali per detik per orang, dan siarannya menuju SETIAP
+// penghuni — sehingga satu dokumen dengan tiga penyunting menghasilkan ratusan
+// baris per detik yang seluruhnya mengatakan hal yang sama. Catatan penyuntingan
+// yang sesungguhnya tenggelam di antaranya, dan justru itulah yang orang cari
+// ketika ia menyalakan level debug.
+//
+// Disaring di sini, bukan dengan menaikkan level lognya, karena keduanya bukan
+// pilihan yang sama: menaikkan level akan ikut membungkam seluruh jejak pesan,
+// termasuk yang sedang dicari.
+//
+// Menyalakannya kembali cukup dengan mengembalikan false di sini. Tidak dibuat
+// dapat disetel lewat konfigurasi selama belum ada yang membutuhkannya —
+// pertanyaan yang dijawab kursor hampir selalu "apakah soketnya hidup", dan itu
+// sudah dijawab pesan lain.
+func noisyDesignMessage(messageType string) bool {
+	return messageType == dto.DesignMessageCursorMove || messageType == dto.DesignMessageCursor
 }
 
 // designMessageType membaca field type saja. Payload yang tidak dapat diurai
