@@ -21,7 +21,7 @@ mengubah sesuatu?**
 |---|---|---|
 | 2026-08-11 | `verticalAlign` dan empat sisi `padding` pada elemen teks | Tambahan, **tetapi** dua hal. Kirim balik kelimanya pada setiap `element.update`, seperti properti lain — yang tidak disertakan akan hilang. Dan sisi dalam **mengubah jumlah baris**, bukan sekadar menggeser — kotak yang sudah pas isinya dapat mendadak kekurangan satu baris begitu sisi dalamnya ditambah. Aturannya di [panduan](document-design.md#23-elemen-teks) |
 | 2026-08-11 | `underline` dan `strikethrough` pada elemen teks | Tambahan, **tetapi**: `element.update` mengganti elemen seutuhnya, jadi kirim balik keduanya pada setiap update — yang tidak disertakan akan menghapus hiasannya diam-diam. Keduanya berlaku pada seluruh isi elemen, bukan sebagian. Aturan menggambarnya di [panduan](document-design.md#23-elemen-teks) |
-| 2026-08-11 | `text.measure` — menanyakan tinggi teks tanpa mengubah apa pun | Tambahan, tidak memutus apa pun. Pesan pertama yang BERTANYA: balasannya `text.measured` hanya ke pengirim, `version` tidak naik, dan tidak ada siaran ke penghuni lain. Berguna untuk tombol "sesuaikan tinggi dengan isi" yang hasilnya dijamin sama dengan cetakan. Lihat [2.13](#213-textmeasure) |
+| 2026-08-11 | `text.measure` ditambahkan lalu **dibatalkan pada hari yang sama** | Tidak ada tindakan. Pesan itu tidak pernah berjalan di server mana pun. Bila Anda telanjur melihatnya di kontrak ini dan mulai menyiapkannya, hentikan: untuk mengetahui tinggi teks, baca saja hasil render browser Anda sendiri |
 | 2026-08-10 | `rotation` dan `opacity` pada semua elemen, jenis baru `ellipse`, `background` pada halaman | **Perlu tindakan pada dua hal.** Pertama, `page.update` kini mewajibkan **empat** field — pesan tanpa `background` ditolak `malformed_message`. Kedua, `element.update` mengganti elemen seutuhnya, jadi mulai kirim balik `rotation` dan `opacity` pada setiap update; yang tidak disertakan akan menegakkan dan memekatkan elemen itu diam-diam. `opacity: 0` adalah nilai yang sah dan berbeda dari tidak menyebutkannya. Aturan menggambarnya di [panduan](document-design.md#27-putaran-transparansi-dan-latar-halaman) |
 | 2026-08-10 | `FRONTEND_URL` diganti `ALLOWED_ORIGINS`, dan pemeriksaan `Origin` tidak lagi memeriksa skema | Tidak ada di sisi kode frontend — tetapi **beri tahu yang memasang server**. Nilainya kini daftar host dipisah koma, boleh berpola, dan **kosong berarti tidak ada yang diizinkan**; sebelumnya bawaannya `http://localhost:3000`. Daftar yang sama sekarang juga yang menentukan CORS, jadi kedua jalur tidak bisa lagi berbeda pendapat |
 | 2026-08-10 | `GET /api/document-design-fonts` **dihapus** | **Perlu tindakan bila Anda memanggilnya.** Tidak ada lagi daftar font dari backend: pakai satu keluarga lewat CSS, dan batasi ketebalan pada 400 dan 700. Tumpukan `font-family` yang wajib dipakai ada di [panduan](document-design.md#22-font-berkas-yang-sama-di-kedua-sisi) |
@@ -456,64 +456,7 @@ Belum ada cara mengetahui apakah masih ada yang bisa di-undo. Tombolnya belum
 dapat dimatikan secara tepat; menekan undo pada riwayat kosong aman dan tidak
 menghasilkan apa-apa.
 
-### 2.13 `text.measure`
-
-```jsonc
-{
-  "type": "text.measure",
-  "requestId": "m-1",
-  "elements": [
-    { "id": "syarat", "type": "text", "x": 40, "y": 0, "w": 300, "h": 0,
-      "text": "Harga berlaku empat belas hari…", "fontSize": 10, "lineHeight": 1.4 }
-  ]
-}
-```
-
-| | |
-|---|---|
-| Kapan dikirim | sebelum menempatkan elemen di bawah sebuah blok teks, atau untuk tombol "sesuaikan tinggi dengan isi" |
-| Balasan | `text.measured`, **hanya ke pengirim** |
-| Bila muatannya cacat | `error` dengan kode `element_rejected` |
-
-**Satu-satunya pesan yang BERTANYA, bukan memerintah.** Konsekuensinya tiga, dan
-ketiganya berbeda dari seluruh pesan lain:
-
-- `version` **tidak naik** — dokumennya memang tidak berubah
-- **tidak ada siaran** ke penghuni lain — tidak ada yang perlu mereka ketahui
-- balasannya kembali **hanya ke pengirim**
-
-`requestId` dipantulkan apa adanya. Ia ada karena beberapa pengukuran boleh
-melayang bersamaan, dan tanpa penanda itu jawaban tidak dapat dicocokkan dengan
-pertanyaannya. Pesan lain tidak membutuhkannya: jawaban mereka berupa siaran,
-dan urutan kedatangan sudah cukup. Isinya bebas dan tidak pernah ditafsirkan
-server.
-
-Elemennya tunduk pada aturan yang sama persis dengan `element.create`, termasuk
-model tertutup — field yang tidak dikenal menolak seluruh pesan. Maksimal **200**
-elemen, dan **hanya** `type: "text"`. Field `h` boleh nol: ia justru yang sedang
-dicari.
-
-```jsonc
-{
-  "type": "text.measured",
-  "requestId": "m-1",
-  "elements": [ { "id": "syarat", "lines": 4, "height": 56, "width": 297.3 } ]
-}
-```
-
-`height` adalah tinggi kotak yang dibutuhkan — `lines` dikali jarak antar baris —
-dan itulah nilai yang dipasang ke `h`. `width` adalah lebar baris **terpanjang**,
-bukan lebar yang diminta.
-
-**Jawabannya berasal dari jalur yang sama persis dengan yang mencetak.** Backend
-tidak memakai rumus terpisah; ia memanggil pemenggal baris milik renderer. Karena
-itu tinggi yang dilaporkan tidak dapat berbeda dari hasil cetak — sepakat karena
-kode yang sama dijalankan, bukan karena dua penafsiran yang kebetulan sama.
-
-Teks kosong menghasilkan `lines: 1`, bukan nol: satu baris kosong memang memakan
-satu tinggi baris, sama seperti di CSS.
-
-### 2.14 Yang belum ada
+### 2.13 Yang belum ada
 
 `cursor.hide` belum ada: kursor orang yang menggeser pointer keluar kanvas baru
 hilang ketika ia menutup tab, atau ketika ia pergi.

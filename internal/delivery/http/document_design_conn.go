@@ -215,8 +215,6 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		h.sendSnapshot(ctx, documentToken, subscriber)
 	case dto.DesignMessageCursorMove:
 		h.moveCursor(documentToken, payload, subscriber)
-	case dto.DesignMessageTextMeasure:
-		h.measureText(ctx, payload, subscriber)
 	case dto.DesignMessageElementCreate:
 		h.createElement(ctx, documentToken, payload, subscriber)
 	case dto.DesignMessageElementUpdate:

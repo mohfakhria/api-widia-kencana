@@ -81,33 +81,6 @@ func (c *canvas) drawText(element *design.Element) error {
 	return nil
 }
 
-// layoutText memilih font, memasangnya pada kanvas, lalu memenggal teks menjadi
-// baris-baris.
-//
-// SATU-SATUNYA tempat pemenggalan baris terjadi. Menggambar dan mengukur
-// sama-sama lewat sini, sehingga tinggi yang dilaporkan pengukur tidak dapat
-// berbeda dari yang tercetak — sepakat karena kode yang sama dijalankan, bukan
-// karena dua penafsiran yang kebetulan sama. Menyalin isinya ke jalur pengukuran
-// akan membuat keduanya sepakat hari ini dan berbeda pada perubahan berikutnya.
-//
-// Font dipasang sebagai keadaan pada fpdf, dan c.textEncoder mengikutinya. Wajib
-// disetel sebelum satu huruf pun diukur: mengukur teks yang belum dikodekan lalu
-// menggambar yang sudah menghasilkan lebar yang tidak sesuai dengan yang tampak.
-func (c *canvas) layoutText(element *design.Element) ([]string, selectedFont, error) {
-	font, err := c.selectFont(
-		element.ResolvedFontFamily(), element.ResolvedFontWeight(), element.ResolvedFontStyle())
-	if err != nil {
-		return nil, selectedFont{}, err
-	}
-
-	c.pdf.SetFont(font.name, font.style, element.ResolvedFontSize())
-	c.textEncoder = font.encode
-
-	_, _, contentWidth, _ := element.ContentBox()
-
-	return c.wrapText(element.Text, contentWidth, element.LetterSpacing), font, nil
-}
-
 // verticalOffset menggeser seluruh blok teks di dalam kotak isinya.
 //
 // Blok yang lebih tinggi daripada kotaknya menghasilkan geseran negatif pada
@@ -125,6 +98,29 @@ func verticalOffset(align string, contentHeight, blockHeight float64) float64 {
 	default:
 		return 0
 	}
+}
+
+// layoutText memilih font, memasangnya pada kanvas, lalu memenggal teks menjadi
+// baris-baris.
+//
+// Ketiganya berurutan dan tidak boleh dipisah. Font dipasang sebagai KEADAAN pada
+// fpdf, dan c.textEncoder mengikutinya — keduanya wajib disetel sebelum satu huruf
+// pun diukur. Memenggal baris dengan font yang belum terpasang menghasilkan lebar
+// milik font sebelumnya, dan gejalanya berupa pemenggalan yang meleset hanya pada
+// elemen yang kebetulan berbeda fontnya dari elemen di atasnya.
+func (c *canvas) layoutText(element *design.Element) ([]string, selectedFont, error) {
+	font, err := c.selectFont(
+		element.ResolvedFontFamily(), element.ResolvedFontWeight(), element.ResolvedFontStyle())
+	if err != nil {
+		return nil, selectedFont{}, err
+	}
+
+	c.pdf.SetFont(font.name, font.style, element.ResolvedFontSize())
+	c.textEncoder = font.encode
+
+	_, _, contentWidth, _ := element.ContentBox()
+
+	return c.wrapText(element.Text, contentWidth, element.LetterSpacing), font, nil
 }
 
 // baseline menghitung posisi garis dasar baris pertama dan jarak antar baris.

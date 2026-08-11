@@ -88,19 +88,13 @@ func (a *ApiApp) initialize() error {
 	a.ServiceLogger.Info("loaded document export fonts",
 		"dir", a.Config.DesignFontDir, "families", fonts.Families())
 
-	// Satu renderer melayani dua hal: menggambar PDF dan mengukur teks. Sengaja
-	// satu objek, bukan dua — katalog fontnya sama, dan pengukuran yang memakai
-	// katalog berbeda dari yang mencetak adalah pengukuran yang berbohong.
-	renderer := pdfrender.NewRenderer(fonts, a.ServiceLogger)
-
 	documentExportUC := usecase.NewDocumentExportUseCase(
 		documentRepo,
 		documentDesign,
 		pg.NewAssetRepository(a.db),
 		a.objectStorage,
-		renderer,
+		pdfrender.NewRenderer(fonts, a.ServiceLogger),
 	)
-	documentMeasureUC := usecase.NewDocumentMeasureUseCase(renderer)
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
 		Config:          a.Config,
@@ -109,7 +103,7 @@ func (a *ApiApp) initialize() error {
 		AuthHandler:     deliveryhttp.NewAuthHandler(authUC, a.Config),
 		DocumentHandler: deliveryhttp.NewDocumentHandler(documentUC),
 		DocumentDesignHandler: deliveryhttp.NewDocumentDesignHandler(
-			a.Context, documentDesign, documentMeasureUC, a.Config, a.ServiceLogger,
+			a.Context, documentDesign, a.Config, a.ServiceLogger,
 		),
 		DocumentExportHandler: deliveryhttp.NewDocumentExportHandler(documentExportUC, a.ServiceLogger),
 		ProjectHandler:        deliveryhttp.NewProjectHandler(projectUC),

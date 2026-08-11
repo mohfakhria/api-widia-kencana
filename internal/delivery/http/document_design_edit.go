@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"strconv"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
@@ -229,62 +228,4 @@ func (h *DocumentDesignHandler) reorderPage(documentToken string, payload []byte
 // itu sendiri sedang ditutup, dan tidak ada lagi yang akan membaca balasannya.
 func isEditRejection(err error) bool {
 	return !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded)
-}
-
-// measureText menjawab setinggi apa elemen teks setelah dipenggal.
-//
-// Satu-satunya pesan yang BERTANYA, bukan memerintah. Karena itu ia berbeda dari
-// seluruh penanganan lain di berkas ini dalam tiga hal, dan ketiganya disengaja:
-//
-// Ia tidak menyentuh orchestrator. Pengukuran tidak membaca maupun mengubah isi
-// dokumen, jadi ia dikerjakan di goroutine koneksi pengirimnya sendiri.
-// Meletakkannya di antrean room berarti menghitung tata letak di jalur yang sama
-// dengan setiap geseran elemen orang lain — dan geseran itulah yang paling tidak
-// boleh tersendat.
-//
-// Ia membalas HANYA ke pengirim. Tidak ada yang berubah, jadi tidak ada yang
-// perlu diketahui penghuni lain.
-//
-// Ia tidak menaikkan version. Dokumennya memang tidak berubah, dan menaikkannya
-// akan membuat setiap klien lain memuat ulang tanpa sebab.
-//
-// Ia juga TIDAK menuntut pengirimnya sudah menjadi penghuni — berbeda dari
-// seluruh jalur penyuntingan, yang menolak koneksi yang belum meminta
-// document.get. Keanggotaan menjaga agar tidak ada yang menerima delta untuk
-// keadaan yang belum ia punya; pengukuran tidak menghasilkan delta apa pun, dan
-// menuntutnya hanya memaksa penyusun mengambil snapshot yang tidak ia butuhkan.
-func (h *DocumentDesignHandler) measureText(ctx context.Context, payload []byte, subscriber *designSubscriber) {
-	var message dto.DesignTextMeasure
-	if err := json.Unmarshal(payload, &message); err != nil {
-		subscriber.sendError("malformed_message", "text.measure payload is not valid")
-		return
-	}
-
-	elements := make([]design.Element, 0, len(message.Elements))
-	for index, raw := range message.Elements {
-		element, err := design.DecodeElement(raw)
-		if err != nil {
-			// Nomor urut disebut karena elemen yang gagal diurai belum tentu punya
-			// id — dan tanpa penunjuk apa pun, pengirim dua ratus elemen tidak tahu
-			// yang mana yang keliru.
-			subscriber.sendError("element_rejected",
-				"element "+strconv.Itoa(index)+": "+err.Error())
-			return
-		}
-		elements = append(elements, element)
-	}
-
-	measurements, err := h.measure.MeasureText(ctx, elements)
-	if err != nil {
-		subscriber.sendError("element_rejected", err.Error())
-		return
-	}
-
-	reply, err := dto.NewDesignTextMeasuredMessage(message.RequestID, measurements)
-	if err != nil {
-		h.logger.Error("encode text measurement reply", "error", err)
-		return
-	}
-
-	subscriber.Send(reply)
 }
