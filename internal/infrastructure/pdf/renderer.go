@@ -271,15 +271,29 @@ func (c *canvas) drawRect(element *design.Element) {
 		return
 	}
 
-	if element.Radius > 0 {
-		// Radius yang melebihi separuh sisi terpendek akan membuat lengkungnya
-		// saling menembus. Browser membatasinya dengan cara yang sama.
-		radius := math.Min(element.Radius, math.Min(element.W, element.H)/2)
+	if radius := clampRadius(element); radius > 0 {
 		c.pdf.RoundedRect(element.X, element.Y, element.W, element.H, radius, "1234", style)
 		return
 	}
 
 	c.pdf.Rect(element.X, element.Y, element.W, element.H, style)
+}
+
+// clampRadius menjepit radius ke separuh sisi terpendek.
+//
+// Yang melebihinya membuat lengkung di dua sudut bersebelahan saling menembus,
+// dan hasilnya bentuk yang tidak pernah diminta siapa pun. Browser menjepitnya
+// dengan cara yang sama, jadi menjepit di sini justru yang membuat layar dan
+// cetak sepakat — bukan menolaknya.
+//
+// SATU tempat untuk rect dan gambar. Dua penjepitan yang ditulis terpisah adalah
+// dua yang dapat berbeda, dan bedanya hanya terlihat pada radius besar.
+func clampRadius(element *design.Element) float64 {
+	if element.Radius <= 0 {
+		return 0
+	}
+
+	return math.Min(element.Radius, math.Min(element.W, element.H)/2)
 }
 
 // drawEllipse menggambar bidang lonjong yang PAS di dalam kotak elemen, sama
@@ -363,7 +377,16 @@ func (c *canvas) drawImage(element *design.Element) error {
 	// Kliping menahan gambar di dalam kotaknya. Tanpa ini fit "cover" akan
 	// meluber ke elemen di sekitarnya, karena ia memang sengaja menghasilkan
 	// gambar yang lebih besar daripada kotaknya.
-	c.pdf.ClipRect(element.X, element.Y, element.W, element.H, false)
+	// Radius memakai klip yang sama, hanya bentuknya yang membulat — sehingga
+	// sudut yang terbuang benar-benar hilang, bukan tertutup bingkai berwarna.
+	// Itu yang membuatnya sama dengan border-radius pada <img>, yang juga
+	// memotong.
+	if radius := clampRadius(element); radius > 0 {
+		c.pdf.ClipRoundedRect(element.X, element.Y, element.W, element.H, radius, false)
+	} else {
+		c.pdf.ClipRect(element.X, element.Y, element.W, element.H, false)
+	}
+
 	c.pdf.ImageOptions(registration.name, x, y, width, height, false, fpdf.ImageOptions{}, 0, "")
 	c.pdf.ClipEnd()
 

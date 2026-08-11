@@ -243,7 +243,13 @@ type Element struct {
 	Fill        string  `json:"fill,omitempty"`
 	Stroke      string  `json:"stroke,omitempty"`
 	StrokeWidth float64 `json:"strokeWidth,omitempty"`
-	Radius      float64 `json:"radius,omitempty"`
+	// Radius membulatkan sudut, pada rect maupun gambar. Yang melebihi separuh
+	// sisi terpendek dijepit, sama seperti border-radius di browser.
+	//
+	// Pada gambar ia MEMOTONG, bukan menggambar bingkai: sudut yang terbuang
+	// benar-benar hilang, termasuk pada fit "cover" yang gambarnya memang lebih
+	// besar daripada kotaknya.
+	Radius float64 `json:"radius,omitempty"`
 	// StrokeStyle hanya berarti bila StrokeWidth > 0. Kosong berarti solid.
 	StrokeStyle string `json:"strokeStyle,omitempty"`
 

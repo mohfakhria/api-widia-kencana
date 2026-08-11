@@ -172,14 +172,22 @@ func (e *Element) validateText() error {
 }
 
 func (e *Element) validateRect() error {
-	if e.Radius < 0 {
-		return invalidf("element %q has a negative radius", e.ID)
-	}
-	if err := finite(e.ID, "radius", e.Radius); err != nil {
+	if err := e.validateRadius(); err != nil {
 		return err
 	}
 
 	return e.validateShape()
+}
+
+// validateRadius dipakai rect dan gambar. Keduanya membulatkan sudut dengan
+// aturan yang sama; yang berbeda hanya akibatnya — rect menggambar bentuknya,
+// gambar memotong dirinya menurut bentuk itu.
+func (e *Element) validateRadius() error {
+	if e.Radius < 0 {
+		return invalidf("element %q has a negative radius", e.ID)
+	}
+
+	return finite(e.ID, "radius", e.Radius)
 }
 
 // validateEllipse tidak memeriksa radius: sudut membulat tidak berarti apa-apa
@@ -234,6 +242,9 @@ func (e *Element) validateImage() error {
 	}
 	if e.AssetToken == "" {
 		return invalidf("element %q must have an assetToken", e.ID)
+	}
+	if err := e.validateRadius(); err != nil {
+		return err
 	}
 
 	return oneOf(e.ID, "fit", e.Fit, FitContain, FitCover, FitFill)
