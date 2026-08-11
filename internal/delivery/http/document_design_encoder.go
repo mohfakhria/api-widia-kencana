@@ -35,36 +35,36 @@ func (DesignMessageEncoder) EncodeCursors(cursors []documentdesign.Cursor) ([]by
 	return dto.NewDesignCursorMessage(entries)
 }
 
-func (DesignMessageEncoder) EncodeElementCreated(version int64, page string, element design.Element) ([]byte, error) {
-	return dto.NewDesignElementCreatedMessage(version, page, element)
+func (DesignMessageEncoder) EncodeElementCreated(version int64, origin documentdesign.Origin, page string, element design.Element) ([]byte, error) {
+	return dto.NewDesignElementCreatedMessage(version, string(origin), page, element)
 }
 
-func (DesignMessageEncoder) EncodeElementUpdated(version int64, element design.Element) ([]byte, error) {
-	return dto.NewDesignElementUpdatedMessage(version, element)
+func (DesignMessageEncoder) EncodeElementUpdated(version int64, origin documentdesign.Origin, element design.Element) ([]byte, error) {
+	return dto.NewDesignElementUpdatedMessage(version, string(origin), element)
 }
 
-func (DesignMessageEncoder) EncodeElementDeleted(version int64, id string) ([]byte, error) {
-	return dto.NewDesignElementDeletedMessage(version, id)
+func (DesignMessageEncoder) EncodeElementDeleted(version int64, origin documentdesign.Origin, id string) ([]byte, error) {
+	return dto.NewDesignElementDeletedMessage(version, string(origin), id)
 }
 
-func (DesignMessageEncoder) EncodeElementReordered(version int64, id string, index int) ([]byte, error) {
-	return dto.NewDesignElementReorderedMessage(version, id, index)
+func (DesignMessageEncoder) EncodeElementReordered(version int64, origin documentdesign.Origin, id string, index int) ([]byte, error) {
+	return dto.NewDesignElementReorderedMessage(version, string(origin), id, index)
 }
 
-func (DesignMessageEncoder) EncodePageCreated(version int64, id string, index int) ([]byte, error) {
-	return dto.NewDesignPageCreatedMessage(version, id, index)
+func (DesignMessageEncoder) EncodePageCreated(version int64, origin documentdesign.Origin, id string, index int) ([]byte, error) {
+	return dto.NewDesignPageCreatedMessage(version, string(origin), id, index)
 }
 
-func (DesignMessageEncoder) EncodePageUpdated(version int64, id string, props design.PageProps) ([]byte, error) {
-	return dto.NewDesignPageUpdatedMessage(version, id, props)
+func (DesignMessageEncoder) EncodePageUpdated(version int64, origin documentdesign.Origin, id string, props design.PageProps) ([]byte, error) {
+	return dto.NewDesignPageUpdatedMessage(version, string(origin), id, props)
 }
 
-func (DesignMessageEncoder) EncodePageDeleted(version int64, id string) ([]byte, error) {
-	return dto.NewDesignPageDeletedMessage(version, id)
+func (DesignMessageEncoder) EncodePageDeleted(version int64, origin documentdesign.Origin, id string) ([]byte, error) {
+	return dto.NewDesignPageDeletedMessage(version, string(origin), id)
 }
 
-func (DesignMessageEncoder) EncodePageReordered(version int64, id string, index int) ([]byte, error) {
-	return dto.NewDesignPageReorderedMessage(version, id, index)
+func (DesignMessageEncoder) EncodePageReordered(version int64, origin documentdesign.Origin, id string, index int) ([]byte, error) {
+	return dto.NewDesignPageReorderedMessage(version, string(origin), id, index)
 }
 
 func (DesignMessageEncoder) EncodePresence(users []documentdesign.PresenceUser) ([]byte, error) {

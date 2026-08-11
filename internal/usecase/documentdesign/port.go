@@ -52,15 +52,43 @@ type MessageEncoder interface {
 	// seperti snapshot: di sini ia sudah tervalidasi dan dimiliki orchestrator,
 	// sehingga menyandikannya lebih dulu menjadi byte hanya untuk disandikan ulang
 	// ke dalam amplop adalah pekerjaan ganda tanpa jaminan tambahan.
-	EncodeElementCreated(version int64, page string, element design.Element) ([]byte, error)
-	EncodeElementUpdated(version int64, element design.Element) ([]byte, error)
-	EncodeElementDeleted(version int64, id string) ([]byte, error)
-	EncodeElementReordered(version int64, id string, index int) ([]byte, error)
-	EncodePageCreated(version int64, id string, index int) ([]byte, error)
-	EncodePageUpdated(version int64, id string, props design.PageProps) ([]byte, error)
-	EncodePageDeleted(version int64, id string) ([]byte, error)
-	EncodePageReordered(version int64, id string, index int) ([]byte, error)
+	//
+	// Kedelapannya membawa Origin milik penyuntingnya. Snapshot tidak: ia selalu
+	// wajib diterapkan siapa pun yang memicunya, termasuk oleh yang menekan undo.
+	EncodeElementCreated(version int64, origin Origin, page string, element design.Element) ([]byte, error)
+	EncodeElementUpdated(version int64, origin Origin, element design.Element) ([]byte, error)
+	EncodeElementDeleted(version int64, origin Origin, id string) ([]byte, error)
+	EncodeElementReordered(version int64, origin Origin, id string, index int) ([]byte, error)
+	EncodePageCreated(version int64, origin Origin, id string, index int) ([]byte, error)
+	EncodePageUpdated(version int64, origin Origin, id string, props design.PageProps) ([]byte, error)
+	EncodePageDeleted(version int64, origin Origin, id string) ([]byte, error)
+	EncodePageReordered(version int64, origin Origin, id string, index int) ([]byte, error)
 }
+
+// Origin adalah token buram milik klien, disalin apa adanya dari pesan sunting
+// ke siaran yang dihasilkannya.
+//
+// Server TIDAK PERNAH menafsirkannya — tidak membandingkan, tidak memvalidasi,
+// tidak menyimpannya sebagai identitas. Ia hanya titipan, dan itulah seluruh
+// rancangannya: tidak ada konsep identitas koneksi baru di server, dan klien
+// tidak perlu diberi tahu id koneksinya saat handshake.
+//
+// Gunanya di sisi klien: siaran memantul ke pengirimnya, dan tanpa penanda ini
+// pengirim tidak dapat membedakan gemanya sendiri dari suntingan orang lain.
+// Yang menggigit adalah mengetik — tiap ketukan terkirim, gemanya kembali satu
+// round-trip kemudian membawa isi yang sudah usang, dan kotak teks yang
+// tingginya diturunkan dari isi itu tertinggal di belakang jari.
+//
+// Bertipe tersendiri, bukan string telanjang, karena ia melintasi jalur yang
+// parameternya sudah penuh string sejenis — id, page, token. Dua di antaranya
+// tertukar tidak akan menghasilkan galat kompilasi bila semuanya string.
+//
+// Per KONEKSI, bukan per pengguna. Satu orang boleh memegang sepuluh koneksi dan
+// dua tab pada dokumen yang sama itu biasa; dengan penanda berupa id pengguna,
+// suntingan dari tab A tiba di tab B membawa penanda yang sama dan tab B akan
+// melewatinya sebagai gemanya sendiri — padahal itu suntingan yang wajib ia
+// terapkan. Yang menjamin sifat itu klien, bukan server: server hanya menyalin.
+type Origin string
 
 // Cursor adalah letak kursor satu orang di atas dokumen.
 //

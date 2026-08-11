@@ -166,13 +166,13 @@ func (m *manager) moveCursor(token string, cursor Cursor) {
 // Room yang tidak ada di sini berarti pengirimnya belum meminta dokumen, atau
 // room-nya baru saja disapu. Keduanya sama bagi klien: yang ia lihat gagal, dan
 // document.get adalah jalan keluarnya.
-func (m *manager) createElement(ctx context.Context, token string, sub Subscriber, page string, element design.Element) error {
+func (m *manager) createElement(ctx context.Context, token string, sub Subscriber, origin Origin, page string, element design.Element) error {
 	room, ok := m.room(token)
 	if !ok {
 		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	}
 
-	return room.createElement(ctx, sub, page, element)
+	return room.createElement(ctx, sub, origin, page, element)
 }
 
 // Ketiga sisanya tidak melaporkan apa pun, sama seperti moveCursor. Perubahan
@@ -180,45 +180,45 @@ func (m *manager) createElement(ctx context.Context, token string, sub Subscribe
 // yang sasarannya sudah lenyap — keduanya tidak menaikkan version, jadi tidak ada
 // klien yang melihat celah nomor.
 
-func (m *manager) updateElement(token string, sub Subscriber, element design.Element) {
+func (m *manager) updateElement(token string, sub Subscriber, origin Origin, element design.Element) {
 	if room, ok := m.room(token); ok {
-		room.updateElement(sub, element)
+		room.updateElement(sub, origin, element)
 	}
 }
 
-func (m *manager) deleteElement(token string, sub Subscriber, id string) {
+func (m *manager) deleteElement(token string, sub Subscriber, origin Origin, id string) {
 	if room, ok := m.room(token); ok {
-		room.deleteElement(sub, id)
+		room.deleteElement(sub, origin, id)
 	}
 }
 
-func (m *manager) reorderElement(token string, sub Subscriber, id string, index int) {
+func (m *manager) reorderElement(token string, sub Subscriber, origin Origin, id string, index int) {
 	if room, ok := m.room(token); ok {
-		room.reorderElement(sub, id, index)
+		room.reorderElement(sub, origin, id, index)
 	}
 }
 
-func (m *manager) createPage(ctx context.Context, token string, sub Subscriber, id string, index *int) error {
+func (m *manager) createPage(ctx context.Context, token string, sub Subscriber, origin Origin, id string, index *int) error {
 	room, ok := m.room(token)
 	if !ok {
 		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	}
 
-	return room.createPage(ctx, sub, id, index)
+	return room.createPage(ctx, sub, origin, id, index)
 }
 
-func (m *manager) deletePage(ctx context.Context, token string, sub Subscriber, id string) error {
+func (m *manager) deletePage(ctx context.Context, token string, sub Subscriber, origin Origin, id string) error {
 	room, ok := m.room(token)
 	if !ok {
 		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	}
 
-	return room.deletePage(ctx, sub, id)
+	return room.deletePage(ctx, sub, origin, id)
 }
 
-func (m *manager) updatePage(token string, sub Subscriber, id string, props design.PageProps) {
+func (m *manager) updatePage(token string, sub Subscriber, origin Origin, id string, props design.PageProps) {
 	if room, ok := m.room(token); ok {
-		room.updatePage(sub, id, props)
+		room.updatePage(sub, origin, id, props)
 	}
 }
 
@@ -234,9 +234,9 @@ func (m *manager) redo(token string, sub Subscriber) {
 	}
 }
 
-func (m *manager) reorderPage(token string, sub Subscriber, id string, index int) {
+func (m *manager) reorderPage(token string, sub Subscriber, origin Origin, id string, index int) {
 	if room, ok := m.room(token); ok {
-		room.reorderPage(sub, id, index)
+		room.reorderPage(sub, origin, id, index)
 	}
 }
 

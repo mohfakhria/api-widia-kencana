@@ -503,9 +503,9 @@ func (r *Room) leave(sub Subscriber) {
 // Penambahan dapat ditolak orchestrator, dan penolakan itu wajib sampai ke
 // pengirimnya — elemen yang sudah tergambar optimistis di layarnya tidak akan
 // pernah ada di dokumen bila ia tidak diberi tahu.
-func (r *Room) createElement(ctx context.Context, sub Subscriber, page string, element design.Element) error {
+func (r *Room) createElement(ctx context.Context, sub Subscriber, origin Origin, page string, element design.Element) error {
 	reply := make(chan error, 1)
-	event := elementCreateEvent{subscriber: sub, page: page, element: element, reply: reply}
+	event := elementCreateEvent{subscriber: sub, origin: origin, page: page, element: element, reply: reply}
 
 	return r.await(ctx, event, reply)
 }
@@ -514,23 +514,23 @@ func (r *Room) createElement(ctx context.Context, sub Subscriber, page string, e
 // perubahannya tidak berlaku karena sasarannya sudah lenyap, dan itu menyatu
 // dengan sendirinya lewat siaran yang sedang menuju pengirimnya.
 
-func (r *Room) updateElement(sub Subscriber, element design.Element) {
+func (r *Room) updateElement(sub Subscriber, origin Origin, element design.Element) {
 	select {
-	case r.inbox <- elementUpdateEvent{subscriber: sub, element: element}:
+	case r.inbox <- elementUpdateEvent{subscriber: sub, origin: origin, element: element}:
 	case <-r.done:
 	}
 }
 
-func (r *Room) deleteElement(sub Subscriber, id string) {
+func (r *Room) deleteElement(sub Subscriber, origin Origin, id string) {
 	select {
-	case r.inbox <- elementDeleteEvent{subscriber: sub, id: id}:
+	case r.inbox <- elementDeleteEvent{subscriber: sub, origin: origin, id: id}:
 	case <-r.done:
 	}
 }
 
-func (r *Room) reorderElement(sub Subscriber, id string, index int) {
+func (r *Room) reorderElement(sub Subscriber, origin Origin, id string, index int) {
 	select {
-	case r.inbox <- elementReorderEvent{subscriber: sub, id: id, index: index}:
+	case r.inbox <- elementReorderEvent{subscriber: sub, origin: origin, id: id, index: index}:
 	case <-r.done:
 	}
 }
@@ -538,31 +538,31 @@ func (r *Room) reorderElement(sub Subscriber, id string, index int) {
 // createPage dan deletePage menunggu hasil; reorderPage tidak. Keduanya yang
 // menunggu punya jalur penolakan — id kembar atau batas halaman pada yang
 // pertama, halaman terakhir pada yang kedua.
-func (r *Room) createPage(ctx context.Context, sub Subscriber, id string, index *int) error {
+func (r *Room) createPage(ctx context.Context, sub Subscriber, origin Origin, id string, index *int) error {
 	reply := make(chan error, 1)
-	event := pageCreateEvent{subscriber: sub, id: id, index: index, reply: reply}
+	event := pageCreateEvent{subscriber: sub, origin: origin, id: id, index: index, reply: reply}
 
 	return r.await(ctx, event, reply)
 }
 
-func (r *Room) deletePage(ctx context.Context, sub Subscriber, id string) error {
+func (r *Room) deletePage(ctx context.Context, sub Subscriber, origin Origin, id string) error {
 	reply := make(chan error, 1)
-	event := pageDeleteEvent{subscriber: sub, id: id, reply: reply}
+	event := pageDeleteEvent{subscriber: sub, origin: origin, id: id, reply: reply}
 
 	return r.await(ctx, event, reply)
 }
 
 // updatePage tidak menunggu hasil, sama seperti updateElement.
-func (r *Room) updatePage(sub Subscriber, id string, props design.PageProps) {
+func (r *Room) updatePage(sub Subscriber, origin Origin, id string, props design.PageProps) {
 	select {
-	case r.inbox <- pageUpdateEvent{subscriber: sub, id: id, props: props}:
+	case r.inbox <- pageUpdateEvent{subscriber: sub, origin: origin, id: id, props: props}:
 	case <-r.done:
 	}
 }
 
-func (r *Room) reorderPage(sub Subscriber, id string, index int) {
+func (r *Room) reorderPage(sub Subscriber, origin Origin, id string, index int) {
 	select {
-	case r.inbox <- pageReorderEvent{subscriber: sub, id: id, index: index}:
+	case r.inbox <- pageReorderEvent{subscriber: sub, origin: origin, id: id, index: index}:
 	case <-r.done:
 	}
 }

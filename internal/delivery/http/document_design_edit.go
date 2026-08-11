@@ -7,6 +7,7 @@ import (
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
 )
 
 // Pengubahan pesan penyuntingan menjadi tindakan — elemen dan halaman.
@@ -35,7 +36,7 @@ func (h *DocumentDesignHandler) createElement(ctx context.Context, documentToken
 
 	// Satu-satunya penyuntingan yang menunggu jawaban orchestrator, karena satu-
 	// satunya yang dapat ditolak di sana: halaman tidak ada, atau id sudah dipakai.
-	if err := h.service.CreateElement(ctx, documentToken, subscriber, message.Page, element); err != nil {
+	if err := h.service.CreateElement(ctx, documentToken, subscriber, documentdesign.Origin(message.Origin), message.Page, element); err != nil {
 		if !isEditRejection(err) {
 			return
 		}
@@ -60,7 +61,7 @@ func (h *DocumentDesignHandler) updateElement(documentToken string, payload []by
 		return
 	}
 
-	h.service.UpdateElement(documentToken, subscriber, element)
+	h.service.UpdateElement(documentToken, subscriber, documentdesign.Origin(message.Origin), element)
 }
 
 func (h *DocumentDesignHandler) deleteElement(documentToken string, payload []byte, subscriber *designSubscriber) {
@@ -74,7 +75,7 @@ func (h *DocumentDesignHandler) deleteElement(documentToken string, payload []by
 		return
 	}
 
-	h.service.DeleteElement(documentToken, subscriber, message.ID)
+	h.service.DeleteElement(documentToken, subscriber, documentdesign.Origin(message.Origin), message.ID)
 }
 
 func (h *DocumentDesignHandler) reorderElement(documentToken string, payload []byte, subscriber *designSubscriber) {
@@ -92,7 +93,7 @@ func (h *DocumentDesignHandler) reorderElement(documentToken string, payload []b
 	// orchestrator dan berubah setiap kali ada yang menambah atau menghapus
 	// elemen; memeriksanya di lapisan ini berarti memutuskan berdasarkan keadaan
 	// yang tidak kita pegang.
-	h.service.ReorderElement(documentToken, subscriber, message.ID, message.Index)
+	h.service.ReorderElement(documentToken, subscriber, documentdesign.Origin(message.Origin), message.ID, message.Index)
 }
 
 // decodeElement mengurai elemen lewat domain, bukan di sini.
@@ -128,7 +129,7 @@ func (h *DocumentDesignHandler) createPage(ctx context.Context, documentToken st
 	// Index diteruskan apa adanya, termasuk ketika nil. Nil berarti "di akhir",
 	// dan lapisan ini tidak tahu berapa jumlah halaman dokumen itu — hanya
 	// orchestrator yang tahu, dan hanya ia yang boleh memutuskannya.
-	if err := h.service.CreatePage(ctx, documentToken, subscriber, message.ID, message.Index); err != nil {
+	if err := h.service.CreatePage(ctx, documentToken, subscriber, documentdesign.Origin(message.Origin), message.ID, message.Index); err != nil {
 		if !isEditRejection(err) {
 			return
 		}
@@ -169,7 +170,7 @@ func (h *DocumentDesignHandler) updatePage(documentToken string, payload []byte,
 		return
 	}
 
-	h.service.UpdatePage(documentToken, subscriber, message.ID, design.PageProps{
+	h.service.UpdatePage(documentToken, subscriber, documentdesign.Origin(message.Origin), message.ID, design.PageProps{
 		Title:      *message.Title,
 		Background: *message.Background,
 		Hidden:     *message.Hidden,
@@ -191,7 +192,7 @@ func (h *DocumentDesignHandler) deletePage(ctx context.Context, documentToken st
 	// Menunggu hasil, berbeda dari element.delete. Halaman terakhir tidak boleh
 	// dibuang, dan penolakan itu wajib sampai — dokumen tanpa halaman akan ditimpa
 	// panduan bawaan ketika orang berikutnya membukanya.
-	if err := h.service.DeletePage(ctx, documentToken, subscriber, message.ID); err != nil {
+	if err := h.service.DeletePage(ctx, documentToken, subscriber, documentdesign.Origin(message.Origin), message.ID); err != nil {
 		if !isEditRejection(err) {
 			return
 		}
@@ -213,7 +214,7 @@ func (h *DocumentDesignHandler) reorderPage(documentToken string, payload []byte
 		return
 	}
 
-	h.service.ReorderPage(documentToken, subscriber, message.ID, message.Index)
+	h.service.ReorderPage(documentToken, subscriber, documentdesign.Origin(message.Origin), message.ID, message.Index)
 }
 
 // isEditRejection memisahkan penolakan yang sesungguhnya dari koneksi yang

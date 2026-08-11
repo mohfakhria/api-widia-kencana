@@ -126,7 +126,16 @@ func NewDesignCursorMessage(cursors []DesignCursorEntry) ([]byte, error) {
 // aturannya dimiliki domain/design, yang menolak field asing lewat
 // DisallowUnknownFields — mengurainya di lapisan ini akan menduplikasi aturan itu
 // di tempat yang tidak berwenang, dan duplikatnya akan melenceng.
+// Origin ada pada KEDELAPAN muatan sunting di bawah, dengan arti yang sama di
+// semuanya: token buram milik klien, disalin apa adanya ke siaran yang
+// dihasilkan. Lapisan ini tidak pernah membacanya sebagai apa pun — tidak
+// dibandingkan, tidak divalidasi, tidak dijadikan identitas.
+//
+// Kosong bukan galat. Klien yang tidak menyertakannya menerima siaran tanpa
+// field itu, dan satu-satunya akibatnya ia tidak dapat mengenali gemanya
+// sendiri — persis keadaan sebelum penanda ini ada.
 type DesignElementCreate struct {
+	Origin  string          `json:"origin"`
 	Page    string          `json:"page"`
 	Element json.RawMessage `json:"element"`
 }
@@ -143,6 +152,7 @@ type DesignElementCreate struct {
 // yang mustahil ditangani dengan benar: klien menyebut halaman yang bukan tempat
 // elemen itu berada.
 type DesignElementUpdate struct {
+	Origin  string          `json:"origin"`
 	Element json.RawMessage `json:"element"`
 }
 
@@ -150,7 +160,8 @@ type DesignElementUpdate struct {
 //
 // Cukup id, dengan alasan yang sama seperti update.
 type DesignElementDelete struct {
-	ID string `json:"id"`
+	Origin string `json:"origin"`
+	ID     string `json:"id"`
 }
 
 // DesignElementReorder adalah muatan pesan element.reorder.
@@ -164,8 +175,9 @@ type DesignElementDelete struct {
 // nol. Nol berarti paling bawah. Halaman tidak perlu disebut, sama seperti update
 // dan delete — id sudah menentukannya.
 type DesignElementReorder struct {
-	ID    string `json:"id"`
-	Index int    `json:"index"`
+	Origin string `json:"origin"`
+	ID     string `json:"id"`
+	Index  int    `json:"index"`
 }
 
 // DesignElementReorderMessage adalah siaran satu pemindahan urutan.
@@ -179,17 +191,23 @@ type DesignElementReorder struct {
 // Index yang disiarkan adalah letak SESUNGGUHNYA setelah diterapkan, bukan yang
 // diminta. Permintaan yang melewati batas dijepit ke ujung terdekat, dan klien
 // perlu tahu ke mana elemennya benar-benar mendarat.
+// Origin pada KEDELAPAN siaran di bawah memakai omitempty, berbeda dari muatan
+// masuk yang tidak. Alasannya bukan simetri melainkan arti: pada siaran, field
+// yang tidak ada berarti "penyuntingnya tidak menyebut dirinya", dan string
+// kosong tidak menyampaikan apa pun selain itu.
 type DesignElementReorderMessage struct {
 	Type    string `json:"type"`
 	Version int64  `json:"version"`
+	Origin  string `json:"origin,omitempty"`
 	ID      string `json:"id"`
 	Index   int    `json:"index"`
 }
 
-func NewDesignElementReorderedMessage(version int64, id string, index int) ([]byte, error) {
+func NewDesignElementReorderedMessage(version int64, origin, id string, index int) ([]byte, error) {
 	return json.Marshal(DesignElementReorderMessage{
 		Type:    DesignMessageElementReordered,
 		Version: version,
+		Origin:  origin,
 		ID:      id,
 		Index:   index,
 	})
@@ -219,32 +237,36 @@ func NewDesignElementReorderedMessage(version int64, id string, index int) ([]by
 type DesignElementMessage struct {
 	Type    string          `json:"type"`
 	Version int64           `json:"version"`
+	Origin  string          `json:"origin,omitempty"`
 	Page    string          `json:"page,omitempty"`
 	ID      string          `json:"id,omitempty"`
 	Element *design.Element `json:"element,omitempty"`
 }
 
-func NewDesignElementCreatedMessage(version int64, page string, element design.Element) ([]byte, error) {
+func NewDesignElementCreatedMessage(version int64, origin, page string, element design.Element) ([]byte, error) {
 	return json.Marshal(DesignElementMessage{
 		Type:    DesignMessageElementCreated,
 		Version: version,
+		Origin:  origin,
 		Page:    page,
 		Element: &element,
 	})
 }
 
-func NewDesignElementUpdatedMessage(version int64, element design.Element) ([]byte, error) {
+func NewDesignElementUpdatedMessage(version int64, origin string, element design.Element) ([]byte, error) {
 	return json.Marshal(DesignElementMessage{
 		Type:    DesignMessageElementUpdated,
 		Version: version,
+		Origin:  origin,
 		Element: &element,
 	})
 }
 
-func NewDesignElementDeletedMessage(version int64, id string) ([]byte, error) {
+func NewDesignElementDeletedMessage(version int64, origin, id string) ([]byte, error) {
 	return json.Marshal(DesignElementMessage{
 		Type:    DesignMessageElementDeleted,
 		Version: version,
+		Origin:  origin,
 		ID:      id,
 	})
 }
@@ -258,8 +280,9 @@ func NewDesignElementDeletedMessage(version int64, id string) ([]byte, error) {
 //
 // Halaman baru selalu KOSONG. Tidak ada penyalinan halaman untuk sekarang.
 type DesignPageCreate struct {
-	ID    string `json:"id"`
-	Index *int   `json:"index"`
+	Origin string `json:"origin"`
+	ID     string `json:"id"`
+	Index  *int   `json:"index"`
 }
 
 // DesignPageUpdate adalah muatan pesan page.update — properti halaman saja.
@@ -279,6 +302,7 @@ type DesignPageCreate struct {
 // string kosong adalah judul yang sah ("hapus judulnya"), sehingga ia tidak
 // boleh tertukar dengan penghilangan.
 type DesignPageUpdate struct {
+	Origin     string  `json:"origin"`
 	ID         string  `json:"id"`
 	Title      *string `json:"title"`
 	Background *string `json:"background"`
@@ -296,6 +320,7 @@ type DesignPageUpdate struct {
 type DesignPageUpdatedMessage struct {
 	Type       string `json:"type"`
 	Version    int64  `json:"version"`
+	Origin     string `json:"origin,omitempty"`
 	ID         string `json:"id"`
 	Title      string `json:"title"`
 	Background string `json:"background"`
@@ -303,10 +328,11 @@ type DesignPageUpdatedMessage struct {
 	Locked     bool   `json:"locked"`
 }
 
-func NewDesignPageUpdatedMessage(version int64, id string, props design.PageProps) ([]byte, error) {
+func NewDesignPageUpdatedMessage(version int64, origin, id string, props design.PageProps) ([]byte, error) {
 	return json.Marshal(DesignPageUpdatedMessage{
 		Type:       DesignMessagePageUpdated,
 		Version:    version,
+		Origin:     origin,
 		ID:         id,
 		Title:      props.Title,
 		Background: props.Background,
@@ -322,14 +348,16 @@ func NewDesignPageUpdatedMessage(version int64, id string, props design.PageProp
 // bawaan, dan itu terjadi bukan saat penghapusannya melainkan ketika orang
 // berikutnya membuka dokumen.
 type DesignPageDelete struct {
-	ID string `json:"id"`
+	Origin string `json:"origin"`
+	ID     string `json:"id"`
 }
 
 // DesignPageReorder adalah muatan pesan page.reorder. Index di luar batas
 // dijepit, sama seperti element.reorder.
 type DesignPageReorder struct {
-	ID    string `json:"id"`
-	Index int    `json:"index"`
+	Origin string `json:"origin"`
+	ID     string `json:"id"`
+	Index  int    `json:"index"`
 }
 
 // Siaran halaman: satu struct per pesan, walau dua di antaranya sebentuk.
@@ -346,6 +374,7 @@ type DesignPageReorder struct {
 type DesignPageCreatedMessage struct {
 	Type    string `json:"type"`
 	Version int64  `json:"version"`
+	Origin  string `json:"origin,omitempty"`
 	ID      string `json:"id"`
 	Index   int    `json:"index"`
 }
@@ -353,6 +382,7 @@ type DesignPageCreatedMessage struct {
 type DesignPageReorderedMessage struct {
 	Type    string `json:"type"`
 	Version int64  `json:"version"`
+	Origin  string `json:"origin,omitempty"`
 	ID      string `json:"id"`
 	Index   int    `json:"index"`
 }
@@ -367,31 +397,35 @@ type DesignPageReorderedMessage struct {
 type DesignPageDeletedMessage struct {
 	Type    string `json:"type"`
 	Version int64  `json:"version"`
+	Origin  string `json:"origin,omitempty"`
 	ID      string `json:"id"`
 }
 
-func NewDesignPageCreatedMessage(version int64, id string, index int) ([]byte, error) {
+func NewDesignPageCreatedMessage(version int64, origin, id string, index int) ([]byte, error) {
 	return json.Marshal(DesignPageCreatedMessage{
 		Type:    DesignMessagePageCreated,
 		Version: version,
+		Origin:  origin,
 		ID:      id,
 		Index:   index,
 	})
 }
 
-func NewDesignPageReorderedMessage(version int64, id string, index int) ([]byte, error) {
+func NewDesignPageReorderedMessage(version int64, origin, id string, index int) ([]byte, error) {
 	return json.Marshal(DesignPageReorderedMessage{
 		Type:    DesignMessagePageReordered,
 		Version: version,
+		Origin:  origin,
 		ID:      id,
 		Index:   index,
 	})
 }
 
-func NewDesignPageDeletedMessage(version int64, id string) ([]byte, error) {
+func NewDesignPageDeletedMessage(version int64, origin, id string) ([]byte, error) {
 	return json.Marshal(DesignPageDeletedMessage{
 		Type:    DesignMessagePageDeleted,
 		Version: version,
+		Origin:  origin,
 		ID:      id,
 	})
 }

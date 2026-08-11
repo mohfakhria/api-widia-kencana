@@ -77,8 +77,13 @@ func (cursorMoveEvent) isRoomEvent() {}
 // tidak elemen yang sudah tergambar optimistis di layarnya tidak akan pernah ada
 // di dokumen. Ketiga sisanya paling banter tidak berlaku, dan itu menyatu dengan
 // sendirinya.
+// origin dibawa PER KEJADIAN, bukan diingat per koneksi, walau klien memakai
+// token yang sama sepanjang koneksinya. Mengingatnya berarti server menyimpulkan
+// sesuatu tentang token yang ia janjikan tidak pernah ditafsirkan — dan
+// simpulan itu akan salah pada klien mana pun yang berperilaku lain.
 type elementCreateEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	page       string
 	element    design.Element
 	reply      chan<- error
@@ -86,16 +91,19 @@ type elementCreateEvent struct {
 
 type elementUpdateEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	element    design.Element
 }
 
 type elementDeleteEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	id         string
 }
 
 type elementReorderEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	id         string
 	index      int
 }
@@ -119,6 +127,7 @@ func (elementReorderEvent) isRoomEvent() {}
 
 type pageCreateEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	id         string
 	// index kosong berarti di akhir. Pointer, karena "tidak menyebut posisi" dan
 	// "posisi nol" adalah dua maksud yang berbeda dan keduanya sah.
@@ -128,6 +137,7 @@ type pageCreateEvent struct {
 
 type pageDeleteEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	id         string
 	reply      chan<- error
 }
@@ -137,6 +147,7 @@ type pageDeleteEvent struct {
 // sehingga yang tersisa di sini paling banter tidak berlaku.
 type pageUpdateEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	id         string
 	props      design.PageProps
 }
@@ -145,6 +156,7 @@ func (pageUpdateEvent) isRoomEvent() {}
 
 type pageReorderEvent struct {
 	subscriber Subscriber
+	origin     Origin
 	id         string
 	index      int
 }

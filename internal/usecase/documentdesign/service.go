@@ -203,8 +203,8 @@ func (s *Service) MoveCursor(documentToken, userID, page string, x, y float64) {
 // dapat ditolak: halaman tidak ada, atau id elemennya sudah dipakai. Pemanggil
 // wajib meneruskannya ke klien — elemen yang sudah tergambar optimistis di
 // layarnya tidak akan pernah ada di dokumen bila ia tidak diberi tahu.
-func (s *Service) CreateElement(ctx context.Context, documentToken string, sub Subscriber, page string, element design.Element) error {
-	return s.rooms.createElement(ctx, documentToken, sub, page, element)
+func (s *Service) CreateElement(ctx context.Context, documentToken string, sub Subscriber, origin Origin, page string, element design.Element) error {
+	return s.rooms.createElement(ctx, documentToken, sub, origin, page, element)
 }
 
 // UpdateElement mengganti satu elemen seluruhnya.
@@ -212,27 +212,27 @@ func (s *Service) CreateElement(ctx context.Context, documentToken string, sub S
 // Tidak mengembalikan apa pun. Elemen yang sudah lenyap didiamkan: pada
 // menang-terakhir itu lomba yang wajar, dan pengirimnya toh sedang menerima
 // siaran penghapusannya.
-func (s *Service) UpdateElement(documentToken string, sub Subscriber, element design.Element) {
-	s.rooms.updateElement(documentToken, sub, element)
+func (s *Service) UpdateElement(documentToken string, sub Subscriber, origin Origin, element design.Element) {
+	s.rooms.updateElement(documentToken, sub, origin, element)
 }
 
-func (s *Service) DeleteElement(documentToken string, sub Subscriber, id string) {
-	s.rooms.deleteElement(documentToken, sub, id)
+func (s *Service) DeleteElement(documentToken string, sub Subscriber, origin Origin, id string) {
+	s.rooms.deleteElement(documentToken, sub, origin, id)
 }
 
 // ReorderElement memindahkan elemen di dalam halamannya, karena urutan elemen
 // adalah urutan gambar. Index di luar batas dijepit oleh orchestrator, dan letak
 // sesungguhnya itulah yang disiarkan.
-func (s *Service) ReorderElement(documentToken string, sub Subscriber, id string, index int) {
-	s.rooms.reorderElement(documentToken, sub, id, index)
+func (s *Service) ReorderElement(documentToken string, sub Subscriber, origin Origin, id string, index int) {
+	s.rooms.reorderElement(documentToken, sub, origin, id, index)
 }
 
 // CreatePage menyisipkan halaman kosong. index kosong berarti di akhir.
 //
 // Mengembalikan error karena dapat ditolak: id sudah dipakai, atau dokumen sudah
 // menyentuh batas jumlah halaman.
-func (s *Service) CreatePage(ctx context.Context, documentToken string, sub Subscriber, id string, index *int) error {
-	return s.rooms.createPage(ctx, documentToken, sub, id, index)
+func (s *Service) CreatePage(ctx context.Context, documentToken string, sub Subscriber, origin Origin, id string, index *int) error {
+	return s.rooms.createPage(ctx, documentToken, sub, origin, id, index)
 }
 
 // DeletePage membuang halaman beserta seluruh elemennya.
@@ -241,8 +241,8 @@ func (s *Service) CreatePage(ctx context.Context, documentToken string, sub Subs
 // boleh dibuang: dokumen tanpa halaman akan ditimpa panduan bawaan saat dimuat
 // berikutnya, dan itu terjadi bukan pada saat penghapusannya melainkan ketika
 // orang berikutnya membukanya.
-func (s *Service) DeletePage(ctx context.Context, documentToken string, sub Subscriber, id string) error {
-	return s.rooms.deletePage(ctx, documentToken, sub, id)
+func (s *Service) DeletePage(ctx context.Context, documentToken string, sub Subscriber, origin Origin, id string) error {
+	return s.rooms.deletePage(ctx, documentToken, sub, origin, id)
 }
 
 // UpdatePage menyetel properti satu halaman.
@@ -255,14 +255,14 @@ func (s *Service) DeletePage(ctx context.Context, documentToken string, sub Subs
 //
 // Tidak mengembalikan apa pun. Halaman yang sudah lenyap, dan nilai yang memang
 // sudah sama, sama-sama didiamkan tanpa menaikkan version.
-func (s *Service) UpdatePage(documentToken string, sub Subscriber, id string, props design.PageProps) {
-	s.rooms.updatePage(documentToken, sub, id, props)
+func (s *Service) UpdatePage(documentToken string, sub Subscriber, origin Origin, id string, props design.PageProps) {
+	s.rooms.updatePage(documentToken, sub, origin, id, props)
 }
 
 // ReorderPage memindahkan halaman. Index di luar batas dijepit orchestrator, dan
 // letak sesungguhnya itulah yang disiarkan.
-func (s *Service) ReorderPage(documentToken string, sub Subscriber, id string, index int) {
-	s.rooms.reorderPage(documentToken, sub, id, index)
+func (s *Service) ReorderPage(documentToken string, sub Subscriber, origin Origin, id string, index int) {
+	s.rooms.reorderPage(documentToken, sub, origin, id, index)
 }
 
 // Undo memundurkan SELURUH DOKUMEN satu langkah, bukan langkah pemanggilnya.

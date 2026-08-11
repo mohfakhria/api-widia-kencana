@@ -43,7 +43,7 @@ func (r *Room) applyCreate(e elementCreateEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodeElementCreated(r.version, e.page, e.element))
+	r.broadcastEdit(r.encoder.EncodeElementCreated(r.version, e.origin, e.page, e.element))
 
 	e.reply <- nil
 }
@@ -76,7 +76,7 @@ func (r *Room) applyUpdate(e elementUpdateEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodeElementUpdated(r.version, e.element))
+	r.broadcastEdit(r.encoder.EncodeElementUpdated(r.version, e.origin, e.element))
 }
 
 func (r *Room) applyDelete(e elementDeleteEvent) {
@@ -91,7 +91,7 @@ func (r *Room) applyDelete(e elementDeleteEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodeElementDeleted(r.version, e.id))
+	r.broadcastEdit(r.encoder.EncodeElementDeleted(r.version, e.origin, e.id))
 }
 
 // applyReorder memindahkan elemen di dalam halamannya.
@@ -113,7 +113,7 @@ func (r *Room) applyReorder(e elementReorderEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodeElementReordered(r.version, e.id, effective))
+	r.broadcastEdit(r.encoder.EncodeElementReordered(r.version, e.origin, e.id, effective))
 }
 
 // applyPageCreate menyisipkan halaman kosong.
@@ -136,7 +136,7 @@ func (r *Room) applyPageCreate(e pageCreateEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodePageCreated(r.version, e.id, effective))
+	r.broadcastEdit(r.encoder.EncodePageCreated(r.version, e.origin, e.id, effective))
 
 	e.reply <- nil
 }
@@ -162,7 +162,7 @@ func (r *Room) applyPageUpdate(e pageUpdateEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodePageUpdated(r.version, e.id, e.props))
+	r.broadcastEdit(r.encoder.EncodePageUpdated(r.version, e.origin, e.id, e.props))
 }
 
 // applyPageDelete membuang halaman beserta seluruh elemennya.
@@ -195,7 +195,7 @@ func (r *Room) applyPageDelete(e pageDeleteEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodePageDeleted(r.version, e.id))
+	r.broadcastEdit(r.encoder.EncodePageDeleted(r.version, e.origin, e.id))
 
 	e.reply <- nil
 }
@@ -216,7 +216,7 @@ func (r *Room) applyPageReorder(e pageReorderEvent) {
 
 	r.commitChange(mark)
 	r.version++
-	r.broadcastEdit(r.encoder.EncodePageReordered(r.version, e.id, effective))
+	r.broadcastEdit(r.encoder.EncodePageReordered(r.version, e.origin, e.id, effective))
 }
 
 // editable menjawab apakah koneksi ini boleh menyunting.
