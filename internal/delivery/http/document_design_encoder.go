@@ -35,6 +35,18 @@ func (DesignMessageEncoder) EncodeCursors(cursors []documentdesign.Cursor) ([]by
 	return dto.NewDesignCursorMessage(entries)
 }
 
+func (DesignMessageEncoder) EncodeSelections(selections []documentdesign.Selection) ([]byte, error) {
+	entries := make([]dto.DesignSelectionEntry, 0, len(selections))
+	for _, selection := range selections {
+		entries = append(entries, dto.DesignSelectionEntry{
+			ID:  selection.UserID,
+			IDs: selection.ElementIDs,
+		})
+	}
+
+	return dto.NewDesignSelectionMessage(entries)
+}
+
 func (DesignMessageEncoder) EncodeElementCreated(version int64, origin documentdesign.Origin, page string, element design.Element) ([]byte, error) {
 	return dto.NewDesignElementCreatedMessage(version, string(origin), page, element)
 }

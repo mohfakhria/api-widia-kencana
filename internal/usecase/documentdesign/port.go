@@ -47,6 +47,7 @@ type MessageEncoder interface {
 	EncodeSnapshot(content json.RawMessage, version int64, page PageSize) ([]byte, error)
 	EncodePresence(users []PresenceUser) ([]byte, error)
 	EncodeCursors(cursors []Cursor) ([]byte, error)
+	EncodeSelections(selections []Selection) ([]byte, error)
 
 	// Siaran perubahan. Elemen diserahkan sebagai nilai domain, bukan JSON mentah
 	// seperti snapshot: di sini ia sudah tervalidasi dan dimiliki orchestrator,
@@ -107,6 +108,28 @@ type Cursor struct {
 	Page   string
 	X      float64
 	Y      float64
+}
+
+// Selection adalah elemen yang sedang dipilih satu orang.
+//
+// Dikunci per orang seperti kursor, dan alasannya sama: dua sorotan berlabel
+// nama yang sama justru membingungkan pembacanya, dan warnanya toh diturunkan
+// frontend dari id orangnya.
+//
+// TIDAK terikat halaman, dan di sinilah ia berbeda dari kursor. Kursor membawa
+// Page karena koordinat tidak berarti tanpa halaman; seleksi menunjuk id elemen
+// yang unik se-dokumen, sehingga ia menemukan halamannya sendiri. Orang yang
+// berpindah halaman tetap memilih apa yang ia pilih, dan sorotannya harus masih
+// ada ketika orang lain menyusul ke halaman itu.
+//
+// Yang dikirim id, bukan kotaknya. Kotak yang ikut di dalam pesan seleksi akan
+// tertinggal satu pesan di belakang elemennya ketika elemen itu diseret, dan
+// keduanya terlihat berpisah tepat saat orang paling memperhatikan. Id membuat
+// itu mustahil: sorotan diturunkan dari salinan dokumen penerima, yang bergerak
+// bersama elemennya karena berasal dari aliran siaran yang sama.
+type Selection struct {
+	UserID     string
+	ElementIDs []string
 }
 
 // Member adalah satu koneksi beserta pemiliknya.

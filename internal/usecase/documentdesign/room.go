@@ -88,6 +88,13 @@ type Room struct {
 	// denyut akan mengirim ulang posisi yang sama dua puluh kali per detik walau
 	// tidak ada satu pun yang bergerak.
 	cursorsDirty bool
+	// selections dikunci id orang, isinya id elemen yang sedang ia pilih.
+	// Kosong berarti tidak memilih apa-apa, dan entrinya dihapus alih-alih
+	// menyimpan daftar kosong.
+	selections map[string][]string
+	// selectionsDirty menandai ada yang berubah sejak siaran terakhir, sama
+	// seperti cursorsDirty dan dengan alasan yang sama.
+	selectionsDirty bool
 	// Riwayat undo/redo, satu tumpukan untuk SELURUH DOKUMEN — bukan per orang.
 	// Hidup di memori saja dan mati bersama room; tidak ada yang tersimpan ke
 	// database. Alasannya ada di history.go.
@@ -105,17 +112,18 @@ type Room struct {
 
 func newRoom(token string, documents output.DocumentRepository, encoder MessageEncoder, logger *slog.Logger) *Room {
 	return &Room{
-		token:     token,
-		documents: documents,
-		encoder:   encoder,
-		logger:    logger,
-		inbox:     make(chan roomEvent, roomInboxSize),
-		saved:     make(chan saveResult, 1),
-		stop:      make(chan struct{}),
-		done:      make(chan struct{}),
-		content:   &design.Content{Pages: []design.Page{}},
-		members:   make(map[Subscriber]Member),
-		cursors:   make(map[string]Cursor),
+		token:      token,
+		documents:  documents,
+		encoder:    encoder,
+		logger:     logger,
+		inbox:      make(chan roomEvent, roomInboxSize),
+		saved:      make(chan saveResult, 1),
+		stop:       make(chan struct{}),
+		done:       make(chan struct{}),
+		content:    &design.Content{Pages: []design.Page{}},
+		members:    make(map[Subscriber]Member),
+		cursors:    make(map[string]Cursor),
+		selections: make(map[string][]string),
 	}
 }
 
@@ -156,6 +164,10 @@ func (r *Room) run(ctx context.Context) {
 			r.flush(ctx)
 		case <-cursorTicker.C:
 			r.broadcastCursors()
+			// Menumpang denyut yang sama, aliran keluarnya berbeda. Keduanya
+			// hanya menyiarkan bila ada yang berubah, jadi ruangan yang diam
+			// tidak mengirim apa pun.
+			r.broadcastSelections()
 		}
 	}
 }
@@ -289,6 +301,7 @@ func (r *Room) handle(event roomEvent) {
 		// hanya menyiarkan saat ada yang berubah, jadi pendatang yang bergabung
 		// ketika semua orang sedang diam tidak akan pernah melihat satu kursor pun.
 		r.sendCursors(e.member.Subscriber)
+		r.sendSelections(e.member.Subscriber)
 
 		// Balasan paling akhir, supaya kembalinya Sync berarti seluruh pesan untuk
 		// bergabung sudah masuk antrean — bukan sebagian. Ongkosnya hanya beberapa
@@ -309,6 +322,12 @@ func (r *Room) handle(event roomEvent) {
 				delete(r.cursors, member.UserID)
 				r.cursorsDirty = true
 			}
+			// Sorotan yang menggantung setelah orangnya menutup tab lebih buruk
+			// daripada tidak ada sorotan sama sekali.
+			if _, had := r.selections[member.UserID]; had {
+				delete(r.selections, member.UserID)
+				r.selectionsDirty = true
+			}
 			r.broadcastPresence()
 		}
 	case cursorMoveEvent:
@@ -324,6 +343,15 @@ func (r *Room) handle(event roomEvent) {
 		// siarannya menunggu denyut.
 		r.cursors[e.cursor.UserID] = e.cursor
 		r.cursorsDirty = true
+	case selectionEvent:
+		// Syarat yang sama dengan kursor: hanya anggota. Seleksi dari koneksi
+		// yang belum meminta dokumen akan muncul di layar orang lain sebagai id
+		// yang tidak dapat dipetakan ke siapa pun di daftar kehadiran.
+		if !r.hasUser(e.selection.UserID) {
+			return
+		}
+
+		r.applySelection(e.selection)
 	case elementCreateEvent:
 		r.applyCreate(e)
 	case elementUpdateEvent:
@@ -503,6 +531,16 @@ func (r *Room) leave(sub Subscriber) {
 // Penambahan dapat ditolak orchestrator, dan penolakan itu wajib sampai ke
 // pengirimnya — elemen yang sudah tergambar optimistis di layarnya tidak akan
 // pernah ada di dokumen bila ia tidak diberi tahu.
+// selectElements tidak menunggu apa pun, sama seperti moveCursor. Seleksi adalah
+// keadaan sesaat: yang terbaru menimpa yang sebelumnya, dan yang tidak sampai
+// karena room-nya berhenti tidak meninggalkan jejak yang perlu dibereskan.
+func (r *Room) selectElements(selection Selection) {
+	select {
+	case r.inbox <- selectionEvent{selection: selection}:
+	case <-r.done:
+	}
+}
+
 func (r *Room) createElement(ctx context.Context, sub Subscriber, origin Origin, page string, element design.Element) error {
 	reply := make(chan error, 1)
 	event := elementCreateEvent{subscriber: sub, origin: origin, page: page, element: element, reply: reply}

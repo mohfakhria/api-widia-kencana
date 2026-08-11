@@ -60,6 +60,18 @@ type cursorMoveEvent struct {
 
 func (cursorMoveEvent) isRoomEvent() {}
 
+// selectionEvent tidak punya reply, sama seperti cursorMoveEvent — dan karena
+// alasan yang sama: seleksi adalah keadaan sesaat, dan tidak ada yang berguna
+// untuk dikembalikan.
+//
+// Membawa userID, bukan subscriber, karena seleksi dikunci per orang. Tab mana
+// pun milik orang itu boleh menggantinya, persis seperti kursor.
+type selectionEvent struct {
+	selection Selection
+}
+
+func (selectionEvent) isRoomEvent() {}
+
 // Seluruh kejadian penyuntingan membawa subscriber pengirimnya, semata-mata
 // untuk memeriksa keanggotaan. Koneksi yang terbuka tetapi belum meminta dokumen belum
 // pernah melihat isinya, jadi suntingan darinya menunjuk keadaan yang tidak pernah
@@ -77,6 +89,7 @@ func (cursorMoveEvent) isRoomEvent() {}
 // tidak elemen yang sudah tergambar optimistis di layarnya tidak akan pernah ada
 // di dokumen. Ketiga sisanya paling banter tidak berlaku, dan itu menyatu dengan
 // sendirinya.
+//
 // origin dibawa PER KEJADIAN, bukan diingat per koneksi, walau klien mengirim
 // token yang sama berulang-ulang. Mengingatnya berarti server menyimpulkan
 // sesuatu tentang token yang ia janjikan tidak pernah ditafsirkan — dan simpulan

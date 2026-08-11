@@ -203,6 +203,25 @@ func (s *Service) MoveCursor(documentToken, userID, page string, x, y float64) {
 // dapat ditolak: halaman tidak ada, atau id elemennya sudah dipakai. Pemanggil
 // wajib meneruskannya ke klien — elemen yang sudah tergambar optimistis di
 // layarnya tidak akan pernah ada di dokumen bila ia tidak diberi tahu.
+// SelectElements mencatat elemen yang sedang dipilih satu orang, lalu
+// menyiarkannya ke penghuni lain sebagai sorotan.
+//
+// Kehadiran, bukan isi dokumen — dan itu keputusan pokoknya. Ia tidak menaikkan
+// version, tidak masuk riwayat undo, dan tidak pernah tersimpan. Bila dibangun
+// sebagai penyuntingan, tiap klik akan membuat klien lain melihat nomor version
+// melompat lalu meminta dokumen ulang, dan Ctrl+Z akan membatalkan "orang lain
+// mengklik sesuatu".
+//
+// Tidak mengembalikan apa pun. Daftar yang kelewat panjang dipotong, bukan
+// ditolak: penolakan tiba di klien sebagai malformed_message yang memicu
+// permintaan dokumen ulang, dan itu tidak sebanding dengan satu seret marquee.
+func (s *Service) SelectElements(documentToken, userID string, elementIDs []string) {
+	s.rooms.selectElements(documentToken, Selection{
+		UserID:     userID,
+		ElementIDs: elementIDs,
+	})
+}
+
 func (s *Service) CreateElement(ctx context.Context, documentToken string, sub Subscriber, origin Origin, page string, element design.Element) error {
 	return s.rooms.createElement(ctx, documentToken, sub, origin, page, element)
 }

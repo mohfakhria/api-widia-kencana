@@ -10,6 +10,7 @@ import (
 const (
 	DesignMessageDocumentGet    = "document.get"
 	DesignMessageCursorMove     = "cursor.move"
+	DesignMessageElementSelect  = "element.select"
 	DesignMessageElementCreate  = "element.create"
 	DesignMessageElementUpdate  = "element.update"
 	DesignMessageElementDelete  = "element.delete"
@@ -32,6 +33,7 @@ const (
 	DesignMessageSnapshot         = "snapshot"
 	DesignMessagePresence         = "presence"
 	DesignMessageCursor           = "cursor"
+	DesignMessageSelection        = "selection"
 	DesignMessageError            = "error"
 	DesignMessageElementCreated   = "element.created"
 	DesignMessageElementUpdated   = "element.updated"
@@ -114,6 +116,55 @@ func NewDesignCursorMessage(cursors []DesignCursorEntry) ([]byte, error) {
 	return json.Marshal(DesignCursorMessage{
 		Type:    DesignMessageCursor,
 		Cursors: cursors,
+	})
+}
+
+// DesignElementSelect adalah muatan pesan element.select.
+//
+// IDs berupa daftar sejak awal, bukan satu id. Seleksi jamak wajar di editor
+// mana pun, dan menambahkannya belakangan berarti mengubah bentuk yang sudah
+// dipakai. Daftar kosong berarti tidak ada yang terpilih — keadaan yang harus
+// dapat dinyatakan, sehingga ia bukan muatan cacat.
+//
+// Tidak ada page: id elemen unik se-dokumen termasuk lintas halaman, jadi id
+// menentukan letaknya sendiri. Kursor membawa page karena koordinat tidak
+// berarti tanpa halaman; seleksi tidak begitu, dan itu pula sebabnya seleksi
+// TIDAK hilang ketika orangnya berpindah halaman.
+//
+// Tidak ada origin: ini bukan suntingan, dan pengirim sudah tahu seleksinya
+// sendiri.
+type DesignElementSelect struct {
+	IDs []string `json:"ids"`
+}
+
+// DesignSelectionMessage adalah seleksi semua orang sekaligus, sebentuk dengan
+// siaran kursor dan karena alasan yang sama: satu muatan disandikan sekali lalu
+// dipakai bersama seluruh penerima.
+//
+// Bernama "selection", BUKAN "element.selected". Bentuk lampau di kontrak ini
+// berarti "dokumen berubah"; memakainya di sini menaruh pemberitahuan kehadiran
+// dalam bentuk nama yang dipesan untuk perubahan isi.
+type DesignSelectionMessage struct {
+	Type       string                 `json:"type"`
+	Selections []DesignSelectionEntry `json:"selections"`
+}
+
+type DesignSelectionEntry struct {
+	ID  string   `json:"id"`
+	IDs []string `json:"ids"`
+}
+
+func NewDesignSelectionMessage(selections []DesignSelectionEntry) ([]byte, error) {
+	if selections == nil {
+		// Array kosong, bukan null — sama seperti kursor dan kehadiran. Daftar
+		// kosong di sini berarti tidak ada seorang pun sedang memilih sesuatu,
+		// dan itulah cara sorotan terakhir menghilang dari layar.
+		selections = []DesignSelectionEntry{}
+	}
+
+	return json.Marshal(DesignSelectionMessage{
+		Type:       DesignMessageSelection,
+		Selections: selections,
 	})
 }
 

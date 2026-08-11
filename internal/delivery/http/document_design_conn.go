@@ -240,6 +240,8 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		h.sendSnapshot(ctx, documentToken, subscriber)
 	case dto.DesignMessageCursorMove:
 		h.moveCursor(documentToken, payload, subscriber)
+	case dto.DesignMessageElementSelect:
+		h.selectElements(documentToken, payload, subscriber)
 	case dto.DesignMessageElementCreate:
 		h.createElement(ctx, documentToken, payload, subscriber)
 	case dto.DesignMessageElementUpdate:
@@ -288,6 +290,26 @@ func (h *DocumentDesignHandler) moveCursor(documentToken string, payload []byte,
 	}
 
 	h.service.MoveCursor(documentToken, subscriber.userID, move.Page, move.X, move.Y)
+}
+
+// selectElements meneruskan pilihan satu orang ke room.
+//
+// Dijatuhkan diam-diam bila muatannya cacat, sama seperti cursor.move dan
+// berbeda dari penyuntingan. Seleksi adalah kehadiran: yang gagal akan terganti
+// oleh klik berikutnya, dan membalasnya berarti mengirim galat untuk sesuatu
+// yang sudah tidak berarti apa-apa saat balasannya tiba.
+//
+// Daftar kosong DITERUSKAN, tidak dijatuhkan — ia berarti "tidak memilih
+// apa-apa", dan itulah satu-satunya cara sorotan seseorang hilang dari layar
+// orang lain. Panjang daftarnya dipotong di orchestrator, bukan di sini, karena
+// batas itu melindungi antrean siaran yang dimiliki orchestrator.
+func (h *DocumentDesignHandler) selectElements(documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignElementSelect
+	if err := json.Unmarshal(payload, &message); err != nil {
+		return
+	}
+
+	h.service.SelectElements(documentToken, subscriber.userID, message.IDs)
 }
 
 // sendSnapshot meneruskan permintaan ke room. Snapshot-nya sendiri dimasukkan ke

@@ -166,6 +166,12 @@ func (m *manager) moveCursor(token string, cursor Cursor) {
 // Room yang tidak ada di sini berarti pengirimnya belum meminta dokumen, atau
 // room-nya baru saja disapu. Keduanya sama bagi klien: yang ia lihat gagal, dan
 // document.get adalah jalan keluarnya.
+func (m *manager) selectElements(token string, selection Selection) {
+	if room, ok := m.room(token); ok {
+		room.selectElements(selection)
+	}
+}
+
 func (m *manager) createElement(ctx context.Context, token string, sub Subscriber, origin Origin, page string, element design.Element) error {
 	room, ok := m.room(token)
 	if !ok {
