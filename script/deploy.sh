@@ -19,8 +19,6 @@
 #   ENV_FILE=/etc/widia-api/api.env       dibaca hanya untuk tahu APP_PORT
 #   ARCH=amd64                            amd64 atau arm64
 #   ALLOW_DIRTY=1                         izinkan deploy dari pohon kerja kotor
-#   USE_DOCKER=auto|0|1                   pembangun: deteksi, selalu lokal, atau wajib Docker
-#   ALLOW_GO_MISMATCH=1                   izinkan Go lokal berbeda dari yang dipatok Dockerfile
 #
 # STAGING dan TARGET sengaja berbeda, dan bukan sekadar kebiasaan. Unit systemd
 # memakai ProtectHome=true, yang membuat /root kosong dan tidak terjangkau bagi
@@ -37,20 +35,6 @@ SERVICE=${SERVICE:-widia-api}
 ENV_FILE=${ENV_FILE:-/etc/widia-api/api.env}
 ARCH=${ARCH:-amd64}
 ALLOW_DIRTY=${ALLOW_DIRTY:-0}
-USE_DOCKER=${USE_DOCKER:-auto}
-ALLOW_GO_MISMATCH=${ALLOW_GO_MISMATCH:-0}
-
-# Salah ketik pada nilai env diperiksa DI SINI, sebelum satu pun langkah
-# berjalan. Memeriksanya di tempat pemakaian berarti skrip sudah menyentuh
-# jaringan dan mungkin sudah membangun sesuatu sebelum memberi tahu bahwa
-# perintahnya sendiri tidak sah.
-case "$USE_DOCKER" in
-auto | 0 | 1) ;;
-*)
-	printf '\n\033[31m✗ USE_DOCKER harus auto, 0, atau 1 — bukan "%s"\033[0m\n' "$USE_DOCKER" >&2
-	exit 1
-	;;
-esac
 
 repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo"
@@ -109,30 +93,12 @@ fi
 # terlanjur terkirim adalah kegagalan yang paling sulit disadari: semuanya
 # berhasil, layanannya hidup, dan yang berjalan bukan yang Anda kira.
 #
-# DUA pembangun yang setara, bukan satu yang utama dan satu darurat. Bendera
-# keduanya sama persis, dan -trimpath bersama -buildvcs=false membuat hasilnya
-# identik byte per byte — asalkan versi Go-nya sama, dan itulah yang dijaga
-# pemeriksaan di bawah.
-#
-# Dockerfile tetap menjadi acuan versi Go walau Docker tidak pernah dijalankan.
-# Ia satu-satunya tempat versi itu tertulis sebagai angka yang dapat dibaca
-# skrip; go.mod menyatakan versi BAHASA minimum, bukan versi toolchain yang
-# membangun.
+# Docker didahulukan karena ia mematok versi Go lewat Dockerfile. Bila daemonnya
+# mati, build lokal dipakai sebagai gantinya — dengan bendera yang sama persis,
+# dan hasilnya terbukti identik byte per byte karena -trimpath dan -buildvcs=false
+# membuat build ini dapat diulang.
 langkah "Membangun binary linux/$ARCH"
-
-# Nilainya sudah divalidasi di atas, jadi di sini tinggal memilih.
-case "$USE_DOCKER" in
-0) pembangun="lokal" ;;
-1)
-	docker info >/dev/null 2>&1 || mati "USE_DOCKER=1 tetapi daemon Docker tidak menjawab"
-	pembangun="docker"
-	;;
-*)
-	if docker info >/dev/null 2>&1; then pembangun="docker"; else pembangun="lokal"; fi
-	;;
-esac
-
-if [ "$pembangun" = "docker" ]; then
+if docker info >/dev/null 2>&1; then
 	echo "  lewat Docker"
 	DOCKER_BUILDKIT=1 docker build \
 		--quiet \
@@ -141,27 +107,7 @@ if [ "$pembangun" = "docker" ]; then
 		--output type=local,dest=./dist \
 		. >/dev/null
 else
-	# Versi Go lokal dibandingkan dengan yang dipatok Dockerfile.
-	#
-	# Tanpa ini, satu kali `brew upgrade go` diam-diam mengubah apa yang berjalan
-	# di server — runtime dan pustaka standar yang berbeda, tanpa satu baris pun
-	# di keluaran yang menyebutkannya. Kegagalan seperti itu hanya muncul jauh
-	# kemudian sebagai perilaku yang tidak dapat diulang di mesin siapa pun.
-	dipatok=$(sed -n 's/^ARG GO_VERSION=\([0-9.]*\).*/\1/p' Dockerfile | head -1)
-	# Dua langkah: bash tidak menerima pemotongan awalan langsung pada hasil
-	# substitusi perintah.
-	terpasang=$(go env GOVERSION)
-	terpasang=${terpasang#go}
-
-	if [ -z "$dipatok" ]; then
-		mati "tidak menemukan ARG GO_VERSION di Dockerfile — patokan versinya hilang"
-	fi
-	if [ "$dipatok" != "$terpasang" ] && [ "$ALLOW_GO_MISMATCH" != "1" ]; then
-		mati "Go lokal $terpasang, Dockerfile mematok $dipatok — binary-nya tidak akan sama.
-   Samakan versinya, atau jalankan ulang dengan ALLOW_GO_MISMATCH=1 bila memang disengaja."
-	fi
-
-	echo "  toolchain lokal go$terpasang (dipatok $dipatok)"
+	echo "  daemon Docker mati — memakai toolchain lokal ($(go version | awk '{print $3}'))"
 	CGO_ENABLED=0 GOOS=linux GOARCH="$ARCH" go build \
 		-trimpath -buildvcs=false -ldflags="-s -w" \
 		-o dist/widia-api ./cmd/api
