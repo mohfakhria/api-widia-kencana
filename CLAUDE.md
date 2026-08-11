@@ -1,31 +1,40 @@
 # Catatan untuk Claude
 
-## Kontrak dengan frontend berubah bersama-sama
+## Kontrak dengan frontend ada di luar repo ini
 
 Fitur document design punya kontrak yang dipegang dua sistem berbeda. Prosa dan
 kode gampang melenceng diam-diam — dan itu sudah pernah terjadi di repo ini:
 satu bagian panduan sempat memperagakan bentuk `props` yang justru ditolak
 bagian lain di dokumen yang sama.
 
+Kontraknya kini **satu berkas bersama**, di repo terpisah:
+
+```
+../widia-kencana-docs-hub/docs/engineering/document-design-fe-be-alignment.md
+```
+
+Frontend menyunting berkas yang sama. Tidak ada salinan di repo ini, dan jangan
+membuatnya — salinan yang tertinggal adalah persoalan yang berkas bersama ini
+diadakan untuk menghapus.
+
 **Mengubah bentuk pesan WebSocket, model isi dokumen, atau endpoint yang dipakai
-editor berarti satu commit menyentuh empat hal:**
+editor berarti menyentuh tiga hal:**
 
 1. Struct Go yang bersangkutan
-2. `docs/engineering/document-design.d.ts` — kontrak dalam bentuk yang dapat dieksekusi
-3. Bagian yang bersangkutan di `websocket-contract.md` atau `document-design.md`
-4. Satu baris di **Riwayat perubahan** pada `websocket-contract.md`
+2. Bagian yang bersangkutan di berkas bersama itu
+3. Satu baris di **§8 Riwayat keputusan** pada berkas yang sama
 
-Nomor 4 yang paling mudah terlupa dan paling merugikan. Tanpanya, satu-satunya
-cara frontend mengetahui ada yang berubah adalah diberi tahu secara lisan.
+Nomor 3 yang paling mudah terlupa dan paling merugikan — dan sekarang lebih
+merugikan daripada sebelumnya. Dulu berkas kontraknya ikut dalam commit yang
+sama dengan kodenya, jadi `git log` masih menyimpan jejak walau riwayatnya lupa
+ditulis. Berkas bersama itu di luar repo mana pun, sehingga **tidak ada jejak
+kedua**: bila §8 tidak ditambah, tidak ada satu pun cara frontend mengetahui
+sesuatu berubah selain diberi tahu secara lisan.
 
-### Pembagian antara kedua dokumen
-
-> Kontrak menjelaskan **amplopnya**. Panduan menjelaskan **isinya**.
-
-Apa pun yang punya field `type` atau kode penutupan masuk
-`websocket-contract.md`. Apa pun tentang bentuk dokumen dan cara menggambarnya
-masuk `document-design.md`. Jangan menjelaskan hal yang sama di keduanya —
-tautkan saja.
+Karena berkas itu di luar repo, ia juga tidak dapat ikut dalam commit yang
+mengubah kodenya. Yang menggantikan jaminan tersebut: sunting berkas bersama
+**pada saat yang sama** dengan kodenya, bukan setelah pekerjaan Go selesai —
+lalu sebut di ringkasan bahwa ia sudah disunting.
 
 ## Sebelum mengubah document design
 

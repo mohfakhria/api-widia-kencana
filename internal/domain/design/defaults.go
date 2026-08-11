@@ -171,7 +171,7 @@ func (e *Element) ResolvedStrokeStyle() string {
 // gambar, lewati — dalam titik. Kosong berarti garis utuh.
 //
 // SATU-SATUNYA tempat angka ini hidup di backend, dan angkanya tertulis juga di
-// document-design.md supaya frontend menggambar dari rumus yang sama. Dua
+// berkas kontrak bersama supaya frontend menggambar dari rumus yang sama. Dua
 // renderer yang masing-masing menebak polanya pasti menghasilkan garis yang
 // berbeda, dan perbedaan itu baru terlihat setelah dicetak.
 //

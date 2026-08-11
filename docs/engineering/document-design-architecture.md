@@ -6,8 +6,8 @@ keluar.
 Dokumen ini untuk orang yang akan **mengubah** kodenya. Ia menjelaskan
 keputusan, invarian, dan model kegagalan — hal-hal yang tidak dapat dibaca
 kembali dari kode. Bentuk pesan dan cara memakainya dari frontend ada di
-[`websocket-contract.md`](websocket-contract.md) dan
-[`document-design.md`](document-design.md), dan sengaja tidak diulang di sini.
+berkas kontrak bersama `document-design-fe-be-alignment.md` di repo
+`widia-kencana-docs-hub`, dan sengaja tidak diulang di sini.
 
 ---
 

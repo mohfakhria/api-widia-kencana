@@ -104,8 +104,7 @@ func Load() Config {
 		// yang pernah memintanya, dan sekarang tidak ada satu pun berkas
 		// konfigurasi yang menyebutkan namanya.
 		//
-		// Isi hanya bila mendaftarkan berkas font sendiri. Caranya di
-		// docs/engineering/document-design.md.
+		// Isi hanya bila mendaftarkan berkas font sendiri.
 		DesignFontDir: getEnv("DESIGN_FONT_DIR", ""),
 	}
 }
