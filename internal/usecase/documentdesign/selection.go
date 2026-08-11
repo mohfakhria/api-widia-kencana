@@ -38,8 +38,21 @@ const selectionStream = "selection"
 // terakhir yang membatalkan pilihannya menghapus entrinya dari peta, dan
 // siaran berisi daftar kosong itulah satu-satunya cara sorotannya hilang dari
 // layar orang lain.
+//
+// Berbeda pula dalam penjaganya. Kursor berhenti pada kurang dari DUA penghuni
+// karena kursor sendiri tidak berguna bagi pemiliknya; seleksi berhenti pada
+// NOL. Bedanya menggigit tepat saat seseorang pergi: kepergiannya menghapus
+// entrinya dan menyalakan penanda kotor, tetapi bila yang tersisa cuma satu
+// orang, penjaga bergaya kursor akan memblokir justru siaran yang membersihkan
+// sorotan hantu dari layar orang itu — dan tidak ada siaran berikutnya yang
+// akan memperbaikinya, karena tidak ada lagi yang mengubah seleksi.
+//
+// Ongkos dari penjaga yang lebih longgar: orang yang sedang sendirian menerima
+// kembali seleksinya sendiri, satu pesan kecil per denyut selama ia masih
+// mengubah pilihan. Itu jauh lebih murah daripada sorotan yang tidak bisa
+// dihilangkan dengan cara apa pun selain memuat ulang halaman.
 func (r *Room) broadcastSelections() {
-	if !r.selectionsDirty || len(r.members) < 2 {
+	if !r.selectionsDirty || len(r.members) == 0 {
 		return
 	}
 	r.selectionsDirty = false
