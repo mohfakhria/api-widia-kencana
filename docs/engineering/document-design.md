@@ -186,6 +186,8 @@ luar `0..1` ditolak `element_rejected`.
 | `fontStyle` | string | `normal`, `italic` |
 | `color` | string | `#rgb` atau `#rrggbb` |
 | `align` | string | `left`, `center`, `right`, `justify` |
+| `underline` | boolean | seluruh isi elemen |
+| `strikethrough` | boolean | seluruh isi elemen; boleh bersamaan dengan `underline` |
 | `lineHeight` | number | pengali ukuran huruf, misal `1.5` |
 | `letterSpacing` | number | titik; boleh negatif |
 
@@ -559,6 +561,28 @@ mengalir biasa dari tepi atas.
 otomatis saat pengguna mengetik — akan menampilkan seluruh teks di layar
 sementara backend **memotongnya** pada `h`. Kalau editor perlu menumbuhkan kotak,
 tumbuhkan `h` di dalam data, bukan hanya tampilannya.
+
+#### Garis bawah dan coret
+
+```css
+text-decoration: underline;              /* underline */
+text-decoration: line-through;           /* strikethrough */
+text-decoration: underline line-through; /* keduanya */
+```
+
+Keduanya berlaku pada **seluruh isi elemen**. Menggarisbawahi satu kata di tengah
+paragraf menuntut teks kaya, dan itu belum ada.
+
+**Jangan menyetel `text-underline-offset` maupun `text-decoration-thickness`.**
+Backend menurunkan letak dan tebalnya dari ukuran huruf — 0,1 em di bawah garis
+dasar setebal 0,05 em, dan coret 0,4 em di atasnya. Angka itu metrik Helvetica,
+jadi untuk keluarga inti ia persis; menyetel nilai sendiri di CSS hanya membuat
+layar dan cetak berbeda.
+
+Garisnya **menerus mengikuti lebar teks**, termasuk pada perataan penuh yang
+selanya melebar dan pada teks yang diberi jarak antar huruf. Pada baris terakhir
+paragraf berperataan penuh — yang memang tidak diregangkan — garisnya berhenti di
+ujung teks, bukan di tepi kotak.
 
 ### 2.4 Kotak dan garis: pakai SVG, bukan `div`
 

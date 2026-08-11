@@ -146,6 +146,16 @@ export interface DesignTextElement extends DesignElementBase {
   color?: DesignColor;
   /** Bawaan: "left". */
   align?: DesignAlign;
+  /**
+   * Berlaku pada SELURUH isi elemen, bukan sebagian. Menggarisbawahi satu kata
+   * di tengah paragraf menuntut teks kaya, dan itu belum ada.
+   *
+   * Di CSS: `text-decoration: underline`. Letaknya diturunkan dari ukuran huruf,
+   * jadi jangan menyetel `text-underline-offset` maupun `text-decoration-thickness`.
+   */
+  underline?: boolean;
+  /** Di CSS: `text-decoration: line-through`. Boleh bersamaan dengan underline. */
+  strikethrough?: boolean;
   /** Pengali ukuran huruf, misal 1.5. Bawaan: 1.2. */
   lineHeight?: number;
   /** Titik; boleh negatif. Bawaan: 0. */

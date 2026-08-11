@@ -198,13 +198,18 @@ type Element struct {
 	Opacity *float64 `json:"opacity,omitempty"`
 
 	// Properti teks.
-	Text          string  `json:"text,omitempty"`
-	FontFamily    string  `json:"fontFamily,omitempty"`
-	FontSize      float64 `json:"fontSize,omitempty"`
-	FontWeight    int     `json:"fontWeight,omitempty"`
-	FontStyle     string  `json:"fontStyle,omitempty"`
-	Color         string  `json:"color,omitempty"`
-	Align         string  `json:"align,omitempty"`
+	Text       string  `json:"text,omitempty"`
+	FontFamily string  `json:"fontFamily,omitempty"`
+	FontSize   float64 `json:"fontSize,omitempty"`
+	FontWeight int     `json:"fontWeight,omitempty"`
+	FontStyle  string  `json:"fontStyle,omitempty"`
+	Color      string  `json:"color,omitempty"`
+	Align      string  `json:"align,omitempty"`
+	// Underline dan Strikethrough berlaku pada SELURUH isi elemen, bukan sebagian.
+	// Menggarisbawahi satu kata di tengah paragraf menuntut teks kaya, dan itu
+	// belum ada — lihat catatan rich text di dokumen arsitektur.
+	Underline     bool    `json:"underline,omitempty"`
+	Strikethrough bool    `json:"strikethrough,omitempty"`
 	LineHeight    float64 `json:"lineHeight,omitempty"`
 	LetterSpacing float64 `json:"letterSpacing,omitempty"`
 

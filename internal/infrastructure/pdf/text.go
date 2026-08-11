@@ -47,6 +47,10 @@ func (c *canvas) drawText(element *design.Element) error {
 
 	red, green, blue, _ := design.ParseColor(element.ResolvedColor())
 	c.pdf.SetTextColor(red, green, blue)
+	// Hiasan digambar sebagai bidang terisi, bukan sebagai teks, sehingga ia
+	// memakai warna ISI — bukan warna teks. Disetel sekali di sini, bukan di tiap
+	// baris, karena tidak ada yang mengubahnya di antara baris.
+	c.pdf.SetFillColor(red, green, blue)
 
 	baseline, step := c.baseline(font, element)
 	align := element.ResolvedAlign()
@@ -59,7 +63,7 @@ func (c *canvas) drawText(element *design.Element) error {
 		// browser. Meratakannya akan meregangkan sisa kalimat pendek sampai
 		// selebar kotaknya.
 		last := index == len(lines)-1
-		c.drawTextLine(line, element.X, baseline, element.W, align, element.LetterSpacing, last)
+		c.drawTextLine(element, line, element.X, baseline, element.W, align, element.LetterSpacing, last)
 		baseline += step
 	}
 
@@ -187,35 +191,74 @@ func (c *canvas) encode(text string) string {
 }
 
 // drawTextLine menempatkan satu baris menurut perataannya.
-func (c *canvas) drawTextLine(line string, x, baseline, maxWidth float64, align string, letterSpacing float64, last bool) {
+func (c *canvas) drawTextLine(element *design.Element, line string, x, baseline, maxWidth float64, align string, letterSpacing float64, last bool) {
 	if line == "" {
 		return
 	}
 
 	if align == design.AlignJustify && !last {
-		c.drawJustified(line, x, baseline, maxWidth, letterSpacing)
+		width := c.drawJustified(line, x, baseline, maxWidth, letterSpacing)
+		c.decorate(element, x, baseline, width)
 		return
 	}
 
+	width := c.measure(line, letterSpacing)
 	switch align {
 	case design.AlignCenter:
-		x += (maxWidth - c.measure(line, letterSpacing)) / 2
+		x += (maxWidth - width) / 2
 	case design.AlignRight:
-		x += maxWidth - c.measure(line, letterSpacing)
+		x += maxWidth - width
 	}
 
 	c.drawString(line, x, baseline, letterSpacing)
+	c.decorate(element, x, baseline, width)
+}
+
+// decorate menarik garis bawah dan garis coret sepanjang baris yang baru
+// digambar.
+//
+// DIGAMBAR SENDIRI, tidak memakai penanda "U" dan "S" milik fpdf. Penanda itu
+// menempelkan garisnya pada tiap pemanggilan Text, dan lebarnya dihitung dari
+// GetStringWidth — sehingga ia benar HANYA pada kasus paling sederhana. Dua
+// fitur yang sudah ada merusaknya: dengan letterSpacing, teks digambar per huruf
+// sehingga garisnya terputus di tiap sela; dengan perataan penuh, teks digambar
+// per kata sehingga garisnya bolong di antara kata. Keduanya menghasilkan garis
+// putus-putus yang tidak pernah diminta siapa pun, dan bedanya dari layar baru
+// terlihat setelah dicetak.
+//
+// Menggambarnya sendiri menyatukan seluruh kasus itu menjadi satu bidang
+// menerus, dengan harga metrik yang dipatok — lihat underlinePosition.
+func (c *canvas) decorate(element *design.Element, x, baseline, width float64) {
+	if width <= 0 || (!element.Underline && !element.Strikethrough) {
+		return
+	}
+
+	size := element.ResolvedFontSize()
+	thickness := underlineThickness / 1000.0 * size
+
+	if element.Underline {
+		c.pdf.Rect(x, baseline-underlinePosition/1000.0*size, width, thickness, "F")
+	}
+	if element.Strikethrough {
+		c.pdf.Rect(x, baseline+strikeoutMultiple*underlinePosition/1000.0*size, width, thickness, "F")
+	}
 }
 
 // drawJustified meregangkan jarak antar kata sampai baris memenuhi lebar kotak.
 //
 // Yang diregangkan hanya jarak antar kata, bukan jarak antar huruf. Browser
 // melakukan hal yang sama pada text-align: justify bawaan.
-func (c *canvas) drawJustified(line string, x, baseline, maxWidth, letterSpacing float64) {
+// drawJustified mengembalikan lebar yang BENAR-BENAR ditempati baris itu.
+//
+// Bukan selalu maxWidth: baris berisi satu kata, dan baris yang sudah lebih lebar
+// daripada kotaknya, digambar apa adanya tanpa diregangkan. Hiasan memakai lebar
+// ini, dan tanpa pembedaan itu garis bawah pada baris semacam itu akan menjulur
+// melewati hurufnya.
+func (c *canvas) drawJustified(line string, x, baseline, maxWidth, letterSpacing float64) float64 {
 	words := strings.Fields(line)
 	if len(words) < 2 {
 		c.drawString(line, x, baseline, letterSpacing)
-		return
+		return c.measure(line, letterSpacing)
 	}
 
 	total := 0.0
@@ -231,13 +274,15 @@ func (c *canvas) drawJustified(line string, x, baseline, maxWidth, letterSpacing
 		// panjang yang tidak dapat dipenggal. Merapatkan kata sampai tumpang tindih
 		// hanya membuatnya tidak terbaca.
 		c.drawString(line, x, baseline, letterSpacing)
-		return
+		return total
 	}
 
 	for index, word := range words {
 		c.drawString(word, x, baseline, letterSpacing)
 		x += widths[index] + gap
 	}
+
+	return maxWidth
 }
 
 // drawString menggambar teks apa adanya mulai dari x.

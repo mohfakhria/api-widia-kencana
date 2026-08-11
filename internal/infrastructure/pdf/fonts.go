@@ -66,6 +66,25 @@ const (
 	coreDescent = -207
 )
 
+// Letak dan tebal garis hiasan, dalam seperseribu em, dari berkas AFM Helvetica.
+//
+// Dipatok dengan alasan yang sama seperti coreAscent dan coreDescent di atas:
+// fpdf menyimpan Up dan Ut pada struct yang tidak diekspor, dan GetFontDesc tidak
+// membawanya, sehingga tidak ada cara membacanya lewat API publik.
+//
+// Untuk keluarga inti nilainya PERSIS benar. Untuk font tersemat ia hampiran —
+// kebanyakan font berada di sekitar -75 sampai -150 untuk letak dan 50 sampai 75
+// untuk tebal, jadi selisihnya sepersekian titik pada ukuran huruf yang wajar.
+// Hampiran yang sama dipakai untuk semua font, sehingga satu dokumen tidak pernah
+// menggambar garis bawah di dua ketinggian berbeda.
+const (
+	underlinePosition  = -100
+	underlineThickness = 50
+	// Coret memakai kelipatan letak garis bawah, sama seperti yang dilakukan fpdf:
+	// empat kali di atas garis dasar jatuh kira-kira di tengah tinggi huruf kecil.
+	strikeoutMultiple = 4
+)
+
 // faceKey adalah satu potongan font: satu keluarga, satu ketebalan, satu gaya.
 type faceKey struct {
 	family string
