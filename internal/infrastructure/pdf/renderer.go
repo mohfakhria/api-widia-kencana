@@ -66,6 +66,12 @@ type canvas struct {
 	// elemennya.
 	substitutions map[substitution]int
 
+	// skippedImages menghitung gambar yang tidak tergambar, dikunci alasannya.
+	// Dikumpulkan lalu dilaporkan sekali di akhir, sama seperti substitutions —
+	// satu aset rusak yang dipakai dua puluh elemen adalah SATU persoalan, bukan
+	// dua puluh baris log.
+	skippedImages map[skippedImage]int
+
 	// textEncoder mengikuti font yang sedang terpasang, sama seperti fpdf yang
 	// juga menyimpan font terpilih sebagai keadaan. Disetel di drawText, sebelum
 	// satu pun huruf diukur.
@@ -110,6 +116,7 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 		registeredFonts:  make(map[faceKey]selectedFont),
 		registeredImages: make(map[string]imageRegistration),
 		substitutions:    make(map[substitution]int),
+		skippedImages:    make(map[skippedImage]int),
 	}
 
 	// Disaring lebih dulu, bukan dilewati di dalam perulangan. Penjaga di bawah
@@ -146,6 +153,7 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 	}
 
 	r.reportSubstitutions(document.Token, c.substitutions)
+	r.reportSkippedImages(document.Token, c.skippedImages)
 
 	return buffer.Bytes(), nil
 }
@@ -163,6 +171,87 @@ func (r *Renderer) reportSubstitutions(token string, counted map[substitution]in
 			"document", token,
 			"asked", fmt.Sprintf("%s %d %s", swap.asked.family, swap.asked.weight, swap.asked.style),
 			"used", fmt.Sprintf("%s %d %s", swap.used.family, swap.used.weight, swap.used.style),
+			"elements", elements)
+	}
+}
+
+// decodeForPDF menyiapkan byte yang benar-benar disematkan ke PDF.
+//
+// JPEG, PNG, dan GIF diteruskan apa adanya — fpdf memahaminya. SVG dirasterkan
+// lebih dulu menjadi PNG, karena PDF tidak dapat membawanya dan satu-satunya
+// alternatif yang setia menuntut cgo.
+//
+// imageType kosong berarti formatnya memang tidak dikenal; err berarti dikenal
+// tetapi gagal disiapkan. Pemanggil membedakan keduanya karena penyebabnya
+// berbeda: yang pertama pilihan pengguna, yang kedua berkas yang rusak.
+func (c *canvas) decodeForPDF(image output.RenderImage) (data []byte, imageType string, svgRatio float64, err error) {
+	if isSVG(image.MimeType) {
+		// Teks hidup di dalam SVG tidak akan tergambar. Dicatat sebelum
+		// dirasterkan, supaya peringatannya tetap muncul walau sisanya berhasil —
+		// gambar yang muncul tanpa tulisannya justru yang paling mudah lolos dari
+		// pemeriksaan mata.
+		if svgHasText(image.Data) {
+			c.skippedImages[skippedImage{reason: "svg text not rendered", mimeType: image.MimeType}]++
+		}
+
+		raster, ratio, err := rasterizeSVG(image.Data)
+		if err != nil {
+			return nil, "", 0, err
+		}
+
+		return raster, "PNG", ratio, nil
+	}
+
+	imageType, ok := imageTypeOf(image.MimeType)
+	if !ok {
+		return nil, "", 0, nil
+	}
+
+	return image.Data, imageType, 0, nil
+}
+
+// isSVG memisahkan SVG dari jenis lain sebelum imageTypeOf dipanggil, karena ia
+// satu-satunya yang tidak diteruskan apa adanya.
+func isSVG(mimeType string) bool {
+	switch strings.ToLower(strings.TrimSpace(mimeType)) {
+	case "image/svg+xml", "image/svg":
+		return true
+	default:
+		return false
+	}
+}
+
+// skippedImage adalah satu alasan sebuah gambar tidak tergambar.
+//
+// MimeType ikut dikunci karena ia yang menjawab pertanyaan berikutnya. "Format
+// tidak didukung" tanpa menyebut formatnya menyisakan tebakan justru pada
+// keterangan yang diadakan untuk menghapus tebakan.
+type skippedImage struct {
+	reason   string
+	mimeType string
+}
+
+// reportSkippedImages mencatat gambar yang tidak ikut tercetak.
+//
+// Sebelum ini keduanya lenyap tanpa jejak apa pun, dan itu keliru karena
+// jalurnya dua, bukan satu:
+//
+//   - "asset unavailable" berada di luar kendali siapa pun — aset dihapus
+//     setelah elemennya dibuat. Dokumen yang kehilangan satu gambar masih
+//     berguna, jadi melewatinya memang benar.
+//   - "unsupported format" adalah akibat langsung dari sesuatu yang backend
+//     sendiri izinkan saat unggah: tidak ada penyaring MIME di sana, sehingga
+//     SVG diterima, digambar editor, lalu hilang tanpa suara saat diekspor.
+//
+// Level warn untuk keduanya. Pengguna melihat kotak kosong di tempat yang di
+// layar berisi gambar, dan tanpa baris ini pertanyaannya hanya dapat dijawab
+// dengan menebak.
+func (r *Renderer) reportSkippedImages(token string, counted map[skippedImage]int) {
+	for skip, elements := range counted {
+		r.logger.Warn("document export skipped an image",
+			"document", token,
+			"reason", skip.reason,
+			"mime", skip.mimeType,
 			"elements", elements)
 	}
 }
@@ -366,9 +455,10 @@ func (c *canvas) drawImage(element *design.Element) error {
 		return err
 	}
 	if !ok {
-		// Aset yang tidak tersedia dilewati. Pilihan ini disengaja: dokumen yang
-		// kehilangan satu gambar masih berguna, sedangkan ekspor yang gagal total
-		// karena satu aset terhapus tidak.
+		// Dilewati, dan alasannya sudah dicatat registerImage — dua alasan yang
+		// berbeda, bukan satu. Melewatinya disengaja: dokumen yang kehilangan
+		// satu gambar masih berguna, sedangkan ekspor yang gagal total karena
+		// satu aset terhapus tidak.
 		return nil
 	}
 
@@ -427,16 +517,27 @@ func (c *canvas) registerImage(token string) (imageRegistration, bool, error) {
 
 	image, ok := c.images[token]
 	if !ok {
+		// Asetnya tidak ikut terunduh: sudah dihapus, atau belum selesai
+		// diunggah. Mime-nya tidak diketahui, jadi tidak ada yang bisa disebut.
+		c.skippedImages[skippedImage{reason: "asset unavailable"}]++
 		return imageRegistration{}, false, nil
 	}
 
-	imageType, ok := imageTypeOf(image.MimeType)
-	if !ok {
+	data, imageType, svgRatio, err := c.decodeForPDF(image)
+	if err != nil {
+		// Rasterisasi yang gagal berarti SVG-nya tidak dapat diurai sama sekali.
+		// Tetap dilewati, bukan menggagalkan ekspor — tetapi tercatat.
+		c.skippedImages[skippedImage{reason: "svg could not be rasterized", mimeType: image.MimeType}]++
+		return imageRegistration{}, false, nil
+	}
+	if imageType == "" {
+		// Formatnya di luar yang dapat digambar maupun dirasterkan.
+		c.skippedImages[skippedImage{reason: "unsupported format", mimeType: image.MimeType}]++
 		return imageRegistration{}, false, nil
 	}
 
 	name := "asset-" + token
-	info := c.pdf.RegisterImageOptionsReader(name, fpdf.ImageOptions{ImageType: imageType}, bytes.NewReader(image.Data))
+	info := c.pdf.RegisterImageOptionsReader(name, fpdf.ImageOptions{ImageType: imageType}, bytes.NewReader(data))
 	if err := c.pdf.Error(); err != nil {
 		return imageRegistration{}, false, domain.NewError(domain.ErrInvalidInput,
 			fmt.Sprintf("image asset %s could not be decoded", token))
@@ -445,6 +546,12 @@ func (c *canvas) registerImage(token string) (imageRegistration, bool, error) {
 	registration := imageRegistration{name: name}
 	if info != nil && info.Height() > 0 {
 		registration.ratio = info.Width() / info.Height()
+	}
+	// Rasio SVG diambil dari viewBox, bukan dari hasil rasternya. Sisi raster
+	// dibulatkan ke piksel bulat, dan pembulatan itu cukup menggeser gambar
+	// beberapa titik pada kotak besar saat fit contain atau cover.
+	if svgRatio > 0 {
+		registration.ratio = svgRatio
 	}
 	c.registeredImages[token] = registration
 
