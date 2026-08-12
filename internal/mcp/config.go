@@ -34,8 +34,31 @@ type Config struct {
 	// di sini, wewenang itu menjadi publik begitu mcp.widiakencana.com terbit.
 	AuthToken string
 
+	// PublicURL adalah alamat MCP sebagaimana DILIHAT DUNIA LUAR.
+	//
+	// Ia menjadi issuer OAuth, dan issuer bukan sekadar keterangan: klien
+	// membandingkannya dengan alamat yang ia minta, dan menyusun seluruh alamat
+	// lain — authorize, token, register — dari nilai ini. Selisih sekecil skema
+	// atau garis miring membatalkan alur dengan pesan yang tidak menyebut
+	// sebabnya.
+	//
+	// Karena itu ia TIDAK dapat diturunkan dari header Host: nilai itu datang
+	// dari pemanggil dan dapat dipalsukan, sehingga seorang penyerang dapat
+	// membuat kita mengumumkan alamat authorization server miliknya.
+	//
+	// Bawaannya menunjuk localhost supaya percobaan setempat tidak menuntut
+	// konfigurasi. Di produksi ia WAJIB disetel ke https://mcp.widiakencana.com.
+	PublicURL string
+
 	HTTPTimeout time.Duration
 }
+
+// OAuthResource adalah pengenal sumber daya yang dijaga.
+//
+// Endpoint MCP-nya, bukan pangkal host: yang diminta izin oleh klien adalah
+// /mcp, dan penanda sumber daya pada token harus menunjuk benda yang sama
+// dengan yang akan dijaga token itu.
+func (c Config) OAuthResource() string { return c.PublicURL + "/mcp" }
 
 // LoadConfig membaca env, lalu MENOLAK berdiri bila ada yang kurang.
 //
@@ -53,6 +76,8 @@ func LoadConfig() (Config, error) {
 		HTTPTimeout:   15 * time.Second,
 	}
 
+	cfg.PublicURL = strings.TrimRight(env("MCP_PUBLIC_URL", "http://127.0.0.1:"+cfg.Port), "/")
+
 	var kurang []string
 	if cfg.AgentEmail == "" {
 		kurang = append(kurang, "AGENT_EMAIL")
@@ -69,6 +94,10 @@ func LoadConfig() (Config, error) {
 
 	if !strings.HasPrefix(cfg.APIBaseURL, "http://") && !strings.HasPrefix(cfg.APIBaseURL, "https://") {
 		return Config{}, errors.New("API_BASE_URL harus berawalan http:// atau https://")
+	}
+
+	if !strings.HasPrefix(cfg.PublicURL, "http://") && !strings.HasPrefix(cfg.PublicURL, "https://") {
+		return Config{}, errors.New("MCP_PUBLIC_URL harus berawalan http:// atau https://")
 	}
 
 	return cfg, nil

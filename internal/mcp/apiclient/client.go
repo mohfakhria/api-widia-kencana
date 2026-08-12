@@ -276,6 +276,89 @@ type Identity struct {
 	Role   string `json:"role"`
 }
 
+// Authenticate memeriksa sandi SEORANG PENGGUNA, bukan sandi agent.
+//
+// Terpisah dari seluruh jalur di atas dan sengaja tidak menyentuh token agent:
+// ia dipakai alur OAuth untuk membuktikan bahwa yang berdiri di depan formulir
+// memang pemilik akun. Menumpangkannya pada sesi agent akan menukar sesi yang
+// dipakai seluruh tool hanya karena ada orang mencoba login.
+//
+// Sesi yang lahir dari sini DITINGGALKAN, tidak di-logout. Logout menuntut
+// refresh token yang hanya ada di cookie, dan mengejarnya berarti menyusun
+// wadah cookie hanya untuk membuang sesi yang toh akan kedaluwarsa sendiri.
+// Yang perlu diketahui: setiap login OAuth yang berhasil meninggalkan satu sesi
+// menganggur di API sampai tenggatnya lewat.
+func (c *Client) Authenticate(ctx context.Context, email, password string) (Identity, error) {
+	payload, err := json.Marshal(map[string]string{"email": email, "password": password})
+	if err != nil {
+		return Identity{}, fmt.Errorf("susun muatan login: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/api/login", bytes.NewReader(payload))
+	if err != nil {
+		return Identity{}, fmt.Errorf("susun permintaan login: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return Identity{}, fmt.Errorf("hubungi API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		// Sekali lagi tanpa isi balasan: ia dapat memantulkan muatan yang
+		// barusan dikirim, dan muatan itu berisi sandi orang lain.
+		return Identity{}, fmt.Errorf("login ditolak API dengan status %d", resp.StatusCode)
+	}
+
+	var body struct {
+		Data struct {
+			Auth struct {
+				AccessToken string `json:"access_token"`
+			} `json:"auth"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return Identity{}, fmt.Errorf("urai balasan login: %w", err)
+	}
+	if body.Data.Auth.AccessToken == "" {
+		return Identity{}, fmt.Errorf("balasan login tidak memuat access_token")
+	}
+
+	return c.identitasDengan(ctx, body.Data.Auth.AccessToken)
+}
+
+// identitasDengan menanyakan /api/me memakai token tertentu.
+func (c *Client) identitasDengan(ctx context.Context, token string) (Identity, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/api/me", nil)
+	if err != nil {
+		return Identity{}, fmt.Errorf("susun permintaan /api/me: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return Identity{}, fmt.Errorf("hubungi API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return Identity{}, fmt.Errorf("/api/me menjawab %d", resp.StatusCode)
+	}
+
+	var body struct {
+		Data struct {
+			User Identity `json:"user"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return Identity{}, fmt.Errorf("urai balasan /api/me: %w", err)
+	}
+
+	return body.Data.User, nil
+}
+
 func (c *Client) Me(ctx context.Context) (Identity, error) {
 	resp, err := c.Do(ctx, http.MethodGet, "/api/me", nil)
 	if err != nil {

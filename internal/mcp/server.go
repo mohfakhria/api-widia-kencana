@@ -12,9 +12,11 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/mcp/apiclient"
+	"github.com/mohfakhria/api-widia-kencana/internal/mcp/oauth"
 	"github.com/mohfakhria/api-widia-kencana/internal/mcp/session"
 	"github.com/mohfakhria/api-widia-kencana/internal/mcp/tool"
 
+	"github.com/modelcontextprotocol/go-sdk/auth"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -34,6 +36,7 @@ type Server struct {
 	api      *apiclient.Client
 	mcp      *mcp.Server
 	sessions *session.Manager
+	oauth    *oauth.Server
 	logger   *slog.Logger
 }
 
@@ -61,12 +64,37 @@ func NewServer(cfg Config, logger *slog.Logger) (*Server, error) {
 		return nil, fmt.Errorf("daftarkan tool: %w", err)
 	}
 
+	// Adaptornya di sini, bukan di paket oauth. Paket itu sengaja tidak mengenal
+	// klien API — yang ia butuhkan hanyalah satu pertanyaan, "sandi ini milik
+	// siapa", dan menerimanya sebagai fungsi membuatnya dapat diuji serta
+	// diganti tanpa menyeret seluruh klien HTTP.
+	otentikasi := func(ctx context.Context, email, sandi string) (oauth.Subject, error) {
+		identity, err := api.Authenticate(ctx, email, sandi)
+		if err != nil {
+			return oauth.Subject{}, err
+		}
+
+		// Email diambil dari yang DIKETIK, karena /api/me tidak mengembalikannya.
+		// Aman: kredensialnya baru saja diterima API, jadi alamat ini memang
+		// milik akun yang bersangkutan.
+		return oauth.Subject{
+			UserID: identity.UserID,
+			Email:  email,
+			Name:   identity.Name,
+			Role:   identity.Role,
+		}, nil
+	}
+
 	return &Server{
 		cfg:      cfg,
 		api:      api,
 		mcp:      mcpServer,
 		sessions: sessions,
-		logger:   logger,
+		oauth: oauth.NewServer(oauth.Config{
+			Issuer:   cfg.PublicURL,
+			Resource: cfg.OAuthResource(),
+		}, otentikasi, logger),
+		logger: logger,
 	}, nil
 }
 
@@ -77,6 +105,12 @@ func (s *Server) Handler() http.Handler {
 	// yang tidak semestinya memegang kredensial — dan ia tidak menyentuh API
 	// maupun membocorkan apa pun tentang agent.
 	mux.HandleFunc("GET /health", s.health)
+
+	// Titik ujung OAuth: metadata, pendaftaran klien, halaman login, dan
+	// penukaran token. Seluruhnya TERBUKA tanpa token — lihat alasannya di
+	// oauth.Routes — dan itu justru yang membuat konektor dapat menemukan
+	// jalannya sendiri dari sebuah 401.
+	s.oauth.Routes(mux)
 
 	// whoami menyentuh API sungguhan atas nama agent, jadi ia DIJAGA.
 	mux.Handle("GET /whoami", s.requireToken(http.HandlerFunc(s.whoami)))
@@ -157,24 +191,44 @@ func (s *Server) whoami(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// requireToken menjaga MCP itu sendiri.
+// requireToken menjaga MCP itu sendiri, lewat DUA jalur.
 //
 // Server ini memegang sandi agent, sehingga siapa pun yang menjangkaunya ADALAH
-// agent. Pembandingnya waktu-tetap: perbandingan biasa berhenti pada byte
-// pertama yang berbeda, dan selisih waktunya cukup untuk menebak token satu byte
-// demi satu byte.
+// agent. Yang diterima:
+//
+//   - token OAuth yang diterbitkan authorization server di proses ini — jalur
+//     yang dipakai konektor GPT dan Claude, dan yang menuntut seorang manusia
+//     memasukkan sandinya lebih dulu
+//   - MCP_AUTH_TOKEN, rahasia bersama yang sudah dipakai sebelum OAuth ada
+//
+// Yang kedua SENGAJA dipertahankan, dan perlu dinilai apa adanya: ia adalah satu
+// rahasia tetap yang melewati seluruh alur persetujuan, tidak dapat dicabut per
+// klien, dan tidak menyebutkan siapa pemakainya di catatan. Ia berguna untuk
+// pemeriksaan dari baris perintah dan supaya deploy ini tidak memutus apa pun
+// yang sudah tersambung. Begitu seluruh klien berpindah ke OAuth, membuang
+// cabang statis di bawah adalah perbaikan yang berdiri sendiri.
+//
+// Pembandingnya waktu-tetap: perbandingan biasa berhenti pada byte pertama yang
+// berbeda, dan selisih waktunya cukup untuk menebak token satu byte demi satu
+// byte.
 func (s *Server) requireToken(next http.Handler) http.Handler {
+	// Disusun SEKALI, di luar handler. Menyusunnya per permintaan berarti
+	// membangun ulang rantai middleware pada setiap panggilan tool.
+	viaOAuth := auth.RequireBearerToken(s.oauth.Verifier(), &auth.RequireBearerTokenOptions{
+		// Inilah yang membuat 401 dapat ditindaklanjuti sendiri oleh klien: ia
+		// menunjuk ke metadata yang menyebutkan authorization server-nya, dan
+		// dari situ konektor memulai alur tanpa seorang pun menyetel apa pun.
+		ResourceMetadataURL: s.oauth.ResourceMetadataURL(),
+	})(next)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		diberikan := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		if subtle.ConstantTimeCompare([]byte(diberikan), []byte(s.cfg.AuthToken)) != 1 {
-			tulisJSON(w, http.StatusUnauthorized, map[string]any{
-				"status":  "error",
-				"message": "token MCP tidak sah",
-			})
+		if subtle.ConstantTimeCompare([]byte(diberikan), []byte(s.cfg.AuthToken)) == 1 {
+			next.ServeHTTP(w, r)
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		viaOAuth.ServeHTTP(w, r)
 	})
 }
 
@@ -195,6 +249,10 @@ func (s *Server) Run(ctx context.Context) error {
 	// menutup socket yang menganggur — dan, saat shutdown, seluruhnya sekaligus,
 	// supaya agent tidak tertinggal sebagai penghuni hantu di kanvas orang.
 	go s.sessions.Run(ctx)
+
+	// Penyapu OAuth membuang kode, token, dan catatan percobaan yang sudah
+	// lewat tenggat. Tanpa ia, peta di dalamnya hanya tumbuh selama proses hidup.
+	go s.oauth.Run(ctx)
 
 	berhenti := make(chan error, 1)
 	go func() {
