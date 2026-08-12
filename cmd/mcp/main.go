@@ -38,7 +38,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	server := mcp.NewServer(cfg, logger)
+	server, err := mcp.NewServer(cfg, logger)
+	if err != nil {
+		logger.Error("mcp tidak dapat dirakit", "error", err)
+		os.Exit(1)
+	}
+
 	if err := server.Run(ctx); err != nil {
 		logger.Error("mcp berhenti dengan galat", "error", err)
 		os.Exit(1)

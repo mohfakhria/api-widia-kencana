@@ -40,6 +40,14 @@ func registerReadDocument(server *mcp.Server, deps Deps) {
 			return fail(fmt.Sprintf("tidak dapat membuka dokumen: %v", err)), session.State{}, nil
 		}
 
+		// Disegarkan SETIAP kali, bukan hanya saat sesi baru dibuka. Sesi hidup
+		// melewati banyak pemanggilan, dan yang paling sering memanggil tool ini
+		// adalah pembacaan sesudah penyuntingan — persis keadaan ketika isi yang
+		// tersimpan sudah tidak berlaku.
+		if err := sesi.Refresh(ctx); err != nil {
+			return fail(fmt.Sprintf("tidak dapat menyegarkan dokumen: %v", err)), session.State{}, nil
+		}
+
 		state, err := sesi.State()
 		if err != nil {
 			return fail(fmt.Sprintf("sesi dokumen bermasalah: %v", err)), session.State{}, nil

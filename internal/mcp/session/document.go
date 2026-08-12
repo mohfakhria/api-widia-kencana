@@ -10,6 +10,8 @@ import (
 
 	"github.com/mohfakhria/api-widia-kencana/internal/mcp/apiclient"
 
+	"github.com/google/uuid"
+
 	"github.com/coder/websocket"
 )
 
@@ -52,11 +54,36 @@ type Document struct {
 	cancel context.CancelFunc
 	done   chan struct{}
 
-	mu       sync.Mutex
-	version  int64
-	content  json.RawMessage
-	page     PageSize
-	lastUsed time.Time
+	// origin adalah token buram yang menandai suntingan dari sesi ini.
+	//
+	// Kontrak menuntut kedelapan pesan sunting membawanya, dan satuannya PER
+	// EDITOR. Satu sesi dokumen di sini setara satu editor terbuka, jadi
+	// tokennya lahir bersama sesi dan mati bersamanya.
+	//
+	// MCP sendiri tidak memakainya untuk apa pun — ia tidak menerapkan gema.
+	// Ia dikirim karena penerima LAIN membutuhkannya: tanpa penanda, frontend
+	// tidak dapat membedakan suntingan agent dari gemanya sendiri.
+	origin string
+
+	mu      sync.Mutex
+	version int64
+	content json.RawMessage
+	page    PageSize
+	// snapshots menghitung snapshot yang sudah tiba.
+	//
+	// Yang ditunggu Refresh adalah snapshot BARU, dan isi yang lama tidak dapat
+	// membedakan "sudah datang yang baru" dari "yang lama masih di sana" —
+	// dokumen yang tidak berubah menghasilkan isi yang persis sama. Pencacah ini
+	// yang membedakannya.
+	snapshots int64
+	lastUsed  time.Time
+	// recentErrors menampung galat tingkat pesan yang datang dari server.
+	//
+	// Suntingan dikirim tanpa menunggu balasan — kontraknya memang begitu, hanya
+	// element.create yang membalas saat ditolak. Tanpa penampung ini, penolakan
+	// hanya muncul di log dan pemanggil tool tidak pernah tahu suntingannya
+	// tidak mendarat.
+	recentErrors []string
 	// fatal menyimpan alasan koneksi berakhir. Dibaca pemanggil berikutnya,
 	// supaya sesi yang mati menjawab "kenapa" alih-alih diam.
 	fatal error
@@ -111,6 +138,7 @@ func open(ctx context.Context, api *apiclient.Client, documentToken string, logg
 
 	s := &Document{
 		documentToken: documentToken,
+		origin:        "mcp-" + uuid.NewString(),
 		logger:        logger,
 		conn:          conn,
 		cancel:        cancel,
@@ -128,7 +156,7 @@ func open(ctx context.Context, api *apiclient.Client, documentToken string, logg
 		return nil, fmt.Errorf("minta snapshot: %w", err)
 	}
 
-	if err := s.waitForSnapshot(sessionCtx); err != nil {
+	if err := s.waitForSnapshot(sessionCtx, 0); err != nil {
 		s.Close()
 		return nil, err
 	}
@@ -136,17 +164,41 @@ func open(ctx context.Context, api *apiclient.Client, documentToken string, logg
 	return s, nil
 }
 
-// waitForSnapshot menunggu isi pertama tiba.
+// Refresh meminta snapshot baru lalu menunggunya tiba.
 //
-// Tanpa ini, tool pertama yang memakai sesi ini akan mendapat dokumen kosong
-// dan tidak dapat membedakannya dari dokumen yang memang kosong.
-func (s *Document) waitForSnapshot(ctx context.Context) error {
+// Dibutuhkan karena siaran perubahan sengaja TIDAK diterapkan ke isi yang
+// tersimpan — lihat catatan di apply. Tanpa penyegaran, pembacaan sesudah
+// penyuntingan akan mengembalikan dokumen seperti saat sesi dibuka, dan
+// suntingan yang baru saja berhasil justru tidak terlihat oleh yang membuatnya.
+func (s *Document) Refresh(ctx context.Context) error {
+	s.mu.Lock()
+	s.lastUsed = time.Now()
+	awal, gagal := s.snapshots, s.fatal
+	s.mu.Unlock()
+
+	if gagal != nil {
+		return gagal
+	}
+
+	if err := s.send(ctx, map[string]string{"type": "document.get"}); err != nil {
+		return fmt.Errorf("minta snapshot: %w", err)
+	}
+
+	return s.waitForSnapshot(ctx, awal)
+}
+
+// waitForSnapshot menunggu snapshot yang lebih baru daripada setelah.
+//
+// Dipakai dua kali dengan maksud yang sama: saat sesi dibuka, isi pertama harus
+// sudah ada sebelum tool mana pun membacanya — kalau tidak, dokumen yang belum
+// sempat datang tidak dapat dibedakan dari dokumen yang memang kosong.
+func (s *Document) waitForSnapshot(ctx context.Context, setelah int64) error {
 	tenggat := time.NewTimer(10 * time.Second)
 	defer tenggat.Stop()
 
 	for {
 		s.mu.Lock()
-		ada, gagal := s.content != nil, s.fatal
+		ada, gagal := s.snapshots > setelah, s.fatal
 		s.mu.Unlock()
 
 		if ada {
@@ -207,15 +259,25 @@ func (s *Document) readLoop(ctx context.Context) {
 // melenceng. Ketika isi terkini benar-benar dibutuhkan, document.get jauh lebih
 // murah daripada kesalahan yang tidak terlihat.
 func (s *Document) apply(payload []byte) {
+	// Page bertipe RawMessage, dan itu BUKAN sekadar penundaan penguraian.
+	// Nama field ini membawa dua bentuk yang berbeda tergantung jenis pesannya:
+	// objek {width,height} pada snapshot, dan id halaman berupa STRING pada
+	// element.created. Satu amplop dengan Page bertipe PageSize karenanya gagal
+	// mengurai seluruh pesan element.created — bukan sekadar field itu — dan
+	// akibatnya paling menyesatkan: version tidak pernah naik untuk pembuatan
+	// elemen, sehingga suntingan yang berhasil terlihat seperti tidak mendarat.
 	var amplop struct {
 		Type    string          `json:"type"`
 		Version int64           `json:"version"`
-		Page    PageSize        `json:"page"`
+		Page    json.RawMessage `json:"page"`
 		Content json.RawMessage `json:"content"`
 		Code    string          `json:"code"`
 		Message string          `json:"message"`
 	}
 	if err := json.Unmarshal(payload, &amplop); err != nil {
+		s.logger.Warn("pesan dokumen tidak dapat diurai",
+			"document", s.documentToken, "error", err)
+
 		return
 	}
 
@@ -226,10 +288,31 @@ func (s *Document) apply(payload []byte) {
 	case "snapshot":
 		s.content = amplop.Content
 		s.version = amplop.Version
-		s.page = amplop.Page
+		s.snapshots++
+
+		// Ketiadaan field dibedakan dari field yang cacat. Yang pertama bukan
+		// kejadian yang perlu dicatat; mencatatnya hanya menumpuk peringatan yang
+		// tidak menunjuk apa pun, dan peringatan semacam itu membuat yang
+		// sungguhan ikut diabaikan.
+		if len(amplop.Page) > 0 {
+			var ukuran PageSize
+			if err := json.Unmarshal(amplop.Page, &ukuran); err != nil {
+				s.logger.Warn("ukuran kertas pada snapshot tidak dapat diurai",
+					"document", s.documentToken, "error", err)
+			} else {
+				s.page = ukuran
+			}
+		}
 	case "error":
-		// Dicatat, tidak mematikan sesi. Galat tingkat pesan berarti satu
-		// suntingan ditolak, bukan koneksinya tidak berlaku lagi.
+		// Ditampung DAN dicatat. Tidak mematikan sesi: galat tingkat pesan berarti
+		// satu suntingan ditolak, bukan koneksinya tidak berlaku lagi.
+		//
+		// Penampungnya dibatasi supaya sesi yang lama hidup dengan banyak
+		// penolakan tidak menumbuhkan memori tanpa henti.
+		if len(s.recentErrors) < 32 {
+			s.recentErrors = append(s.recentErrors,
+				fmt.Sprintf("%s: %s", amplop.Code, amplop.Message))
+		}
 		s.logger.Warn("galat dari server dokumen",
 			"document", s.documentToken, "code", amplop.Code, "message", amplop.Message)
 	default:
@@ -237,6 +320,50 @@ func (s *Document) apply(payload []byte) {
 			s.version = amplop.Version
 		}
 	}
+}
+
+// Origin adalah penanda penyunting milik sesi ini.
+func (s *Document) Origin() string { return s.origin }
+
+// Send mengirim satu pesan sunting ke server.
+//
+// TIDAK menunggu balasan, karena kontraknya memang tidak membalas — hanya
+// element.create yang menjawab, dan itu pun hanya saat ditolak. Konfirmasi
+// datang belakangan lewat siaran, dan penolakan lewat TakeErrors.
+func (s *Document) Send(ctx context.Context, pesan any) error {
+	s.mu.Lock()
+	s.lastUsed = time.Now()
+	gagal := s.fatal
+	s.mu.Unlock()
+
+	if gagal != nil {
+		return gagal
+	}
+
+	return s.send(ctx, pesan)
+}
+
+// TakeErrors mengambil galat yang terkumpul lalu mengosongkan penampungnya.
+//
+// Dikosongkan supaya penolakan dari satu pemanggilan tool tidak dilaporkan
+// ulang pada pemanggilan berikutnya — dan pemanggil berikutnya tidak menyangka
+// suntingannya gagal padahal yang gagal suntingan sebelumnya.
+func (s *Document) TakeErrors() []string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	galat := s.recentErrors
+	s.recentErrors = nil
+
+	return galat
+}
+
+// Version mengembalikan nomor revisi terkini yang tercatat sesi ini.
+func (s *Document) Version() int64 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.version
 }
 
 func (s *Document) send(ctx context.Context, pesan any) error {

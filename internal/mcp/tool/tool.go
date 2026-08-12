@@ -14,6 +14,8 @@
 package tool
 
 import (
+	"fmt"
+
 	"github.com/mohfakhria/api-widia-kencana/internal/mcp/apiclient"
 	"github.com/mohfakhria/api-widia-kencana/internal/mcp/session"
 
@@ -31,9 +33,28 @@ type Deps struct {
 }
 
 // Register memasang seluruh tool pada server MCP.
-func Register(server *mcp.Server, deps Deps) {
+//
+// Mengembalikan galat karena sebagian skema disusun, bukan sekadar diturunkan
+// dari tipe, dan penyusunan itu dapat meleset bila bentuk masukannya berubah.
+// Galatnya menjatuhkan server saat start — dan itu yang dikehendaki: tool
+// dengan skema yang diam-diam tidak lengkap akan menyesatkan setiap model yang
+// memakainya, jauh lebih lama sebelum ada yang menyadarinya.
+func Register(server *mcp.Server, deps Deps) error {
 	registerWhoAmI(server, deps)
 	registerReadDocument(server, deps)
+
+	if err := registerCreateElements(server, deps); err != nil {
+		return fmt.Errorf("create_elements: %w", err)
+	}
+
+	if err := registerUpdateElements(server, deps); err != nil {
+		return fmt.Errorf("update_elements: %w", err)
+	}
+
+	registerDeleteElements(server, deps)
+	registerReorderElement(server, deps)
+
+	return nil
 }
 
 // fail membungkus kegagalan sebagai HASIL tool, bukan galat protokol.

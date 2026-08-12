@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -48,7 +49,7 @@ const (
 // Klien API dan pengelola sesi dibuat DI SINI, bukan diterima dari luar: hanya
 // server ini yang membutuhkannya, dan membuatnya di sini membuat cmd/mcp tetap
 // sesederhana "baca konfigurasi, jalankan".
-func NewServer(cfg Config, logger *slog.Logger) *Server {
+func NewServer(cfg Config, logger *slog.Logger) (*Server, error) {
 	api := apiclient.New(cfg.APIBaseURL, cfg.AgentEmail, cfg.AgentPassword, cfg.HTTPTimeout, logger)
 	sessions := session.NewManager(api, logger)
 
@@ -56,7 +57,9 @@ func NewServer(cfg Config, logger *slog.Logger) *Server {
 		Name:    serverName,
 		Version: serverVersion,
 	}, nil)
-	tool.Register(mcpServer, tool.Deps{API: api, Sessions: sessions})
+	if err := tool.Register(mcpServer, tool.Deps{API: api, Sessions: sessions}); err != nil {
+		return nil, fmt.Errorf("daftarkan tool: %w", err)
+	}
 
 	return &Server{
 		cfg:      cfg,
@@ -64,7 +67,7 @@ func NewServer(cfg Config, logger *slog.Logger) *Server {
 		mcp:      mcpServer,
 		sessions: sessions,
 		logger:   logger,
-	}
+	}, nil
 }
 
 func (s *Server) Handler() http.Handler {
