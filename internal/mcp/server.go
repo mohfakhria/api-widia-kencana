@@ -2,13 +2,11 @@ package mcp
 
 import (
 	"context"
-	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/mcp/apiclient"
@@ -112,8 +110,13 @@ func (s *Server) Handler() http.Handler {
 	// jalannya sendiri dari sebuah 401.
 	s.oauth.Routes(mux)
 
-	// whoami menyentuh API sungguhan atas nama agent, jadi ia DIJAGA.
-	mux.Handle("GET /whoami", s.requireToken(http.HandlerFunc(s.whoami)))
+	// whoami menyentuh API sungguhan atas nama agent, jadi ia DIJAGA — oleh
+	// penjaga yang sama dengan /mcp, karena kini hanya ada satu.
+	//
+	// Dibiarkan terbuka bukan pilihan meski isinya sepele: ia memanggil /api/me
+	// pada SETIAP permintaan, sehingga ia sekaligus menyebutkan identitas agent
+	// kepada siapa pun dan menjadi cara murah membebani API dari luar.
+	mux.Handle("GET /whoami", s.requireOAuth(http.HandlerFunc(s.whoami)))
 
 	// Satu instance Server dipakai bersama seluruh sesi MCP. SDK menyatakan ini
 	// sah — getServer boleh mengembalikan server yang sama berulang kali — dan
@@ -138,7 +141,7 @@ func (s *Server) Handler() http.Handler {
 			//
 			//   1. ufw menutup 9090; satu-satunya jalan masuk lewat nginx
 			//   2. nginx yang mengakhiri TLS
-			//   3. /mcp menuntut MCP_AUTH_TOKEN
+			//   3. /mcp menuntut token OAuth
 			//
 			// Serangan yang dijaga perlindungan ini menuntut browser korban
 			// menjangkau server secara LANGSUNG. Selama nomor 1 berlaku, itu
@@ -156,7 +159,7 @@ func (s *Server) Handler() http.Handler {
 	// Penjaga yang SAMA dengan rute lain. Protokol MCP tidak membawa penjaganya
 	// sendiri di sini — dan tanpa baris ini, seluruh tool terbuka bagi siapa pun
 	// yang menemukan host ini.
-	mux.Handle("/mcp", s.requireToken(streamable))
+	mux.Handle("/mcp", s.requireOAuth(streamable))
 
 	return mux
 }
@@ -191,45 +194,33 @@ func (s *Server) whoami(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// requireToken menjaga MCP itu sendiri, lewat DUA jalur.
+// requireOAuth adalah SATU-SATUNYA penjaga di server ini.
 //
-// Server ini memegang sandi agent, sehingga siapa pun yang menjangkaunya ADALAH
-// agent. Yang diterima:
+// Sebelumnya ada dua: OAuth, dan MCP_AUTH_TOKEN — rahasia bersama peninggalan
+// masa sebelum OAuth. Yang kedua dicabut seluruhnya, bukan sekadar dipersempit,
+// karena ia lemah pada tiga hal sekaligus: ia melewati seluruh alur
+// persetujuan, tidak dapat dicabut per klien — mencabutnya berarti restart,
+// yang memutus semua konektor OAuth sekaligus — dan tidak menyebutkan siapa
+// pemakainya di catatan.
 //
-//   - token OAuth yang diterbitkan authorization server di proses ini — jalur
-//     yang dipakai konektor GPT dan Claude, dan yang menuntut seorang manusia
-//     memasukkan sandinya lebih dulu
-//   - MCP_AUTH_TOKEN, rahasia bersama yang sudah dipakai sebelum OAuth ada
+// Yang menghapus alasan terakhirnya untuk hidup: konektor GPT maupun Claude
+// TIDAK PERNAH memakainya. Tidak ada tempat menempelkan token statis di alur
+// mereka; yang diberikan hanya URL, dan sisanya mereka temukan sendiri dari
+// 401. Token itu karenanya hanya melayani kenyamanan kita di baris perintah,
+// dan itu tidak sebanding dengan rahasia tetap yang harus dipelihara.
 //
-// Yang kedua SENGAJA dipertahankan, dan perlu dinilai apa adanya: ia adalah satu
-// rahasia tetap yang melewati seluruh alur persetujuan, tidak dapat dicabut per
-// klien, dan tidak menyebutkan siapa pemakainya di catatan. Ia berguna untuk
-// pemeriksaan dari baris perintah dan supaya deploy ini tidak memutus apa pun
-// yang sudah tersambung. Begitu seluruh klien berpindah ke OAuth, membuang
-// cabang statis di bawah adalah perbaikan yang berdiri sendiri.
-//
-// Pembandingnya waktu-tetap: perbandingan biasa berhenti pada byte pertama yang
-// berbeda, dan selisih waktunya cukup untuk menebak token satu byte demi satu
-// byte.
-func (s *Server) requireToken(next http.Handler) http.Handler {
+// Akibatnya satu dan perlu diketahui: tidak ada lagi jalur darurat tanpa
+// peramban. Bila yang rusak justru alur otorisasinya sendiri, yang tersisa
+// adalah /health, log systemd, dan restart.
+func (s *Server) requireOAuth(next http.Handler) http.Handler {
 	// Disusun SEKALI, di luar handler. Menyusunnya per permintaan berarti
 	// membangun ulang rantai middleware pada setiap panggilan tool.
-	viaOAuth := auth.RequireBearerToken(s.oauth.Verifier(), &auth.RequireBearerTokenOptions{
+	return auth.RequireBearerToken(s.oauth.Verifier(), &auth.RequireBearerTokenOptions{
 		// Inilah yang membuat 401 dapat ditindaklanjuti sendiri oleh klien: ia
 		// menunjuk ke metadata yang menyebutkan authorization server-nya, dan
 		// dari situ konektor memulai alur tanpa seorang pun menyetel apa pun.
 		ResourceMetadataURL: s.oauth.ResourceMetadataURL(),
 	})(next)
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		diberikan := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		if subtle.ConstantTimeCompare([]byte(diberikan), []byte(s.cfg.AuthToken)) == 1 {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		viaOAuth.ServeHTTP(w, r)
-	})
 }
 
 // Run melayani sampai ctx berakhir, lalu berhenti dengan tertib.

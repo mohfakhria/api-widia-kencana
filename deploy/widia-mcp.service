@@ -33,7 +33,11 @@ ExecStart=/opt/widia-mcp/widia-mcp
 # API beserta cara masuk sebagai agent. Memakai berkas yang sama akan menaruh
 # seluruh rahasia itu ke dalam environment proses ini tanpa alasan.
 #
-# Berkas ini memuat AGENT_PASSWORD dan MCP_AUTH_TOKEN. Milik root, mode 0600.
+# Berkas ini memuat AGENT_PASSWORD. Milik root, mode 0600.
+#
+# MCP_PUBLIC_URL juga di sini, dan ia bukan rahasia tetapi WAJIB benar: ia
+# menjadi issuer OAuth, dan konektor menolak issuer yang tidak sama persis
+# dengan alamat yang mereka tuju.
 EnvironmentFile=/etc/widia-mcp/mcp.env
 
 Restart=on-failure

@@ -27,13 +27,6 @@ type Config struct {
 	AgentEmail    string
 	AgentPassword string
 
-	// AuthToken menjaga MCP itu sendiri.
-	//
-	// Server ini memegang sandi agent, sehingga siapa pun yang menjangkaunya
-	// ADALAH agent — dan agent boleh menghapus dokumen serta aset. Tanpa penjaga
-	// di sini, wewenang itu menjadi publik begitu mcp.widiakencana.com terbit.
-	AuthToken string
-
 	// PublicURL adalah alamat MCP sebagaimana DILIHAT DUNIA LUAR.
 	//
 	// Ia menjadi issuer OAuth, dan issuer bukan sekadar keterangan: klien
@@ -62,17 +55,21 @@ func (c Config) OAuthResource() string { return c.PublicURL + "/mcp" }
 
 // LoadConfig membaca env, lalu MENOLAK berdiri bila ada yang kurang.
 //
-// Tidak ada nilai bawaan untuk kredensial maupun token penjaga. Bawaan pada hal
-// semacam itu hanya menghasilkan server yang menyala dan gagal belakangan
-// dengan pesan yang tidak menyebut sebabnya — atau lebih buruk, menyala tanpa
-// penjaga sama sekali.
+// Tidak ada nilai bawaan untuk kredensial. Bawaan pada hal semacam itu hanya
+// menghasilkan server yang menyala dan gagal belakangan dengan pesan yang tidak
+// menyebut sebabnya.
+//
+// MCP_PUBLIC_URL punya bawaan, dan itu perkecualian yang disengaja: ia bukan
+// rahasia, dan bawaan localhost membuat percobaan setempat berjalan tanpa
+// konfigurasi apa pun. Di produksi ia tetap WAJIB disetel — bukan karena server
+// menolak berdiri, melainkan karena konektor menolak issuer yang tidak sama
+// dengan alamat yang mereka tuju.
 func LoadConfig() (Config, error) {
 	cfg := Config{
 		Port:          env("MCP_PORT", "9090"),
 		APIBaseURL:    strings.TrimRight(env("API_BASE_URL", "http://127.0.0.1:8080"), "/"),
 		AgentEmail:    env("AGENT_EMAIL", ""),
 		AgentPassword: env("AGENT_PASSWORD", ""),
-		AuthToken:     env("MCP_AUTH_TOKEN", ""),
 		HTTPTimeout:   15 * time.Second,
 	}
 
@@ -84,9 +81,6 @@ func LoadConfig() (Config, error) {
 	}
 	if cfg.AgentPassword == "" {
 		kurang = append(kurang, "AGENT_PASSWORD")
-	}
-	if cfg.AuthToken == "" {
-		kurang = append(kurang, "MCP_AUTH_TOKEN")
 	}
 	if len(kurang) > 0 {
 		return Config{}, fmt.Errorf("konfigurasi wajib belum diisi: %s", strings.Join(kurang, ", "))
