@@ -125,6 +125,26 @@ func (s *Server) Handler() http.Handler {
 	streamable := mcp.NewStreamableHTTPHandler(
 		func(*http.Request) *mcp.Server { return s.mcp },
 		&mcp.StreamableHTTPOptions{
+			// Stateless BUKAN pilihan gaya. SDK hanya menawarkan protokol
+			// 2026-07-28 ketika transport disetel begini — lihat
+			// StreamableServerTransport.SupportsProtocolVersion — dan konektor
+			// ChatGPT menuntut versi itu lewat server/discover. Tanpa baris ini,
+			// server menjawab discover dengan benar tetapi mengumumkan daftar
+			// versi yang tidak memuat 2026-07-28, dan ChatGPT berhenti di situ
+			// tanpa pernah memanggil initialize. Gejalanya: "Error refreshing
+			// actions", tanpa satu pun galat di sisi kita.
+			//
+			// Cocok karena kita memang tidak menyimpan apa pun per sesi MCP:
+			// satu mcp.Server dipakai seluruh pemanggil, dan sesi dokumen dikunci
+			// oleh TOKEN DOKUMEN, bukan oleh sesi MCP. Yang hilang bersama mode
+			// ini — Mcp-Session-Id, GET/DELETE pada /mcp, dan permintaan dari
+			// server ke klien — tidak satu pun kita pakai.
+			//
+			// Bila suatu saat ada tool yang perlu bertanya balik ke model
+			// (sampling atau elicitation), keputusan ini harus ditinjau ulang:
+			// permintaan server ke klien ditolak seketika dalam mode ini.
+			Stateless: true,
+
 			// Perlindungan bawaan SDK menolak permintaan yang DATANG dari
 			// localhost tetapi membawa Host bukan-localhost. Ia menjaga server
 			// MCP lokal dari DNS rebinding: situs jahat mengarahkan sebuah nama
