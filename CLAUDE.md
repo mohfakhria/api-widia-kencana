@@ -81,4 +81,12 @@ Berkas sementara untuk memeriksa perilaku boleh ditaruh di `tmp/` (sudah masuk
   tidak ikut terpasang pada database lama — sebutkan `ALTER TABLE`-nya di README.
 - Koleksi Postman digabung ulang dengan `go run docs/collection/merge.go` setelah
   berkas per fitur diubah.
+- **Setiap permintaan di `docs/collection/` wajib punya contoh respons SUKSES dan
+  GAGAL.** Koleksi ini yang dibaca frontend, dan bentuk yang tidak diperagakan
+  akan ditebak — sudah pernah terjadi: frontend menulis kode untuk `token` dan
+  `url` di tingkat atas padahal balasannya `asset`, `upload_url`, `expires_at`.
+  Contoh gagal sama pentingnya: ia yang memberi tahu bentuk galat dan pesan apa
+  yang muncul, dan tanpanya penanganan galat ikut ditebak. Ikuti bentuk di
+  `auth.json` — nama contoh `"<Permintaan> - <Hasil>"`, dan pesannya **disalin
+  dari kode**, bukan dikarang.
 - Jangan commit tanpa diminta.

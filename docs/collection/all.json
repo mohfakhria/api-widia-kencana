@@ -37,7 +37,132 @@
                             ],
                             "raw": "{{base_url}}/api/asset-upload-request"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\",\n      \"status\": \"pending\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"presigned_expires_at\": \"2026-08-11T17:15:00Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"upload_url\": \"http://localhost:9002/widia-assets/documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=...\u0026X-Amz-Signature=...\",\n    \"expires_at\": \"2026-08-11T17:15:00Z\"\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Request Asset Upload - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+                                },
+                                "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-request"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-request"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset size must be greater than 0\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Request Asset Upload - Size Must Be Positive",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+                                },
+                                "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-request"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-request"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset storage is unavailable\"\n}",
+                            "code": 503,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Request Asset Upload - Storage Down",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+                                },
+                                "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-request"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-request"
+                                }
+                            },
+                            "status": "Service Unavailable"
+                        }
+                    ]
                 },
                 {
                     "name": "Complete Asset Upload",
@@ -61,7 +186,179 @@
                             ],
                             "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload completed successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Complete Asset Upload - Success",
+                            "originalRequest": {
+                                "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-complete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset size does not match request\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Complete Asset Upload - Size Mismatch",
+                            "originalRequest": {
+                                "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-complete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset MIME type does not match request\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Complete Asset Upload - MIME Type Mismatch",
+                            "originalRequest": {
+                                "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-complete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset upload URL expired\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Complete Asset Upload - Upload URL Expired",
+                            "originalRequest": {
+                                "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-complete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset object not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Complete Asset Upload - Object Never Uploaded",
+                            "originalRequest": {
+                                "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-upload-complete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "name": "List Assets",
@@ -101,7 +398,159 @@
                             ],
                             "raw": "{{base_url}}/api/asset-list?status=uploaded\u0026scope=documents\u0026mime_type=\u0026extension="
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": [\n      {\n        \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n        \"scope\": \"documents\",\n        \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"original_filename\": \"logo.png\",\n        \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"mime_type\": \"image/png\",\n        \"extension\": \"png\",\n        \"size\": 48291,\n        \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n        \"status\": \"uploaded\",\n        \"upload_method\": \"presigned_put\",\n        \"is_private\": true,\n        \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n        \"created_at\": \"2026-08-11T17:00:00Z\",\n        \"updated_at\": \"2026-08-11T17:00:00Z\"\n      }\n    ]\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Assets - Success",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "status",
+                                            "value": "uploaded"
+                                        },
+                                        {
+                                            "key": "scope",
+                                            "value": "documents"
+                                        },
+                                        {
+                                            "key": "mime_type",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "extension",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-list?status=uploaded\u0026scope=documents\u0026mime_type=\u0026extension="
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": []\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Assets - Empty",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "status",
+                                            "value": "uploaded"
+                                        },
+                                        {
+                                            "key": "scope",
+                                            "value": "documents"
+                                        },
+                                        {
+                                            "key": "mime_type",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "extension",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-list?status=uploaded\u0026scope=documents\u0026mime_type=\u0026extension="
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid query parameters\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Assets - Invalid Query",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "status",
+                                            "value": "uploaded"
+                                        },
+                                        {
+                                            "key": "scope",
+                                            "value": "documents"
+                                        },
+                                        {
+                                            "key": "mime_type",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "extension",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-list?status=uploaded\u0026scope=documents\u0026mime_type=\u0026extension="
+                                }
+                            },
+                            "status": "Bad Request"
+                        }
+                    ]
                 },
                 {
                     "name": "Get Asset Detail",
@@ -124,7 +573,75 @@
                             ],
                             "raw": "{{base_url}}/api/asset-detail/{{asset_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Asset Detail - Success",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-detail",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail/{{asset_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Asset Detail - Not Found",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-detail",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail/{{asset_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "name": "Presign Asset Download",
@@ -148,7 +665,111 @@
                             ],
                             "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"url\": \"http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=...\",\n    \"expires_in\": 900\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Presign Asset Download - Success",
+                            "originalRequest": {
+                                "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-presign",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Presign Asset Download - Not Uploaded Yet",
+                            "originalRequest": {
+                                "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-presign",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Presign Asset Download - Not Found",
+                            "originalRequest": {
+                                "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-presign",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "name": "Get Asset Content",
@@ -167,7 +788,100 @@
                             ],
                             "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "",
+                            "code": 302,
+                            "header": [
+                                {
+                                    "key": "Location",
+                                    "value": "http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=..."
+                                },
+                                {
+                                    "key": "Cache-Control",
+                                    "value": "no-store"
+                                }
+                            ],
+                            "name": "Get Asset Content - Success - 302 Redirect",
+                            "originalRequest": {
+                                "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    \u003cimg src=\"/api/asset-content/{assetToken}\"\u003e\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an \u003cimg\u003e tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists.",
+                                "header": [],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-content",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
+                                }
+                            },
+                            "status": "Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Asset Content - Not Uploaded Yet",
+                            "originalRequest": {
+                                "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    \u003cimg src=\"/api/asset-content/{assetToken}\"\u003e\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an \u003cimg\u003e tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists.",
+                                "header": [],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-content",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Asset Content - Not Found",
+                            "originalRequest": {
+                                "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    \u003cimg src=\"/api/asset-content/{assetToken}\"\u003e\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an \u003cimg\u003e tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists.",
+                                "header": [],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-content",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "name": "Delete Asset",
@@ -191,7 +905,111 @@
                             ],
                             "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset deleted successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Asset - Success",
+                            "originalRequest": {
+                                "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-delete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset access forbidden\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Asset - Not The Uploader",
+                            "originalRequest": {
+                                "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-delete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Asset - Not Found",
+                            "originalRequest": {
+                                "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-delete",
+                                        "{{asset_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 }
             ],
             "name": "Asset"
@@ -435,6 +1253,33 @@
                             "code": 200,
                             "name": "Logout - Success",
                             "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing refresh token\"\n}",
+                            "code": 401,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Logout - Missing Cookie",
+                            "originalRequest": {
+                                "description": "Invalidate the current device refresh session and clear its cookie. Other devices remain signed in.",
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "logout"
+                                    ],
+                                    "raw": "{{base_url}}/api/logout"
+                                }
+                            },
+                            "status": "Unauthorized"
                         }
                     ]
                 },
@@ -467,6 +1312,39 @@
                             "code": 200,
                             "name": "Logout All Devices - Success",
                             "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid or expired token\"\n}",
+                            "code": 401,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Logout All Devices - Unauthorized",
+                            "originalRequest": {
+                                "description": "Invalidate every refresh session owned by the authenticated user and clear the current device cookie. Existing access tokens remain valid until they expire.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "logout-all"
+                                    ],
+                                    "raw": "{{base_url}}/api/logout-all"
+                                }
+                            },
+                            "status": "Unauthorized"
                         }
                     ]
                 },
@@ -548,7 +1426,147 @@
                             ],
                             "raw": "{{base_url}}/api/document-list?name=\u0026document_type=\u0026status="
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": [\n      {\n        \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n        \"parent_token\": \"\",\n        \"name\": \"Quotation Default\",\n        \"document_type\": \"quotation\",\n        \"status\": \"draft\",\n        \"paper\": {\n          \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n          \"name\": \"A4\",\n          \"media_type\": \"paper\",\n          \"width\": 210.0,\n          \"height\": 297.0,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\",\n          \"created_at\": \"2026-08-01T09:00:00Z\",\n          \"updated_at\": \"2026-08-01T09:00:00Z\"\n        },\n        \"created_at\": \"2026-08-11T10:00:00Z\",\n        \"updated_at\": \"2026-08-11T10:00:00Z\"\n      }\n    ]\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Documents - Success",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "name",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "document_type",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "status",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/document-list?name=\u0026document_type=\u0026status="
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": []\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Documents - Empty",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "name",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "document_type",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "status",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/document-list?name=\u0026document_type=\u0026status="
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid query parameters\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Documents - Invalid Query",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "name",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "document_type",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "status",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/document-list?name=\u0026document_type=\u0026status="
+                                }
+                            },
+                            "status": "Bad Request"
+                        }
+                    ]
                 },
                 {
                     "name": "Get Document Detail",
@@ -572,7 +1590,77 @@
                             ],
                             "raw": "{{base_url}}/api/document-detail/{{document_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n        \"name\": \"A4\",\n        \"media_type\": \"paper\",\n        \"width\": 210.0,\n        \"height\": 297.0,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-08-01T09:00:00Z\",\n        \"updated_at\": \"2026-08-01T09:00:00Z\"\n      },\n      \"created_at\": \"2026-08-11T10:00:00Z\",\n      \"updated_at\": \"2026-08-11T10:00:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Document Detail - Success",
+                            "originalRequest": {
+                                "description": "Replace document_token with the document token returned by create/list.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-detail",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-detail/{{document_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Document Detail - Not Found",
+                            "originalRequest": {
+                                "description": "Replace document_token with the document token returned by create/list.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-detail",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-detail/{{document_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "name": "Create Document",
@@ -602,7 +1690,209 @@
                             ],
                             "raw": "{{base_url}}/api/document-add"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document created successfully\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n        \"name\": \"A4\",\n        \"media_type\": \"paper\",\n        \"width\": 210.0,\n        \"height\": 297.0,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-08-01T09:00:00Z\",\n        \"updated_at\": \"2026-08-01T09:00:00Z\"\n      },\n      \"created_at\": \"2026-08-11T10:00:00Z\",\n      \"updated_at\": \"2026-08-11T10:00:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Document - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-add"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Document - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document name cannot be empty\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Document - Name Empty",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document paper not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Document - Paper Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-add"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"parent document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Document - Parent Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-add"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "name": "Update Document",
@@ -634,7 +1924,177 @@
                             ],
                             "raw": "{{base_url}}/api/document-update/{{document_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Document - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Replace document_token with the document token.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-update",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-update/{{document_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Document - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Replace document_token with the document token.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-update",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-update/{{document_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document status\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Document - Invalid Status",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Replace document_token with the document token.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-update",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-update/{{document_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Document - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Replace document_token with the document token.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-update",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-update/{{document_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "name": "Delete Document",
@@ -658,7 +2118,77 @@
                             ],
                             "raw": "{{base_url}}/api/document-delete/{{document_token}}"
                         }
-                    }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document deleted successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Document - Success",
+                            "originalRequest": {
+                                "description": "Soft delete document by setting status to deleted.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-delete",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-delete/{{document_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Document - Not Found",
+                            "originalRequest": {
+                                "description": "Soft delete document by setting status to deleted.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-delete",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-delete/{{document_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 }
             ],
             "name": "Document"
@@ -719,7 +2249,110 @@
                             "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}"
                         }
                     },
-                    "response": []
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Design ticket issued successfully\",\n  \"data\": {\n    \"design_ticket\": {\n      \"ticket\": \"5b8c1f30-9a2e-4d67-b0c3-8e14f7a2d509\",\n      \"expires_in\": 30\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Issue Design Ticket - Success",
+                            "originalRequest": {
+                                "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.\n\nTiket juga membawa nama pemiliknya, dipakai server untuk memberi tahu siapa saja yang sedang membuka dokumen lewat pesan `presence`. Bentuk response endpoint ini tidak berubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-design-ticket",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document token\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Issue Design Ticket - Invalid Document Token",
+                            "originalRequest": {
+                                "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.\n\nTiket juga membawa nama pemiliknya, dipakai server untuk memberi tahu siapa saja yang sedang membuka dokumen lewat pesan `presence`. Bentuk response endpoint ini tidak berubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-design-ticket",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Issue Design Ticket - Document Not Found",
+                            "originalRequest": {
+                                "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.\n\nTiket juga membawa nama pemiliknya, dipakai server untuk memberi tahu siapa saja yang sedang membuka dokumen lewat pesan `presence`. Bentuk response endpoint ini tidak berubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-design-ticket",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
                 },
                 {
                     "event": [
@@ -762,7 +2395,122 @@
                             "raw": "{{base_url}}/api/document-export/{{document_token}}"
                         }
                     },
-                    "response": []
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "text",
+                            "body": "",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/pdf"
+                                },
+                                {
+                                    "key": "Content-Disposition",
+                                    "value": "attachment; filename=\"Quotation Default.pdf\""
+                                },
+                                {
+                                    "key": "Cache-Control",
+                                    "value": "no-store"
+                                },
+                                {
+                                    "key": "Content-Length",
+                                    "value": "184213"
+                                }
+                            ],
+                            "name": "Export Document PDF - Success",
+                            "originalRequest": {
+                                "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-export",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-export/{{document_token}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Export Document PDF - Document Not Found",
+                            "originalRequest": {
+                                "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-export",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-export/{{document_token}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"failed to read document image asset\"\n}",
+                            "code": 500,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Export Document PDF - Asset Unreadable",
+                            "originalRequest": {
+                                "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-export",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-export/{{document_token}}"
+                                }
+                            },
+                            "status": "Internal Server Error"
+                        }
+                    ]
                 }
             ],
             "name": "Document Design"

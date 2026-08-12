@@ -35,7 +35,132 @@
           ]
         },
         "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
-      }
+      },
+      "response": [
+        {
+          "name": "Request Asset Upload - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\",\n      \"status\": \"pending\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"presigned_expires_at\": \"2026-08-11T17:15:00Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"upload_url\": \"http://localhost:9002/widia-assets/documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Signature=...\",\n    \"expires_at\": \"2026-08-11T17:15:00Z\"\n  }\n}"
+        },
+        {
+          "name": "Request Asset Upload - Size Must Be Positive",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset size must be greater than 0\"\n}"
+        },
+        {
+          "name": "Request Asset Upload - Storage Down",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"scope\": \"documents\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
+          },
+          "status": "Service Unavailable",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset storage is unavailable\"\n}"
+        }
+      ]
     },
     {
       "name": "Complete Asset Upload",
@@ -59,7 +184,179 @@
           ]
         },
         "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
-      }
+      },
+      "response": [
+        {
+          "name": "Complete Asset Upload - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload completed successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}"
+        },
+        {
+          "name": "Complete Asset Upload - Size Mismatch",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset size does not match request\"\n}"
+        },
+        {
+          "name": "Complete Asset Upload - MIME Type Mismatch",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset MIME type does not match request\"\n}"
+        },
+        {
+          "name": "Complete Asset Upload - Upload URL Expired",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset upload URL expired\"\n}"
+        },
+        {
+          "name": "Complete Asset Upload - Object Never Uploaded",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset object not found\"\n}"
+        }
+      ]
     },
     {
       "name": "List Assets",
@@ -99,7 +396,159 @@
             }
           ]
         }
-      }
+      },
+      "response": [
+        {
+          "name": "List Assets - Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-list?status=uploaded&scope=documents&mime_type=&extension=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "uploaded"
+                },
+                {
+                  "key": "scope",
+                  "value": "documents"
+                },
+                {
+                  "key": "mime_type",
+                  "value": ""
+                },
+                {
+                  "key": "extension",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": [\n      {\n        \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n        \"scope\": \"documents\",\n        \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"original_filename\": \"logo.png\",\n        \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"mime_type\": \"image/png\",\n        \"extension\": \"png\",\n        \"size\": 48291,\n        \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n        \"status\": \"uploaded\",\n        \"upload_method\": \"presigned_put\",\n        \"is_private\": true,\n        \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n        \"created_at\": \"2026-08-11T17:00:00Z\",\n        \"updated_at\": \"2026-08-11T17:00:00Z\"\n      }\n    ]\n  }\n}"
+        },
+        {
+          "name": "List Assets - Empty",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-list?status=uploaded&scope=documents&mime_type=&extension=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "uploaded"
+                },
+                {
+                  "key": "scope",
+                  "value": "documents"
+                },
+                {
+                  "key": "mime_type",
+                  "value": ""
+                },
+                {
+                  "key": "extension",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": []\n  }\n}"
+        },
+        {
+          "name": "List Assets - Invalid Query",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-list?status=uploaded&scope=documents&mime_type=&extension=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "uploaded"
+                },
+                {
+                  "key": "scope",
+                  "value": "documents"
+                },
+                {
+                  "key": "mime_type",
+                  "value": ""
+                },
+                {
+                  "key": "extension",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid query parameters\"\n}"
+        }
+      ]
     },
     {
       "name": "Get Asset Detail",
@@ -122,7 +571,75 @@
             "{{asset_token}}"
           ]
         }
-      }
+      },
+      "response": [
+        {
+          "name": "Get Asset Detail - Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail",
+                "{{asset_token}}"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}"
+        },
+        {
+          "name": "Get Asset Detail - Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail",
+                "{{asset_token}}"
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        }
+      ]
     },
     {
       "name": "Presign Asset Download",
@@ -146,7 +663,111 @@
           ]
         },
         "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires."
-      }
+      },
+      "response": [
+        {
+          "name": "Presign Asset Download - Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-presign/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-presign",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"scope\": \"documents\",\n      \"object_name\": \"documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"url\": \"http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=...\",\n    \"expires_in\": 900\n  }\n}"
+        },
+        {
+          "name": "Presign Asset Download - Not Uploaded Yet",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-presign/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-presign",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
+        },
+        {
+          "name": "Presign Asset Download - Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-presign/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-presign",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        }
+      ]
     },
     {
       "name": "Get Asset Content",
@@ -165,7 +786,100 @@
           ]
         },
         "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
-      }
+      },
+      "response": [
+        {
+          "name": "Get Asset Content - Success - 302 Redirect",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/asset-content/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-content",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
+          },
+          "status": "Found",
+          "code": 302,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Location",
+              "value": "http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=..."
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-store"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "Get Asset Content - Not Uploaded Yet",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/asset-content/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-content",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
+        },
+        {
+          "name": "Get Asset Content - Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/asset-content/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-content",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        }
+      ]
     },
     {
       "name": "Delete Asset",
@@ -189,7 +903,111 @@
           ]
         },
         "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
-      }
+      },
+      "response": [
+        {
+          "name": "Delete Asset - Success",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-delete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-delete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset deleted successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Delete Asset - Not The Uploader",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-delete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-delete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset access forbidden\"\n}"
+        },
+        {
+          "name": "Delete Asset - Not Found",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-delete/{{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-delete",
+                "{{asset_token}}"
+              ]
+            },
+            "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        }
+      ]
     }
   ],
   "variable": [

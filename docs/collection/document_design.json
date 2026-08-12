@@ -60,7 +60,110 @@
           }
         }
       ],
-      "response": []
+      "response": [
+        {
+          "name": "Issue Design Ticket - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-design-ticket",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.\n\nTiket juga membawa nama pemiliknya, dipakai server untuk memberi tahu siapa saja yang sedang membuka dokumen lewat pesan `presence`. Bentuk response endpoint ini tidak berubah."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Design ticket issued successfully\",\n  \"data\": {\n    \"design_ticket\": {\n      \"ticket\": \"5b8c1f30-9a2e-4d67-b0c3-8e14f7a2d509\",\n      \"expires_in\": 30\n    }\n  }\n}"
+        },
+        {
+          "name": "Issue Design Ticket - Invalid Document Token",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-design-ticket",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.\n\nTiket juga membawa nama pemiliknya, dipakai server untuk memberi tahu siapa saja yang sedang membuka dokumen lewat pesan `presence`. Bentuk response endpoint ini tidak berubah."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document token\"\n}"
+        },
+        {
+          "name": "Issue Design Ticket - Document Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-design-ticket/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-design-ticket",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Menerbitkan tiket handshake sekali pakai berumur 30 detik untuk dokumen pada `document_token`.\n\nMengembalikan 404 bila dokumen tidak ada atau berstatus deleted, dan 400 bila token bukan UUID.\n\nSkrip test menyimpan `design_ticket` dan `design_socket_url`. Salin `design_socket_url` ke WebSocket Request di Postman sebelum 30 detik berlalu.\n\nTiket juga membawa nama pemiliknya, dipakai server untuk memberi tahu siapa saja yang sedang membuka dokumen lewat pesan `presence`. Bentuk response endpoint ini tidak berubah."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+        }
+      ]
     },
     {
       "name": "Export Document PDF",
@@ -103,7 +206,122 @@
           }
         }
       ],
-      "response": []
+      "response": [
+        {
+          "name": "Export Document PDF - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-export/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-export",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "text",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/pdf"
+            },
+            {
+              "key": "Content-Disposition",
+              "value": "attachment; filename=\"Quotation Default.pdf\""
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-store"
+            },
+            {
+              "key": "Content-Length",
+              "value": "184213"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "Export Document PDF - Document Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-export/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-export",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+        },
+        {
+          "name": "Export Document PDF - Asset Unreadable",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-export/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-export",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya."
+          },
+          "status": "Internal Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"failed to read document image asset\"\n}"
+        }
+      ]
     }
   ],
   "variable": [
