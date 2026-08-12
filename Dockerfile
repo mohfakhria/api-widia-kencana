@@ -13,7 +13,7 @@
 # menyalinnya apa adanya ke ./dist. Tidak ada image yang perlu disimpan maupun
 # dijalankan.
 
-ARG GO_VERSION=1.24.4
+ARG GO_VERSION=1.25.12
 
 FROM golang:${GO_VERSION}-alpine AS builder
 
@@ -35,6 +35,13 @@ COPY . .
 # amd64 untuk server x86 kebanyakan; arm64 untuk Graviton, Ampere, dan sejenisnya.
 ARG TARGET_ARCH=amd64
 
+# Paket dan nama binary dijadikan parameter supaya repo ini dapat menghasilkan
+# lebih dari satu layanan dari Dockerfile yang SAMA. Menyalinnya menjadi
+# Dockerfile kedua berarti dua tempat yang harus diingat saat versi Go dinaikkan
+# atau bendera build diubah — dan yang terlupa adalah yang lebih jarang dipakai.
+ARG PACKAGE=./cmd/api
+ARG BINARY=widia-api
+
 # CGO_ENABLED=0 menghasilkan ELF yang benar-benar statis — tidak menuntut glibc,
 # musl, maupun pustaka apa pun di server. Binary yang sama berjalan di Debian,
 # Ubuntu, maupun Alpine, dan tidak ikut rusak saat distro menaikkan versi glibc.
@@ -53,9 +60,11 @@ RUN --mount=type=cache,target=/go/pkg/mod \
         -trimpath \
         -buildvcs=false \
         -ldflags="-s -w" \
-        -o /out/widia-api \
-        ./cmd/api
+        -o /out/${BINARY} \
+        ${PACKAGE}
 
 # Tahap yang diekspor. Kosong selain binary-nya.
 FROM scratch AS binary
-COPY --from=builder /out/widia-api /widia-api
+# ARG diulang di sini karena setiap stage punya cakupannya sendiri.
+ARG BINARY=widia-api
+COPY --from=builder /out/${BINARY} /${BINARY}

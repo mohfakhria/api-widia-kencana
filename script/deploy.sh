@@ -19,6 +19,14 @@
 #   ENV_FILE=/etc/widia-api/api.env       dibaca hanya untuk tahu APP_PORT
 #   ARCH=amd64                            amd64 atau arm64
 #   ALLOW_DIRTY=1                         izinkan deploy dari pohon kerja kotor
+#   PACKAGE=./cmd/api                     paket Go yang dibangun
+#   BINARY=widia-api                      nama berkas hasil build
+#   PORT_KEY=APP_PORT                     kunci di ENV_FILE untuk health check
+#
+# Keempat variabel terakhir ada supaya skrip ini melayani LEBIH DARI SATU
+# layanan — lihat script/deploy_mcp.sh, yang hanya menyetelnya lalu memanggil
+# skrip ini. Menyalin skrip ini menjadi versi kedua berarti dua salinan yang
+# pasti melenceng, dan yang melenceng adalah yang lebih jarang dijalankan.
 #
 # STAGING dan TARGET sengaja berbeda, dan bukan sekadar kebiasaan. Unit systemd
 # memakai ProtectHome=true, yang membuat /root kosong dan tidak terjangkau bagi
@@ -35,6 +43,9 @@ SERVICE=${SERVICE:-widia-api}
 ENV_FILE=${ENV_FILE:-/etc/widia-api/api.env}
 ARCH=${ARCH:-amd64}
 ALLOW_DIRTY=${ALLOW_DIRTY:-0}
+PACKAGE=${PACKAGE:-./cmd/api}
+BINARY=${BINARY:-widia-api}
+PORT_KEY=${PORT_KEY:-APP_PORT}
 
 repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo"
@@ -97,24 +108,26 @@ fi
 # mati, build lokal dipakai sebagai gantinya — dengan bendera yang sama persis,
 # dan hasilnya terbukti identik byte per byte karena -trimpath dan -buildvcs=false
 # membuat build ini dapat diulang.
-langkah "Membangun binary linux/$ARCH"
+langkah "Membangun $BINARY linux/$ARCH"
 if docker info >/dev/null 2>&1; then
 	echo "  lewat Docker"
 	DOCKER_BUILDKIT=1 docker build \
 		--quiet \
 		--target binary \
 		--build-arg TARGET_ARCH="$ARCH" \
+		--build-arg PACKAGE="$PACKAGE" \
+		--build-arg BINARY="$BINARY" \
 		--output type=local,dest=./dist \
 		. >/dev/null
 else
 	echo "  daemon Docker mati — memakai toolchain lokal ($(go version | awk '{print $3}'))"
 	CGO_ENABLED=0 GOOS=linux GOARCH="$ARCH" go build \
 		-trimpath -buildvcs=false -ldflags="-s -w" \
-		-o dist/widia-api ./cmd/api
+		-o "dist/$BINARY" "$PACKAGE"
 fi
 
-lokal=$(shasum -a 256 dist/widia-api | cut -d' ' -f1)
-printf '  %s  %s\n' "$(du -h dist/widia-api | cut -f1)" "${lokal:0:16}…"
+lokal=$(shasum -a 256 "dist/$BINARY" | cut -d' ' -f1)
+printf '  %s  %s\n' "$(du -h "dist/$BINARY" | cut -f1)" "${lokal:0:16}…"
 
 # ── 4. Kirim ────────────────────────────────────────────────────────────────
 langkah "Mengirim ke $HOST:$STAGING"
@@ -137,7 +150,7 @@ if ! ssh "$HOST" "test -w $(dirname "$STAGING")"; then
 	mati "$(dirname "$STAGING") tidak dapat ditulisi oleh user SSH — pakai STAGING=/tmp/widia-api, atau masuk sebagai root"
 fi
 
-scp -q dist/widia-api "$HOST:$STAGING"
+scp -q "dist/$BINARY" "$HOST:$STAGING"
 
 jauh=$(ssh "$HOST" "${sudo_jauh}sha256sum $STAGING" | cut -d' ' -f1)
 if [ "$jauh" != "$lokal" ]; then
@@ -192,7 +205,7 @@ echo "  unit aktif"
 # Health check adalah satu-satunya bukti aplikasinya benar-benar melayani, bukan
 # sekadar prosesnya ada. Portnya dibaca dari berkas konfigurasi di server supaya
 # tidak ada angka yang perlu diulang di dua tempat.
-port=$(ssh "$HOST" "${sudo_jauh}grep -oE '^APP_PORT=.*' $ENV_FILE 2>/dev/null | cut -d= -f2" || true)
+port=$(ssh "$HOST" "${sudo_jauh}grep -oE \"^$PORT_KEY=.*\" $ENV_FILE 2>/dev/null | cut -d= -f2" || true)
 port=${port:-8080}
 
 if ssh "$HOST" "command -v curl >/dev/null 2>&1"; then

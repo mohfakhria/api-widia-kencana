@@ -1,0 +1,83 @@
+[Unit]
+Description=MCP Widia Kencana
+After=network-online.target
+Wants=network-online.target
+
+# Wants, BUKAN Requires. MCP tahan terhadap API yang belum siap: ia menunda
+# login sampai permintaan pertama, dan membalas galat sementara sampai API
+# menjawab. Requires akan menyeretnya ikut mati setiap kali API dijalankan
+# ulang — padahal ia dirancang justru untuk selamat dari itu.
+After=widia-api.service
+Wants=widia-api.service
+
+[Service]
+Type=exec
+
+# Berjalan sebagai root dengan alasan yang sama seperti unit API: menyederhanakan
+# pemasangan, dan dijinakkan oleh CapabilityBoundingSet serta AmbientCapabilities
+# yang KOSONG di bawah. Proses ini ber-UID 0 tetapi tidak memegang satu pun
+# capability, digabung dengan ProtectSystem=strict yang mengunci seluruh sistem
+# berkas menjadi hanya-baca.
+#
+# JANGAN mengisi kedua baris capability itu tanpa alasan yang jelas.
+User=root
+Group=root
+
+WorkingDirectory=/opt/widia-mcp
+ExecStart=/opt/widia-mcp/widia-mcp
+
+# BERKAS TERSENDIRI, bukan /etc/widia-api/api.env — dan itu bukan kerapian.
+#
+# api.env memuat sandi database, kredensial MinIO, dan JWT_SECRET. MCP tidak
+# membutuhkan satu pun di antaranya: ia klien API, dan yang ia tahu hanya alamat
+# API beserta cara masuk sebagai agent. Memakai berkas yang sama akan menaruh
+# seluruh rahasia itu ke dalam environment proses ini tanpa alasan.
+#
+# Berkas ini memuat AGENT_PASSWORD dan MCP_AUTH_TOKEN. Milik root, mode 0600.
+EnvironmentFile=/etc/widia-mcp/mcp.env
+
+Restart=on-failure
+RestartSec=5s
+
+# main.go memasang signal.NotifyContext untuk SIGINT dan SIGTERM.
+#
+# TimeoutStopSec harus di atas jalur berhenti terpanjang, yaitu http.Server
+# Shutdown dengan batasnya sendiri 10 detik. Dua puluh detik memberi ruang untuk
+# permintaan yang sedang dilayani menyelesaikan diri.
+#
+# LEBIH PENDEK daripada unit API (30s), dan itu benar: MCP tidak menyimpan apa
+# pun saat berhenti. Yang dijaga TimeoutStopSec di sana adalah orchestrator
+# dokumen menuliskan suntingan terakhir; di sini tidak ada yang setara.
+KillSignal=SIGTERM
+TimeoutStopSec=20s
+
+# --- Pengerasan -------------------------------------------------------------
+# MCP tidak menulis apa pun ke disk: ia meneruskan ke API dan mencatat ke
+# journald. Seluruh sistem berkas boleh dikunci hanya-baca tanpa pengecualian.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+# Kosong berarti proses ini tidak dapat mengikat port di bawah 1024. MCP_PORT
+# semestinya 9090 di belakang reverse proxy.
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

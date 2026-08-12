@@ -36,8 +36,11 @@ ExecStart=/opt/widia-api/widia-api
 # satu baris "warning: .env file not found, using system env" ke log — itu wajar
 # di server dan bukan tanda ada yang salah.
 #
-# Berkas ini memuat JWT_SECRET, JWT_SUB_ENCRYPTION_KEY, WIDIA_AGENT_KEY, dan
-# kata sandi database. Milik root, mode 0600.
+# Berkas ini memuat JWT_SECRET, kredensial MinIO, dan kata sandi database.
+# Milik root, mode 0600.
+#
+# TIDAK dipakai widia-mcp. MCP punya berkasnya sendiri di /etc/widia-mcp/mcp.env,
+# karena ia tidak membutuhkan satu pun rahasia di atas — lihat unit itu.
 EnvironmentFile=/etc/widia-api/api.env
 
 Restart=on-failure
