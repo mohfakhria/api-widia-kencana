@@ -51,7 +51,6 @@ openssl rand -base64 32
 Masukkan hasilnya ke:
 
 ```env
-JWT_SUB_ENCRYPTION_KEY=replace-with-generated-key
 ```
 
 ## Configuration
@@ -241,7 +240,7 @@ sudo install -m 0600 /dev/null /etc/widia-api/api.env
 sudo -e /etc/widia-api/api.env
 ```
 
-Yang wajib diganti dari contoh: `JWT_SECRET`, `JWT_SUB_ENCRYPTION_KEY`,
+Yang wajib diganti dari contoh: `JWT_SECRET`,
 `PG_PASSWORD`, dan `MINIO_ROOT_PASSWORD`. Setel juga
 `APP_ENV=production`, `COOKIE_SECURE=true`, dan `ALLOWED_ORIGINS` ke host
 frontend — nilai terakhir itu yang memutuskan CORS dan handshake WebSocket

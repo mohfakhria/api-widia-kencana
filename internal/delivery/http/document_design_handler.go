@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
+	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/middleware"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/documentdesign"
 	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
@@ -56,7 +57,8 @@ func NewDocumentDesignHandler(
 }
 
 func (h *DocumentDesignHandler) IssueTicket(c *gin.Context) {
-	ticket, ttl, err := h.service.IssueTicket(c.Request.Context(), c.Param("token"), c.GetString("userID"))
+	user, _ := middleware.CurrentUser(c)
+	ticket, ttl, err := h.service.IssueTicket(c.Request.Context(), c.Param("token"), user.UserID, user.Name)
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return

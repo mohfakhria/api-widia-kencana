@@ -33,7 +33,7 @@ const (
 // namanya tidak basi, cukup jauh dari orchestrator untuk memastikan query-nya
 // tidak pernah menahan penyuntingan siapa pun.
 type Ticket struct {
-	UserID        string
+	UserID        int64
 	UserName      string
 	DocumentToken string
 }
@@ -53,13 +53,13 @@ type ticketEntry struct {
 type ticketStore struct {
 	mu      sync.Mutex
 	tickets map[string]ticketEntry
-	byUser  map[string]map[string]struct{}
+	byUser  map[int64]map[string]struct{}
 }
 
 func newTicketStore() *ticketStore {
 	return &ticketStore{
 		tickets: make(map[string]ticketEntry),
-		byUser:  make(map[string]map[string]struct{}),
+		byUser:  make(map[int64]map[string]struct{}),
 	}
 }
 
@@ -120,7 +120,7 @@ func (s *ticketStore) evictExpired(now time.Time) {
 // Yang tertua dibuang, bukan permintaan barunya yang ditolak, supaya user yang
 // sekadar membuka banyak tab tidak terkunci dari dokumennya sendiri. Tiket lama
 // yang belum sempat dipakai memang paling kecil kemungkinannya masih dinanti.
-func (s *ticketStore) enforceUserQuotaLocked(userID string, now time.Time) {
+func (s *ticketStore) enforceUserQuotaLocked(userID int64, now time.Time) {
 	for key := range s.byUser[userID] {
 		entry, ok := s.tickets[key]
 		if !ok {
@@ -145,7 +145,7 @@ func (s *ticketStore) enforceUserQuotaLocked(userID string, now time.Time) {
 // oldestLocked mencari tiket paling tua milik satu user. Karena seluruh tiket
 // memakai TTL yang sama, kedaluwarsa paling awal berarti diterbitkan paling awal.
 // Penyapuan linear tidak jadi soal: panjangnya dibatasi maxTicketsPerUser.
-func (s *ticketStore) oldestLocked(userID string) (string, bool) {
+func (s *ticketStore) oldestLocked(userID int64) (string, bool) {
 	var (
 		oldestKey string
 		oldestAt  time.Time

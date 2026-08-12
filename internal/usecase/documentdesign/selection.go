@@ -1,8 +1,8 @@
 package documentdesign
 
 import (
+	"cmp"
 	"slices"
-	"strings"
 )
 
 // maxSelectedElements membatasi berapa id yang boleh dibawa satu seleksi.
@@ -105,7 +105,7 @@ func (r *Room) presentSelections() []Selection {
 	}
 
 	slices.SortFunc(selections, func(a, b Selection) int {
-		return strings.Compare(a.UserID, b.UserID)
+		return cmp.Compare(a.UserID, b.UserID)
 	})
 
 	return selections

@@ -104,7 +104,7 @@ type Origin string
 // dengan beberapa tab punya satu kursor, yaitu posisi dari tab yang terakhir
 // bergerak; dua kursor berlabel nama yang sama justru membingungkan pembacanya.
 type Cursor struct {
-	UserID string
+	UserID int64
 	Page   string
 	X      float64
 	Y      float64
@@ -128,7 +128,7 @@ type Cursor struct {
 // itu mustahil: sorotan diturunkan dari salinan dokumen penerima, yang bergerak
 // bersama elemennya karena berasal dari aliran siaran yang sama.
 type Selection struct {
-	UserID     string
+	UserID     int64
 	ElementIDs []string
 }
 
@@ -141,7 +141,7 @@ type Selection struct {
 // mungkin basi.
 type Member struct {
 	Subscriber Subscriber
-	UserID     string
+	UserID     int64
 	UserName   string
 }
 
@@ -153,7 +153,7 @@ type Member struct {
 // kemungkinan teoretis, karena frontend membuka lebih dari satu koneksi tiap kali
 // halaman dimuat.
 type PresenceUser struct {
-	ID   string
+	ID   int64
 	Name string
 }
 

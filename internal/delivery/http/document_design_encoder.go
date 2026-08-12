@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
@@ -25,7 +26,7 @@ func (DesignMessageEncoder) EncodeCursors(cursors []documentdesign.Cursor) ([]by
 	entries := make([]dto.DesignCursorEntry, 0, len(cursors))
 	for _, cursor := range cursors {
 		entries = append(entries, dto.DesignCursorEntry{
-			ID:   cursor.UserID,
+			ID:   strconv.FormatInt(cursor.UserID, 10),
 			Page: cursor.Page,
 			X:    cursor.X,
 			Y:    cursor.Y,
@@ -39,7 +40,7 @@ func (DesignMessageEncoder) EncodeSelections(selections []documentdesign.Selecti
 	entries := make([]dto.DesignSelectionEntry, 0, len(selections))
 	for _, selection := range selections {
 		entries = append(entries, dto.DesignSelectionEntry{
-			ID:  selection.UserID,
+			ID:  strconv.FormatInt(selection.UserID, 10),
 			IDs: selection.ElementIDs,
 		})
 	}
@@ -82,7 +83,7 @@ func (DesignMessageEncoder) EncodePageReordered(version int64, origin documentde
 func (DesignMessageEncoder) EncodePresence(users []documentdesign.PresenceUser) ([]byte, error) {
 	payload := make([]dto.DesignPresenceUser, 0, len(users))
 	for _, user := range users {
-		payload = append(payload, dto.DesignPresenceUser{ID: user.ID, Name: user.Name})
+		payload = append(payload, dto.DesignPresenceUser{ID: strconv.FormatInt(user.ID, 10), Name: user.Name})
 	}
 
 	return dto.NewDesignPresenceMessage(payload)

@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
+import (
+	"strconv"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
+)
 
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
@@ -51,7 +55,7 @@ func NewRefreshTokenResponse(result *input.RefreshResult) RefreshTokenResponse {
 func NewProfileResponse(result *input.ProfileResult) ProfileResponse {
 	return ProfileResponse{
 		User: UserResponse{
-			UserID: result.UserID,
+			UserID: strconv.FormatInt(result.UserID, 10),
 			Name:   result.Name,
 			Role:   result.Role,
 		},

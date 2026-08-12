@@ -16,17 +16,17 @@ const maxConnectionsPerUser = 10
 // setiap user yang pernah menyambung.
 type connectionCounter struct {
 	mu     sync.Mutex
-	counts map[string]int
+	counts map[int64]int
 }
 
 func newConnectionCounter() *connectionCounter {
-	return &connectionCounter{counts: make(map[string]int)}
+	return &connectionCounter{counts: make(map[int64]int)}
 }
 
 // acquire mengembalikan jumlah koneksi user setelah percobaan ini, dan apakah
 // percobaannya diterima. Jumlahnya ikut dikembalikan karena berguna di log:
 // koneksi ganda yang tak disengaja langsung terlihat dari angkanya.
-func (c *connectionCounter) acquire(userID string) (int, bool) {
+func (c *connectionCounter) acquire(userID int64) (int, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -38,7 +38,7 @@ func (c *connectionCounter) acquire(userID string) (int, bool) {
 	return c.counts[userID], true
 }
 
-func (c *connectionCounter) release(userID string) {
+func (c *connectionCounter) release(userID int64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

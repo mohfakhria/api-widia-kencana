@@ -2,7 +2,6 @@ package security
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
@@ -12,6 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// jwtClaims sengaja tidak memuat sub.
+//
+// Yang dibawa token hanya PENUNJUK sesi, bukan identitas. Siapa pemiliknya
+// dijawab SessionStore, dan itu yang membuat sesi yang dihapus langsung
+// mematikan token yang sudah beredar — selama identitas ada di dalam token,
+// logout tidak dapat menyentuhnya sampai ia kedaluwarsa sendiri.
+//
+// Sebelumnya sub ada dan DIENKRIPSI AES-GCM supaya id penggunanya tidak terbaca
+// dari token yang di-decode. Enkripsi itu, beserta kuncinya di environment,
+// hilang bersama muatannya: yang tidak dibawa tidak perlu disembunyikan.
 type jwtClaims struct {
 	SessionID string `json:"sid,omitempty"`
 	TokenType string `json:"typ"`
@@ -19,33 +28,18 @@ type jwtClaims struct {
 }
 
 type JWTSigner struct {
-	secret        []byte
-	subjectCipher *SubjectCipher
+	secret []byte
 }
 
 func NewJWTSigner(cfg config.Config) (output.TokenSigner, error) {
-	subjectCipher, err := NewSubjectCipher(cfg.JWTSubEncryptionKey)
-	if err != nil {
-		return nil, fmt.Errorf("initialize JWT subject cipher: %w", err)
-	}
-
-	return &JWTSigner{
-		secret:        []byte(cfg.JWTSecret),
-		subjectCipher: subjectCipher,
-	}, nil
+	return &JWTSigner{secret: []byte(cfg.JWTSecret)}, nil
 }
 
 func (s *JWTSigner) GenerateAccessToken(_ context.Context, claims output.TokenClaims, ttl time.Duration) (string, error) {
-	encryptedSubject, err := s.subjectCipher.Encrypt(claims.Subject)
-	if err != nil {
-		return "", err
-	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims{
 		SessionID: claims.SessionID,
 		TokenType: output.TokenTypeAccess,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   encryptedSubject,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
@@ -55,16 +49,13 @@ func (s *JWTSigner) GenerateAccessToken(_ context.Context, claims output.TokenCl
 }
 
 func (s *JWTSigner) GenerateRefreshToken(_ context.Context, claims output.TokenClaims, ttl time.Duration) (string, error) {
-	encryptedSubject, err := s.subjectCipher.Encrypt(claims.Subject)
-	if err != nil {
-		return "", err
-	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims{
 		SessionID: claims.SessionID,
 		TokenType: output.TokenTypeRefresh,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   encryptedSubject,
+			// jti membuat dua refresh token untuk sesi yang sama tidak pernah
+			// berupa byte yang identik, sehingga rotasi benar-benar menghasilkan
+			// token baru walau detiknya sama.
 			ID:        uuid.NewString(),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
@@ -83,13 +74,7 @@ func (s *JWTSigner) ParseToken(_ context.Context, token string) (*output.TokenCl
 		return nil, err
 	}
 
-	subject, err := s.subjectCipher.Decrypt(claims.Subject)
-	if err != nil {
-		return nil, err
-	}
-
 	return &output.TokenClaims{
-		Subject:   subject,
 		SessionID: claims.SessionID,
 		TokenType: claims.TokenType,
 	}, nil

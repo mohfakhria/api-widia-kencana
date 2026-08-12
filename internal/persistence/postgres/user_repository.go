@@ -36,7 +36,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*entity
 	return &user, nil
 }
 
-func (r *UserRepository) FindByID(ctx context.Context, id string) (*entity.User, error) {
+func (r *UserRepository) FindByID(ctx context.Context, id int64) (*entity.User, error) {
 	row := r.db.QueryRowContext(ctx, `
 		SELECT id, name, email, role
 		FROM users

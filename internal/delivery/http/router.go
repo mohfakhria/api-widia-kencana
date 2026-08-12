@@ -14,6 +14,7 @@ import (
 type RouterDeps struct {
 	Config                config.Config
 	TokenSigner           output.TokenSigner
+	SessionStore          output.SessionStore
 	AssetHandler          *AssetHandler
 	AuthHandler           *AuthHandler
 	DocumentHandler       *DocumentHandler
@@ -43,7 +44,7 @@ func NewRouter(deps RouterDeps) http.Handler {
 	}
 
 	protected := r.Group("/api")
-	protected.Use(middleware.AuthRequired(deps.TokenSigner))
+	protected.Use(middleware.AuthRequired(deps.TokenSigner, deps.SessionStore))
 	{
 		protected.GET("/me", deps.AuthHandler.Me)
 		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)

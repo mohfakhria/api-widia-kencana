@@ -36,7 +36,6 @@ const roomStopTimeout = 8 * time.Second
 // realtime. Ia tidak mengenal WebSocket, HTTP, maupun gin.
 type Service struct {
 	documents   output.DocumentRepository
-	users       output.UserRepository
 	tickets     *ticketStore
 	rooms       *manager
 	connections *connectionCounter
@@ -47,7 +46,6 @@ type Service struct {
 func NewService(
 	appCtx context.Context,
 	documents output.DocumentRepository,
-	users output.UserRepository,
 	encoder MessageEncoder,
 	logger *slog.Logger,
 ) *Service {
@@ -57,7 +55,6 @@ func NewService(
 
 	return &Service{
 		documents:   documents,
-		users:       users,
 		tickets:     newTicketStore(),
 		rooms:       newManager(appCtx, documents, encoder, logger),
 		connections: newConnectionCounter(),
@@ -68,23 +65,28 @@ func NewService(
 //
 // Belum ada pemeriksaan kepemilikan karena dokumen memang belum punya pemilik,
 // sama seperti endpoint document lain di aplikasi ini.
-func (s *Service) IssueTicket(ctx context.Context, documentToken, userID string) (string, time.Duration, error) {
-	if userID == "" {
+// IssueTicket menerima nama dari pemanggil, tidak mencarinya sendiri.
+//
+// Nama sudah ada di sesi — disalin ke sana saat login dan disegarkan tiap
+// refresh — sehingga mencarinya lagi di sini berarti menembak database dua kali
+// untuk baris yang sama dalam satu permintaan.
+//
+// Satu pemeriksaan memang hilang bersamanya, dan itu perlu disebut: dulu
+// FindByID di sini menolak user yang sudah dihapus. Penolakan itu sebenarnya
+// SATU-SATUNYA di seluruh jalur terautentikasi — AuthRequired tidak pernah
+// menyentuh database, jadi user yang dihapus tetap dapat memakai setiap rute
+// lain sampai sesinya berakhir. Yang berlaku sekarang seragam: sesi menjadi
+// wewenang sampai 24 jam, dan database menegaskan dirinya kembali saat refresh,
+// tempat user yang lenyap ditolak memperpanjang.
+func (s *Service) IssueTicket(ctx context.Context, documentToken string, userID int64, userName string) (string, time.Duration, error) {
+	if userID == 0 {
 		return "", 0, domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
 	}
 	if err := s.ensureDocument(ctx, documentToken); err != nil {
 		return "", 0, err
 	}
 
-	// Nama diambil di sini, bukan saat koneksi terbuka. Penerbitan tiket terjadi
-	// sekali per sesi dan sudah menyentuh database, sedangkan jalur WebSocket
-	// harus tetap bebas dari query.
-	user, err := s.users.FindByID(ctx, userID)
-	if err != nil {
-		return "", 0, domain.NewError(domain.ErrUnauthorized, "User not found or deleted")
-	}
-
-	return s.issueTicket(documentToken, userID, user.Name)
+	return s.issueTicket(documentToken, userID, userName)
 }
 
 // ensureDocument menolak token yang cacat dan dokumen yang tidak ada, sebelum
@@ -100,7 +102,7 @@ func (s *Service) ensureDocument(ctx context.Context, documentToken string) erro
 	return nil
 }
 
-func (s *Service) issueTicket(documentToken, userID, userName string) (string, time.Duration, error) {
+func (s *Service) issueTicket(documentToken string, userID int64, userName string) (string, time.Duration, error) {
 	key, err := s.tickets.issue(Ticket{
 		UserID:        userID,
 		UserName:      userName,
@@ -136,7 +138,7 @@ func (s *Service) Redeem(key, documentToken string) (Ticket, error) {
 // perlahan terkunci sendiri.
 // Mengembalikan jumlah koneksi yang kini dipegang user tersebut, untuk dicatat
 // pemanggil.
-func (s *Service) Attach(documentToken, userID string) (int, error) {
+func (s *Service) Attach(documentToken string, userID int64) (int, error) {
 	open, ok := s.connections.acquire(userID)
 	if !ok {
 		return open, domain.NewError(domain.ErrTooManyRequests, "too many concurrent design connections")
@@ -188,7 +190,7 @@ func (s *Service) Snapshot(ctx context.Context, documentToken string) (*entity.D
 // Tidak mengembalikan apa pun dan tidak menunggu: kursor adalah keadaan sesaat,
 // dan memberinya nilai balik hanya mengundang pemanggil menanganinya seolah ia
 // berarti.
-func (s *Service) MoveCursor(documentToken, userID, page string, x, y float64) {
+func (s *Service) MoveCursor(documentToken string, userID int64, page string, x, y float64) {
 	s.rooms.moveCursor(documentToken, Cursor{
 		UserID: userID,
 		Page:   page,
@@ -215,7 +217,7 @@ func (s *Service) MoveCursor(documentToken, userID, page string, x, y float64) {
 // Tidak mengembalikan apa pun. Daftar yang kelewat panjang dipotong, bukan
 // ditolak: penolakan tiba di klien sebagai malformed_message yang memicu
 // permintaan dokumen ulang, dan itu tidak sebanding dengan satu seret marquee.
-func (s *Service) SelectElements(documentToken, userID string, elementIDs []string) {
+func (s *Service) SelectElements(documentToken string, userID int64, elementIDs []string) {
 	s.rooms.selectElements(documentToken, Selection{
 		UserID:     userID,
 		ElementIDs: elementIDs,
@@ -300,7 +302,7 @@ func (s *Service) Redo(documentToken string, sub Subscriber) {
 	s.rooms.redo(documentToken, sub)
 }
 
-func (s *Service) Detach(documentToken, userID string, sub Subscriber) {
+func (s *Service) Detach(documentToken string, userID int64, sub Subscriber) {
 	s.rooms.detach(documentToken, sub)
 	s.connections.release(userID)
 }

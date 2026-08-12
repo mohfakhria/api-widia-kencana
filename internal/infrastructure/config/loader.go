@@ -11,25 +11,24 @@ import (
 )
 
 type Config struct {
-	AppEnv              string
-	AppPort             string
-	LogLevel            string
-	AllowedOrigins      []string
-	PGHost              string
-	PGPort              string
-	PGUser              string
-	PGPassword          string
-	PGDB                string
-	CookieDomain        string
-	CookieSecure        bool
-	JWTSecret           string
-	JWTSubEncryptionKey string
-	MinIOEndpoint       string
-	MinIORootUser       string
-	MinIORootPassword   string
-	MinIOBucket         string
-	MinIOUseSSL         bool
-	DesignFontDir       string
+	AppEnv            string
+	AppPort           string
+	LogLevel          string
+	AllowedOrigins    []string
+	PGHost            string
+	PGPort            string
+	PGUser            string
+	PGPassword        string
+	PGDB              string
+	CookieDomain      string
+	CookieSecure      bool
+	JWTSecret         string
+	MinIOEndpoint     string
+	MinIORootUser     string
+	MinIORootPassword string
+	MinIOBucket       string
+	MinIOUseSSL       bool
+	DesignFontDir     string
 }
 
 func Load() Config {
@@ -86,13 +85,12 @@ func Load() Config {
 		// APP_ENV=production menuntutnya true — lihat Validate.
 		CookieSecure: getBoolEnv("COOKIE_SECURE", false),
 
-		JWTSecret:           getEnv("JWT_SECRET", "change-this-in-env"),
-		JWTSubEncryptionKey: getEnv("JWT_SUB_ENCRYPTION_KEY", ""),
-		MinIOEndpoint:       getEnv("MINIO_ENDPOINT", "localhost:9002"),
-		MinIORootUser:       getEnv("MINIO_ROOT_USER", ""),
-		MinIORootPassword:   getEnv("MINIO_ROOT_PASSWORD", ""),
-		MinIOBucket:         getEnv("MINIO_BUCKET", "widia-assets"),
-		MinIOUseSSL:         getBoolEnv("MINIO_USE_SSL", false),
+		JWTSecret:         getEnv("JWT_SECRET", "change-this-in-env"),
+		MinIOEndpoint:     getEnv("MINIO_ENDPOINT", "localhost:9002"),
+		MinIORootUser:     getEnv("MINIO_ROOT_USER", ""),
+		MinIORootPassword: getEnv("MINIO_ROOT_PASSWORD", ""),
+		MinIOBucket:       getEnv("MINIO_BUCKET", "widia-assets"),
+		MinIOUseSSL:       getBoolEnv("MINIO_USE_SSL", false),
 
 		// Direktori berkas font untuk ekspor PDF. Berkas yang sama harus
 		// disajikan ke frontend: nama keluarga yang sama tidak cukup, karena

@@ -41,15 +41,15 @@ type LogoutCommand struct {
 }
 
 type LogoutAllCommand struct {
-	UserID string
+	UserID int64
 }
 
 type GetProfileCommand struct {
-	UserID string
+	UserID int64
 }
 
 type ProfileResult struct {
-	UserID string
+	UserID int64
 	Name   string
 	Role   string
 }

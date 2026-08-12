@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
+	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/middleware"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
@@ -81,8 +82,9 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 }
 
 func (h *AuthHandler) LogoutAll(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
 	if err := h.auth.LogoutAll(c.Request.Context(), input.LogoutAllCommand{
-		UserID: c.GetString("userID"),
+		UserID: user.UserID,
 	}); err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
@@ -93,8 +95,9 @@ func (h *AuthHandler) LogoutAll(c *gin.Context) {
 }
 
 func (h *AuthHandler) Me(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
 	result, err := h.auth.GetProfile(c.Request.Context(), input.GetProfileCommand{
-		UserID: c.GetString("userID"),
+		UserID: user.UserID,
 	})
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())

@@ -60,12 +60,9 @@ func (a *ApiApp) initialize() error {
 	if err != nil {
 		return err
 	}
-	refreshTokenStore := memorystore.NewRefreshTokenStore()
-	authUC := usecase.NewAuthUseCase(
-		pg.NewUserRepository(a.db),
-		refreshTokenStore,
-		tokenSigner,
-	)
+	sessionStore := memorystore.NewSessionStore()
+	userRepo := pg.NewUserRepository(a.db)
+	authUC := usecase.NewAuthUseCase(userRepo, sessionStore, tokenSigner)
 	assetRepo := pg.NewAssetRepository(a.db)
 	assetUC := usecase.NewAssetUseCase(assetRepo, a.objectStorage)
 	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
@@ -73,7 +70,7 @@ func (a *ApiApp) initialize() error {
 	documentRepo := pg.NewDocumentRepository(a.db)
 	documentUC := usecase.NewDocumentUseCase(documentRepo)
 	documentDesign := documentdesign.NewService(
-		a.Context, documentRepo, pg.NewUserRepository(a.db),
+		a.Context, documentRepo,
 		deliveryhttp.DesignMessageEncoder{}, a.ServiceLogger,
 	)
 
@@ -97,8 +94,11 @@ func (a *ApiApp) initialize() error {
 	)
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{
-		Config:          a.Config,
-		TokenSigner:     tokenSigner,
+		Config:      a.Config,
+		TokenSigner: tokenSigner,
+		// Dipakai middleware, bukan handler: sesi inilah yang menjawab siapa
+		// pemanggilnya — beserta nama dan perannya — tanpa menyentuh database.
+		SessionStore:    sessionStore,
 		AssetHandler:    deliveryhttp.NewAssetHandler(assetUC),
 		AuthHandler:     deliveryhttp.NewAuthHandler(authUC, a.Config),
 		DocumentHandler: deliveryhttp.NewDocumentHandler(documentUC),
@@ -110,7 +110,7 @@ func (a *ApiApp) initialize() error {
 	})
 	a.services = []ServiceStartup{
 		server.NewHTTPServer(a.Config, router),
-		refreshTokenStore,
+		sessionStore,
 		documentDesign,
 		assetSweeper,
 	}

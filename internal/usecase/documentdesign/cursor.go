@@ -1,8 +1,8 @@
 package documentdesign
 
 import (
+	"cmp"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -86,7 +86,7 @@ func (r *Room) presentCursors() []Cursor {
 	}
 
 	slices.SortFunc(cursors, func(a, b Cursor) int {
-		return strings.Compare(a.UserID, b.UserID)
+		return cmp.Compare(a.UserID, b.UserID)
 	})
 
 	return cursors

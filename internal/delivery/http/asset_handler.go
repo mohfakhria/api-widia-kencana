@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
+	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/middleware"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
 	"github.com/mohfakhria/api-widia-kencana/pkg/apperror"
 
@@ -120,11 +121,22 @@ func (h *AssetHandler) Delete(c *gin.Context) {
 	dto.Success(c, "Asset deleted successfully", nil)
 }
 
+// currentUserID mengembalikan nil bila permintaan tidak terautentikasi.
+//
+// Pointer, bukan nilai: nol adalah id yang mustahil, tetapi memperlakukannya
+// sebagai "tidak ada" berarti setiap pemakai harus mengingat perjanjian itu.
+// nil tidak menuntut siapa pun mengingat apa pun.
 func currentUserID(c *gin.Context) *int64 {
-	userID := c.GetInt64("userIDInt")
-	if userID == 0 {
+	user, ok := middleware.CurrentUser(c)
+	if !ok {
 		return nil
 	}
+
+	if user.UserID == 0 {
+		return nil
+	}
+
+	userID := user.UserID
 
 	return &userID
 }

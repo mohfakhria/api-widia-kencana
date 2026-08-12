@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
-	"strconv"
 	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
@@ -23,11 +22,11 @@ const (
 
 type authUseCase struct {
 	userRepo    output.UserRepository
-	tokenStore  output.RefreshTokenStore
+	tokenStore  output.SessionStore
 	tokenSigner output.TokenSigner
 }
 
-func NewAuthUseCase(userRepo output.UserRepository, tokenStore output.RefreshTokenStore, tokenSigner output.TokenSigner) input.AuthUseCase {
+func NewAuthUseCase(userRepo output.UserRepository, tokenStore output.SessionStore, tokenSigner output.TokenSigner) input.AuthUseCase {
 	return &authUseCase{
 		userRepo:    userRepo,
 		tokenStore:  tokenStore,
@@ -45,10 +44,8 @@ func (uc *authUseCase) Login(ctx context.Context, cmd input.LoginCommand) (*inpu
 		return nil, domain.NewError(domain.ErrUnauthorized, "invalid password")
 	}
 
-	userID := strconv.FormatInt(user.ID, 10)
 	sessionID := uuid.NewString()
 	accessToken, err := uc.tokenSigner.GenerateAccessToken(ctx, output.TokenClaims{
-		Subject:   userID,
 		SessionID: sessionID,
 	}, accessTokenTTL)
 	if err != nil {
@@ -56,15 +53,17 @@ func (uc *authUseCase) Login(ctx context.Context, cmd input.LoginCommand) (*inpu
 	}
 
 	refreshToken, err := uc.tokenSigner.GenerateRefreshToken(ctx, output.TokenClaims{
-		Subject:   userID,
 		SessionID: sessionID,
 	}, refreshTokenTTL)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to generate refresh token")
 	}
 
-	if err := uc.tokenStore.Set(ctx, sessionID, output.RefreshSession{
-		UserID:    userID,
+	if err := uc.tokenStore.Set(ctx, sessionID, output.Session{
+		UserID:    user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
 		TokenHash: hashToken(refreshToken),
 	}, refreshTokenTTL); err != nil {
 		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to store refresh token")
@@ -91,18 +90,24 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshComman
 		return nil, domain.NewError(domain.ErrUnauthorized, "Invalid refresh token")
 	}
 
+	// Pemiliknya dijawab penyimpanan, bukan token. Perbandingan
+	// stored.UserID terhadap subject di dalam token dulu ada di sini dan kini
+	// tidak berarti apa-apa: hanya ada satu sumber identitas, jadi tidak ada dua
+	// nilai yang dapat berselisih.
 	stored, err := uc.tokenStore.Get(ctx, claims.SessionID)
-	if err != nil || stored.UserID != claims.Subject || !tokenHashMatches(stored.TokenHash, cmd.RefreshToken) {
+	if err != nil || !tokenHashMatches(stored.TokenHash, cmd.RefreshToken) {
 		return nil, domain.NewError(domain.ErrUnauthorized, "Refresh token not valid or expired")
 	}
 
-	_, err = uc.userRepo.FindByID(ctx, claims.Subject)
+	// Hasilnya dipakai, bukan dibuang: refresh adalah satu-satunya titik yang
+	// menyegarkan salinan nama, email, dan peran di dalam sesi. Nama yang berubah dan
+	// peran yang dicabut menyusul di sini.
+	user, err := uc.userRepo.FindByID(ctx, stored.UserID)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrUnauthorized, "User not found or deleted")
 	}
 
 	newAccess, err := uc.tokenSigner.GenerateAccessToken(ctx, output.TokenClaims{
-		Subject:   claims.Subject,
 		SessionID: claims.SessionID,
 	}, accessTokenTTL)
 	if err != nil {
@@ -110,15 +115,17 @@ func (uc *authUseCase) RefreshToken(ctx context.Context, cmd input.RefreshComman
 	}
 
 	newRefresh, err := uc.tokenSigner.GenerateRefreshToken(ctx, output.TokenClaims{
-		Subject:   claims.Subject,
 		SessionID: claims.SessionID,
 	}, refreshTokenTTL)
 	if err != nil {
 		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to generate new refresh token")
 	}
 
-	if err := uc.tokenStore.Set(ctx, claims.SessionID, output.RefreshSession{
-		UserID:    claims.Subject,
+	if err := uc.tokenStore.Set(ctx, claims.SessionID, output.Session{
+		UserID:    stored.UserID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
 		TokenHash: hashToken(newRefresh),
 	}, refreshTokenTTL); err != nil {
 		return nil, domain.NewError(domain.ErrInternalFailure, "Failed to store new refresh token")
@@ -149,7 +156,7 @@ func (uc *authUseCase) Logout(ctx context.Context, cmd input.LogoutCommand) erro
 }
 
 func (uc *authUseCase) LogoutAll(ctx context.Context, cmd input.LogoutAllCommand) error {
-	if cmd.UserID == "" {
+	if cmd.UserID == 0 {
 		return domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
 	}
 	return uc.tokenStore.DeleteAll(ctx, cmd.UserID)
@@ -166,7 +173,7 @@ func tokenHashMatches(storedHash, token string) bool {
 }
 
 func (uc *authUseCase) GetProfile(ctx context.Context, cmd input.GetProfileCommand) (*input.ProfileResult, error) {
-	if cmd.UserID == "" {
+	if cmd.UserID == 0 {
 		return nil, domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
 	}
 	user, err := uc.userRepo.FindByID(ctx, cmd.UserID)
@@ -175,7 +182,7 @@ func (uc *authUseCase) GetProfile(ctx context.Context, cmd input.GetProfileComma
 	}
 
 	return &input.ProfileResult{
-		UserID: strconv.FormatInt(user.ID, 10),
+		UserID: user.ID,
 		Name:   user.Name,
 		Role:   user.Role,
 	}, nil

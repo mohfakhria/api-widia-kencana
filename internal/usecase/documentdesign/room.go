@@ -83,7 +83,7 @@ type Room struct {
 	// diteruskan, supaya orang yang baru bergabung dapat langsung diberi seluruh
 	// kursor yang sudah ada — dan supaya kursor milik orang yang pergi dapat
 	// dibuang.
-	cursors map[string]Cursor
+	cursors map[int64]Cursor
 	// cursorsDirty menandai ada yang berubah sejak siaran terakhir. Tanpa ini
 	// denyut akan mengirim ulang posisi yang sama dua puluh kali per detik walau
 	// tidak ada satu pun yang bergerak.
@@ -91,7 +91,7 @@ type Room struct {
 	// selections dikunci id orang, isinya id elemen yang sedang ia pilih.
 	// Kosong berarti tidak memilih apa-apa, dan entrinya dihapus alih-alih
 	// menyimpan daftar kosong.
-	selections map[string][]string
+	selections map[int64][]string
 	// selectionsDirty menandai ada yang berubah sejak siaran terakhir, sama
 	// seperti cursorsDirty dan dengan alasan yang sama.
 	selectionsDirty bool
@@ -122,8 +122,8 @@ func newRoom(token string, documents output.DocumentRepository, encoder MessageE
 		done:       make(chan struct{}),
 		content:    &design.Content{Pages: []design.Page{}},
 		members:    make(map[Subscriber]Member),
-		cursors:    make(map[string]Cursor),
-		selections: make(map[string][]string),
+		cursors:    make(map[int64]Cursor),
+		selections: make(map[int64][]string),
 	}
 }
 
@@ -408,7 +408,7 @@ func (r *Room) encodeSnapshot() ([]byte, error) {
 
 // hasUser menjawab apakah seseorang masih memegang setidaknya satu koneksi ke
 // dokumen ini.
-func (r *Room) hasUser(userID string) bool {
+func (r *Room) hasUser(userID int64) bool {
 	for _, member := range r.members {
 		if member.UserID == userID {
 			return true

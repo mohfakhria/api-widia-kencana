@@ -22,7 +22,7 @@ type designSubscriber struct {
 
 	// Identitas pemilik koneksi, disalin dari tiket saat handshake. Hanya dibaca,
 	// tidak pernah berubah selama koneksi hidup, jadi tidak butuh penguncian.
-	userID   string
+	userID   int64
 	userName string
 
 	// closeReason diisi Disconnect dan dibaca Connect setelah seluruh loop

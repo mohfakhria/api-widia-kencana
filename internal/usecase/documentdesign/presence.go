@@ -1,6 +1,7 @@
 package documentdesign
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 )
@@ -12,7 +13,7 @@ import (
 // iterasi peta di Go berurutan acak. Tanpa pengurutan, tumpukan avatar di
 // frontend akan berganti susunan setiap kali ada yang datang atau pergi.
 func (r *Room) presentUsers() []PresenceUser {
-	seen := make(map[string]struct{}, len(r.members))
+	seen := make(map[int64]struct{}, len(r.members))
 	users := make([]PresenceUser, 0, len(r.members))
 
 	for _, member := range r.members {
@@ -28,7 +29,7 @@ func (r *Room) presentUsers() []PresenceUser {
 			return order
 		}
 
-		return strings.Compare(a.ID, b.ID)
+		return cmp.Compare(a.ID, b.ID)
 	})
 
 	return users
