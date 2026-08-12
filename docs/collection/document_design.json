@@ -320,6 +320,40 @@
             }
           ],
           "body": "{\n  \"status\": \"error\",\n  \"message\": \"failed to read document image asset\"\n}"
+        },
+        {
+          "name": "Export Document PDF - Forbidden For AI Agent",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-export/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-export",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
         }
       ]
     }

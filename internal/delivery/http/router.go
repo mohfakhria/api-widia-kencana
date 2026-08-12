@@ -5,6 +5,7 @@ import (
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/middleware"
+	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 
@@ -43,29 +44,64 @@ func NewRouter(deps RouterDeps) http.Handler {
 		api.GET("/asset-content/:token", deps.AssetHandler.Content)
 	}
 
+	// DUA grup, dan keduanya menyebut peran yang boleh masuk. Tidak ada grup
+	// terautentikasi yang tanpa penjaga peran, dan itu disengaja: rute baru yang
+	// ditambahkan ke protected — nama yang paling wajar diraih orang — otomatis
+	// tertutup bagi agent. Kalau daftar izinnya ditempelkan per rute, rute yang
+	// lupa dianotasi justru terbuka, dan lupa itu tidak menghasilkan galat apa
+	// pun.
+	//
+	// Akibat lain yang layak diketahui: peran 'user' — bawaan kolom users.role,
+	// yang tidak dimiliki satu baris pun — tertutup di mana-mana. Baris yang
+	// disisipkan tanpa menyebut perannya lahir tanpa wewenang.
+
+	// protected hanya untuk manusia.
 	protected := r.Group("/api")
-	protected.Use(middleware.AuthRequired(deps.TokenSigner, deps.SessionStore))
+	protected.Use(
+		middleware.AuthRequired(deps.TokenSigner, deps.SessionStore),
+		middleware.RequireRole(entity.RoleSuperadmin),
+	)
 	{
-		protected.GET("/me", deps.AuthHandler.Me)
-		protected.POST("/logout-all", deps.AuthHandler.LogoutAll)
-		protected.POST("/asset-upload-request", deps.AssetHandler.RequestUpload)
-		protected.POST("/asset-upload-complete/:token", deps.AssetHandler.CompleteUpload)
-		protected.GET("/asset-list", deps.AssetHandler.List)
-		protected.GET("/asset-detail/:token", deps.AssetHandler.Get)
-		protected.GET("/asset-presign/:token", deps.AssetHandler.PresignGet)
-		protected.DELETE("/asset-delete/:token", deps.AssetHandler.Delete)
-		protected.GET("/document-list", deps.DocumentHandler.List)
-		protected.GET("/document-detail/:token", deps.DocumentHandler.Get)
-		protected.POST("/document-add", deps.DocumentHandler.Create)
-		protected.PUT("/document-update/:token", deps.DocumentHandler.Update)
-		protected.DELETE("/document-delete/:token", deps.DocumentHandler.Delete)
-		protected.POST("/document-design-ticket/:token", deps.DocumentDesignHandler.IssueTicket)
-		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
+		// Proyek adalah lapisan DI ATAS dokumen. Agent menyusun isi dokumen; ia
+		// tidak menentukan dokumen mana yang ada dan milik siapa.
 		protected.GET("/project-list", deps.ProjectHandler.List)
 		protected.GET("/project-detail/:id", deps.ProjectHandler.Get)
 		protected.POST("/project-add", deps.ProjectHandler.Create)
 		protected.PUT("/project-update/:id", deps.ProjectHandler.Update)
 		protected.DELETE("/project-delete/:id", deps.ProjectHandler.Delete)
+
+		// Ekspor adalah tindakan manusia: agent menyusun, orang yang mencetak.
+		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
+	}
+
+	// agentAllowed dibuka untuk agent DI SAMPING manusia. Sengaja pendek, dan
+	// menambah rute ke sini adalah tindakan sadar.
+	agentAllowed := r.Group("/api")
+	agentAllowed.Use(
+		middleware.AuthRequired(deps.TokenSigner, deps.SessionStore),
+		middleware.RequireRole(entity.RoleSuperadmin, entity.RoleAIAgent),
+	)
+	{
+		agentAllowed.GET("/me", deps.AuthHandler.Me)
+		agentAllowed.POST("/logout-all", deps.AuthHandler.LogoutAll)
+
+		agentAllowed.POST("/asset-upload-request", deps.AssetHandler.RequestUpload)
+		agentAllowed.POST("/asset-upload-complete/:token", deps.AssetHandler.CompleteUpload)
+		agentAllowed.GET("/asset-list", deps.AssetHandler.List)
+		agentAllowed.GET("/asset-detail/:token", deps.AssetHandler.Get)
+		agentAllowed.GET("/asset-presign/:token", deps.AssetHandler.PresignGet)
+		agentAllowed.DELETE("/asset-delete/:token", deps.AssetHandler.Delete)
+
+		agentAllowed.GET("/document-list", deps.DocumentHandler.List)
+		agentAllowed.GET("/document-detail/:token", deps.DocumentHandler.Get)
+		agentAllowed.POST("/document-add", deps.DocumentHandler.Create)
+		agentAllowed.PUT("/document-update/:token", deps.DocumentHandler.Update)
+		agentAllowed.DELETE("/document-delete/:token", deps.DocumentHandler.Delete)
+
+		// Satu-satunya rute yang benar-benar WAJIB bagi agent: setelah tiket
+		// terbit, seluruh penyuntingannya lewat socket, dan di sana tidak ada
+		// barier sama sekali — ia penyunting penuh, termasuk undo dan redo.
+		agentAllowed.POST("/document-design-ticket/:token", deps.DocumentDesignHandler.IssueTicket)
 	}
 
 	// Handshake WebSocket dilayani di luar gin. Upgrade harus mengambil alih

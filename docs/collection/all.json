@@ -2509,6 +2509,40 @@
                                 }
                             },
                             "status": "Internal Server Error"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Export Document PDF - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Menggambar dokumen menjadi PDF dan mengembalikan berkasnya apa adanya, bukan amplop JSON seperti endpoint lain.\n\nIsi yang dicetak diambil dari room bila dokumennya sedang dibuka seseorang, dan dari database bila tidak. Karena penyimpanan bersifat tunda sampai dua detik, tidak perlu menunggu atau memaksa simpan sebelum mengekspor.\n\n400 berarti isi dokumen tidak sah atau satuan kertas tidak dikenal. Font TIDAK pernah menggagalkan export: keluarga atau ketebalan yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log server. 404 berarti dokumen tidak ada atau sudah dihapus. 503 berarti dokumen sedang dibuka tetapi room-nya bermasalah.\n\nGunakan Send and Download di Postman untuk menyimpan berkasnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "document-export",
+                                        "{{document_token}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/document-export/{{document_token}}"
+                                }
+                            },
+                            "status": "Forbidden"
                         }
                     ]
                 }
@@ -2545,6 +2579,70 @@
                             "code": 200,
                             "name": "List Projects - Success",
                             "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid query parameters\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Projects - Invalid Query",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-list"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-list"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Projects - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-list"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-list"
+                                }
+                            },
+                            "status": "Forbidden"
                         }
                     ]
                 },
@@ -2585,6 +2683,74 @@
                             "code": 404,
                             "name": "Get Project Detail - Not Found",
                             "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Project Detail - Invalid Project ID",
+                            "originalRequest": {
+                                "description": "Replace last path segment with project id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-detail",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-detail/1"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Project Detail - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Replace last path segment with project id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-detail",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-detail/1"
+                                }
+                            },
+                            "status": "Forbidden"
                         }
                     ]
                 },
@@ -2631,6 +2797,86 @@
                             "code": 400,
                             "name": "Create Project - Invalid Status",
                             "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project name cannot be empty\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Project - Name Empty",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Project - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\"\n}"
+                                },
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-add"
+                                }
+                            },
+                            "status": "Forbidden"
                         }
                     ]
                 },
@@ -2672,6 +2918,132 @@
                             "code": 200,
                             "name": "Update Project - Success",
                             "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                                },
+                                "description": "Replace last path segment with project id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-update/1"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                                },
+                                "description": "Replace last path segment with project id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-update/1"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                                },
+                                "description": "Replace last path segment with project id.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-update/1"
+                                }
+                            },
+                            "status": "Forbidden"
                         }
                     ]
                 },
@@ -2705,6 +3077,74 @@
                             "code": 200,
                             "name": "Delete Project - Success",
                             "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Project - Not Found",
+                            "originalRequest": {
+                                "description": "Soft delete project by setting status to deleted.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-delete",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-delete/1"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Project - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Soft delete project by setting status to deleted.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-delete",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-delete/1"
+                                }
+                            },
+                            "status": "Forbidden"
                         }
                     ]
                 }
