@@ -25,14 +25,23 @@ import (
 // rusak, membedakan "protokol MCP bermasalah" dari "agent tidak dapat masuk ke
 // API" jauh lebih cepat lewat satu curl daripada lewat klien LLM.
 type Server struct {
-	cfg    Config
-	api    *APIClient
-	mcp    *mcp.Server
-	logger *slog.Logger
+	cfg      Config
+	api      *APIClient
+	mcp      *mcp.Server
+	sessions *SessionManager
+	logger   *slog.Logger
 }
 
 func NewServer(cfg Config, api *APIClient, logger *slog.Logger) *Server {
-	return &Server{cfg: cfg, api: api, mcp: newMCPServer(api), logger: logger}
+	sessions := NewSessionManager(api, logger)
+
+	return &Server{
+		cfg:      cfg,
+		api:      api,
+		mcp:      newMCPServer(api, sessions),
+		sessions: sessions,
+		logger:   logger,
+	}
 }
 
 func (s *Server) Handler() http.Handler {
@@ -155,6 +164,11 @@ func (s *Server) Run(ctx context.Context) error {
 		Handler:           s.Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+
+	// Penyapu sesi ikut hidup selama server, dan ikut mati bersamanya. Ia yang
+	// menutup socket yang menganggur — dan, saat shutdown, seluruhnya sekaligus,
+	// supaya agent tidak tertinggal sebagai penghuni hantu di kanvas orang.
+	go s.sessions.Run(ctx)
 
 	berhenti := make(chan error, 1)
 	go func() {

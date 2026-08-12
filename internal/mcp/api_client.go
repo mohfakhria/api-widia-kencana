@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 )
@@ -202,6 +204,58 @@ func (c *APIClient) kirim(ctx context.Context, method, path string, body []byte)
 	}
 
 	return resp, token, nil
+}
+
+// DesignTicket adalah izin sekali pakai untuk membuka socket penyuntingan.
+//
+// Umurnya PENDEK — tiga puluh detik menurut API — dan hangus setelah dipakai
+// sekali. Karena itu ia diterbitkan tepat sebelum menyambung, bukan di awal
+// tugas: menerbitkannya lalu menunggu model berpikir akan selalu gagal.
+type DesignTicket struct {
+	Ticket    string `json:"ticket"`
+	ExpiresIn int64  `json:"expires_in"`
+}
+
+func (c *APIClient) IssueDesignTicket(ctx context.Context, documentToken string) (DesignTicket, error) {
+	resp, err := c.Do(ctx, http.MethodPost, "/api/document-design-ticket/"+url.PathEscape(documentToken), nil)
+	if err != nil {
+		return DesignTicket{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return DesignTicket{}, fmt.Errorf("penerbitan tiket menjawab %d", resp.StatusCode)
+	}
+
+	var body struct {
+		Data struct {
+			DesignTicket DesignTicket `json:"design_ticket"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return DesignTicket{}, fmt.Errorf("urai balasan tiket: %w", err)
+	}
+	if body.Data.DesignTicket.Ticket == "" {
+		return DesignTicket{}, fmt.Errorf("balasan tiket tidak memuat ticket")
+	}
+
+	return body.Data.DesignTicket, nil
+}
+
+// SocketURL menyusun alamat WebSocket dari APIBaseURL yang sama.
+//
+// Diturunkan, bukan disetel terpisah: HTTP dan WebSocket dilayani proses serta
+// port yang sama, dan dua variabel yang wajib menunjuk server yang sama adalah
+// dua kesempatan untuk meleset.
+func (c *APIClient) SocketURL(documentToken, ticket string) string {
+	skema := "ws"
+	if strings.HasPrefix(c.baseURL, "https://") {
+		skema = "wss"
+	}
+	host := strings.TrimPrefix(strings.TrimPrefix(c.baseURL, "https://"), "http://")
+
+	return fmt.Sprintf("%s://%s/document-design/%s?ticket=%s",
+		skema, host, url.PathEscape(documentToken), url.QueryEscape(ticket))
 }
 
 // Identity adalah jawaban /api/me — dipakai memastikan MCP benar-benar masuk
