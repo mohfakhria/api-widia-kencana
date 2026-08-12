@@ -37,3 +37,29 @@ CREATE TRIGGER users_set_updated_at_trg
 BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
+
+
+-- Benih akun. Dijalankan berulang tanpa akibat.
+--
+-- Sandinya TIDAK ditulis di sini, bahkan sebagai komentar. Berkas ini masuk
+-- git, dan sandi yang pernah masuk git tetap ada di riwayat walau barisnya
+-- dihapus kemudian — menghapusnya menuntut menulis ulang sejarah yang sudah
+-- terbit. Yang tersimpan hash bcrypt, dan itu memang gunanya: ia aman dibaca
+-- siapa pun yang membaca repo ini.
+--
+-- ON CONFLICT DO NOTHING, bukan DO UPDATE. Menjalankan ulang berkas ini tidak
+-- boleh mengembalikan sandi yang sudah diganti orangnya — benih adalah keadaan
+-- AWAL, bukan keadaan yang dipaksakan terus-menerus.
+--
+-- role disebut eksplisit ketiganya, tidak menumpang bawaan kolom. Bawaannya
+-- 'user', nilai yang tidak dikenal kode mana pun dan tidak dimiliki satu baris
+-- pun — baris yang menumpang bawaan itu akan lahir tanpa wewenang apa pun, dan
+-- gejalanya muncul jauh kemudian sebagai 403 yang tidak menyebut sebabnya.
+INSERT INTO users (name, email, password, role) VALUES
+    ('Fahmi',  'fahmi@widiakencana.com',  '$2a$10$bxFPoKvi7UtgW.7p0/c5YeIrPE/mr2NiZR1YTDg2jjyo87i4n3HCS', 'superadmin'),
+    ('Fakhri', 'fakhri@widiakencana.com', '$2a$10$6UpRAZrSYS0yDvqh.FUg7.5n.OL3CfrngSusdz5UCMcF7kQ6rm7IG', 'superadmin'),
+    -- Agent memakai baris users seperti manusia, dan itu yang membuat presence,
+    -- kursor, dan tiket bekerja untuknya tanpa jalur kedua. Yang membedakan
+    -- hanya perannya, dan peran itulah yang menutup rute di luar penyuntingan.
+    ('AI Agent', 'ai-agent@widiakencana.com', '$2a$10$Vv.XLetA5HC8Y3jn5DmrmuaBOtUI/uvk8.lnits3lQJuFGlo7api2', 'ai-agent')
+ON CONFLICT (email) DO NOTHING;
