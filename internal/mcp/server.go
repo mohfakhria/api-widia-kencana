@@ -52,7 +52,36 @@ func (s *Server) Handler() http.Handler {
 	// keadaan per sesi yang perlu dijaga.
 	streamable := mcp.NewStreamableHTTPHandler(
 		func(*http.Request) *mcp.Server { return s.mcp },
-		nil,
+		&mcp.StreamableHTTPOptions{
+			// Perlindungan bawaan SDK menolak permintaan yang DATANG dari
+			// localhost tetapi membawa Host bukan-localhost. Ia menjaga server
+			// MCP lokal dari DNS rebinding: situs jahat mengarahkan sebuah nama
+			// ke 127.0.0.1, lalu browser korban menembak server itu dengan Host
+			// milik penyerang.
+			//
+			// Di susunan kita, heuristik itu SELALU berbunyi untuk lalu lintas
+			// yang sah: nginx meneruskan dari 127.0.0.1 sambil membawa Host
+			// publik apa adanya. Yang ditolak justru satu-satunya jalur yang
+			// benar.
+			//
+			// Dimatikan karena model ancamannya tidak berlaku di sini, dan
+			// ketiganya harus TETAP benar agar keputusan ini tetap benar:
+			//
+			//   1. ufw menutup 9090; satu-satunya jalan masuk lewat nginx
+			//   2. nginx yang mengakhiri TLS
+			//   3. /mcp menuntut MCP_AUTH_TOKEN
+			//
+			// Serangan yang dijaga perlindungan ini menuntut browser korban
+			// menjangkau server secara LANGSUNG. Selama nomor 1 berlaku, itu
+			// tidak mungkin. Bila suatu saat 9090 dibuka di firewall, baris ini
+			// harus ditinjau ulang lebih dulu.
+			//
+			// Menulis ulang Host di nginx menjadi localhost juga akan lolos, dan
+			// sengaja TIDAK dipilih: ia membuat aplikasi tidak mengetahui namanya
+			// sendiri, sedangkan OAuth kelak menuntut MCP menyebutkan URL
+			// publiknya pada metadata resource.
+			DisableLocalhostProtection: true,
+		},
 	)
 
 	// Penjaga yang SAMA dengan rute lain. Protokol MCP tidak membawa penjaganya
