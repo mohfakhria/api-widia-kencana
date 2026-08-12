@@ -1,4 +1,4 @@
-package mcp
+package apiclient
 
 import (
 	"bytes"
@@ -13,11 +13,11 @@ import (
 	"time"
 )
 
-// APIClient adalah satu-satunya jalan MCP menyentuh API.
+// Client adalah satu-satunya jalan MCP menyentuh API.
 //
 // Ia memegang sesi agent dan menyegarkannya sendiri. Yang di luar berkas ini
 // cukup memanggil Do dan tidak pernah memikirkan token.
-type APIClient struct {
+type Client struct {
 	baseURL  string
 	email    string
 	password string
@@ -32,12 +32,19 @@ type APIClient struct {
 	expiresAt time.Time
 }
 
-func NewAPIClient(cfg Config, logger *slog.Logger) *APIClient {
-	return &APIClient{
-		baseURL:  cfg.APIBaseURL,
-		email:    cfg.AgentEmail,
-		password: cfg.AgentPassword,
-		http:     &http.Client{Timeout: cfg.HTTPTimeout},
+// New menerima nilai yang ia pakai, BUKAN struct Config milik paket induk.
+//
+// Dua sebab. Pertama arah impor: kalau ia menerima mcp.Config, paket ini
+// menunjuk balik ke induknya dan tool tidak akan pernah bisa memakainya tanpa
+// siklus. Kedua kejujuran: klien API tidak berkepentingan pada port MCP maupun
+// token penjaganya, dan parameter yang menyebutkan apa yang benar-benar dipakai
+// membuat itu terbaca dari tanda tangannya.
+func New(baseURL, email, password string, timeout time.Duration, logger *slog.Logger) *Client {
+	return &Client{
+		baseURL:  baseURL,
+		email:    email,
+		password: password,
+		http:     &http.Client{Timeout: timeout},
 		logger:   logger,
 	}
 }
@@ -54,7 +61,7 @@ const tokenLeeway = 60 * time.Second
 // Login DITUNDA sampai dibutuhkan, bukan dilakukan saat start. MCP dan API kerap
 // dinyalakan bersamaan, dan server yang menolak berdiri hanya karena API-nya
 // belum siap akan gagal justru pada susunan yang paling umum.
-func (c *APIClient) accessToken(ctx context.Context) (string, error) {
+func (c *Client) accessToken(ctx context.Context) (string, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -76,7 +83,7 @@ func (c *APIClient) accessToken(ctx context.Context) (string, error) {
 // Ini juga yang membuat MCP selamat dari restart API: penyimpanan sesi ada di
 // memori proses, sehingga setiap deploy menghapus seluruh sesi. Klien yang hanya
 // memegang token akan mati bersamanya; yang memegang sandi berdiri lagi sendiri.
-func (c *APIClient) loginLocked(ctx context.Context) (string, error) {
+func (c *Client) loginLocked(ctx context.Context) (string, error) {
 	payload, err := json.Marshal(map[string]string{
 		"email":    c.email,
 		"password": c.password,
@@ -132,7 +139,7 @@ func (c *APIClient) loginLocked(ctx context.Context) (string, error) {
 // Dipanggil setelah 401. Tokennya boleh jadi masih jauh dari tenggat menurut
 // jam MCP, tetapi sesinya di server sudah lenyap — restart API menghapus seluruh
 // sesi, dan itu terjadi setiap deploy.
-func (c *APIClient) invalidate(stale string) {
+func (c *Client) invalidate(stale string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -155,7 +162,7 @@ func (c *APIClient) invalidate(stale string) {
 // Sekali, bukan berulang. Dua kali 401 berturut-turut berarti sandinya memang
 // tidak diterima, dan mengulanginya hanya mengubah kesalahan konfigurasi menjadi
 // banjir permintaan login.
-func (c *APIClient) Do(ctx context.Context, method, path string, body []byte) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, method, path string, body []byte) (*http.Response, error) {
 	resp, token, err := c.kirim(ctx, method, path, body)
 	if err != nil {
 		return nil, err
@@ -176,7 +183,7 @@ func (c *APIClient) Do(ctx context.Context, method, path string, body []byte) (*
 // kirim mengembalikan token yang dipakai, supaya pemanggil dapat membuang
 // TEPAT token itu bila ditolak — bukan token yang mungkin sudah diperbarui
 // goroutine lain di antaranya.
-func (c *APIClient) kirim(ctx context.Context, method, path string, body []byte) (*http.Response, string, error) {
+func (c *Client) kirim(ctx context.Context, method, path string, body []byte) (*http.Response, string, error) {
 	token, err := c.accessToken(ctx)
 	if err != nil {
 		return nil, "", err
@@ -216,7 +223,7 @@ type DesignTicket struct {
 	ExpiresIn int64  `json:"expires_in"`
 }
 
-func (c *APIClient) IssueDesignTicket(ctx context.Context, documentToken string) (DesignTicket, error) {
+func (c *Client) IssueDesignTicket(ctx context.Context, documentToken string) (DesignTicket, error) {
 	resp, err := c.Do(ctx, http.MethodPost, "/api/document-design-ticket/"+url.PathEscape(documentToken), nil)
 	if err != nil {
 		return DesignTicket{}, err
@@ -247,7 +254,7 @@ func (c *APIClient) IssueDesignTicket(ctx context.Context, documentToken string)
 // Diturunkan, bukan disetel terpisah: HTTP dan WebSocket dilayani proses serta
 // port yang sama, dan dua variabel yang wajib menunjuk server yang sama adalah
 // dua kesempatan untuk meleset.
-func (c *APIClient) SocketURL(documentToken, ticket string) string {
+func (c *Client) SocketURL(documentToken, ticket string) string {
 	skema := "ws"
 	if strings.HasPrefix(c.baseURL, "https://") {
 		skema = "wss"
@@ -269,7 +276,7 @@ type Identity struct {
 	Role   string `json:"role"`
 }
 
-func (c *APIClient) Me(ctx context.Context) (Identity, error) {
+func (c *Client) Me(ctx context.Context) (Identity, error) {
 	resp, err := c.Do(ctx, http.MethodGet, "/api/me", nil)
 	if err != nil {
 		return Identity{}, err

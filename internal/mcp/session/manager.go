@@ -1,31 +1,33 @@
-package mcp
+package session
 
 import (
 	"context"
 	"log/slog"
 	"sync"
 	"time"
+
+	"github.com/mohfakhria/api-widia-kencana/internal/mcp/apiclient"
 )
 
-// SessionManager memegang satu socket per dokumen yang sedang dikerjakan.
+// Manager memegang satu socket per dokumen yang sedang dikerjakan.
 //
 // SATU, bukan satu per pemanggilan tool. Agent kerap menyunting dokumen yang
 // sama berkali-kali dalam satu perintah, dan membuka socket tiap kali berarti
 // agent muncul lalu hilang dari daftar penghuni berulang-ulang — persis yang
 // membuat "menonton agent bekerja" tidak mungkin.
-type SessionManager struct {
-	api    *APIClient
+type Manager struct {
+	api    *apiclient.Client
 	logger *slog.Logger
 
 	mu       sync.Mutex
-	sessions map[string]*DocumentSession
+	sessions map[string]*Document
 }
 
-func NewSessionManager(api *APIClient, logger *slog.Logger) *SessionManager {
-	return &SessionManager{
+func NewManager(api *apiclient.Client, logger *slog.Logger) *Manager {
+	return &Manager{
 		api:      api,
 		logger:   logger,
-		sessions: make(map[string]*DocumentSession),
+		sessions: make(map[string]*Document),
 	}
 }
 
@@ -35,7 +37,7 @@ func NewSessionManager(api *APIClient, logger *slog.Logger) *SessionManager {
 // adanya. Koneksi berakhir karena banyak sebab yang wajar — API dijalankan
 // ulang, jaringan tersendat, klien dianggap tertinggal — dan pemanggil tidak
 // semestinya menangani satu pun di antaranya.
-func (m *SessionManager) Session(ctx context.Context, documentToken string) (*DocumentSession, error) {
+func (m *Manager) Open(ctx context.Context, documentToken string) (*Document, error) {
 	m.mu.Lock()
 	ada, punya := m.sessions[documentToken]
 	if punya && ada.alive() {
@@ -55,7 +57,7 @@ func (m *SessionManager) Session(ctx context.Context, documentToken string) (*Do
 	// Membuka DI LUAR kunci. Penerbitan tiket dan handshake menyentuh jaringan,
 	// dan menahan mutex selama itu akan membekukan seluruh dokumen lain hanya
 	// karena satu koneksi lambat.
-	baru, err := openDocumentSession(ctx, m.api, documentToken, m.logger)
+	baru, err := open(ctx, m.api, documentToken, m.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -82,15 +84,15 @@ func (m *SessionManager) Session(ctx context.Context, documentToken string) (*Do
 // Dipanggil denyut, bukan timer per sesi: satu goroutine untuk seluruh peta
 // jauh lebih mudah ditalar daripada satu timer per dokumen yang harus
 // dibatalkan dengan benar setiap kali sesinya dipakai.
-func (m *SessionManager) Sweep(now time.Time) {
+func (m *Manager) Sweep(now time.Time) {
 	m.mu.Lock()
-	var tutup []*DocumentSession
+	var tutup []*Document
 	for token, s := range m.sessions {
 		switch {
 		case !s.alive():
 			delete(m.sessions, token)
 			tutup = append(tutup, s)
-		case s.idleSince(now) > sessionIdleTimeout:
+		case s.idleSince(now) > idleTimeout:
 			delete(m.sessions, token)
 			tutup = append(tutup, s)
 			m.logger.Info("menutup sesi dokumen yang menganggur", "document", token)
@@ -110,8 +112,8 @@ func (m *SessionManager) Sweep(now time.Time) {
 // jelas. Penutupan di akhir bukan kerapian: socket yang ditinggalkan membuat
 // agent tetap tampak hadir di daftar penghuni sampai server mendeteksi ping yang
 // tidak terbalas, dan selama itu orang melihat penyunting yang sudah tidak ada.
-func (m *SessionManager) Run(ctx context.Context) {
-	denyut := time.NewTicker(sessionSweepInterval)
+func (m *Manager) Run(ctx context.Context) {
+	denyut := time.NewTicker(sweepInterval)
 	defer denyut.Stop()
 
 	for {
@@ -125,9 +127,9 @@ func (m *SessionManager) Run(ctx context.Context) {
 	}
 }
 
-func (m *SessionManager) closeAll() {
+func (m *Manager) closeAll() {
 	m.mu.Lock()
-	semua := make([]*DocumentSession, 0, len(m.sessions))
+	semua := make([]*Document, 0, len(m.sessions))
 	for token, s := range m.sessions {
 		semua = append(semua, s)
 		delete(m.sessions, token)

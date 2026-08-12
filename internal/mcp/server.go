@@ -10,6 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mohfakhria/api-widia-kencana/internal/mcp/apiclient"
+	"github.com/mohfakhria/api-widia-kencana/internal/mcp/session"
+	"github.com/mohfakhria/api-widia-kencana/internal/mcp/tool"
+
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -26,19 +30,38 @@ import (
 // API" jauh lebih cepat lewat satu curl daripada lewat klien LLM.
 type Server struct {
 	cfg      Config
-	api      *APIClient
+	api      *apiclient.Client
 	mcp      *mcp.Server
-	sessions *SessionManager
+	sessions *session.Manager
 	logger   *slog.Logger
 }
 
-func NewServer(cfg Config, api *APIClient, logger *slog.Logger) *Server {
-	sessions := NewSessionManager(api, logger)
+// serverName dan serverVersion diumumkan ke klien saat initialize. Klien
+// menampilkannya kepada penggunanya, jadi keduanya nama yang dibaca manusia.
+const (
+	serverName    = "widia-kencana"
+	serverVersion = "0.1.0"
+)
+
+// NewServer merakit seluruhnya dari satu tempat.
+//
+// Klien API dan pengelola sesi dibuat DI SINI, bukan diterima dari luar: hanya
+// server ini yang membutuhkannya, dan membuatnya di sini membuat cmd/mcp tetap
+// sesederhana "baca konfigurasi, jalankan".
+func NewServer(cfg Config, logger *slog.Logger) *Server {
+	api := apiclient.New(cfg.APIBaseURL, cfg.AgentEmail, cfg.AgentPassword, cfg.HTTPTimeout, logger)
+	sessions := session.NewManager(api, logger)
+
+	mcpServer := mcp.NewServer(&mcp.Implementation{
+		Name:    serverName,
+		Version: serverVersion,
+	}, nil)
+	tool.Register(mcpServer, tool.Deps{API: api, Sessions: sessions})
 
 	return &Server{
 		cfg:      cfg,
 		api:      api,
-		mcp:      newMCPServer(api, sessions),
+		mcp:      mcpServer,
 		sessions: sessions,
 		logger:   logger,
 	}
