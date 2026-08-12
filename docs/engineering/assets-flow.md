@@ -9,7 +9,7 @@ Dokumen ini menjelaskan cara frontend menggunakan asset management API. Prinsip 
 
 ## Endpoint Ringkas
 
-Semua endpoint di bawah membutuhkan header:
+Enam endpoint pertama membutuhkan header:
 
 ```http
 Authorization: Bearer <access_token>
@@ -23,6 +23,16 @@ GET    /api/asset-detail/:token
 GET    /api/asset-presign/:token
 DELETE /api/asset-delete/:token
 ```
+
+Satu endpoint lagi sengaja **di luar autentikasi**:
+
+```text
+GET    /api/asset-content/:token
+```
+
+Ia dituju langsung oleh tag `<img>`, yang tidak dapat mengirim header
+`Authorization`. Token asetnya yang menjadi kredensial — UUID acak yang hanya
+diperoleh lewat isi dokumen. Lihat [Menampilkan Gambar](#menampilkan-gambar).
 
 ## Status Asset
 
@@ -262,6 +272,42 @@ GET /api/asset-detail/:asset_token
 
 Gunakan ini saat butuh metadata lengkap asset, misalnya pada asset picker atau detail modal.
 
+Ini satu-satunya contoh di dokumen ini yang **utuh** — contoh lain sengaja
+disingkat. Bentuk `asset` di bawah sama persis di semua endpoint yang
+mengembalikannya:
+
+```json
+{
+  "status": "ok",
+  "message": "Success",
+  "data": {
+    "asset": {
+      "token": "98b5e767-0000-4000-9000-5f73d39cdd66",
+      "scope": "documents",
+      "object_name": "documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png",
+      "original_filename": "logo.png",
+      "stored_filename": "98b5e767-0000-4000-9000-5f73d39cdd66-logo.png",
+      "mime_type": "image/png",
+      "extension": "png",
+      "size": 48291,
+      "etag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
+      "status": "uploaded",
+      "upload_method": "presigned_put",
+      "is_private": true,
+      "uploaded_at": "2026-07-27T04:22:00Z",
+      "created_at": "2026-07-27T04:15:00Z",
+      "updated_at": "2026-07-27T04:22:00Z"
+    }
+  }
+}
+```
+
+**Enam field bersifat opsional dan HILANG dari JSON ketika tidak berlaku** —
+bukan dikirim sebagai `null`: `presigned_expires_at`, `uploaded_at`,
+`failed_at`, `deleted_at`, `failure_code`, `failure_message`. Aset `pending`
+membawa `presigned_expires_at` tanpa `uploaded_at`; aset `uploaded` sebaliknya.
+Frontend harus memeriksa keberadaan fieldnya, bukan nilainya.
+
 ## Flow Delete Asset
 
 ```http
@@ -273,11 +319,60 @@ Backend akan:
 - menghapus object dari storage jika status asset `uploaded`,
 - soft delete metadata asset.
 
+Response sukses — **tanpa `data`**, berbeda dari endpoint lain:
+
+```json
+{
+  "status": "ok",
+  "message": "Asset deleted successfully",
+  "data": null
+}
+```
+
 Frontend setelah sukses:
 
 - hapus item dari list lokal,
 - hilangkan preview,
 - jangan gunakan lagi `asset_token` tersebut.
+
+## Menampilkan Gambar
+
+Untuk menampilkan gambar, **jangan** panggil `asset-presign` lebih dulu. Pakai
+`asset-content` langsung sebagai sumber tag `<img>`:
+
+```tsx
+<img src={`/api/asset-content/${asset.token}`} alt={asset.original_filename} />
+```
+
+Balasannya bukan JSON melainkan pengalihan:
+
+```http
+HTTP/1.1 302 Found
+Location: http://minio.example.com/widia-assets/documents/...?X-Amz-Signature=...
+Cache-Control: no-store
+```
+
+Kenapa ini lebih baik daripada `asset-presign` untuk menampilkan:
+
+- **URL-nya tetap dan tidak pernah kedaluwarsa.** Yang kedaluwarsa hanya sasaran
+  pengalihannya, dan itu disusun ulang setiap permintaan. Tidak ada yang perlu
+  disegarkan, dan tidak ada gambar yang mendadak gagal dimuat setelah lima belas
+  menit.
+- **Tanpa panggilan pendahuluan.** `asset-presign` menuntut satu permintaan per
+  gambar sebelum apa pun tergambar.
+- `Cache-Control: no-store` disetel sengaja: pengalihan yang tersimpan akan
+  menunjuk tanda tangan yang keburu mati, dan gejalanya gambar yang gagal lalu
+  sembuh sendiri — jenis kesalahan yang paling sulit dilacak.
+
+Batasnya:
+
+- **Tanpa header `Authorization`**, karena `<img>` tidak dapat mengirimnya.
+  Tokennya yang menjadi kredensial: siapa pun yang memegang UUID itu dapat
+  membaca gambarnya.
+- Menjawab `400` bila asetnya belum `uploaded`, dan `404` bila sudah tidak ada.
+
+Pakai `asset-presign` hanya ketika Anda membutuhkan URL bertandanya **sendiri**,
+misalnya untuk mengunduh atau meneruskannya ke luar aplikasi.
 
 ## Error Handling Frontend
 
@@ -286,11 +381,23 @@ Recommended handling:
 ```text
 400 invalid request      Tampilkan pesan validasi.
 401 unauthorized         Refresh login/session.
-403 forbidden            User tidak punya akses ke asset.
-404 not found            Asset tidak ada atau bukan milik user.
+403 forbidden            Bukan pengunggahnya. HANYA dari asset-upload-complete
+                         dan asset-delete.
+404 not found            Asset tidak ada, atau sudah soft deleted.
 503 unavailable          Storage tidak tersedia.
 500 internal error       Tampilkan generic error dan retry.
 ```
+
+**Membaca dan mengubah punya wewenang yang berbeda, dan ini mudah disalahpahami.**
+`asset-detail`, `asset-presign`, dan `asset-content` terbuka bagi siapa pun yang
+login asal ia tahu tokennya — kepemilikan **tidak** diperiksa. Aset milik orang
+lain menjawab `200`, bukan `403` maupun `404`. Itu disengaja: dokumen di
+aplikasi ini milik bersama, dan gambar yang tokennya sudah masuk ke `assetToken`
+sebuah elemen memang menjadi bagian dokumen bersama itu.
+
+Yang dijaga kepemilikan hanya **mengubah** — `asset-upload-complete` dan
+`asset-delete` — dan aset yang `uploaded_by`-nya kosong ditolak untuk siapa pun.
+`asset-list` tetap hanya menampilkan milik sendiri.
 
 Kasus upload khusus:
 
@@ -362,7 +469,11 @@ Contoh document settings:
 Saat perlu render/preview logo:
 
 1. Ambil `logo_asset_token`.
-2. Call `/api/asset-presign/:token`.
-3. Pakai URL sementara untuk `<img>`.
+2. Pakai `/api/asset-content/:token` langsung sebagai `src` — tanpa panggilan
+   pendahuluan, dan tanpa yang perlu disegarkan. Lihat
+   [Menampilkan Gambar](#menampilkan-gambar).
+
+`asset-presign` hanya bila URL bertandanya sendiri yang dibutuhkan, misalnya
+untuk mengunduh.
 
 Dengan pola ini asset management tetap menjadi satu pintu utama untuk upload, preview, download, dan delete.
