@@ -282,6 +282,8 @@ func (c *canvas) drawElement(element *design.Element) error {
 	switch element.Type {
 	case design.ElementText:
 		return c.drawText(element)
+	case design.ElementTable:
+		return c.drawTable(element)
 	case design.ElementRect:
 		c.drawRect(element)
 	case design.ElementEllipse:

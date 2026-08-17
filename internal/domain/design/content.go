@@ -39,6 +39,7 @@ const (
 	ElementEllipse ElementType = "ellipse"
 	ElementLine    ElementType = "line"
 	ElementImage   ElementType = "image"
+	ElementTable   ElementType = "table"
 )
 
 // Nilai bawaan untuk properti teks yang tidak disebutkan. Wajib sama dengan
@@ -162,6 +163,54 @@ type Master struct {
 // Untuk dokumen semacam itu, CreateElement tetap tidak ambigu karena ia
 // memeriksa master LEBIH DULU daripada daftar halaman.
 const MasterPageID = "master"
+
+// TableColumn adalah satu kolom tabel.
+//
+// Share adalah PROPORSI lebar tabel, bukan lebar. Lebar kolom = Share × W, dan
+// jumlah seluruh Share adalah 1. Itu yang membuat tabel yang sama benar di A4
+// maupun di Continuous Form tanpa satu pun angka yang perlu dihitung ulang saat
+// kertasnya diganti.
+type TableColumn struct {
+	Share float64 `json:"share"`
+	Align string  `json:"align,omitempty"`
+}
+
+// TableRow adalah satu baris beserta selnya.
+//
+// Height adalah angka yang HARUS DIPAKAI, bukan titik awal perhitungan.
+// Frontend sudah mengukurnya dari teks yang dibungkus dan menyimpannya; backend
+// yang menghitung ulang akan berselisih satu garis tepat di tempat kedua sisi
+// tidak sepakat soal titik putus, dan selisih itu muncul sebagai tabel yang
+// bergeser setengah baris di cetakan.
+//
+// Cells BOLEH lebih pendek daripada Columns — sel yang tidak ada digambar
+// kosong. Yang lebih PANJANG ditolak: ia berarti model klien tidak sepakat
+// dengan kolomnya sendiri, dan sel yang tidak punya kolom tidak dapat digambar
+// di mana pun.
+type TableRow struct {
+	Height float64     `json:"height"`
+	Cells  []TableCell `json:"cells,omitempty"`
+}
+
+// TableCell adalah isi satu sel.
+//
+// FontWeight ada PER SEL, bukan sebagai flag pada header, karena baris subtotal
+// juga perlu tebal — dan flag khusus-header akan menjadikan itu kasus khusus
+// kedua. HeaderRow karenanya hanya berarti "cat dengan HeaderFill"; bobotnya
+// data.
+//
+// Perlu diperhatikan saat mengukur: teks tebal LEBIH LEBAR, sehingga ia
+// membungkus lebih awal. Pengukur yang menganggap semua sel berbobot 400 akan
+// menghasilkan baris satu garis terlalu pendek untuk header yang tebal.
+//
+// Tidak ada FontStyle, dan itu keputusan yang tercatat, bukan kelalaian: tidak
+// ada yang menggambar sel miring, dan field yang tak pernah diisi lebih buruk
+// daripada ketiadaan yang dijelaskan.
+type TableCell struct {
+	Text       string `json:"text,omitempty"`
+	Format     string `json:"format,omitempty"`
+	FontWeight int    `json:"fontWeight,omitempty"`
+}
 
 // Guide adalah satu garis bantu.
 //
@@ -372,6 +421,28 @@ type Element struct {
 	// supaya renderer tidak pernah mengambil alamat yang ditentukan klien.
 	AssetToken string `json:"assetToken,omitempty"`
 	Fit        string `json:"fit,omitempty"`
+
+	// Properti tabel.
+	//
+	// Tabel memakai kembali FontFamily, FontSize, LineHeight, dan VerticalAlign
+	// dari properti teks di atas — bukan menyalinnya dengan nama lain. Satu sel
+	// digambar lewat mesin teks yang sama persis dengan elemen teks, sehingga
+	// nama yang berbeda untuk hal yang sama hanya akan menjadi dua tempat yang
+	// suatu hari berselisih.
+	//
+	// TextColor TIDAK memakai Color, dan itu mengikuti kawat: muatan menyebutnya
+	// textColor karena sebuah tabel punya dua warna teks — isi dan header.
+	Columns     []TableColumn `json:"columns,omitempty"`
+	Rows        []TableRow    `json:"rows,omitempty"`
+	HeaderRow   bool          `json:"headerRow,omitempty"`
+	HeaderFill  string        `json:"headerFill,omitempty"`
+	HeaderColor string        `json:"headerColor,omitempty"`
+	BodyFill    string        `json:"bodyFill,omitempty"`
+	StripeFill  string        `json:"stripeFill,omitempty"`
+	BorderColor string        `json:"borderColor,omitempty"`
+	BorderWidth float64       `json:"borderWidth,omitempty"`
+	TextColor   string        `json:"textColor,omitempty"`
+	CellPadding float64       `json:"cellPadding,omitempty"`
 }
 
 // Decode mengurai isi dokumen dan memvalidasinya.

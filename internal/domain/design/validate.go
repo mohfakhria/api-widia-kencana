@@ -156,6 +156,8 @@ func (e *Element) validate() error {
 		return e.validateLine()
 	case ElementImage:
 		return e.validateImage()
+	case ElementTable:
+		return e.validateTable()
 	default:
 		return invalidf("element %q has unknown type %q", e.ID, e.Type)
 	}
@@ -204,6 +206,123 @@ func (e *Element) validateText() error {
 	}
 
 	return color(e.ID, "color", e.Color)
+}
+
+// shareTolerance adalah kelonggaran saat memeriksa jumlah proporsi kolom.
+//
+// Jumlahnya seharusnya tepat satu, tetapi proporsi lahir dari pembagian di sisi
+// klien dan melewati JSON sebagai float — enam kolom yang masing-masing
+// sepertiga tidak akan pernah berjumlah persis 1. Menolak selisih sekecil itu
+// berarti menolak tabel yang benar; menerima selisih besar berarti menerima
+// tabel yang tidak memenuhi lebarnya.
+const shareTolerance = 0.001
+
+// validateTable memeriksa tabel beserta seluruh kolom, baris, dan selnya.
+//
+// Yang TIDAK diperiksa di sini: apakah tinggi baris cocok dengan teksnya. Tinggi
+// datang dari pengukuran frontend dan sengaja dipakai apa adanya — memeriksanya
+// berarti mengukur ulang, dan pengukuran kedua itulah yang justru menjadi sumber
+// perselisihan yang hendak dihindari.
+func (e *Element) validateTable() error {
+	if err := e.requireBox(); err != nil {
+		return err
+	}
+	if len(e.Columns) == 0 {
+		return invalidf("table %q has no columns", e.ID)
+	}
+
+	total := 0.0
+	for index, column := range e.Columns {
+		if column.Share <= 0 {
+			return invalidf("table %q column %d has share %v, expected greater than zero",
+				e.ID, index, column.Share)
+		}
+		if err := finite(e.ID, "column share", column.Share); err != nil {
+			return err
+		}
+		if err := oneOf(e.ID, "column align", column.Align,
+			AlignLeft, AlignCenter, AlignRight, AlignJustify); err != nil {
+			return err
+		}
+		total += column.Share
+	}
+	if math.Abs(total-1) > shareTolerance {
+		return invalidf("table %q column shares add up to %v, expected 1", e.ID, total)
+	}
+
+	for index, row := range e.Rows {
+		if row.Height < 0 {
+			return invalidf("table %q row %d has a negative height", e.ID, index)
+		}
+		if err := finite(e.ID, "row height", row.Height); err != nil {
+			return err
+		}
+		// Lebih PENDEK boleh — sel yang tidak ada digambar kosong. Lebih panjang
+		// berarti model klien tidak sepakat dengan kolomnya sendiri, dan sel yang
+		// tidak punya kolom tidak dapat digambar di mana pun.
+		if len(row.Cells) > len(e.Columns) {
+			return invalidf("table %q row %d has %d cells but only %d columns",
+				e.ID, index, len(row.Cells), len(e.Columns))
+		}
+
+		for cellIndex, cell := range row.Cells {
+			if cell.FontWeight != 0 &&
+				(cell.FontWeight < 100 || cell.FontWeight > 900 || cell.FontWeight%100 != 0) {
+				return invalidf("table %q row %d cell %d has fontWeight %d, expected a multiple of 100 between 100 and 900",
+					e.ID, index, cellIndex, cell.FontWeight)
+			}
+			if err := oneOf(e.ID, "cell format", cell.Format,
+				FormatPlain, FormatGrouped, FormatCurrency, FormatPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if e.BorderWidth < 0 {
+		return invalidf("table %q has a negative borderWidth", e.ID)
+	}
+	if err := finite(e.ID, "borderWidth", e.BorderWidth); err != nil {
+		return err
+	}
+	if e.CellPadding < 0 {
+		return invalidf("table %q has a negative cellPadding", e.ID)
+	}
+	if err := finite(e.ID, "cellPadding", e.CellPadding); err != nil {
+		return err
+	}
+	if e.FontSize < 0 {
+		return invalidf("table %q has a negative fontSize", e.ID)
+	}
+	if err := finite(e.ID, "fontSize", e.FontSize); err != nil {
+		return err
+	}
+	if e.LineHeight < 0 {
+		return invalidf("table %q has a negative lineHeight", e.ID)
+	}
+	if err := finite(e.ID, "lineHeight", e.LineHeight); err != nil {
+		return err
+	}
+	if err := oneOf(e.ID, "verticalAlign", e.VerticalAlign,
+		VAlignTop, VAlignMiddle, VAlignBottom); err != nil {
+		return err
+	}
+
+	// Kosong berarti TANPA ISIAN, bukan putih — konvensi yang sama dengan fill
+	// pada rect dan background pada halaman, dan IsColor sudah menerimanya.
+	for name, value := range map[string]string{
+		"headerFill":  e.HeaderFill,
+		"headerColor": e.HeaderColor,
+		"bodyFill":    e.BodyFill,
+		"stripeFill":  e.StripeFill,
+		"borderColor": e.BorderColor,
+		"textColor":   e.TextColor,
+	} {
+		if err := color(e.ID, name, value); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (e *Element) validateRect() error {

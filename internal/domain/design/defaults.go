@@ -183,3 +183,29 @@ func StrokeDashPattern(style string, strokeWidth float64) []float64 {
 		return nil
 	}
 }
+
+// ResolvedTextColor adalah warna teks isi tabel.
+//
+// Terpisah dari ResolvedColor milik elemen teks karena tabel punya DUA warna
+// teks — isi dan header — sehingga Color tidak dapat mewakili keduanya.
+func (e *Element) ResolvedTextColor() string {
+	if e.TextColor == "" {
+		return DefaultColor
+	}
+
+	return e.TextColor
+}
+
+// ResolvedCellWeight mengembalikan bobot huruf satu sel.
+//
+// Nol berarti tidak disebutkan, dan yang berlaku bobot biasa. Perlu diingat saat
+// mengukur: bobot tebal menghasilkan teks yang LEBIH LEBAR, sehingga ia
+// membungkus lebih awal — pengukur yang menganggap semua sel berbobot 400 akan
+// menyediakan satu garis terlalu sedikit untuk header.
+func (c TableCell) ResolvedCellWeight() int {
+	if c.FontWeight == 0 {
+		return DefaultFontWeight
+	}
+
+	return c.FontWeight
+}
