@@ -132,13 +132,29 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 		doc.AddPageFormat("P", size)
 	}
 
-	for _, page := range pages {
+	master := document.Content.Master.Elements
+
+	for sheet, page := range pages {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
 
 		doc.AddPageFormat("P", size)
 		c.drawPageBackground(page.Background, width, height)
+
+		// Master DI BAWAH elemen halaman, jadi digambar lebih dulu: di PDF yang
+		// belakangan menutupi yang terdahulu, persis seperti urutan elemen di
+		// dalam satu halaman.
+		//
+		// Nomor lembar dihitung dari `pages`, yang sudah menyaring halaman
+		// tersembunyi — sehingga "halaman 3 dari 5" berbicara tentang lembar yang
+		// benar-benar tercetak, bukan tentang baris di daftar halaman editor.
+		for index := range master {
+			element := withSheetNumbers(master[index], sheet+1, len(pages))
+			if err := c.drawElement(&element); err != nil {
+				return nil, err
+			}
+		}
 
 		for index := range page.Elements {
 			if err := c.drawElement(&page.Elements[index]); err != nil {

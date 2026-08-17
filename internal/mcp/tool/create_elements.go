@@ -19,7 +19,7 @@ import (
 // field asing.
 type CreateElementsInput struct {
 	DocumentToken string           `json:"document_token" jsonschema:"token dokumen desain"`
-	Page          string           `json:"page" jsonschema:"id halaman tempat elemen dipasang"`
+	Page          string           `json:"page" jsonschema:"id halaman tempat elemen dipasang, atau \"master\" untuk lapisan yang berulang di setiap lembar"`
 	Elements      []design.Element `json:"elements" jsonschema:"elemen yang ditambahkan; tiap elemen wajib punya id unik se-dokumen"`
 }
 
@@ -48,7 +48,14 @@ func registerCreateElements(server *mcp.Server, deps Deps) error {
 			"Setiap elemen WAJIB membawa id yang unik di seluruh dokumen — bukan " +
 			"hanya di halamannya — dan koordinat dalam point dengan titik asal di " +
 			"sudut kiri-atas halaman. Panggil read_document lebih dulu untuk " +
-			"mengetahui id halaman, ukuran kertas, dan elemen yang sudah ada.",
+			"mengetahui id halaman, ukuran kertas, dan elemen yang sudah ada.\n\n" +
+			"page boleh berisi \"master\" alih-alih id halaman. Elemen master " +
+			"tergambar di SETIAP lembar, di bawah elemen halaman itu — dipakai " +
+			"untuk kop surat, nomor halaman, dan garis kaki. Di dalam teks elemen " +
+			"master, {{page}} dan {{pages}} diganti nomor lembar dan jumlah lembar " +
+			"saat dicetak; keduanya menghitung lembar yang benar-benar tercetak, " +
+			"sehingga halaman tersembunyi tidak ikut. Penggantian itu TIDAK berlaku " +
+			"pada elemen halaman biasa.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in CreateElementsInput) (*mcp.CallToolResult, EditResult, error) {
 		if in.DocumentToken == "" || in.Page == "" {
 			return fail("document_token dan page wajib diisi"), EditResult{}, nil

@@ -68,15 +68,27 @@ func (c *Content) CreateElement(pageID string, element Element) error {
 		return err
 	}
 
-	pageIndex := slices.IndexFunc(c.Pages, func(p Page) bool { return p.ID == pageID })
-	if pageIndex < 0 {
-		return invalidf("page %q does not exist", pageID)
+	// Master diperiksa SEBELUM daftar halaman. Urutan ini yang membuat id
+	// tercadang tetap tidak ambigu pada dokumen lama yang telanjur punya halaman
+	// bernama "master" — halaman itu menjadi tidak terjangkau, bukan menyandera
+	// lapisan master.
+	owner := &c.Master.Elements
+	if pageID != MasterPageID {
+		pageIndex := slices.IndexFunc(c.Pages, func(p Page) bool { return p.ID == pageID })
+		if pageIndex < 0 {
+			return invalidf("page %q does not exist", pageID)
+		}
+		owner = &c.Pages[pageIndex].Elements
 	}
-	if _, _, found := c.findElement(element.ID); found {
+
+	// Keunikan id berlaku SE-DOKUMEN, termasuk lintas master dan halaman: elemen
+	// dicari lewat id saja, jadi id yang sama di dua tempat membuat update dan
+	// delete menyasar salah satunya secara acak.
+	if _, _, found := c.locateElement(element.ID); found {
 		return invalidf("element id %q is already used", element.ID)
 	}
 
-	c.Pages[pageIndex].Elements = append(c.Pages[pageIndex].Elements, element)
+	*owner = append(*owner, element)
 
 	return nil
 }
@@ -96,12 +108,12 @@ func (c *Content) UpdateElement(element Element) (applied bool, err error) {
 		return false, err
 	}
 
-	pageIndex, elementIndex, found := c.findElement(element.ID)
+	owner, index, found := c.locateElement(element.ID)
 	if !found {
 		return false, nil
 	}
 
-	c.Pages[pageIndex].Elements[elementIndex] = element
+	(*owner)[index] = element
 
 	return true, nil
 }
@@ -109,13 +121,12 @@ func (c *Content) UpdateElement(element Element) (applied bool, err error) {
 // DeleteElement membuang satu elemen. Mengembalikan false bila memang sudah tidak
 // ada — dua orang menghapus elemen yang sama bukan kesalahan siapa pun.
 func (c *Content) DeleteElement(id string) bool {
-	pageIndex, elementIndex, found := c.findElement(id)
+	owner, index, found := c.locateElement(id)
 	if !found {
 		return false
 	}
 
-	elements := c.Pages[pageIndex].Elements
-	c.Pages[pageIndex].Elements = slices.Delete(elements, elementIndex, elementIndex+1)
+	*owner = slices.Delete(*owner, index, index+1)
 
 	return true
 }
@@ -128,21 +139,24 @@ func (c *Content) DeleteElement(id string) bool {
 // menghitung dari keadaan beberapa milidetik lalu wajar saja meleset. Yang
 // dikembalikan adalah letak sesungguhnya setelah penjepitan, dan itulah yang
 // wajib disiarkan — bukan angka yang diminta.
-func (c *Content) ReorderElement(id string, index int) (effective int, applied bool) {
-	pageIndex, elementIndex, found := c.findElement(id)
+func (c *Content) ReorderElement(id string, target int) (effective int, applied bool) {
+	owner, index, found := c.locateElement(id)
 	if !found {
 		return 0, false
 	}
 
-	elements := c.Pages[pageIndex].Elements
-	element := elements[elementIndex]
+	// Larik pemiliknya, apa pun itu. Elemen master karenanya diurutkan di antara
+	// elemen master saja, dan tidak ada satu baris pun di sini yang perlu
+	// mengetahuinya.
+	elements := *owner
+	element := elements[index]
 
 	// Dijepit SETELAH pengangkatan, bukan sebelumnya. Panjangnya sudah berkurang
 	// satu di titik ini, sehingga posisi sisip terakhir yang sah adalah len — dan
 	// menjepit terhadap panjang yang lama akan menyisakan satu posisi mustahil.
-	elements = slices.Delete(elements, elementIndex, elementIndex+1)
-	effective = min(max(index, 0), len(elements))
-	c.Pages[pageIndex].Elements = slices.Insert(elements, effective, element)
+	elements = slices.Delete(elements, index, index+1)
+	effective = min(max(target, 0), len(elements))
+	*owner = slices.Insert(elements, effective, element)
 
 	return effective, true
 }
@@ -159,6 +173,12 @@ func (c *Content) ReorderElement(id string, index int) (effective int, applied b
 func (c *Content) CreatePage(id string, index *int) (effective int, err error) {
 	if id == "" {
 		return 0, invalidf("page must have a non-empty id")
+	}
+	// Id tercadang. Halaman bernama "master" akan membuat element.create
+	// bermakna dua hal sekaligus, dan yang kalah adalah lapisan master — yang
+	// tidak punya cara lain untuk ditunjuk.
+	if id == MasterPageID {
+		return 0, invalidf("page id %q is reserved for the master layer", MasterPageID)
 	}
 	if slices.ContainsFunc(c.Pages, func(p Page) bool { return p.ID == id }) {
 		return 0, invalidf("page id %q is already used", id)
@@ -287,7 +307,7 @@ func (c *Content) ReorderPage(id string, index int) (effective int, applied bool
 	return effective, true
 }
 
-// findElement mencari elemen ke seluruh halaman.
+// locateElement mencari elemen ke seluruh halaman DAN ke lapisan master.
 //
 // Menelusuri semuanya, bukan menerima petunjuk halaman dari pemanggil: id elemen
 // unik se-dokumen, jadi halaman yang disebutkan klien tidak menambah keterangan
@@ -298,16 +318,32 @@ func (c *Content) ReorderPage(id string, index int) (effective int, applied bool
 // puluhan elemen. Peta indeks baru berguna bila ukurannya berubah drastis, dan
 // peta itu harus dijaga tetap sinkron pada setiap operasi — ongkos yang belum
 // dibayar oleh manfaatnya.
-func (c *Content) findElement(id string) (pageIndex, elementIndex int, found bool) {
+//
+// Yang dikembalikan LARIK PEMILIKNYA, bukan indeks halaman.
+//
+// Bentuk kembalian itulah yang membuat lapisan master tidak menambah satu pun
+// percabangan: update, delete, dan reorder bekerja pada larik yang diberikan di
+// sini tanpa pernah menanyakan apakah pemiliknya sebuah halaman atau master.
+// Aturan "indeks reorder menghitung di antara elemen master saja" karenanya
+// menjadi akibat dari struktur datanya, bukan sebuah kasus khusus yang harus
+// diingat — dan kasus khusus yang harus diingat adalah kasus khusus yang suatu
+// hari terlupakan.
+func (c *Content) locateElement(id string) (owner *[]Element, index int, found bool) {
 	for pi := range c.Pages {
 		for ei := range c.Pages[pi].Elements {
 			if c.Pages[pi].Elements[ei].ID == id {
-				return pi, ei, true
+				return &c.Pages[pi].Elements, ei, true
 			}
 		}
 	}
 
-	return 0, 0, false
+	for ei := range c.Master.Elements {
+		if c.Master.Elements[ei].ID == id {
+			return &c.Master.Elements, ei, true
+		}
+	}
+
+	return nil, 0, false
 }
 
 // MaxGuides membatasi jumlah garis bantu satu dokumen.

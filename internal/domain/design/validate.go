@@ -56,6 +56,24 @@ func (c *Content) Validate() error {
 		}
 	}
 
+	// Elemen master ikut diperiksa, dan keunikannya berbagi peta yang sama dengan
+	// elemen halaman: elemen dicari lewat id saja, jadi id yang sama di master dan
+	// di sebuah halaman membuat update maupun delete menyasar salah satunya
+	// secara acak.
+	for index, element := range c.Master.Elements {
+		if element.ID == "" {
+			return invalidf("master element %d must have a non-empty id", index)
+		}
+		if _, exists := seenElements[element.ID]; exists {
+			return invalidf("duplicate element id %q", element.ID)
+		}
+		seenElements[element.ID] = struct{}{}
+
+		if err := element.validate(); err != nil {
+			return err
+		}
+	}
+
 	// Guide diperiksa di sini juga, bukan hanya saat dibuat: isi yang dimuat dari
 	// database melewati jalur ini, dan baris yang cacat di sana harus ketahuan
 	// saat room dibuka — bukan belakangan sebagai guide yang menempel di tempat

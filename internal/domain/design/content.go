@@ -134,7 +134,34 @@ type Content struct {
 	// Begitu Guides pindah ke dalam Page, jaminan itu berubah menjadi "asal
 	// renderer ingat melewatinya", dan tidak ada yang akan mengingatkan.
 	Guides []Guide `json:"guides"`
+
+	// Master adalah lapisan yang tergambar di SETIAP lembar — kop surat, nomor
+	// halaman, garis kaki. Ia bukan anggota Pages: ia tidak pernah tercetak
+	// sebagai lembar tersendiri, tidak punya urutan, dan tidak dapat
+	// disembunyikan.
+	Master Master `json:"master"`
 }
+
+// Master memuat elemen yang berulang di semua lembar.
+//
+// Berbentuk struct berisi satu larik, bukan larik telanjang, karena bentuk di
+// kawat sudah ditetapkan sebagai content.master.elements — dan bentuk itu
+// menyisakan tempat bagi properti master lain kelak tanpa mengubah apa pun yang
+// sudah beredar.
+type Master struct {
+	Elements []Element `json:"elements"`
+}
+
+// MasterPageID adalah id tercadang yang menunjuk lapisan master pada
+// element.create.
+//
+// Halaman nyata TIDAK BOLEH memakainya, dan itu ditolak di CreatePage. Yang
+// tidak ditolak adalah dokumen lama yang telanjur memilikinya: menolaknya saat
+// memuat akan merusak room secara permanen — hukuman yang jauh melampaui
+// masalahnya, sama seperti alasan MaxPages diperiksa di titik pertumbuhan saja.
+// Untuk dokumen semacam itu, CreateElement tetap tidak ambigu karena ia
+// memeriksa master LEBIH DULU daripada daftar halaman.
+const MasterPageID = "master"
 
 // Guide adalah satu garis bantu.
 //
@@ -380,6 +407,9 @@ func Decode(raw json.RawMessage) (*Content, error) {
 	if content.Guides == nil {
 		content.Guides = []Guide{}
 	}
+	if content.Master.Elements == nil {
+		content.Master.Elements = []Element{}
+	}
 
 	if err := content.Validate(); err != nil {
 		return nil, err
@@ -415,8 +445,20 @@ func (c *Content) Clone() *Content {
 	out := &Content{
 		Pages:  make([]Page, len(c.Pages)),
 		Guides: make([]Guide, len(c.Guides)),
+		Master: Master{Elements: make([]Element, len(c.Master.Elements))},
 	}
 	copy(out.Guides, c.Guides)
+	copy(out.Master.Elements, c.Master.Elements)
+
+	// Opacity di dalam elemen master perlu perlakuan yang sama dengan elemen
+	// halaman di bawah: ia pointer, dan salinan dangkal membuat cuplikan undo
+	// menunjuk nilai yang sama dengan isi yang hidup.
+	for i := range out.Master.Elements {
+		if opacity := out.Master.Elements[i].Opacity; opacity != nil {
+			salinan := *opacity
+			out.Master.Elements[i].Opacity = &salinan
+		}
+	}
 	for i := range c.Pages {
 		out.Pages[i] = c.Pages[i]
 		out.Pages[i].Elements = make([]Element, len(c.Pages[i].Elements))
