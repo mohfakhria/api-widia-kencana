@@ -31,9 +31,11 @@ func registerUpdateElements(server *mcp.Server, deps Deps) error {
 		Description: "Mengganti satu atau beberapa elemen yang sudah ada. " +
 			"PENGGANTIAN SELURUHNYA, bukan penggabungan: elemen yang dikirim " +
 			"menimpa elemen lama apa adanya, sehingga properti yang tidak ikut " +
-			"dikirim akan HILANG — termasuk locked dan groupId. Ambil elemen " +
-			"lewat read_document, ubah yang perlu, lalu kirim balik utuh. " +
-			"Tidak dapat memindahkan elemen antar halaman.",
+			"dikirim akan HILANG — termasuk locked, groupId, format, dan formula. " +
+			"Menghilangkan formula mengubah sel yang dihitung menjadi angka mati " +
+			"yang tidak akan pernah ikut berubah lagi, dan tidak ada galat yang " +
+			"menandainya. Ambil elemen lewat read_document, ubah yang perlu, lalu " +
+			"kirim balik utuh. Tidak dapat memindahkan elemen antar halaman.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in UpdateElementsInput) (*mcp.CallToolResult, EditResult, error) {
 		if in.DocumentToken == "" {
 			return fail("document_token wajib diisi"), EditResult{}, nil

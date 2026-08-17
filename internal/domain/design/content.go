@@ -235,6 +235,25 @@ type Element struct {
 	// VerticalAlign meratakan seluruh blok teks di dalam kotaknya. Bawaan "top".
 	VerticalAlign string `json:"verticalAlign,omitempty"`
 
+	// Formula menyimpan ASAL angka di dalam Text, bukan angkanya.
+	//
+	// Bentuknya ekspresi milik editor — "=$<id>.value + $<id>.value" — yang
+	// merujuk elemen lain lewat id. Backend TIDAK menguraikannya, tidak
+	// menghitungnya, dan tidak memeriksa bahwa id yang dirujuk masih ada. Ia
+	// dibawa, disimpan, dan disiarkan apa adanya, persis seperti Format.
+	//
+	// Alasannya sama dan sudah dibayar di Format: yang menghitung cukup satu
+	// pihak. Text sudah berisi hasilnya, jadi renderer tidak butuh nilai
+	// formulanya untuk menggambar — dan penghitung kedua di sini hanya akan
+	// berselisih dengan yang pertama pada suatu hari, tanpa galat apa pun yang
+	// menandainya.
+	//
+	// Rujukan yang menggantung — formula yang menyebut elemen yang sudah dihapus
+	// — karenanya TIDAK ditolak. Memeriksanya menuntut backend mengurai bahasa
+	// ekspresi yang dimiliki editor, dan itu bahasa kedua yang harus ikut berubah
+	// setiap kali yang pertama berubah.
+	Formula string `json:"formula,omitempty"`
+
 	// Format menandai teks ini sebagai angka yang ditampilkan dengan aturan
 	// tertentu. Bawaan "plain", yang berarti apa adanya.
 	//
