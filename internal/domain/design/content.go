@@ -93,6 +93,19 @@ const (
 	AlignJustify = "justify"
 )
 
+// Cara angka di dalam teks ditampilkan.
+//
+// FormatPlain adalah bawaannya dan berarti apa adanya — ia ada sebagai anggota
+// yang disebut, bukan hanya sebagai ketiadaan, supaya editor dapat
+// mengembalikan teks ke bentuk polos secara eksplisit alih-alih mengosongkan
+// field dan berharap bawaannya sama.
+const (
+	FormatPlain    = "plain"
+	FormatGrouped  = "grouped"
+	FormatCurrency = "currency"
+	FormatPercent  = "percent"
+)
+
 const (
 	// FitContain memuat seluruh gambar di dalam kotak tanpa terpotong, menyisakan
 	// ruang pada sisi yang tidak pas. FitCover memenuhi kotak dan memotong sisa.
@@ -221,6 +234,24 @@ type Element struct {
 	Strikethrough bool `json:"strikethrough,omitempty"`
 	// VerticalAlign meratakan seluruh blok teks di dalam kotaknya. Bawaan "top".
 	VerticalAlign string `json:"verticalAlign,omitempty"`
+
+	// Format menandai teks ini sebagai angka yang ditampilkan dengan aturan
+	// tertentu. Bawaan "plain", yang berarti apa adanya.
+	//
+	// PENANDA, BUKAN PERINTAH. Text sudah berisi hasil formatnya — frontend
+	// mengirim "Rp 1.234.567" beserta format "currency", bukan "1234567" —
+	// sehingga renderer menggambar Text apa adanya dan tidak pernah menafsirkan
+	// field ini. Ia dibawa supaya editor tahu aturan apa yang sedang berlaku
+	// pada sebuah teks, dan supaya ia ikut tersalin saat elemen digandakan.
+	//
+	// Dua sebab, keduanya soal layar dan cetak yang harus sama. Pertama, aturan
+	// angka — pemisah ribuan, jumlah desimal, lambang mata uang, arti
+	// "percent" — hanya hidup di satu tempat; dua implementasi yang menerjemahkan
+	// angka yang sama akan berselisih suatu hari tanpa satu pun galat. Kedua,
+	// lebar teks menentukan pemenggalan baris, dan tinggi kotak teks di editor
+	// diturunkan dari isinya: backend yang menggambar string berbeda dari yang
+	// diukur frontend menghasilkan kotak yang tidak lagi pas.
+	Format string `json:"format,omitempty"`
 
 	// TIDAK ADA sisi dalam di sini, dan itu keputusan yang sengaja diambil
 	// setelah sempat ada. Kotak elemen teks tidak pernah digambar — tanpa isi

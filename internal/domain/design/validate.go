@@ -147,6 +147,9 @@ func (e *Element) validateText() error {
 	if err := oneOf(e.ID, "verticalAlign", e.VerticalAlign, VAlignTop, VAlignMiddle, VAlignBottom); err != nil {
 		return err
 	}
+	if err := oneOf(e.ID, "format", e.Format, FormatPlain, FormatGrouped, FormatCurrency, FormatPercent); err != nil {
+		return err
+	}
 
 	return color(e.ID, "color", e.Color)
 }

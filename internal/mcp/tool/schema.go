@@ -23,6 +23,7 @@ var enumElemen = map[string][]any{
 	"align":         {design.AlignLeft, design.AlignCenter, design.AlignRight, design.AlignJustify},
 	"verticalAlign": {design.VAlignTop, design.VAlignMiddle, design.VAlignBottom},
 	"fontStyle":     {design.FontStyleNormal, design.FontStyleItalic},
+	"format":        {design.FormatPlain, design.FormatGrouped, design.FormatCurrency, design.FormatPercent},
 	"strokeStyle":   {design.StrokeSolid, design.StrokeLongDash, design.StrokeDash, design.StrokeDot},
 	"fit":           {design.FitContain, design.FitCover, design.FitFill},
 }
