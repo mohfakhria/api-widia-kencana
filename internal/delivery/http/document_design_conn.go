@@ -250,6 +250,12 @@ func (h *DocumentDesignHandler) dispatch(ctx context.Context, documentToken stri
 		h.deleteElement(documentToken, payload, subscriber)
 	case dto.DesignMessageElementReorder:
 		h.reorderElement(documentToken, payload, subscriber)
+	case dto.DesignMessageGuideCreate:
+		h.createGuide(ctx, documentToken, payload, subscriber)
+	case dto.DesignMessageGuideUpdate:
+		h.updateGuide(documentToken, payload, subscriber)
+	case dto.DesignMessageGuideDelete:
+		h.deleteGuide(documentToken, payload, subscriber)
 	case dto.DesignMessagePageCreate:
 		h.createPage(ctx, documentToken, payload, subscriber)
 	case dto.DesignMessagePageUpdate:

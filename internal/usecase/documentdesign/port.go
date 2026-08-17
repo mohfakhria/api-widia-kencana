@@ -64,6 +64,13 @@ type MessageEncoder interface {
 	EncodePageUpdated(version int64, origin Origin, id string, props design.PageProps) ([]byte, error)
 	EncodePageDeleted(version int64, origin Origin, id string) ([]byte, error)
 	EncodePageReordered(version int64, origin Origin, id string, index int) ([]byte, error)
+
+	// Garis bantu. Tidak ada EncodeGuideReordered, dan itu bukan kelalaian:
+	// urutan guide tidak berarti apa pun — ia tidak saling menutupi seperti
+	// elemen, dan tidak punya halaman untuk ditumpuk.
+	EncodeGuideCreated(version int64, origin Origin, guide design.Guide) ([]byte, error)
+	EncodeGuideUpdated(version int64, origin Origin, guide design.Guide) ([]byte, error)
+	EncodeGuideDeleted(version int64, origin Origin, id string) ([]byte, error)
 }
 
 // Origin adalah token buram milik klien, disalin apa adanya dari pesan sunting

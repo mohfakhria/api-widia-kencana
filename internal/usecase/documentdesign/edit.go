@@ -261,3 +261,73 @@ func (r *Room) broadcastEdit(payload []byte, err error) {
 		subscriber.Send(payload)
 	}
 }
+
+// applyGuideCreate memasang garis bantu baru lalu menyiarkannya.
+//
+// Membalas pengirimnya, sama seperti applyCreate dan karena alasan yang sama:
+// ia satu-satunya jalur guide yang dapat gagal.
+func (r *Room) applyGuideCreate(e guideCreateEvent) {
+	if err := r.editable(e.subscriber); err != nil {
+		e.reply <- err
+		return
+	}
+
+	mark := r.beginChange(discreteChange)
+
+	if err := r.content.CreateGuide(e.guide); err != nil {
+		e.reply <- err
+		return
+	}
+
+	r.commitChange(mark)
+	r.version++
+	r.broadcastEdit(r.encoder.EncodeGuideCreated(r.version, e.origin, e.guide))
+
+	e.reply <- nil
+}
+
+// applyGuideUpdate mengganti guide yang sudah ada.
+//
+// streamedChange, bukan discreteChange: menyeret guide di sepanjang penggaris
+// menghasilkan aliran update seperti menyeret elemen, dan tanpa penggabungan
+// satu seretan menjadi puluhan langkah undo.
+func (r *Room) applyGuideUpdate(e guideUpdateEvent) {
+	if err := r.editable(e.subscriber); err != nil {
+		return
+	}
+
+	mark := r.beginChange(streamedChange)
+
+	applied, err := r.content.UpdateGuide(e.guide)
+	if err != nil {
+		// Sama seperti elemen: muatannya sudah divalidasi saat diurai di lapisan
+		// delivery, jadi kemunculannya berarti kedua pemeriksaan tidak lagi
+		// sepakat — bug yang perlu terlihat.
+		r.logger.Error("update document design guide",
+			"document", r.token, "guide", e.guide.ID, "error", err)
+		return
+	}
+	if !applied {
+		return
+	}
+
+	r.commitChange(mark)
+	r.version++
+	r.broadcastEdit(r.encoder.EncodeGuideUpdated(r.version, e.origin, e.guide))
+}
+
+func (r *Room) applyGuideDelete(e guideDeleteEvent) {
+	if err := r.editable(e.subscriber); err != nil {
+		return
+	}
+
+	mark := r.beginChange(discreteChange)
+
+	if !r.content.DeleteGuide(e.id) {
+		return
+	}
+
+	r.commitChange(mark)
+	r.version++
+	r.broadcastEdit(r.encoder.EncodeGuideDeleted(r.version, e.origin, e.id))
+}

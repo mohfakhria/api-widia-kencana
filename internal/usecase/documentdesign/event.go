@@ -205,3 +205,37 @@ type saveResult struct {
 	version int64
 	err     error
 }
+
+// Penyuntingan garis bantu. Hanya pembuatan yang membalas, mengikuti pembagian
+// yang sama dengan elemen: yang dapat DITOLAK membalas, yang paling banter tidak
+// berlaku tidak membalas.
+//
+// guide.create dapat ditolak karena id yang sudah dipakai atau batas jumlah
+// tersentuh, dan penolakan itu wajib sampai ke pengirimnya — guide yang sudah
+// tergambar optimistis di layarnya tidak akan pernah ada di dokumen bila ia
+// tidak diberi tahu. Update dan delete yang sasarannya sudah lenyap didiamkan.
+
+type guideCreateEvent struct {
+	subscriber Subscriber
+	origin     Origin
+	guide      design.Guide
+	reply      chan<- error
+}
+
+type guideUpdateEvent struct {
+	subscriber Subscriber
+	origin     Origin
+	guide      design.Guide
+}
+
+type guideDeleteEvent struct {
+	subscriber Subscriber
+	origin     Origin
+	id         string
+}
+
+func (guideCreateEvent) isRoomEvent() {}
+
+func (guideUpdateEvent) isRoomEvent() {}
+
+func (guideDeleteEvent) isRoomEvent() {}

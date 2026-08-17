@@ -19,6 +19,9 @@ const (
 	DesignMessagePageUpdate     = "page.update"
 	DesignMessagePageDelete     = "page.delete"
 	DesignMessagePageReorder    = "page.reorder"
+	DesignMessageGuideCreate    = "guide.create"
+	DesignMessageGuideUpdate    = "guide.update"
+	DesignMessageGuideDelete    = "guide.delete"
 	DesignMessageUndo           = "undo"
 	DesignMessageRedo           = "redo"
 )
@@ -43,6 +46,9 @@ const (
 	DesignMessagePageUpdated      = "page.updated"
 	DesignMessagePageDeleted      = "page.deleted"
 	DesignMessagePageReordered    = "page.reordered"
+	DesignMessageGuideCreated     = "guide.created"
+	DesignMessageGuideUpdated     = "guide.updated"
+	DesignMessageGuideDeleted     = "guide.deleted"
 )
 
 type DocumentDesignTicketResponse struct {
@@ -552,5 +558,79 @@ func NewDesignErrorMessage(code, message string) ([]byte, error) {
 		Type:    DesignMessageError,
 		Code:    code,
 		Message: message,
+	})
+}
+
+// Muatan pesan garis bantu.
+//
+// Origin ada pada ketiganya, dengan arti yang sama seperti pada kedelapan pesan
+// sunting di atas — dan keberadaannya di sini BUKAN pilihan gaya: frontend
+// menyisipkan origin di satu tempat yang dilewati SELURUH pesan sunting, jadi
+// pesan guide akan membawanya. Tanpa field ini, DisallowUnknownFields menolak
+// seluruh pesannya dengan `unknown field "origin"` — persis kegagalan yang
+// terjadi ketika `formula` menyusul di sisi frontend lebih dulu.
+//
+// Guide dibiarkan mentah dengan alasan yang sama seperti Element: bentuk beserta
+// aturannya dimiliki domain/design, dan menguraikannya di sini akan
+// menduplikasi aturan itu di tempat yang tidak berwenang.
+type DesignGuideCreate struct {
+	Origin string          `json:"origin"`
+	Guide  json.RawMessage `json:"guide"`
+}
+
+// DesignGuideUpdate mengganti guide SELURUHNYA, sama seperti element.update.
+type DesignGuideUpdate struct {
+	Origin string          `json:"origin"`
+	Guide  json.RawMessage `json:"guide"`
+}
+
+type DesignGuideDelete struct {
+	Origin string `json:"origin"`
+	ID     string `json:"id"`
+}
+
+// Siaran garis bantu.
+//
+// Guide dibawa sebagai nilai domain dan disandikan penuh — tidak ada omitempty
+// pada Position, karena guide di koordinat nol adalah guide yang sah dan
+// menghilangkannya membuat penerima menempatkannya di tempat lain.
+type DesignGuideMessage struct {
+	Type    string       `json:"type"`
+	Version int64        `json:"version"`
+	Origin  string       `json:"origin,omitempty"`
+	Guide   design.Guide `json:"guide"`
+}
+
+type DesignGuideDeletedMessage struct {
+	Type    string `json:"type"`
+	Version int64  `json:"version"`
+	Origin  string `json:"origin,omitempty"`
+	ID      string `json:"id"`
+}
+
+func NewDesignGuideCreatedMessage(version int64, origin string, guide design.Guide) ([]byte, error) {
+	return json.Marshal(DesignGuideMessage{
+		Type:    DesignMessageGuideCreated,
+		Version: version,
+		Origin:  origin,
+		Guide:   guide,
+	})
+}
+
+func NewDesignGuideUpdatedMessage(version int64, origin string, guide design.Guide) ([]byte, error) {
+	return json.Marshal(DesignGuideMessage{
+		Type:    DesignMessageGuideUpdated,
+		Version: version,
+		Origin:  origin,
+		Guide:   guide,
+	})
+}
+
+func NewDesignGuideDeletedMessage(version int64, origin, id string) ([]byte, error) {
+	return json.Marshal(DesignGuideDeletedMessage{
+		Type:    DesignMessageGuideDeleted,
+		Version: version,
+		Origin:  origin,
+		ID:      id,
 	})
 }

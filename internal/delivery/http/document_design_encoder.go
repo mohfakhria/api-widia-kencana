@@ -88,3 +88,15 @@ func (DesignMessageEncoder) EncodePresence(users []documentdesign.PresenceUser) 
 
 	return dto.NewDesignPresenceMessage(payload)
 }
+
+func (DesignMessageEncoder) EncodeGuideCreated(version int64, origin documentdesign.Origin, guide design.Guide) ([]byte, error) {
+	return dto.NewDesignGuideCreatedMessage(version, string(origin), guide)
+}
+
+func (DesignMessageEncoder) EncodeGuideUpdated(version int64, origin documentdesign.Origin, guide design.Guide) ([]byte, error) {
+	return dto.NewDesignGuideUpdatedMessage(version, string(origin), guide)
+}
+
+func (DesignMessageEncoder) EncodeGuideDeleted(version int64, origin documentdesign.Origin, id string) ([]byte, error) {
+	return dto.NewDesignGuideDeletedMessage(version, string(origin), id)
+}

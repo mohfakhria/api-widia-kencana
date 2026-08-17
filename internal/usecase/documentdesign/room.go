@@ -360,6 +360,12 @@ func (r *Room) handle(event roomEvent) {
 		r.applyDelete(e)
 	case elementReorderEvent:
 		r.applyReorder(e)
+	case guideCreateEvent:
+		r.applyGuideCreate(e)
+	case guideUpdateEvent:
+		r.applyGuideUpdate(e)
+	case guideDeleteEvent:
+		r.applyGuideDelete(e)
 	case pageCreateEvent:
 		r.applyPageCreate(e)
 	case pageUpdateEvent:
@@ -646,5 +652,31 @@ func (r *Room) await(ctx context.Context, event roomEvent, reply <-chan error) e
 		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
 	case <-ctx.Done():
 		return ctx.Err()
+	}
+}
+
+// createGuide menunggu hasil, sama seperti createElement dan karena alasan yang
+// sama: penambahan dapat ditolak, dan penolakan wajib sampai ke pengirimnya.
+func (r *Room) createGuide(ctx context.Context, sub Subscriber, origin Origin, guide design.Guide) error {
+	reply := make(chan error, 1)
+
+	return r.await(ctx, guideCreateEvent{subscriber: sub, origin: origin, guide: guide, reply: reply}, reply)
+}
+
+// Keduanya tidak menunggu apa pun. Yang mungkin terjadi hanyalah perubahannya
+// tidak berlaku karena sasarannya sudah lenyap, dan itu menyatu dengan
+// sendirinya lewat siaran yang sedang menuju pengirimnya.
+
+func (r *Room) updateGuide(sub Subscriber, origin Origin, guide design.Guide) {
+	select {
+	case r.inbox <- guideUpdateEvent{subscriber: sub, origin: origin, guide: guide}:
+	case <-r.done:
+	}
+}
+
+func (r *Room) deleteGuide(sub Subscriber, origin Origin, id string) {
+	select {
+	case r.inbox <- guideDeleteEvent{subscriber: sub, origin: origin, id: id}:
+	case <-r.done:
 	}
 }

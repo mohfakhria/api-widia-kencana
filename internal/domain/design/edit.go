@@ -309,3 +309,110 @@ func (c *Content) findElement(id string) (pageIndex, elementIndex int, found boo
 
 	return 0, 0, false
 }
+
+// MaxGuides membatasi jumlah garis bantu satu dokumen.
+//
+// Berbeda dari elemen yang sengaja tidak dibatasi, guide dibatasi karena ia
+// masukan tak tepercaya yang DISIARKAN ULANG ke setiap penghuni dan ikut
+// tersimpan: tanpa batas, satu klien dapat menumbuhkan isi dokumen tanpa henti
+// dengan pesan yang masing-masing sah. Dua ratus jauh melampaui jumlah yang
+// masih berguna bagi manusia yang melihatnya di layar.
+//
+// Diperiksa di titik PERTUMBUHAN saja, sama seperti MaxPages dan dengan alasan
+// yang sama: dokumen yang telanjur melewati batas tetap dapat dimuat.
+const MaxGuides = 200
+
+// DecodeGuide mengurai satu guide dari muatan pesan penyuntingan.
+//
+// DisallowUnknownFields sama seperti DecodeElement: properti yang tidak dikenal
+// ditolak di pintu masuk, bukan diabaikan diam-diam.
+func DecodeGuide(raw json.RawMessage) (Guide, error) {
+	if len(bytes.TrimSpace(raw)) == 0 {
+		return Guide{}, invalidf("guide payload is empty")
+	}
+
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+
+	var guide Guide
+	if err := decoder.Decode(&guide); err != nil {
+		return Guide{}, invalidf("guide is not valid: %s", err)
+	}
+
+	if guide.ID == "" {
+		return Guide{}, invalidf("guide must have a non-empty id")
+	}
+	if err := guide.validate(); err != nil {
+		return Guide{}, err
+	}
+
+	return guide, nil
+}
+
+// CreateGuide memasang garis bantu baru.
+//
+// Gagal bila id-nya sudah dipakai — kesalahan pemanggil yang sesungguhnya, sama
+// seperti CreateElement, dan karena itu dilaporkan alih-alih didiamkan.
+func (c *Content) CreateGuide(guide Guide) error {
+	if err := guide.validate(); err != nil {
+		return err
+	}
+	if c.findGuide(guide.ID) >= 0 {
+		return invalidf("guide id %q is already used", guide.ID)
+	}
+	if len(c.Guides) >= MaxGuides {
+		return invalidf("document already has the maximum of %d guides", MaxGuides)
+	}
+
+	c.Guides = append(c.Guides, guide)
+
+	return nil
+}
+
+// UpdateGuide mengganti satu guide SELURUHNYA.
+//
+// Guide yang sudah lenyap DIDIAMKAN, sama seperti UpdateElement: dua orang yang
+// menyunting guide yang sama pada saat yang hampir bersamaan adalah lomba yang
+// wajar pada menang-terakhir, dan yang kalah toh sedang menerima siaran
+// penghapusannya.
+func (c *Content) UpdateGuide(guide Guide) (applied bool, err error) {
+	if err := guide.validate(); err != nil {
+		return false, err
+	}
+
+	index := c.findGuide(guide.ID)
+	if index < 0 {
+		return false, nil
+	}
+
+	c.Guides[index] = guide
+
+	return true, nil
+}
+
+// DeleteGuide membuang satu guide. False berarti memang sudah tidak ada.
+func (c *Content) DeleteGuide(id string) bool {
+	index := c.findGuide(id)
+	if index < 0 {
+		return false
+	}
+
+	c.Guides = slices.Delete(c.Guides, index, index+1)
+
+	return true
+}
+
+// findGuide mengembalikan -1 bila tidak ditemukan.
+//
+// Pencarian lurus, bukan peta: daftarnya berbatas dua ratus dan hampir selalu
+// berisi belasan, sehingga peta yang harus dijaga tetap sinkron dengan larik
+// hanya menambah satu keadaan yang dapat melenceng.
+func (c *Content) findGuide(id string) int {
+	for index := range c.Guides {
+		if c.Guides[index].ID == id {
+			return index
+		}
+	}
+
+	return -1
+}

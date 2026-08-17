@@ -118,7 +118,52 @@ const (
 // Content adalah isi kanvas satu dokumen.
 type Content struct {
 	Pages []Page `json:"pages"`
+
+	// Guides adalah garis bantu perataan, DI TINGKAT DOKUMEN dan bukan di dalam
+	// halaman. Ia berlaku untuk semua halaman sekaligus, sebagaimana penggaris
+	// di tepi kanvas.
+	//
+	// JANGAN memindahkannya ke dalam Page. Letaknya di sini bukan soal rapi
+	// melainkan satu-satunya hal yang membuat batasan berikut dijamin oleh
+	// bentuk data, bukan oleh kehati-hatian: renderer PDF menelusuri
+	// VisiblePages() lalu page.Elements, sehingga apa pun di tingkat dokumen
+	// TIDAK TERJANGKAU olehnya. Guide yang bocor ke renderer akan tercetak
+	// sebagai garis melintang di invoice pelanggan — dan di layar itu tidak akan
+	// terlihat sebagai kesalahan, karena di layar ia memang seharusnya ada.
+	//
+	// Begitu Guides pindah ke dalam Page, jaminan itu berubah menjadi "asal
+	// renderer ingat melewatinya", dan tidak ada yang akan mengingatkan.
+	Guides []Guide `json:"guides"`
 }
+
+// Guide adalah satu garis bantu.
+//
+// PERHATIAN pada Axis, karena ia kebalikan dari dugaan yang paling wajar: ia
+// menamai KOORDINAT YANG MENEMPATKAN garis, bukan arah garisnya membentang.
+//
+//	axis "x" → Position adalah jarak dari kiri  → garisnya TEGAK
+//	axis "y" → Position adalah jarak dari atas  → garisnya MENDATAR
+//
+// Konvensi itu milik frontend dan diambil supaya satu guide "x" hanya pernah
+// dibandingkan dengan koordinat x sebuah elemen saat sesuatu diluruskan
+// padanya. Backend TIDAK menafsirkannya sama sekali — ia hanya memeriksa bahwa
+// nilainya salah satu dari keduanya, lalu menyimpan dan mengembalikannya apa
+// adanya. Menuliskannya di sini semata-mata supaya tidak ada yang
+// "membetulkan"-nya kelak menjadi arah garis.
+//
+// Position dalam point, diukur dari sudut kiri-atas halaman — titik asal yang
+// sama dengan X dan Y setiap elemen.
+type Guide struct {
+	ID       string  `json:"id"`
+	Axis     string  `json:"axis"`
+	Position float64 `json:"position"`
+}
+
+// Sumbu yang menempatkan sebuah guide. Lihat catatan di Guide.
+const (
+	GuideAxisX = "x"
+	GuideAxisY = "y"
+)
 
 // Page adalah satu halaman kertas beserta elemen di atasnya.
 //
@@ -327,6 +372,14 @@ func Decode(raw json.RawMessage) (*Content, error) {
 	if content.Pages == nil {
 		content.Pages = []Page{}
 	}
+	// Sama seperti Pages, dan di sini justru lebih penting: SETIAP dokumen yang
+	// sudah ada hari ini tidak punya kunci guides sama sekali, sehingga tanpa
+	// baris ini snapshot pertama mereka membawa "guides": null — dan klien yang
+	// melakukan iterasi atasnya gagal pada dokumen yang paling wajar, yaitu yang
+	// belum pernah disentuh fitur ini.
+	if content.Guides == nil {
+		content.Guides = []Guide{}
+	}
 
 	if err := content.Validate(); err != nil {
 		return nil, err
@@ -355,7 +408,15 @@ func (c *Content) Encode() (json.RawMessage, error) {
 //
 // Dipakai riwayat undo, yang menyimpan keadaan sebelum tiap kelompok perubahan.
 func (c *Content) Clone() *Content {
-	out := &Content{Pages: make([]Page, len(c.Pages))}
+	// Guides disalin, bukan dibagi. Ia larik — tipe rujukan — sehingga cuplikan
+	// undo yang menunjuk larik yang sama akan ikut berubah bersama isi yang
+	// hidup, dan Ctrl+Z mengembalikan susunan guide yang sudah tidak ada lagi.
+	// Persis jebakan yang dicatat di bawah untuk field bertipe rujukan.
+	out := &Content{
+		Pages:  make([]Page, len(c.Pages)),
+		Guides: make([]Guide, len(c.Guides)),
+	}
+	copy(out.Guides, c.Guides)
 	for i := range c.Pages {
 		out.Pages[i] = c.Pages[i]
 		out.Pages[i].Elements = make([]Element, len(c.Pages[i].Elements))

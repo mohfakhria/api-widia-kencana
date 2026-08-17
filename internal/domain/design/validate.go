@@ -56,7 +56,41 @@ func (c *Content) Validate() error {
 		}
 	}
 
+	// Guide diperiksa di sini juga, bukan hanya saat dibuat: isi yang dimuat dari
+	// database melewati jalur ini, dan baris yang cacat di sana harus ketahuan
+	// saat room dibuka — bukan belakangan sebagai guide yang menempel di tempat
+	// yang mustahil.
+	seenGuides := make(map[string]struct{}, len(c.Guides))
+	for index, guide := range c.Guides {
+		if guide.ID == "" {
+			return invalidf("guide %d must have a non-empty id", index)
+		}
+		if _, exists := seenGuides[guide.ID]; exists {
+			return invalidf("duplicate guide id %q", guide.ID)
+		}
+		seenGuides[guide.ID] = struct{}{}
+
+		if err := guide.validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+// validate memeriksa satu guide.
+//
+// Axis TIDAK ditafsirkan, hanya dicocokkan dengan dua nilai yang sah. Nilai di
+// luar keduanya DITOLAK, bukan diberi bawaan: seluruh guna sebuah guide adalah
+// untuk dipercaya ketika sesuatu diluruskan padanya, dan guide yang diam-diam
+// dipindahkan ke sumbu lain lebih buruk daripada guide yang tidak pernah ada.
+func (g Guide) validate() error {
+	if g.Axis != GuideAxisX && g.Axis != GuideAxisY {
+		return invalidf("guide %q has axis %q, expected one of %s, %s",
+			g.ID, g.Axis, GuideAxisX, GuideAxisY)
+	}
+
+	return finite(g.ID, "position", g.Position)
 }
 
 // validate memeriksa keempat koordinat satu per satu, tidak lewat peta.

@@ -323,3 +323,27 @@ func (m *manager) stopAll(timeout time.Duration) {
 		}
 	}
 }
+
+// createGuide meneruskan penambahan dan menunggu hasilnya, sama seperti
+// createElement: room yang tidak ada berarti pengirimnya belum meminta dokumen
+// atau room-nya baru disapu, dan keduanya sama bagi klien.
+func (m *manager) createGuide(ctx context.Context, token string, sub Subscriber, origin Origin, guide design.Guide) error {
+	room, ok := m.room(token)
+	if !ok {
+		return domain.NewError(domain.ErrUnavailable, "document design room is closed")
+	}
+
+	return room.createGuide(ctx, sub, origin, guide)
+}
+
+func (m *manager) updateGuide(token string, sub Subscriber, origin Origin, guide design.Guide) {
+	if room, ok := m.room(token); ok {
+		room.updateGuide(sub, origin, guide)
+	}
+}
+
+func (m *manager) deleteGuide(token string, sub Subscriber, origin Origin, id string) {
+	if room, ok := m.room(token); ok {
+		room.deleteGuide(sub, origin, id)
+	}
+}

@@ -230,3 +230,74 @@ func (h *DocumentDesignHandler) reorderPage(documentToken string, payload []byte
 func isEditRejection(err error) bool {
 	return !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded)
 }
+
+// decodeGuide mengurai muatan guide dan melaporkan penolakannya ke pengirim.
+//
+// guide_rejected, bukan malformed_message, dan bedanya menentukan apa yang
+// klien lakukan sesudahnya: yang pertama berarti server memahami pesannya
+// dengan sempurna lalu menolaknya, sehingga guide yang sudah tergambar
+// optimistis harus ditarik kembali dan sebabnya ditampilkan.
+func (h *DocumentDesignHandler) decodeGuide(raw json.RawMessage, subscriber *designSubscriber) (design.Guide, error) {
+	guide, err := design.DecodeGuide(raw)
+	if err != nil {
+		subscriber.sendError("guide_rejected", err.Error())
+		return design.Guide{}, err
+	}
+
+	return guide, nil
+}
+
+func (h *DocumentDesignHandler) createGuide(ctx context.Context, documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignGuideCreate
+	if err := json.Unmarshal(payload, &message); err != nil {
+		subscriber.sendError("malformed_message", "guide.create payload is not valid")
+		return
+	}
+
+	guide, err := h.decodeGuide(message.Guide, subscriber)
+	if err != nil {
+		return
+	}
+
+	// Menunggu jawaban orchestrator, sama seperti element.create dan karena
+	// alasan yang sama: ia satu-satunya jalur guide yang dapat ditolak di sana —
+	// id sudah dipakai, atau batas jumlah tersentuh.
+	if err := h.service.CreateGuide(ctx, documentToken, subscriber, documentdesign.Origin(message.Origin), guide); err != nil {
+		if !isEditRejection(err) {
+			return
+		}
+
+		h.logger.Warn("create document design guide",
+			"document", documentToken, "guide", guide.ID, "error", err)
+		subscriber.sendError("guide_rejected", err.Error())
+	}
+}
+
+func (h *DocumentDesignHandler) updateGuide(documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignGuideUpdate
+	if err := json.Unmarshal(payload, &message); err != nil {
+		subscriber.sendError("malformed_message", "guide.update payload is not valid")
+		return
+	}
+
+	guide, err := h.decodeGuide(message.Guide, subscriber)
+	if err != nil {
+		return
+	}
+
+	h.service.UpdateGuide(documentToken, subscriber, documentdesign.Origin(message.Origin), guide)
+}
+
+func (h *DocumentDesignHandler) deleteGuide(documentToken string, payload []byte, subscriber *designSubscriber) {
+	var message dto.DesignGuideDelete
+	if err := json.Unmarshal(payload, &message); err != nil {
+		subscriber.sendError("malformed_message", "guide.delete payload is not valid")
+		return
+	}
+	if message.ID == "" {
+		subscriber.sendError("malformed_message", "guide.delete requires an id")
+		return
+	}
+
+	h.service.DeleteGuide(documentToken, subscriber, documentdesign.Origin(message.Origin), message.ID)
+}

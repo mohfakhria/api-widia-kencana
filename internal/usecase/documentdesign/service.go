@@ -334,3 +334,21 @@ func (s *Service) Run(ctx context.Context) error {
 		}
 	}
 }
+
+// CreateGuide memasang garis bantu baru dan melaporkan penolakannya.
+//
+// Satu-satunya jalur guide yang mengembalikan error, sejalan dengan
+// CreateElement: id yang sudah dipakai dan batas jumlah adalah kesalahan
+// pemanggil yang wajib ia ketahui.
+func (s *Service) CreateGuide(ctx context.Context, documentToken string, sub Subscriber, origin Origin, guide design.Guide) error {
+	return s.rooms.createGuide(ctx, documentToken, sub, origin, guide)
+}
+
+// UpdateGuide mengganti guide seluruhnya. Guide yang sudah lenyap didiamkan.
+func (s *Service) UpdateGuide(documentToken string, sub Subscriber, origin Origin, guide design.Guide) {
+	s.rooms.updateGuide(documentToken, sub, origin, guide)
+}
+
+func (s *Service) DeleteGuide(documentToken string, sub Subscriber, origin Origin, id string) {
+	s.rooms.deleteGuide(documentToken, sub, origin, id)
+}
