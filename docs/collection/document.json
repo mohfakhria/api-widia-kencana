@@ -364,6 +364,155 @@
       ]
     },
     {
+      "name": "List Document Papers",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/paper-list?status=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "paper-list"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "",
+              "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar kelimanya ditolak 400 \"invalid document paper status\"."
+            }
+          ]
+        },
+        "description": "Kertas yang tersedia untuk dokumen baru. **Satu-satunya cara memperoleh `document_paper_token`**, yang wajib diisi oleh Create Document.\n\n**`status` kosong berarti `active`, bukan semua.** Penukaran token menjadi id saat membuat dokumen sudah menuntut status active — kertas non-aktif ditolak 404 \"document paper not found\" — jadi menawarkannya di daftar hanya akan menyajikan pilihan yang pasti gagal begitu dipilih.\n\nDiurutkan `name ASC, width ASC, height ASC`. Urutan itu penting bagi tampilan: enam kertas bernama sama persis, \"Continuous Form\", dan hanya ukurannya yang membedakan. **Pemilih yang menampilkan nama saja akan menyajikan enam pilihan yang terlihat identik** — tampilkan `width × height` beserta `unit`.\n\nTidak ada penyaringan nama maupun jenis media, dan tidak ada paginasi: daftarnya belasan baris dan tidak tumbuh oleh pemakaian."
+      },
+      "response": [
+        {
+          "name": "List Document Papers - Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/paper-list?status=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar kelimanya ditolak 400 \"invalid document paper status\"."
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": [\n      {\n        \"token\": \"eaba4126-0b0f-418c-8c8c-04e5fffc574b\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      },\n      {\n        \"token\": \"417e55b3-3d90-4b72-9a9e-69d0a56d19fa\",\n        \"name\": \"Continuous Form\",\n        \"media_type\": \"continuous\",\n        \"width\": 9.5,\n        \"height\": 5.5,\n        \"unit\": \"in\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      },\n      {\n        \"token\": \"162bba69-4488-4959-9c85-03e1031bcf21\",\n        \"name\": \"Continuous Form\",\n        \"media_type\": \"continuous\",\n        \"width\": 9.5,\n        \"height\": 11,\n        \"unit\": \"in\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      }\n    ]\n  }\n}"
+        },
+        {
+          "name": "List Document Papers - Empty",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/paper-list?status=inactive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "inactive",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar kelimanya ditolak 400 \"invalid document paper status\"."
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": []\n  }\n}"
+        },
+        {
+          "name": "List Document Papers - Invalid Status",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/paper-list?status=ngawur",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ngawur",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar kelimanya ditolak 400 \"invalid document paper status\"."
+                }
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document paper status\"\n}"
+        }
+      ]
+    },
+    {
       "name": "Create Document",
       "request": {
         "method": "POST",

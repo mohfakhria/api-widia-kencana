@@ -15,6 +15,10 @@ import (
 const defaultDocumentStatus = "draft"
 const defaultDocumentType = "custom"
 
+// defaultDocumentPaperStatus menyaring daftar kertas ke yang benar-benar dapat
+// dipakai. Lihat alasannya di ListPapers.
+const defaultDocumentPaperStatus = "active"
+
 var allowedDocumentStatuses = map[string]struct{}{
 	"draft":    {},
 	"active":   {},
@@ -47,6 +51,27 @@ func (uc *documentUseCase) List(ctx context.Context, query input.ListDocumentQue
 	}
 
 	return uc.repo.List(ctx, query)
+}
+
+// ListPapers mengembalikan kertas yang boleh dipakai dokumen baru.
+//
+// Bawaannya "active", BUKAN semua. Penukaran token menjadi id saat membuat
+// dokumen sudah menuntut status active — kertas non-aktif ditolak
+// "document paper not found" — jadi daftar yang memuatnya akan menawarkan
+// pilihan yang pasti gagal begitu dipilih.
+//
+// Statusnya tetap dapat disebut eksplisit, memakai kosakata yang sama dengan
+// status dokumen supaya tidak ada dua daftar nilai sah yang harus diingat.
+func (uc *documentUseCase) ListPapers(ctx context.Context, query input.ListDocumentPaperQuery) ([]entity.DocumentPaper, error) {
+	query.Status = strings.ToLower(strings.TrimSpace(query.Status))
+	if query.Status == "" {
+		query.Status = defaultDocumentPaperStatus
+	}
+	if _, ok := allowedDocumentStatuses[query.Status]; !ok {
+		return nil, domain.NewError(domain.ErrInvalidInput, "invalid document paper status")
+	}
+
+	return uc.repo.ListPapers(ctx, query)
 }
 
 func (uc *documentUseCase) GetByToken(ctx context.Context, token string) (*entity.Document, error) {

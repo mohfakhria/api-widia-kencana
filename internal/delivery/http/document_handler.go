@@ -34,6 +34,27 @@ func (h *DocumentHandler) List(c *gin.Context) {
 	dto.Success(c, "Success", dto.NewDocumentListResponse(documents))
 }
 
+// ListPapers menjawab pertanyaan yang selama ini tidak punya jawaban lewat API:
+// token kertas mana yang boleh dipakai document-add.
+//
+// Tanpa ini token itu hanya dapat diperoleh dengan membaca database, dan
+// document-add mewajibkannya.
+func (h *DocumentHandler) ListPapers(c *gin.Context) {
+	var req dto.DocumentPaperListFilterRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	papers, err := h.document.ListPapers(c.Request.Context(), req.ToListDocumentPaperQuery())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Success", dto.NewDocumentPaperListResponse(papers))
+}
+
 func (h *DocumentHandler) Get(c *gin.Context) {
 	document, err := h.document.GetByToken(c.Request.Context(), c.Param("token"))
 	if err != nil {

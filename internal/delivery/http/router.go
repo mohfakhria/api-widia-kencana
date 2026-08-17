@@ -92,6 +92,11 @@ func NewRouter(deps RouterDeps) http.Handler {
 		agentAllowed.GET("/asset-presign/:token", deps.AssetHandler.PresignGet)
 		agentAllowed.DELETE("/asset-delete/:token", deps.AssetHandler.Delete)
 
+		// Di grup yang sama dengan document-add, karena keduanya dipakai
+		// berurutan: kertas dipilih lebih dulu, tokennya menjadi masukan wajib
+		// bagi pembuatan dokumen.
+		agentAllowed.GET("/paper-list", deps.DocumentHandler.ListPapers)
+
 		agentAllowed.GET("/document-list", deps.DocumentHandler.List)
 		agentAllowed.GET("/document-detail/:token", deps.DocumentHandler.Get)
 		agentAllowed.POST("/document-add", deps.DocumentHandler.Create)

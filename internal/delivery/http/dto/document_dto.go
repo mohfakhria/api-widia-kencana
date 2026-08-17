@@ -56,6 +56,34 @@ type DocumentListResponse struct {
 	Documents []DocumentResponse `json:"documents"`
 }
 
+// DocumentPaperListFilterRequest menyaring daftar kertas.
+//
+// Status saja. Nama dan jenis media sengaja tidak disaring di server: daftarnya
+// belasan baris dan tidak tumbuh oleh pemakaian, jadi penyaringannya lebih baik
+// terjadi di layar tempat pengguna melihat seluruh pilihan sekaligus.
+type DocumentPaperListFilterRequest struct {
+	Status string `form:"status"`
+}
+
+func (r DocumentPaperListFilterRequest) ToListDocumentPaperQuery() input.ListDocumentPaperQuery {
+	return input.ListDocumentPaperQuery{Status: strings.TrimSpace(r.Status)}
+}
+
+type DocumentPaperListResponse struct {
+	Papers []DocumentPaperResponse `json:"papers"`
+}
+
+func NewDocumentPaperListResponse(papers []entity.DocumentPaper) DocumentPaperListResponse {
+	// Dibuat kosong, bukan dibiarkan nil: nil menjadi `null` di JSON, dan klien
+	// yang melakukan iterasi atasnya gagal pada daftar yang kebetulan kosong.
+	out := make([]DocumentPaperResponse, 0, len(papers))
+	for _, paper := range papers {
+		out = append(out, NewDocumentPaperResponse(paper))
+	}
+
+	return DocumentPaperListResponse{Papers: out}
+}
+
 func (r DocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCommand {
 	return input.CreateDocumentCommand{
 		DocumentPaperToken: r.DocumentPaperToken,

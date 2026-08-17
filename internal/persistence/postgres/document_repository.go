@@ -23,6 +23,69 @@ func NewDocumentRepository(db *sql.DB) output.DocumentRepository {
 	return &DocumentRepository{db: db}
 }
 
+// ListPapers mengembalikan kertas yang tersedia untuk dokumen baru.
+//
+// Diurutkan menurut nama lalu ukuran, bukan menurut waktu pembuatan seperti
+// dokumen. Ini daftar pilihan yang dibaca manusia, dan enam di antaranya
+// bernama sama — "Continuous Form" — sehingga hanya ukuran yang membedakannya.
+// Urutan menurut waktu akan menyebarkan keenamnya ke seluruh daftar.
+func (r *DocumentRepository) ListPapers(ctx context.Context, query input.ListDocumentPaperQuery) ([]entity.DocumentPaper, error) {
+	builder := strings.Builder{}
+	builder.WriteString(`
+		SELECT
+			id,
+			token::text,
+			name,
+			media_type,
+			width,
+			height,
+			unit,
+			allow_portrait,
+			allow_landscape,
+			status,
+			created_at,
+			updated_at
+		FROM document_papers
+	`)
+
+	args := make([]any, 0, 1)
+	if query.Status != "" {
+		args = append(args, query.Status)
+		builder.WriteString(fmt.Sprintf(" WHERE status = $%d", len(args)))
+	}
+	builder.WriteString(" ORDER BY name ASC, width ASC, height ASC")
+
+	rows, err := r.db.QueryContext(ctx, builder.String(), args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var papers []entity.DocumentPaper
+	for rows.Next() {
+		var paper entity.DocumentPaper
+		if err := rows.Scan(
+			&paper.ID,
+			&paper.Token,
+			&paper.Name,
+			&paper.MediaType,
+			&paper.Width,
+			&paper.Height,
+			&paper.Unit,
+			&paper.AllowPortrait,
+			&paper.AllowLandscape,
+			&paper.Status,
+			&paper.CreatedAt,
+			&paper.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		papers = append(papers, paper)
+	}
+
+	return papers, rows.Err()
+}
+
 func (r *DocumentRepository) List(ctx context.Context, query input.ListDocumentQuery) ([]entity.Document, error) {
 	builder := strings.Builder{}
 	builder.WriteString(documentSelectQuery())

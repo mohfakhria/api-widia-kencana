@@ -10,6 +10,7 @@ import (
 
 type DocumentRepository interface {
 	List(ctx context.Context, query input.ListDocumentQuery) ([]entity.Document, error)
+	ListPapers(ctx context.Context, query input.ListDocumentPaperQuery) ([]entity.DocumentPaper, error)
 	GetByToken(ctx context.Context, token string) (*entity.Document, error)
 	Create(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	Update(ctx context.Context, token string, document *entity.Document) error
