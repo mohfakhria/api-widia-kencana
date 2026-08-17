@@ -13,7 +13,27 @@ import (
 )
 
 const defaultDocumentStatus = "draft"
-const defaultDocumentType = "custom"
+
+// allowedDocumentTypes adalah kosakata tertutup jenis dokumen.
+//
+// TIDAK ADA BAWAAN, dan itu keputusan yang diambil sadar setelah sempat ada:
+// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan kelima jenis di
+// bawah yang semuanya dokumen bisnis bermakna, tidak ada bawaan yang jujur —
+// memilih salah satunya berarti melabeli dokumen orang secara diam-diam, dan
+// label yang keliru tidak pernah muncul sebagai galat di kemudian hari. Permintaan
+// yang ditolak sekarang jauh lebih murah daripada dokumen salah jenis yang
+// ditemukan berbulan-bulan kemudian.
+//
+// Bertanda hubung, bukan garis bawah. Nilainya melintas di URL dan dibaca
+// manusia; nama fieldnya sendiri tetap document_type karena ia sudah dipakai
+// frontend dan menggantinya memutus mereka tanpa menambah apa pun.
+var allowedDocumentTypes = map[string]struct{}{
+	"quotation":      {},
+	"purchase-order": {},
+	"bast":           {},
+	"service-report": {},
+	"invoice":        {},
+}
 
 // defaultDocumentPaperStatus menyaring daftar kertas ke yang benar-benar dapat
 // dipakai. Lihat alasannya di ListPapers.
@@ -47,6 +67,17 @@ func (uc *documentUseCase) List(ctx context.Context, query input.ListDocumentQue
 	if query.Status != "" {
 		if _, ok := allowedDocumentStatuses[query.Status]; !ok {
 			return nil, domain.NewError(domain.ErrInvalidInput, "invalid document status")
+		}
+	}
+	// Ditolak, bukan diteruskan ke SQL. Sebelumnya jenis yang salah ketik
+	// menghasilkan 200 berisi daftar kosong — tidak dapat dibedakan dari "memang
+	// tidak ada dokumen berjenis itu" — sementara status yang salah ketik pada
+	// endpoint yang sama menjawab 400. Dua filter bersaudara yang berperilaku
+	// berlawanan adalah jebakan yang hanya terlihat setelah seseorang kehilangan
+	// waktu karenanya.
+	if query.DocumentType != "" {
+		if _, ok := allowedDocumentTypes[query.DocumentType]; !ok {
+			return nil, domain.NewError(domain.ErrInvalidInput, "invalid document type")
 		}
 	}
 
@@ -121,10 +152,9 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 		status = defaultDocumentStatus
 	}
 
+	// Tidak diberi bawaan. Yang kosong sampai ke validateDocument apa adanya lalu
+	// ditolak di sana, supaya sebabnya terbaca oleh pemanggil.
 	documentType := strings.ToLower(strings.TrimSpace(cmd.DocumentType))
-	if documentType == "" {
-		documentType = defaultDocumentType
-	}
 
 	return &entity.Document{
 		Paper: entity.DocumentPaper{
@@ -146,6 +176,15 @@ func validateDocument(document *entity.Document) error {
 	}
 	if document.Name == "" {
 		return domain.NewError(domain.ErrInvalidInput, "document name cannot be empty")
+	}
+	// Kosong dibedakan dari salah. Keduanya ditolak, tetapi yang pertama berarti
+	// pemanggil belum menyebutkannya sama sekali — dan sejak jenis menjadi wajib,
+	// itu kekeliruan yang paling mungkin terjadi pada klien yang sudah ada.
+	if document.DocumentType == "" {
+		return domain.NewError(domain.ErrInvalidInput, "document type cannot be empty")
+	}
+	if _, ok := allowedDocumentTypes[document.DocumentType]; !ok {
+		return domain.NewError(domain.ErrInvalidInput, "invalid document type")
 	}
 	if _, ok := allowedDocumentStatuses[document.Status]; !ok {
 		return domain.NewError(domain.ErrInvalidInput, "invalid document status")

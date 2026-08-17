@@ -39,7 +39,7 @@
             {
               "key": "document_type",
               "value": "",
-              "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
+              "description": "Salah satu dari quotation, purchase-order, bast, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar kelimanya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
             },
             {
               "key": "status",
@@ -84,7 +84,7 @@
                 {
                   "key": "document_type",
                   "value": "",
-                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
+                  "description": "Salah satu dari quotation, purchase-order, bast, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar kelimanya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
                 },
                 {
                   "key": "status",
@@ -138,7 +138,7 @@
                 {
                   "key": "document_type",
                   "value": "",
-                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
+                  "description": "Salah satu dari quotation, purchase-order, bast, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar kelimanya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
                 },
                 {
                   "key": "status",
@@ -192,7 +192,7 @@
                 {
                   "key": "document_type",
                   "value": "",
-                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
+                  "description": "Salah satu dari quotation, purchase-order, bast, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar kelimanya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
                 },
                 {
                   "key": "status",
@@ -246,7 +246,7 @@
                 {
                   "key": "document_type",
                   "value": "",
-                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
+                  "description": "Salah satu dari quotation, purchase-order, bast, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar kelimanya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
                 },
                 {
                   "key": "status",
@@ -266,6 +266,60 @@
             }
           ],
           "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document token\"\n}"
+        },
+        {
+          "name": "List Documents - Invalid Type",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=purchase_order&status=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-list"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "",
+                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+                },
+                {
+                  "key": "token",
+                  "value": "",
+                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+                },
+                {
+                  "key": "document_type",
+                  "value": "purchase_order",
+                  "description": "Salah satu dari quotation, purchase-order, bast, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar kelimanya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+                }
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
         }
       ]
     },
@@ -539,7 +593,8 @@
             "api",
             "document-add"
           ]
-        }
+        },
+        "description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena kelima jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
       },
       "response": [
         {
@@ -741,6 +796,86 @@
             }
           ],
           "body": "{\n  \"status\": \"error\",\n  \"message\": \"parent document not found\"\n}"
+        },
+        {
+          "name": "Create Document - Type Empty",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"status\": \"draft\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-add"
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document type cannot be empty\"\n}"
+        },
+        {
+          "name": "Create Document - Invalid Type",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"purchase_order\",\n  \"status\": \"draft\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-add"
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
         }
       ]
     },
@@ -773,7 +908,7 @@
             "{{document_token}}"
           ]
         },
-        "description": "Replace document_token with the document token."
+        "description": "Replace document_token with the document token.\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena kelima jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
       },
       "response": [
         {
@@ -943,6 +1078,90 @@
             }
           ],
           "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+        },
+        {
+          "name": "Update Document - Type Empty",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-update/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-update",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Replace document_token with the document token."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document type cannot be empty\"\n}"
+        },
+        {
+          "name": "Update Document - Invalid Type",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"purchase_order\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/document-update/{{document_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-update",
+                "{{document_token}}"
+              ]
+            },
+            "description": "Replace document_token with the document token."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
         }
       ]
     },
