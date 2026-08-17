@@ -17,7 +17,7 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/document-list?name=&document_type=&status=",
+          "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
           "host": [
             "{{base_url}}"
           ],
@@ -28,18 +28,27 @@
           "query": [
             {
               "key": "name",
-              "value": ""
+              "value": "",
+              "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+            },
+            {
+              "key": "token",
+              "value": "",
+              "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
             },
             {
               "key": "document_type",
-              "value": ""
+              "value": "",
+              "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
             },
             {
               "key": "status",
-              "value": ""
+              "value": "",
+              "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
             }
           ]
-        }
+        },
+        "description": "Daftar dokumen, diurutkan created_at DESC.\n\n**Yang paling mudah terlewat: `status` kosong bukan berarti semua.** Tanpa `status`, kueri memakai `status <> 'deleted'` — dokumen terhapus disembunyikan. Untuk melihatnya, sebut `status=deleted` secara eksplisit.\n\n**Belum ada pembatasan jumlah maupun halaman.** Seluruh baris yang cocok dikembalikan sekaligus; tidak ada limit, offset, atau cursor.\n\nParameter yang tidak dikenal diabaikan diam-diam."
       },
       "response": [
         {
@@ -53,7 +62,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/document-list?name=&document_type=&status=",
+              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
               "host": [
                 "{{base_url}}"
               ],
@@ -64,15 +73,23 @@
               "query": [
                 {
                   "key": "name",
-                  "value": ""
+                  "value": "",
+                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+                },
+                {
+                  "key": "token",
+                  "value": "",
+                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
                 },
                 {
                   "key": "document_type",
-                  "value": ""
+                  "value": "",
+                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
                 },
                 {
                   "key": "status",
-                  "value": ""
+                  "value": "",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -99,7 +116,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/document-list?name=&document_type=&status=",
+              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
               "host": [
                 "{{base_url}}"
               ],
@@ -110,15 +127,23 @@
               "query": [
                 {
                   "key": "name",
-                  "value": ""
+                  "value": "",
+                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+                },
+                {
+                  "key": "token",
+                  "value": "",
+                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
                 },
                 {
                   "key": "document_type",
-                  "value": ""
+                  "value": "",
+                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
                 },
                 {
                   "key": "status",
-                  "value": ""
+                  "value": "",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -135,7 +160,7 @@
           "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": []\n  }\n}"
         },
         {
-          "name": "List Documents - Invalid Query",
+          "name": "List Documents - Invalid Status",
           "originalRequest": {
             "method": "GET",
             "header": [
@@ -145,7 +170,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/document-list?name=&document_type=&status=",
+              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=ngawur",
               "host": [
                 "{{base_url}}"
               ],
@@ -156,15 +181,23 @@
               "query": [
                 {
                   "key": "name",
-                  "value": ""
+                  "value": "",
+                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+                },
+                {
+                  "key": "token",
+                  "value": "",
+                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
                 },
                 {
                   "key": "document_type",
-                  "value": ""
+                  "value": "",
+                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
                 },
                 {
                   "key": "status",
-                  "value": ""
+                  "value": "ngawur",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -178,7 +211,61 @@
               "value": "application/json"
             }
           ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid query parameters\"\n}"
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document status\"\n}"
+        },
+        {
+          "name": "List Documents - Invalid Token",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/document-list?name=&token=bukan-uuid&document_type=&status=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "document-list"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "",
+                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+                },
+                {
+                  "key": "token",
+                  "value": "bukan-uuid",
+                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+                },
+                {
+                  "key": "document_type",
+                  "value": "",
+                  "description": "Cocok PERSIS, dihuruf-kecilkan lebih dulu. TIDAK divalidasi: jenis yang tidak dikenal menghasilkan daftar kosong, bukan galat."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+                }
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document token\"\n}"
         }
       ]
     },
