@@ -238,14 +238,30 @@ type resolution struct {
 // dapat mencatat setiap penggantian. Penggantian yang senyap adalah persis yang
 // dikhawatirkan keputusan lama, dan catatan itu jawabannya.
 func (f *Fonts) resolve(family string, weight int, style string) resolution {
-	asked := faceKey{family: family, weight: weight, style: style}
-
 	if family != CoreFamily {
-		if data, ok := f.faces[asked]; ok {
-			return resolution{used: asked, data: data}
+		if used, ok := f.pick(family, weight, style); ok {
+			return resolution{used: used, data: f.faces[used]}
 		}
-		if nearest, ok := f.nearestWeight(family, weight, style); ok {
-			return resolution{used: nearest, data: f.faces[nearest]}
+
+		// Style DILONGGARKAN sebelum keluarga ditinggalkan, dan hanya ke satu
+		// arah: italic boleh memakai muka tegak keluarga yang sama, tidak
+		// sebaliknya.
+		//
+		// Sebabnya lebar maju, bukan kerapian. Ketika sebuah keluarga tidak punya
+		// muka italic, peramban MENSINTESIS miring dengan memiringkan muka
+		// tegaknya — dan oblique sintetis mempertahankan lebar maju muka tegak
+		// itu. Memakai muka tegak keluarga yang sama karenanya memecah baris di
+		// tempat yang persis sama dengan layar; berpindah ke Helvetica italic
+		// mengganti seluruh metriknya, dan kotak yang pas di layar terpotong di
+		// cetakan tanpa satu pun galat.
+		//
+		// Satu arah saja karena peramban juga begitu: tidak ada peramban yang
+		// menggambar teks tegak memakai muka italic hanya karena itu satu-satunya
+		// yang tersedia.
+		if style == design.FontStyleItalic {
+			if used, ok := f.pick(family, weight, design.FontStyleNormal); ok {
+				return resolution{used: used, data: f.faces[used]}
+			}
 		}
 	}
 
@@ -258,6 +274,21 @@ func (f *Fonts) resolve(family string, weight int, style string) resolution {
 // keluarga dan gaya.
 //
 // Seri diputus ke arah yang lebih ringan, sekadar supaya hasilnya pasti dan tidak
+// pick memilih muka terbaik untuk satu keluarga pada satu style.
+//
+// Cocok persis lebih dulu, lalu bobot terdekat. Dipisahkan menjadi fungsi
+// tersendiri karena resolve memanggilnya dua kali — sekali untuk style yang
+// diminta, sekali untuk style yang dilonggarkan — dan dua salinan urutan yang
+// sama adalah dua kesempatan untuk berbeda.
+func (f *Fonts) pick(family string, weight int, style string) (faceKey, bool) {
+	asked := faceKey{family: family, weight: weight, style: style}
+	if _, ok := f.faces[asked]; ok {
+		return asked, true
+	}
+
+	return f.nearestWeight(family, weight, style)
+}
+
 // bergantung pada urutan penelusuran map — yang di Go memang diacak.
 func (f *Fonts) nearestWeight(family string, weight int, style string) (faceKey, bool) {
 	var (
