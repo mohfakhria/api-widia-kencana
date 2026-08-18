@@ -17,6 +17,7 @@ type RouterDeps struct {
 	TokenSigner           output.TokenSigner
 	SessionStore          output.SessionStore
 	AssetHandler          *AssetHandler
+	FontHandler           *FontHandler
 	AuthHandler           *AuthHandler
 	DocumentHandler       *DocumentHandler
 	DocumentDesignHandler *DocumentDesignHandler
@@ -72,6 +73,13 @@ func NewRouter(deps RouterDeps) http.Handler {
 
 		// Ekspor adalah tindakan manusia: agent menyusun, orang yang mencetak.
 		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
+
+		// Pendaftaran font mengambil berkas dari internet atas perintah
+		// pemanggil, lalu berkas itu disematkan ke SETIAP PDF sesudahnya. Ia
+		// bukan bagian dari menyusun satu dokumen melainkan mengubah perkakas
+		// yang dipakai semuanya, jadi ia berhenti di sini bersama proyek dan
+		// ekspor.
+		protected.POST("/font-add", deps.FontHandler.Register)
 	}
 
 	// agentAllowed dibuka untuk agent DI SAMPING manusia. Sengaja pendek, dan

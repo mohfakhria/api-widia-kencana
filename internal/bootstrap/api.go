@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
+	"time"
 
 	deliveryhttp "github.com/mohfakhria/api-widia-kencana/internal/delivery/http"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/database"
+	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/googlefonts"
 	pdfrender "github.com/mohfakhria/api-widia-kencana/internal/infrastructure/pdf"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/security"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/server"
@@ -65,6 +67,15 @@ func (a *ApiApp) initialize() error {
 	authUC := usecase.NewAuthUseCase(userRepo, sessionStore, tokenSigner)
 	assetRepo := pg.NewAssetRepository(a.db)
 	assetUC := usecase.NewAssetUseCase(assetRepo, a.objectStorage)
+
+	// Font tidak punya repository: nama objeknya fungsi murni dari family,
+	// bobot, dan style, sehingga object storage ITULAH indeksnya. Lihat
+	// usecase.FontObjectName.
+	fontUC := usecase.NewFontUseCase(
+		a.objectStorage,
+		googlefonts.New(20*time.Second),
+		pdfrender.NewFontValidator(),
+	)
 	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	documentRepo := pg.NewDocumentRepository(a.db)
@@ -102,6 +113,7 @@ func (a *ApiApp) initialize() error {
 		AssetHandler:    deliveryhttp.NewAssetHandler(assetUC),
 		AuthHandler:     deliveryhttp.NewAuthHandler(authUC, a.Config),
 		DocumentHandler: deliveryhttp.NewDocumentHandler(documentUC),
+		FontHandler:     deliveryhttp.NewFontHandler(fontUC),
 		DocumentDesignHandler: deliveryhttp.NewDocumentDesignHandler(
 			a.Context, documentDesign, a.Config, a.ServiceLogger,
 		),
