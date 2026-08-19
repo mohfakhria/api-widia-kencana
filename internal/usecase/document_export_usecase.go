@@ -168,12 +168,8 @@ func imageTokens(content *design.Content) []string {
 	seen := make(map[string]struct{})
 	tokens := make([]string, 0)
 
-	// Halaman tersembunyi dilewati, dan itu bukan sekadar penghematan: kegagalan
-	// mengunduh satu aset menggagalkan SELURUH ekspor, sehingga gambar rusak di
-	// halaman yang bahkan tidak dicetak akan membatalkan dokumen yang sebenarnya
-	// baik-baik saja.
-	for _, page := range content.VisiblePages() {
-		for _, element := range page.Elements {
+	kumpulkan := func(elements []design.Element) {
+		for _, element := range elements {
 			if element.Type != design.ElementImage || element.AssetToken == "" {
 				continue
 			}
@@ -184,6 +180,19 @@ func imageTokens(content *design.Content) []string {
 			tokens = append(tokens, element.AssetToken)
 		}
 	}
+
+	// Halaman tersembunyi dilewati, dan itu bukan sekadar penghematan: kegagalan
+	// mengunduh satu aset menggagalkan SELURUH ekspor, sehingga gambar rusak di
+	// halaman yang bahkan tidak dicetak akan membatalkan dokumen yang sebenarnya
+	// baik-baik saja.
+	for _, page := range content.VisiblePages() {
+		kumpulkan(page.Elements)
+	}
+
+	// Lapisan master digambar di SETIAP halaman, jadi asetnya sama wajibnya.
+	// Sebelumnya ia terlewat, dan akibatnya logo di master hilang dari cetakan
+	// tanpa satu pun galat.
+	kumpulkan(content.Master.Elements)
 
 	return tokens
 }
