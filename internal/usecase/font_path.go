@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
@@ -62,4 +63,47 @@ func normalizeFontStyle(style string) string {
 	}
 
 	return design.FontStyleNormal
+}
+
+// ParseFontObjectName membalik FontObjectName.
+//
+// Balikan yang TIDAK sempurna, dan itu disengaja: slug memetakan spasi maupun
+// tanda hubung ke satu bentuk, sehingga "Barlow Condensed" dan "barlow-condensed"
+// menghasilkan objek yang sama dan tidak dapat dibedakan lagi sesudahnya.
+//
+// Karena itu yang dikembalikan SLUG-nya, bukan tebakan nama aslinya. Slug itulah
+// nama kanonik: apa pun yang dikirim elemen akan di-slug dengan aturan yang sama
+// sebelum dicari, jadi menyebutkan slug kepada frontend membuat perjalanan
+// bolak-baliknya tepat. Menebak "Barlow Condensed" dari "barlow-condensed" justru
+// akan salah pada keluarga yang namanya memang bertanda hubung.
+func ParseFontObjectName(objectName string) (family string, weight int, style string, ok bool) {
+	sisa, cocok := strings.CutPrefix(objectName, FontScope+"/")
+	if !cocok {
+		return "", 0, "", false
+	}
+
+	family, berkas, cocok := strings.Cut(sisa, "/")
+	if !cocok || family == "" {
+		return "", 0, "", false
+	}
+
+	nama, cocok := strings.CutSuffix(berkas, ".ttf")
+	if !cocok {
+		return "", 0, "", false
+	}
+
+	angka, style, cocok := strings.Cut(nama, "-")
+	if !cocok {
+		return "", 0, "", false
+	}
+
+	weight, err := strconv.Atoi(angka)
+	if err != nil || weight < 100 || weight > 900 || weight%100 != 0 {
+		return "", 0, "", false
+	}
+	if style != design.FontStyleNormal && style != design.FontStyleItalic {
+		return "", 0, "", false
+	}
+
+	return family, weight, style, true
 }

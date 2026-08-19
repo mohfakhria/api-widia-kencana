@@ -1,28 +1,27 @@
 package output
 
-import "context"
-
-// FontSource mengambil berkas font dari luar, misalnya repositori Google Fonts.
+// FontIdentity adalah jati diri satu muka huruf, dibaca dari berkasnya sendiri.
 //
-// Antarmuka tersendiri, bukan panggilan HTTP langsung di usecase, karena inilah
-// satu-satunya tempat sistem ini menghubungi alamat di internet atas perintah
-// pengguna. Memisahkannya membuat batas itu terlihat dan dapat diganti — dan
-// membuat usecase-nya dapat ditelusuri tanpa jaringan.
-type FontSource interface {
-	// Fetch mengembalikan berkas TTF untuk satu muka huruf.
-	//
-	// Family diberikan seperti yang ditulis manusia; implementasinya yang tahu
-	// bagaimana memetakannya ke alamat sumber.
-	Fetch(ctx context.Context, family string, weight int, style string) ([]byte, error)
+// Family datang dari tabel nama di dalam font — "Barlow Condensed" lengkap
+// dengan spasinya — bukan dari nama berkas. Nama berkas tidak cukup:
+// "BarlowCondensed-Bold.ttf" akan menghasilkan slug "barlowcondensed",
+// sedangkan elemen dokumen mengirim "barlow condensed" yang menghasilkan
+// "barlow-condensed". Keduanya tidak akan pernah bertemu.
+type FontIdentity struct {
+	Family string
+	Weight int
+	Style  string
 }
 
-// FontValidator memeriksa bahwa byte yang diambil benar-benar dapat disematkan
-// ke PDF.
+// FontInspector membaca jati diri sebuah berkas font SEKALIGUS memastikan ia
+// dapat disematkan ke PDF.
 //
-// Dipisahkan ke port karena yang tahu jawabannya adalah pustaka PDF, dan usecase
-// tidak boleh mengimpornya. Pemeriksaan ini WAJIB dilakukan saat mendaftar,
-// bukan saat mengekspor: berkas rusak yang lolos akan merusak SETIAP ekspor
-// sesudahnya, dan gejalanya muncul jauh dari sebabnya.
-type FontValidator interface {
-	Validate(data []byte) error
+// Keduanya satu operasi karena keduanya menuntut hal yang sama: berkasnya harus
+// benar-benar diurai. Memisahkannya berarti mengurai dua kali, dan membuka
+// peluang satu berkas dinyatakan sah oleh yang satu lalu ditolak yang lain.
+//
+// Ada di port karena yang tahu jawabannya adalah pustaka font dan pustaka PDF,
+// dan usecase tidak boleh mengimpor keduanya.
+type FontInspector interface {
+	Inspect(data []byte) (FontIdentity, error)
 }

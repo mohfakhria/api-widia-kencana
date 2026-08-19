@@ -4,12 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
-	"time"
 
 	deliveryhttp "github.com/mohfakhria/api-widia-kencana/internal/delivery/http"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/config"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/database"
-	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/googlefonts"
 	pdfrender "github.com/mohfakhria/api-widia-kencana/internal/infrastructure/pdf"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/security"
 	"github.com/mohfakhria/api-widia-kencana/internal/infrastructure/server"
@@ -71,11 +69,7 @@ func (a *ApiApp) initialize() error {
 	// Font tidak punya repository: nama objeknya fungsi murni dari family,
 	// bobot, dan style, sehingga object storage ITULAH indeksnya. Lihat
 	// usecase.FontObjectName.
-	fontUC := usecase.NewFontUseCase(
-		a.objectStorage,
-		googlefonts.New(20*time.Second),
-		pdfrender.NewFontValidator(),
-	)
+	fontUC := usecase.NewFontUseCase(a.objectStorage, pdfrender.NewFontInspector(), a.ServiceLogger)
 	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
 	documentRepo := pg.NewDocumentRepository(a.db)

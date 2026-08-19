@@ -1,0 +1,609 @@
+{
+	"info": {
+		"_postman_id": "48a191e4-0e2c-4b77-91c0-54ae9826d876",
+		"name": "Widia Kencana - Font",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"description": "Pendaftaran dan penyajian font untuk editor maupun ekspor PDF.\n\nTIDAK ADA TABEL. Nama objek adalah fungsi murni dari family, bobot, dan style — `fonts/<slug>/<bobot>-<style>.ttf` — sehingga object storage itulah indeksnya. Elemen dokumen tidak membawa token font, hanya tiga sifat itu, dan pencarian berdasarkan sifat menuntut nama yang dapat DIHITUNG."
+	},
+	"item": [
+		{
+			"name": "Register Font",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "archive",
+							"type": "file",
+							"src": [],
+							"description": "Berkas ZIP hasil unduhan dari fonts.google.com (tombol \"Get font\" → \"Download all\"). Pilih berkasnya lewat kolom File di Postman."
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/font-add",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"font-add"
+					]
+				},
+				"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+			},
+			"response": [
+				{
+					"name": "Register Font - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archive",
+									"type": "file",
+									"src": [],
+									"description": "Berkas ZIP hasil unduhan dari fonts.google.com (tombol \"Get font\" → \"Download all\"). Pilih berkasnya lewat kolom File di Postman."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/font-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-add"
+							]
+						},
+						"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"faces\": [\n      {\n        \"entry\": \"OFL.txt\",\n        \"stored\": false,\n        \"reason\": \"not a .ttf file\"\n      },\n      {\n        \"entry\": \"Barlow-Regular.ttf\",\n        \"family\": \"Barlow\",\n        \"weight\": 400,\n        \"style\": \"normal\",\n        \"object_name\": \"fonts/barlow/400-normal.ttf\",\n        \"size\": 98812,\n        \"stored\": true\n      },\n      {\n        \"entry\": \"Barlow-Italic.ttf\",\n        \"family\": \"Barlow\",\n        \"weight\": 400,\n        \"style\": \"italic\",\n        \"object_name\": \"fonts/barlow/400-italic.ttf\",\n        \"size\": 104252,\n        \"stored\": true\n      },\n      {\n        \"entry\": \"Barlow-Bold.ttf\",\n        \"family\": \"Barlow\",\n        \"weight\": 700,\n        \"style\": \"normal\",\n        \"object_name\": \"fonts/barlow/700-normal.ttf\",\n        \"size\": 102940,\n        \"stored\": true\n      },\n      {\n        \"entry\": \"Barlow-BoldItalic.ttf\",\n        \"family\": \"Barlow\",\n        \"weight\": 700,\n        \"style\": \"italic\",\n        \"object_name\": \"fonts/barlow/700-italic.ttf\",\n        \"size\": 106540,\n        \"stored\": true\n      }\n    ],\n    \"stored\": 4,\n    \"failed\": 1\n  }\n}"
+				},
+				{
+					"name": "Register Font - Partial (variable font, duplicate skipped)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archive",
+									"type": "file",
+									"src": [],
+									"description": "Berkas ZIP hasil unduhan dari fonts.google.com (tombol \"Get font\" → \"Download all\"). Pilih berkasnya lewat kolom File di Postman."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/font-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-add"
+							]
+						},
+						"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"faces\": [\n      {\n        \"entry\": \"OFL.txt\",\n        \"stored\": false,\n        \"reason\": \"not a .ttf file\"\n      },\n      {\n        \"entry\": \"README.txt\",\n        \"stored\": false,\n        \"reason\": \"not a .ttf file\"\n      },\n      {\n        \"entry\": \"Archivo-VariableFont_wdth,wght.ttf\",\n        \"stored\": false,\n        \"reason\": \"variable font has no single weight; use the static files\"\n      },\n      {\n        \"entry\": \"Archivo-Italic-VariableFont_wdth,wght.ttf\",\n        \"stored\": false,\n        \"reason\": \"variable font has no single weight; use the static files\"\n      },\n      {\n        \"entry\": \"static/Archivo-Regular.ttf\",\n        \"family\": \"Archivo\",\n        \"weight\": 400,\n        \"style\": \"normal\",\n        \"object_name\": \"fonts/archivo/400-normal.ttf\",\n        \"size\": 118792,\n        \"stored\": true\n      },\n      {\n        \"entry\": \"static/Archivo_Condensed-Regular.ttf\",\n        \"family\": \"Archivo Condensed\",\n        \"weight\": 400,\n        \"style\": \"normal\",\n        \"object_name\": \"fonts/archivo-condensed/400-normal.ttf\",\n        \"size\": 119108,\n        \"stored\": true\n      },\n      {\n        \"entry\": \"static/Archivo_ExtraCondensed-Regular.ttf\",\n        \"family\": \"Archivo ExtraCondensed\",\n        \"weight\": 400,\n        \"style\": \"normal\",\n        \"object_name\": \"fonts/archivo-extracondensed/400-normal.ttf\",\n        \"size\": 118792,\n        \"stored\": true\n      },\n      {\n        \"entry\": \"Archivo-Regular-copy.ttf\",\n        \"family\": \"Archivo\",\n        \"weight\": 400,\n        \"style\": \"normal\",\n        \"object_name\": \"fonts/archivo/400-normal.ttf\",\n        \"stored\": false,\n        \"reason\": \"same family, weight and style as static/Archivo-Regular.ttf in this archive\"\n      }\n    ],\n    \"stored\": 3,\n    \"failed\": 5\n  }\n}"
+				},
+				{
+					"name": "Register Font - Missing File",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{base_url}}/api/font-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-add"
+							]
+						},
+						"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"archive file is required\"\n}"
+				},
+				{
+					"name": "Register Font - Not A Zip",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archive",
+									"type": "file",
+									"src": [],
+									"description": "Berkas ZIP hasil unduhan dari fonts.google.com (tombol \"Get font\" → \"Download all\"). Pilih berkasnya lewat kolom File di Postman."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/font-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-add"
+							]
+						},
+						"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"font archive is not a valid zip file\"\n}"
+				},
+				{
+					"name": "Register Font - No Font Inside",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archive",
+									"type": "file",
+									"src": [],
+									"description": "Berkas ZIP hasil unduhan dari fonts.google.com (tombol \"Get font\" → \"Download all\"). Pilih berkasnya lewat kolom File di Postman."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/font-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-add"
+							]
+						},
+						"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"font archive contains no font files\"\n}"
+				},
+				{
+					"name": "Register Font - Too Large",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archive",
+									"type": "file",
+									"src": [],
+									"description": "Berkas ZIP hasil unduhan dari fonts.google.com (tombol \"Get font\" → \"Download all\"). Pilih berkasnya lewat kolom File di Postman."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/font-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-add"
+							]
+						},
+						"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+					},
+					"status": "Request Entity Too Large",
+					"code": 413,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"archive is larger than 20971520 bytes\"\n}"
+				},
+				{
+					"name": "Register Font - Unauthorized",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "archive",
+									"type": "file",
+									"src": [],
+									"description": "Berkas ZIP hasil unduhan dari fonts.google.com (tombol \"Get font\" → \"Download all\"). Pilih berkasnya lewat kolom File di Postman."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/font-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-add"
+							]
+						},
+						"description": "Mengunggah satu arsip ZIP berisi berkas font, lalu menyimpan setiap muka huruf yang sah di dalamnya ke object storage.\n\n**Multipart, satu field: `archive`.** Isinya berkas ZIP apa adanya — yang diunduh dari fonts.google.com lewat tombol *Get font* → *Download all*, tanpa perlu dibongkar lebih dulu. Batas ukurannya 20 MB, dan tiap berkas di dalamnya 5 MB.\n\n**Tidak ada nama keluarga maupun daftar bobot yang perlu diketik.** Keluarga, bobot, dan style dibaca DARI DALAM tiap berkas font, bukan dari nama berkasnya. Karena itu satu arsip dapat menghasilkan beberapa keluarga sekaligus: `Archivo.zip` mendaftarkan `Archivo`, `Archivo Condensed`, dan `Archivo ExtraCondensed` sebagai tiga keluarga terpisah, persis seperti yang dilihat editor.\n\n**Sukses sebagian tetap 200.** Arsip Google yang sah memuat `OFL.txt`, `README.txt`, dan berkas *variable font* — ketiganya dilaporkan sebagai baris dengan `stored: false` beserta `reason`, bukan menggagalkan seluruh unggahan. Font variabel sengaja dilewati: ia memuat seluruh rentang bobot dalam satu berkas dan tidak punya bobot tunggal, sedangkan yang dipakai berkas statik di folder yang sama.\n\n**Mendaftar ulang menimpa.** Nama objeknya fungsi murni dari keluarga, bobot, dan style, sehingga mengunggah arsip yang sama dua kali tidak menghasilkan salinan kedua.\n\n**Bentuk baris hasil.** `entry` selalu ada — ia path DI DALAM arsip, satu-satunya nama yang dikenali pengunggah. `object_name` menyusul hanya setelah jati diri font terbaca, dan ia nama objek di penyimpanan; keduanya sengaja terpisah supaya satu kunci tidak berarti dua hal. Baris yang dilewati hanya membawa `entry`, `stored: false`, dan `reason`."
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}"
+				}
+			]
+		},
+		{
+			"name": "List Fonts",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/font-list",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"font-list"
+					]
+				},
+				"description": "Font yang terpasang, dikelompokkan per keluarga. Dibaca frontend untuk menyusun `@font-face` DAN oleh editor untuk daftar pilihan — satu sumber untuk keduanya, supaya layar dan cetak memakai berkas yang sama persis.\n\n**`family` adalah SLUG, dan itu nama kanoniknya.** Kirim nilai itu apa adanya sebagai `fontFamily` di elemen. `\"Barlow Condensed\"`, `\"barlow condensed\"`, dan `\"barlow-condensed\"` semuanya di-slug dengan aturan yang sama sebelum dicari, jadi hanya slug yang dijamin berjalan bolak-balik. Backend tidak menebak balik nama aslinya — tebakan itu akan salah pada keluarga yang namanya memang bertanda hubung.\n\nSumbernya isi object storage, bukan tabel. Objek yang namanya tidak dapat diurai DILEWATI, bukan menggagalkan daftar: bucket dapat memuat berkas yang ditaruh tangan manusia, dan satu nama salah bentuk tidak sepadan dengan seluruh daftar font hilang dari editor.\n\n`content_path` adalah alamat STABIL untuk `@font-face` — bukan presigned URL, yang berumur menit sementara aturan `@font-face` hidup selama halaman terbuka."
+			},
+			"response": [
+				{
+					"name": "List Fonts - Success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/font-list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-list"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"families\": [\n      {\n        \"family\": \"barlow\",\n        \"faces\": [\n          {\n            \"weight\": 400,\n            \"style\": \"normal\",\n            \"size\": 104068,\n            \"content_path\": \"/api/font-content/barlow/400-normal.ttf\"\n          },\n          {\n            \"weight\": 400,\n            \"style\": \"italic\",\n            \"size\": 106340,\n            \"content_path\": \"/api/font-content/barlow/400-italic.ttf\"\n          },\n          {\n            \"weight\": 700,\n            \"style\": \"normal\",\n            \"size\": 104612,\n            \"content_path\": \"/api/font-content/barlow/700-normal.ttf\"\n          }\n        ]\n      },\n      {\n        \"family\": \"ibm-plex-mono\",\n        \"faces\": [\n          {\n            \"weight\": 400,\n            \"style\": \"normal\",\n            \"size\": 135580,\n            \"content_path\": \"/api/font-content/ibm-plex-mono/400-normal.ttf\"\n          }\n        ]\n      }\n    ]\n  }\n}"
+				},
+				{
+					"name": "List Fonts - Empty",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/font-list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-list"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"families\": []\n  }\n}"
+				},
+				{
+					"name": "List Fonts - Unauthorized",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/font-list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-list"
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Font Content",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/font-content/barlow/400-normal.ttf",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"font-content",
+						"barlow",
+						"400-normal.ttf"
+					]
+				},
+				"description": "Mengalihkan (302) ke presigned URL yang berumur 15 menit. Alamat rute ini sendiri PERMANEN — yang kedaluwarsa hanya sasaran pengalihannya, dan peramban mengambil yang baru setiap kali benar-benar mengunduh berkasnya.\n\n**Publik, tanpa Authorization**, dan itu keharusan bukan kelalaian: rute ini dituju oleh aturan `@font-face` di dalam CSS, yang tidak dapat mengirim header. Yang dilayani berkas font berlisensi terbuka, bukan isi dokumen siapa pun.\n\nDi Postman, matikan *Automatically follow redirects* untuk melihat 302-nya; kalau menyala, yang muncul adalah berkas TTF-nya."
+			},
+			"response": [
+				{
+					"name": "Font Content - Redirect",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/font-content/barlow/400-normal.ttf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-content",
+								"barlow",
+								"400-normal.ttf"
+							]
+						}
+					},
+					"status": "Found",
+					"code": 302,
+					"_postman_previewlanguage": "text",
+					"header": [
+						{
+							"key": "Location",
+							"value": "http://localhost:9000/widia/fonts/barlow/400-normal.ttf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900&…"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "public, max-age=300"
+						}
+					],
+					"body": ""
+				},
+				{
+					"name": "Font Content - Not Installed",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/font-content/barlow/400-normal.ttf",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-content",
+								"barlow",
+								"400-normal.ttf"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"font face is not installed\"\n}"
+				},
+				{
+					"name": "Font Content - Invalid Face",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/font-content/barlow/400-normal.woff2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"font-content",
+								"barlow",
+								"400-normal.woff2"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid font face\"\n}"
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8081"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}

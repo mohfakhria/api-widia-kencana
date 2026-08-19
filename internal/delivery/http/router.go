@@ -43,6 +43,11 @@ func NewRouter(deps RouterDeps) http.Handler {
 		// langsung oleh tag <img>, yang tidak dapat mengirim header Authorization.
 		// Token aset yang menjadi kredensialnya — lihat AssetHandler.Content.
 		api.GET("/asset-content/:token", deps.AssetHandler.Content)
+
+		// Alasan yang sama persis: rute ini dituju oleh aturan @font-face di
+		// dalam CSS, yang juga tidak dapat mengirim header Authorization. Yang
+		// dilayani berkas font berlisensi terbuka, bukan isi dokumen siapa pun.
+		api.GET("/font-content/:family/:face", deps.FontHandler.Content)
 	}
 
 	// DUA grup, dan keduanya menyebut peran yang boleh masuk. Tidak ada grup
@@ -74,8 +79,7 @@ func NewRouter(deps RouterDeps) http.Handler {
 		// Ekspor adalah tindakan manusia: agent menyusun, orang yang mencetak.
 		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
 
-		// Pendaftaran font mengambil berkas dari internet atas perintah
-		// pemanggil, lalu berkas itu disematkan ke SETIAP PDF sesudahnya. Ia
+		// Font yang didaftarkan di sini disematkan ke SETIAP PDF sesudahnya. Ia
 		// bukan bagian dari menyusun satu dokumen melainkan mengubah perkakas
 		// yang dipakai semuanya, jadi ia berhenti di sini bersama proyek dan
 		// ekspor.
@@ -99,6 +103,11 @@ func NewRouter(deps RouterDeps) http.Handler {
 		agentAllowed.GET("/asset-detail/:token", deps.AssetHandler.Get)
 		agentAllowed.GET("/asset-presign/:token", deps.AssetHandler.PresignGet)
 		agentAllowed.DELETE("/asset-delete/:token", deps.AssetHandler.Delete)
+
+		// Daftar font dibaca editor untuk menawarkan pilihan, jadi ia dibuka
+		// selebar document-list. Yang dijaga superadmin adalah MENAMBAH font,
+		// bukan mengetahui font apa yang ada.
+		agentAllowed.GET("/font-list", deps.FontHandler.List)
 
 		// Di grup yang sama dengan document-add, karena keduanya dipakai
 		// berurutan: kertas dipilih lebih dulu, tokennya menjadi masukan wajib

@@ -100,6 +100,36 @@ func (s *Storage) PresignPut(ctx context.Context, objectName string, expiry time
 	return url.String(), nil
 }
 
+// List menelusuri objek di bawah satu prefix.
+//
+// Recursive, karena prefix font memuat satu tingkat direktori per keluarga dan
+// yang dicari adalah berkasnya, bukan nama foldernya.
+func (s *Storage) List(ctx context.Context, prefix string) ([]output.StoredObject, error) {
+	var objects []output.StoredObject
+
+	for object := range s.client.ListObjects(ctx, s.bucket, miniosdk.ListObjectsOptions{
+		Prefix:    prefix,
+		Recursive: true,
+	}) {
+		// Galat datang DI DALAM saluran, bukan sebagai nilai balik. Melewatkannya
+		// membuat daftar yang terpotong di tengah terbaca sebagai daftar lengkap
+		// yang kebetulan pendek.
+		if object.Err != nil {
+			return nil, object.Err
+		}
+
+		objects = append(objects, output.StoredObject{
+			Bucket:      s.bucket,
+			ObjectName:  object.Key,
+			ETag:        object.ETag,
+			Size:        object.Size,
+			ContentType: object.ContentType,
+		})
+	}
+
+	return objects, nil
+}
+
 func (s *Storage) Stat(ctx context.Context, objectName string) (*output.StoredObject, error) {
 	info, err := s.client.StatObject(ctx, s.bucket, objectName, miniosdk.StatObjectOptions{})
 	if err != nil {
