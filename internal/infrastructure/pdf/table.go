@@ -225,16 +225,30 @@ func (c *canvas) drawGrid(element *design.Element, edges, tops []float64) {
 	c.pdf.SetDrawColor(red, green, blue)
 	c.pdf.SetLineWidth(element.BorderWidth)
 
-	bawah := tops[len(tops)-1]
-	kanan := edges[len(edges)-1]
+	// PDF memusatkan goresan pada jalurnya; layar memakai box-sizing: border-box
+	// yang menaruh garis DI DALAM ukuran yang dideklarasikan. Tanpa pergeseran
+	// setengah lebar ini setiap garis meleset separuh borderWidth — dan karena
+	// melesetnya SEARAH pada seluruh grid, hasilnya tabel yang bergeser
+	// konsisten, bukan satu garis yang kelihatan salah.
+	separuh := element.BorderWidth / 2
 
-	// Garis mendatar: atas setiap baris, ditambah penutup bawah.
+	// Tinggi elemen sudah menyediakan ruang bagi garis penutup bawah —
+	// h = Σ tinggi baris + borderWidth — sehingga SELURUH garis mendatar
+	// bergeser ke arah yang sama, dan yang terakhir mengisi ruang tambahan itu.
 	for _, y := range tops {
-		c.pdf.Line(element.X, y, kanan, y)
+		c.pdf.Line(element.X, y+separuh, element.X+element.W, y+separuh)
 	}
 
-	// Garis tegak: kiri setiap kolom, ditambah penutup kanan.
-	for _, x := range edges {
-		c.pdf.Line(x, element.Y, x, bawah)
+	// Lebar TIDAK menyediakan ruang serupa: jumlah share adalah satu, sehingga
+	// kolom sudah menghabiskan w. Garis penutup kanan karenanya bergeser ke
+	// dalam, bukan keluar — satu-satunya garis yang arahnya berbeda, dan
+	// asimetri itu lahir dari rumus w dan h yang memang berbeda.
+	bawah := tops[len(tops)-1] + element.BorderWidth
+	for index, x := range edges {
+		garis := x + separuh
+		if index == len(edges)-1 {
+			garis = x - separuh
+		}
+		c.pdf.Line(garis, element.Y, garis, bawah)
 	}
 }
