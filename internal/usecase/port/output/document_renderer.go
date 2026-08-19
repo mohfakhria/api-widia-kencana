@@ -34,6 +34,30 @@ type RenderDocument struct {
 	// dilewati, bukan menggagalkan seluruh ekspor: satu aset yang hilang tidak
 	// sepadan dengan dokumen yang tidak bisa dicetak sama sekali.
 	Images map[string]RenderImage
+
+	// Fonts diserahkan dengan alasan yang sama persis seperti Images, dan itu
+	// sebabnya ia pindah ke sini dari konstruktor renderer: berkasnya kini
+	// tinggal di object storage, dan renderer tidak boleh menjadi pihak yang
+	// mengambilnya.
+	//
+	// Berisi SELURUH muka huruf dari keluarga yang dipakai dokumen, bukan hanya
+	// yang persis diminta. Renderer menyelesaikan bobot yang tidak ada dengan
+	// memilih yang terdekat DI DALAM keluarga itu, dan pilihan tersebut hanya
+	// benar bila ia melihat seluruh isinya — diberi sepotong, ia akan jatuh ke
+	// Helvetica padahal keluarganya sendiri masih punya bobot yang berdekatan.
+	Fonts map[FontFace][]byte
+}
+
+// FontFace mengidentifikasi satu muka huruf sebagaimana elemen menyebutnya.
+//
+// Family di sini bentuk yang dipakai elemen setelah dihuruf-kecilkan — "barlow
+// condensed" dengan spasinya — BUKAN slug nama objeknya. Renderer mencari dengan
+// nama yang dibawa elemen, dan penerjemahan ke nama objek terjadi sebelum sampai
+// ke sini.
+type FontFace struct {
+	Family string
+	Weight int
+	Style  string
 }
 
 type RenderImage struct {

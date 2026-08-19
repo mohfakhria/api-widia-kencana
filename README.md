@@ -68,10 +68,6 @@ Nilai bawaannya aman untuk mesin sendiri dan tidak aman di tempat lain. Yang
 harus diganti sebelum dipakai di luar itu disebut di [Deployment](#deployment),
 bersama yang lain yang hanya berlaku di sana.
 
-Satu variabel dibaca aplikasi tetapi **tidak** ada di `.env.example`, dan itu
-disengaja: `DESIGN_FONT_DIR` bukan konfigurasi hari pertama — lihat catatan
-tentang font di bawah.
-
 Catatan berikut menjelaskan hal-hal yang tidak muat sebagai komentar di berkas
 contoh:
 
@@ -84,10 +80,11 @@ contoh:
 - Flag `Secure` pada cookie disetel eksplisit lewat `COOKIE_SECURE`, bawaannya `false`. Dulu ia diturunkan dari skema `APP_BASEURL`, dan itu menebak salah justru pada susunan paling umum: di belakang reverse proxy, alamat internalnya `http://` sementara browser bicara `https`.
 - Aplikasi menolak start bila `APP_ENV=production` tetapi cookie tidak `Secure`.
 - Cookie memakai `SameSite=Strict`. Ini bekerja selama frontend dan API berada pada registrable domain yang sama, misal `app.example.com` dengan `api.example.com`. Bila keduanya benar-benar beda domain, `SameSite` perlu diturunkan ke `None` dan `Secure` menjadi wajib.
-- `DESIGN_FONT_DIR` **kosong secara bawaan**, dan tidak perlu diisi. Export PDF memakai Helvetica inti — keadaan yang didukung, bukan keadaan darurat. Yang menjadi syaratnya ada di sisi frontend: `font-family` dipaku ke daftar yang lebar majunya sepadan dengan Helvetica, tidak diserahkan ke `sans-serif` telanjang. Aturan lengkapnya di berkas kontrak bersama `document-design-fe-be-alignment.md` di repo `widia-kencana-docs-hub`.
-- Isi `DESIGN_FONT_DIR` hanya bila mendaftarkan berkas font sendiri; ia menunjuk direktori berkas font beserta manifes `fonts.json` di dalamnya, dan berkas yang sama wajib disajikan ke frontend lewat `@font-face`. Jalur relatif diselesaikan terhadap direktori kerja proses — di systemd berarti `WorkingDirectory`. Manifes yang cacat atau berkas yang disebut manifes tetapi tidak ditemukan **menolak start**, karena keduanya berarti export akan memakai huruf yang berbeda dari tampilan editor — jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
+- **Font tidak dikonfigurasi lewat env sama sekali.** Berkasnya tinggal di object storage dan didaftarkan lewat `POST /api/font-add` (unggah arsip ZIP dari fonts.google.com). Ekspor mengambilnya per dokumen, sehingga font yang baru diunggah langsung terpakai tanpa restart. `DESIGN_FONT_DIR` beserta manifes `fonts.json` sudah dipensiunkan; bila masih tersisa di berkas env lama, ia diabaikan.
+- Tanpa satu pun font terdaftar, ekspor memakai Helvetica inti — keadaan yang **didukung**, bukan keadaan darurat. Yang menjadi syaratnya ada di sisi frontend: `font-family` dipaku ke daftar yang lebar majunya sepadan dengan Helvetica, tidak diserahkan ke `sans-serif` telanjang. Aturan lengkapnya di berkas kontrak bersama `document-design-fe-be-alignment.md` di repo `widia-kencana-docs-hub`.
+- Yang dimuat saat ekspor adalah **seluruh muka huruf** dari keluarga yang dipakai dokumen, bukan hanya bobot yang diminta. Renderer memilih bobot terdekat di dalam keluarga yang sama ketika yang diminta tidak ada, dan pilihan itu hanya benar bila ia melihat seluruh isinya.
 - Yang menentukan hasil cetak sama dengan layar adalah **lebar maju** yang sama, bukan nama keluarga yang sama. Arial justru diciptakan sebagai pengganti Helvetica dengan lebar maju yang sama persis, dan Liberation Sans serta Nimbus Sans dirancang selebar itu pula — yang berbeda bentuk glifnya. Yang merusak adalah font yang lebarnya memang lain, seperti DejaVu Sans yang menjadi pilihan `sans-serif` bawaan di banyak Linux. Detailnya ada di berkas kontrak bersama.
-- Export PDF **tidak pernah gagal** karena font. Ketebalan atau keluarga yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log, beserta jumlah elemen yang terpengaruh. Karena itu editor hanya boleh menawarkan ketebalan 400 dan 700.
+- Export PDF **tidak pernah gagal** karena font. Ketebalan atau keluarga yang tidak terdaftar dibulatkan ke yang terdekat dan dicatat sebagai peringatan di log, beserta jumlah elemen yang terpengaruh. Karena itu editor hanya boleh menawarkan bobot yang benar-benar terpasang — `GET /api/font-list` menyebutnya — dan hanya 400 serta 700 selama belum ada font yang didaftarkan.
 - MinIO local yang umum dipakai di project ini: console `9001`, API `9002`.
 - `MINIO_ROOT_USER` dan `MINIO_ROOT_PASSWORD` digunakan sebagai credential MinIO.
 
@@ -224,9 +221,8 @@ Tidak ada berkas pendamping yang perlu ikut dikirim — satu binary saja. Export
 PDF memakai Helvetica inti, yang metriknya melekat pada spesifikasi PDF dan tidak
 perlu disematkan.
 
-`WorkingDirectory` di unit systemd tetap disetel: ia yang menentukan letak
-direktori font seandainya suatu hari `DESIGN_FONT_DIR` diisi dengan jalur
-relatif.
+Font pun tidak menjadi berkas pendamping: ia diambil dari object storage saat
+ekspor, sehingga menambah keluarga baru tidak menyentuh mesin ini sama sekali.
 
 ### 3. Konfigurasi
 

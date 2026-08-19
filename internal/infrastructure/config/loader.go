@@ -28,7 +28,6 @@ type Config struct {
 	MinIORootPassword string
 	MinIOBucket       string
 	MinIOUseSSL       bool
-	DesignFontDir     string
 }
 
 func Load() Config {
@@ -103,7 +102,6 @@ func Load() Config {
 		// konfigurasi yang menyebutkan namanya.
 		//
 		// Isi hanya bila mendaftarkan berkas font sendiri.
-		DesignFontDir: getEnv("DESIGN_FONT_DIR", ""),
 	}
 }
 

@@ -79,23 +79,16 @@ func (a *ApiApp) initialize() error {
 		deliveryhttp.DesignMessageEncoder{}, a.ServiceLogger,
 	)
 
-	// Font dimuat sekali saat start, bukan tiap ekspor. Kegagalan di sini
-	// menghentikan aplikasi dengan sengaja: manifes yang cacat atau berkas yang
-	// hilang berarti ekspor akan memakai huruf yang berbeda dari layar, dan itu
-	// jauh lebih baik diketahui saat deploy daripada saat pengguna mencetak.
-	fonts, err := pdfrender.LoadFonts(a.Config.DesignFontDir)
-	if err != nil {
-		return err
-	}
-	a.ServiceLogger.Info("loaded document export fonts",
-		"dir", a.Config.DesignFontDir, "families", fonts.Families())
-
+	// Font TIDAK dimuat saat start. Berkasnya tinggal di object storage dan
+	// didaftarkan lewat API, sehingga memuatnya sekali di sini berarti font yang
+	// baru diunggah tidak terpakai sampai aplikasi dinyalakan ulang. Yang
+	// mengambilnya usecase ekspor, per dokumen, sama seperti gambar.
 	documentExportUC := usecase.NewDocumentExportUseCase(
 		documentRepo,
 		documentDesign,
 		pg.NewAssetRepository(a.db),
 		a.objectStorage,
-		pdfrender.NewRenderer(fonts, a.ServiceLogger),
+		pdfrender.NewRenderer(a.ServiceLogger),
 	)
 
 	router := deliveryhttp.NewRouter(deliveryhttp.RouterDeps{

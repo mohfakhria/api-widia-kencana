@@ -22,9 +22,10 @@ const maxPageSide = 14400
 // Renderer menggambar isi dokumen menjadi PDF.
 //
 // Aman dipakai bersamaan dari banyak goroutine: setiap pemanggilan RenderPDF
-// membuat dokumen fpdf sendiri, dan Fonts hanya dibaca setelah dimuat saat start.
+// membuat dokumen fpdf sendiri, dan tidak ada satu pun keadaan yang dibawanya
+// antar pemanggilan. Font pun kini datang bersama dokumennya, bukan disimpan di
+// sini sejak start.
 type Renderer struct {
-	fonts  *Fonts
 	logger *slog.Logger
 }
 
@@ -33,12 +34,12 @@ type Renderer struct {
 // Itu satu-satunya keluaran renderer selain berkas PDF-nya. Ia tetap tidak
 // menyentuh jaringan, database, maupun berkas — sifat yang menjaganya tidak dapat
 // diarahkan mengambil alamat yang ditentukan klien lewat isi dokumen.
-func NewRenderer(fonts *Fonts, logger *slog.Logger) *Renderer {
+func NewRenderer(logger *slog.Logger) *Renderer {
 	if logger == nil {
 		logger = slog.Default()
 	}
 
-	return &Renderer{fonts: fonts, logger: logger}
+	return &Renderer{logger: logger}
 }
 
 // substitution adalah satu permintaan font yang tidak dapat dipenuhi apa adanya.
@@ -111,7 +112,7 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 
 	c := &canvas{
 		pdf:              doc,
-		fonts:            r.fonts,
+		fonts:            newFonts(document.Fonts),
 		images:           document.Images,
 		registeredFonts:  make(map[faceKey]selectedFont),
 		registeredImages: make(map[string]imageRegistration),

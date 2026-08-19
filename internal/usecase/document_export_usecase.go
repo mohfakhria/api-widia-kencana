@@ -21,6 +21,18 @@ import (
 // gambar sekaligus.
 const maxImageBytes = 16 << 20
 
+// Batas font untuk satu ekspor.
+//
+// maxFontFaceBytes menjaga satu objek yang mengada-ada; pendaftaran lewat API
+// sudah menolak yang lebih besar, jadi ia hanya berlaku bagi berkas yang ditaruh
+// langsung ke dalam bucket. maxFontTotalBytes membatasi keseluruhannya, karena
+// yang diunduh SELURUH keluarga yang dipakai — dokumen yang menyebut sepuluh
+// keluarga berbobot lengkap dapat menarik puluhan megabita ke memori sekaligus.
+const (
+	maxFontFaceBytes  = 5 << 20
+	maxFontTotalBytes = 48 << 20
+)
+
 // assetStatusUploaded adalah satu-satunya keadaan aset yang isinya benar-benar
 // ada di object storage.
 const assetStatusUploaded = "uploaded"
@@ -80,12 +92,18 @@ func (uc *documentExportUseCase) ExportPDF(ctx context.Context, documentToken st
 		return nil, err
 	}
 
+	fonts, err := uc.loadFonts(ctx, parsed)
+	if err != nil {
+		return nil, err
+	}
+
 	rendered, err := uc.renderer.RenderPDF(ctx, output.RenderDocument{
 		Token:      documentToken,
 		Content:    parsed,
 		PageWidth:  width,
 		PageHeight: height,
 		Images:     images,
+		Fonts:      fonts,
 	})
 	if err != nil {
 		return nil, err
@@ -136,6 +154,215 @@ func (uc *documentExportUseCase) loadImages(ctx context.Context, content *design
 	}
 
 	return images, nil
+}
+
+// fontRequest adalah satu muka huruf yang diminta isi dokumen.
+type fontRequest struct {
+	weight int
+	style  string
+}
+
+// loadFonts mengambil berkas font bagi muka huruf yang dipakai dokumen.
+//
+// Dua jalur, dan yang menentukan adalah apakah SELURUH permintaan pada satu
+// keluarga dapat dipenuhi persis:
+//
+//   - Semua ada → yang diunduh hanya itu. Dokumen yang memakai satu muka huruf
+//     menarik satu berkas, bukan delapan belas.
+//   - Ada yang meleset → SELURUH keluarga diunduh. Renderer menyelesaikan bobot
+//     yang tidak ada dengan memilih yang terdekat di dalam keluarga yang sama,
+//     dan pilihan itu hanya benar bila ia melihat seluruh isinya; diberi
+//     sepotong, ia jatuh ke Helvetica padahal keluarganya masih punya bobot
+//     berdekatan — cetakan yang berbeda dari layar justru karena kita berhemat.
+//
+// Hasil akhirnya sama pada kedua jalur. Yang berbeda hanya berapa berkas yang
+// menyeberang jaringan, dan itu terasa: ekspor adalah satu klik yang ditunggu
+// orang.
+//
+// Keluarga yang tidak terpasang menghasilkan daftar kosong, dan itu BUKAN galat:
+// resolve memang dirancang tidak pernah gagal, dan menolak mencetak dokumen yang
+// menyebut font tak dikenal adalah keputusan yang sudah pernah dibalik. Yang
+// menjadi galat hanya kegagalan penyimpanan — itu gangguan sementara, dan PDF
+// ber-Helvetica yang lahir darinya menyamar sebagai hasil yang benar.
+func (uc *documentExportUseCase) loadFonts(ctx context.Context, content *design.Content) (map[output.FontFace][]byte, error) {
+	requested := requestedFaces(content)
+	if len(requested) == 0 {
+		return nil, nil
+	}
+
+	fonts := make(map[output.FontFace][]byte)
+	total := 0
+
+	for family, wanted := range requested {
+		slug := FontFamilySlug(family)
+		if slug == "" {
+			continue
+		}
+
+		objects, err := uc.storage.List(ctx, FontScope+"/"+slug+"/")
+		if err != nil {
+			return nil, domain.NewError(domain.ErrInternalFailure, "failed to read document export fonts")
+		}
+
+		tersedia := make(map[fontRequest]string, len(objects))
+		for _, object := range objects {
+			if _, weight, style, ok := ParseFontObjectName(object.ObjectName); ok {
+				tersedia[fontRequest{weight: weight, style: style}] = object.ObjectName
+			}
+		}
+
+		unduh := make(map[fontRequest]string, len(wanted))
+		for request := range wanted {
+			objectName, ada := tersedia[request]
+			if !ada {
+				// Satu yang meleset sudah cukup: yang menambalnya adalah bobot
+				// lain di keluarga yang sama, dan kita belum tahu yang mana.
+				unduh = tersedia
+
+				break
+			}
+			unduh[request] = objectName
+		}
+
+		for request, objectName := range unduh {
+			data, err := uc.downloadFont(ctx, objectName)
+			if err != nil {
+				return nil, err
+			}
+			if data == nil {
+				continue
+			}
+
+			total += len(data)
+			if total > maxFontTotalBytes {
+				return nil, domain.NewError(domain.ErrInvalidInput,
+					"document uses more font files than the export limit allows")
+			}
+
+			// Dikunci nama keluarga yang DIPAKAI ELEMEN, bukan slug-nya. Renderer
+			// mencari dengan nama yang dibawa elemen — "barlow condensed" lengkap
+			// dengan spasinya — dan slug hanya jembatan menuju nama objek.
+			fonts[output.FontFace{Family: family, Weight: request.weight, Style: request.style}] = data
+		}
+	}
+
+	return fonts, nil
+}
+
+// requestedFaces mengumpulkan muka huruf yang diminta, dikelompokkan per keluarga.
+//
+// Keluarga inti dilewati: metriknya melekat pada spesifikasi PDF dan tidak ada
+// berkas yang perlu diambil untuknya.
+//
+// Sel tabel tidak menyimpan keluarga maupun style sendiri — hanya bobot — jadi
+// keluarga dan style elemennya berlaku bagi seluruh selnya, sementara bobot tiap
+// sel ikut diminta sendiri-sendiri.
+func requestedFaces(content *design.Content) map[string]map[fontRequest]struct{} {
+	requested := make(map[string]map[fontRequest]struct{})
+
+	tambah := func(family string, weight int, style string) {
+		if requested[family] == nil {
+			requested[family] = make(map[fontRequest]struct{})
+		}
+		requested[family][fontRequest{weight: weight, style: style}] = struct{}{}
+	}
+
+	kumpulkan := func(elements []design.Element) {
+		for index := range elements {
+			element := &elements[index]
+			if element.Type != design.ElementText && element.Type != design.ElementTable {
+				continue
+			}
+
+			family := element.ResolvedFontFamily()
+			if family == design.DefaultFontFamily {
+				continue
+			}
+
+			style := element.ResolvedFontStyle()
+			tambah(family, element.ResolvedFontWeight(), style)
+
+			for _, row := range element.Rows {
+				for _, cell := range row.Cells {
+					tambah(family, cell.ResolvedCellWeight(), style)
+				}
+			}
+		}
+	}
+
+	for _, page := range content.VisiblePages() {
+		kumpulkan(page.Elements)
+	}
+
+	// Lapisan master digambar di SETIAP halaman, jadi fontnya sama wajibnya.
+	// Melewatkannya menghasilkan kop surat ber-Helvetica di atas badan dokumen
+	// yang hurufnya benar — persis satu-satunya tempat yang paling terlihat.
+	kumpulkan(content.Master.Elements)
+
+	return requested
+}
+
+// downloadFont mengembalikan nil tanpa error bila berkasnya melebihi batas, sama
+// seperti gambar: satu objek yang mengada-ada tidak sepadan dengan ekspor yang
+// gagal seluruhnya, dan renderer masih punya jalan mundur.
+func (uc *documentExportUseCase) downloadFont(ctx context.Context, objectName string) ([]byte, error) {
+	reader, err := uc.storage.Download(ctx, objectName)
+	if err != nil {
+		return nil, domain.NewError(domain.ErrInternalFailure, "failed to read document export fonts")
+	}
+	defer reader.Close()
+
+	data, err := io.ReadAll(io.LimitReader(reader, maxFontFaceBytes+1))
+	if err != nil {
+		return nil, domain.NewError(domain.ErrInternalFailure, "failed to read document export fonts")
+	}
+	if len(data) > maxFontFaceBytes {
+		return nil, nil
+	}
+
+	return data, nil
+}
+
+// fontFamilies mengumpulkan keluarga font yang dipakai, tanpa pengulangan.
+//
+// Keluarga inti dilewati: metriknya melekat pada spesifikasi PDF dan tidak ada
+// berkas yang perlu diambil untuknya.
+//
+// Sel tabel tidak menyimpan keluarga sendiri — hanya bobot per sel — sehingga
+// keluarga elemen tabel sudah mewakili seluruh selnya.
+func fontFamilies(content *design.Content) []string {
+	seen := make(map[string]struct{})
+	families := make([]string, 0)
+
+	kumpulkan := func(elements []design.Element) {
+		for index := range elements {
+			element := &elements[index]
+			if element.Type != design.ElementText && element.Type != design.ElementTable {
+				continue
+			}
+
+			family := element.ResolvedFontFamily()
+			if family == design.DefaultFontFamily {
+				continue
+			}
+			if _, exists := seen[family]; exists {
+				continue
+			}
+			seen[family] = struct{}{}
+			families = append(families, family)
+		}
+	}
+
+	for _, page := range content.VisiblePages() {
+		kumpulkan(page.Elements)
+	}
+
+	// Lapisan master digambar di SETIAP halaman, jadi fontnya sama wajibnya.
+	// Melewatkannya menghasilkan kop surat ber-Helvetica di atas badan dokumen
+	// yang hurufnya benar — persis satu-satunya tempat yang paling terlihat.
+	kumpulkan(content.Master.Elements)
+
+	return families
 }
 
 // downloadImage mengembalikan nil tanpa error bila asetnya melebihi batas — satu
@@ -189,9 +416,9 @@ func imageTokens(content *design.Content) []string {
 		kumpulkan(page.Elements)
 	}
 
-	// Lapisan master digambar di SETIAP halaman, jadi asetnya sama wajibnya.
-	// Sebelumnya ia terlewat, dan akibatnya logo di master hilang dari cetakan
-	// tanpa satu pun galat.
+	// Lapisan master ikut, dengan alasan yang sama seperti pada fontFamilies: ia
+	// digambar di setiap halaman. Sebelumnya ia terlewat, dan akibatnya logo di
+	// master hilang dari cetakan tanpa satu pun galat.
 	kumpulkan(content.Master.Elements)
 
 	return tokens

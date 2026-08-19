@@ -29,22 +29,11 @@
 package pdf
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"maps"
-	"os"
-	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
+	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/output"
 )
-
-// ManifestName adalah berkas yang mendaftarkan keluarga font beserta berkasnya.
-// Pendaftaran dibuat eksplisit, bukan hasil pemindaian direktori, supaya nama
-// keluarga yang dipakai frontend tidak bergantung pada nama berkas.
-const ManifestName = "fonts.json"
 
 // CoreFamily adalah satu-satunya keluarga yang selalu tersedia tanpa berkas apa
 // pun, karena metriknya melekat pada spesifikasi PDF.
@@ -92,116 +81,48 @@ type faceKey struct {
 	style  string
 }
 
-// Fonts adalah kumpulan font yang tersedia bagi renderer.
+// Fonts adalah kumpulan font yang tersedia bagi SATU penggambaran.
 //
-// Seluruh berkas dimuat ke memori sekali saat aplikasi start, bukan dibaca tiap
-// ekspor. Satu berkas font berukuran ratusan kilobita dan jumlahnya sedikit,
-// sedangkan membacanya berulang kali akan menambah I/O pada jalur yang justru
-// diharapkan cepat.
+// Dulu ia dimuat sekali saat start dari sebuah direktori beserta manifesnya.
+// Berkasnya kini tinggal di object storage dan didaftarkan lewat API, sehingga
+// menyimpannya di memori proses berarti font yang baru diunggah tidak akan
+// terpakai sampai aplikasi dinyalakan ulang — dan pada dua proses yang berjalan
+// berdampingan, hasil ekspornya bahkan dapat berbeda.
 type Fonts struct {
 	faces map[faceKey][]byte
 }
 
-type manifest struct {
-	Families []manifestFamily `json:"families"`
-}
-
-type manifestFamily struct {
-	Name  string         `json:"name"`
-	Faces []manifestFace `json:"faces"`
-}
-
-type manifestFace struct {
-	Weight int    `json:"weight"`
-	Style  string `json:"style"`
-	File   string `json:"file"`
-}
-
-// LoadFonts membaca manifes dan seluruh berkas font di dalamnya.
+// newFonts menyalin muka huruf yang diserahkan pemanggil menjadi peta pencarian.
 //
-// Direktori yang tidak ada bukan error: aplikasi tetap berjalan dengan keluarga
-// inti saja. Yang menjadi error adalah manifes yang ada tetapi cacat, atau berkas
-// yang disebut manifes tetapi tidak ditemukan — keduanya berarti niat yang tidak
-// terpenuhi, dan mendiamkannya akan muncul belakangan sebagai ekspor yang
-// hurufnya berbeda dari layar.
-func LoadFonts(dir string) (*Fonts, error) {
-	fonts := &Fonts{faces: make(map[faceKey][]byte)}
+// Yang tidak dapat dipakai DILEWATI, bukan menggagalkan penggambaran: keluarga
+// inti tidak boleh ditimpa karena metriknya melekat pada spesifikasi PDF, dan
+// bobot atau gaya yang mustahil hanya dapat lahir dari objek yang ditaruh tangan
+// manusia ke dalam bucket. Keduanya menyisakan resolve sebagai penjaring, dan ia
+// memang dirancang tidak pernah gagal.
+func newFonts(faces map[output.FontFace][]byte) *Fonts {
+	fonts := &Fonts{faces: make(map[faceKey][]byte, len(faces))}
 
-	if dir == "" {
-		return fonts, nil
-	}
-
-	raw, err := os.ReadFile(filepath.Join(dir, ManifestName))
-	if errors.Is(err, os.ErrNotExist) {
-		return fonts, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("read font manifest: %w", err)
-	}
-
-	var parsed manifest
-	if err := json.Unmarshal(raw, &parsed); err != nil {
-		return nil, fmt.Errorf("parse font manifest: %w", err)
-	}
-
-	for _, family := range parsed.Families {
-		name := strings.ToLower(strings.TrimSpace(family.Name))
-		if name == "" {
-			return nil, errors.New("font manifest has a family without a name")
+	for face, data := range faces {
+		family := strings.ToLower(strings.TrimSpace(face.Family))
+		if family == "" || family == CoreFamily || len(data) == 0 {
+			continue
 		}
-		if name == CoreFamily {
-			return nil, fmt.Errorf("font family %q is reserved for the built-in core font", CoreFamily)
+		if face.Weight < 100 || face.Weight > 900 || face.Weight%100 != 0 {
+			continue
 		}
 
-		for _, face := range family.Faces {
-			key, err := newFaceKey(name, face)
-			if err != nil {
-				return nil, err
-			}
-
-			data, err := os.ReadFile(filepath.Join(dir, face.File))
-			if err != nil {
-				return nil, fmt.Errorf("read font file for %s %d %s: %w", name, key.weight, key.style, err)
-			}
-			fonts.faces[key] = data
+		style := strings.ToLower(strings.TrimSpace(face.Style))
+		if style == "" {
+			style = design.FontStyleNormal
 		}
+		if style != design.FontStyleNormal && style != design.FontStyleItalic {
+			continue
+		}
+
+		fonts.faces[faceKey{family: family, weight: face.Weight, style: style}] = data
 	}
 
-	return fonts, nil
-}
-
-func newFaceKey(family string, face manifestFace) (faceKey, error) {
-	if face.Weight < 100 || face.Weight > 900 || face.Weight%100 != 0 {
-		return faceKey{}, fmt.Errorf("font family %q has face weight %d, expected a multiple of 100 between 100 and 900", family, face.Weight)
-	}
-
-	style := strings.ToLower(strings.TrimSpace(face.Style))
-	if style == "" {
-		style = design.FontStyleNormal
-	}
-	if style != design.FontStyleNormal && style != design.FontStyleItalic {
-		return faceKey{}, fmt.Errorf("font family %q has face style %q, expected normal or italic", family, style)
-	}
-	if strings.TrimSpace(face.File) == "" {
-		return faceKey{}, fmt.Errorf("font family %q has a face without a file", family)
-	}
-
-	return faceKey{family: family, weight: face.Weight, style: style}, nil
-}
-
-// Families menyebut seluruh keluarga yang tersedia, untuk dicatat saat start
-// supaya ketiadaan font terlihat di log dan bukan baru terungkap saat ada yang
-// mencoba mengekspor.
-//
-// Keluarga inti selalu ikut disebut walau tidak ada satu berkas pun yang
-// terdaftar — ia memang selalu ada.
-func (f *Fonts) Families() []string {
-	unik := map[string]struct{}{CoreFamily: {}}
-	for key := range f.faces {
-		unik[key.family] = struct{}{}
-	}
-
-	return slices.Sorted(maps.Keys(unik))
+	return fonts
 }
 
 // resolution menyebut potongan font yang benar-benar akan dipakai menggambar.
@@ -270,10 +191,6 @@ func (f *Fonts) resolve(family string, weight int, style string) resolution {
 	return resolution{used: core, core: true}
 }
 
-// nearestWeight mencari ketebalan terdekat yang benar-benar terdaftar pada satu
-// keluarga dan gaya.
-//
-// Seri diputus ke arah yang lebih ringan, sekadar supaya hasilnya pasti dan tidak
 // pick memilih muka terbaik untuk satu keluarga pada satu style.
 //
 // Cocok persis lebih dulu, lalu bobot terdekat. Dipisahkan menjadi fungsi
@@ -289,6 +206,10 @@ func (f *Fonts) pick(family string, weight int, style string) (faceKey, bool) {
 	return f.nearestWeight(family, weight, style)
 }
 
+// nearestWeight mencari ketebalan terdekat yang benar-benar terdaftar pada satu
+// keluarga dan gaya.
+//
+// Seri diputus ke arah yang lebih ringan, sekadar supaya hasilnya pasti dan tidak
 // bergantung pada urutan penelusuran map — yang di Go memang diacak.
 func (f *Fonts) nearestWeight(family string, weight int, style string) (faceKey, bool) {
 	var (
