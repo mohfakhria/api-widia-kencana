@@ -321,12 +321,19 @@ lebih cepat berarti membuang pekerjaan pengguna yang belum sempat ditulis.
   antarmuka, jadi batasi dengan firewall dan letakkan nginx atau Caddy di
   depannya. Proxy-nya wajib meneruskan header `Upgrade` dan `Connection` untuk
   `/document-design/`, dan `proxy_read_timeout`-nya harus lebih panjang dari
-  koneksi WebSocket yang menganggur. Tiga vhost contoh ada di `deploy/nginx/`:
-  `socket-design` untuk WebSocket penyuntingan, `api-storage` untuk S3 API MinIO
-  tempat presigned URL mendarat, dan `storage` untuk konsol MinIO. Yang kedua
-  menuntut `MINIO_ENDPOINT` disetel ke nama publiknya — presigned URL
-  ditandatangani untuk host itu, dan nama yang tidak cocok ditolak MinIO sebagai
-  `SignatureDoesNotMatch`, galat yang tidak menyebut host sama sekali.
+  koneksi WebSocket yang menganggur. Contoh vhost ada di `deploy/nginx/`:
+  `gateway` untuk **seluruh** yang dilayani `:APP_PORT` — REST API sekaligus
+  WebSocket penyuntingan — lalu `api-storage` untuk S3 API MinIO tempat presigned
+  URL mendarat, `storage` untuk konsol MinIO, dan `mcp` untuk gerbang AI agent.
+  `socket-design` adalah nama lama yang hanya melayani WebSocket; ia digantikan
+  `gateway` dan boleh dilepas setelah frontend berpindah. Keduanya sengaja dapat
+  aktif berdampingan selama perpindahan itu — nama `map` pada masing-masing
+  berkas dibuat berbeda, karena nginx menolak muat bila satu nama `map`
+  didefinisikan dua kali.
+- **`api-storage` menuntut `MINIO_ENDPOINT` disetel ke nama publiknya.**
+  Presigned URL ditandatangani untuk host itu, dan nama yang tidak cocok ditolak
+  MinIO sebagai `SignatureDoesNotMatch`, galat yang tidak menyebut host sama
+  sekali.
 - **Backup.** Postgres dan MinIO, di luar cakupan repo ini.
 
 ## Project Structure
