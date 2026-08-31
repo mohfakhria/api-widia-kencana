@@ -17,7 +17,7 @@ const defaultDocumentStatus = "draft"
 // allowedDocumentTypes adalah kosakata tertutup jenis dokumen.
 //
 // TIDAK ADA BAWAAN, dan itu keputusan yang diambil sadar setelah sempat ada:
-// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan kelima jenis di
+// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan keenam jenis di
 // bawah yang semuanya dokumen bisnis bermakna, tidak ada bawaan yang jujur —
 // memilih salah satunya berarti melabeli dokumen orang secara diam-diam, dan
 // label yang keliru tidak pernah muncul sebagai galat di kemudian hari. Permintaan
@@ -31,6 +31,7 @@ var allowedDocumentTypes = map[string]struct{}{
 	"quotation":      {},
 	"purchase-order": {},
 	"bast":           {},
+	"delivery-note":  {},
 	"service-report": {},
 	"invoice":        {},
 }

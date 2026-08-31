@@ -15,7 +15,18 @@ CREATE TABLE IF NOT EXISTS documents (
     -- Example: Quotation Default, Invoice Default
 
     document_type TEXT NOT NULL DEFAULT 'custom',
-    -- Example: quotation, purchase-order, invoice, service-report, custom
+    -- Kosakata TERTUTUP, ditegakkan di usecase — bukan di sini:
+    --   quotation, purchase-order, bast, delivery-note, service-report, invoice
+    --
+    -- Sengaja tanpa CHECK. Daftarnya bertambah seiring jenis dokumen baru, dan
+    -- constraint di database menuntut ALTER TABLE pada setiap penambahan —
+    -- langkah manual yang akan terlewat, lalu muncul sebagai penolakan yang
+    -- tidak disebut kode mana pun. Lihat allowedDocumentTypes di
+    -- internal/usecase/document_usecase.go.
+    --
+    -- DEFAULT 'custom' di bawah adalah PENINGGALAN dan tidak lagi berlaku:
+    -- jenis kini wajib disebut, dan 'custom' akan ditolak. Dibiarkan supaya
+    -- baris lama tidak berubah artinya; jangan diandalkan.
 
     status TEXT NOT NULL DEFAULT 'draft',
     -- Values: draft, active, inactive, archived, deleted
