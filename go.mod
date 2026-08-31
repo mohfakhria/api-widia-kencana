@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-pdf/fpdf v0.9.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/google/jsonschema-go v0.4.3
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
@@ -15,6 +16,7 @@ require (
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	golang.org/x/crypto v0.48.0
+	golang.org/x/image v0.12.0
 )
 
 require (
@@ -30,7 +32,6 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
-	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
@@ -53,7 +54,6 @@ require (
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/arch v0.20.0 // indirect
-	golang.org/x/image v0.12.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.50.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
