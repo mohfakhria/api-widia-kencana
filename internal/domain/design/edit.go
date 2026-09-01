@@ -212,6 +212,7 @@ type PageProps struct {
 	Background string
 	Hidden     bool
 	Locked     bool
+	Cover      bool
 }
 
 // UpdatePage menyetel properti halaman, dan HANYA properti halaman.
@@ -237,7 +238,8 @@ func (c *Content) UpdatePage(id string, props PageProps) (changed bool) {
 
 	page := &c.Pages[index]
 	if page.Title == props.Title && page.Background == props.Background &&
-		page.Hidden == props.Hidden && page.Locked == props.Locked {
+		page.Hidden == props.Hidden && page.Locked == props.Locked &&
+		page.Cover == props.Cover {
 		return false
 	}
 
@@ -245,6 +247,7 @@ func (c *Content) UpdatePage(id string, props PageProps) (changed bool) {
 	page.Background = props.Background
 	page.Hidden = props.Hidden
 	page.Locked = props.Locked
+	page.Cover = props.Cover
 
 	return true
 }

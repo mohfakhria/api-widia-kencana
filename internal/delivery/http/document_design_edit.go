@@ -175,6 +175,7 @@ func (h *DocumentDesignHandler) updatePage(documentToken string, payload []byte,
 		Background: *message.Background,
 		Hidden:     *message.Hidden,
 		Locked:     *message.Locked,
+		Cover:      message.Cover,
 	})
 }
 

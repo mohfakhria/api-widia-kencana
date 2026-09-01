@@ -365,6 +365,20 @@ type DesignPageUpdate struct {
 	Background *string `json:"background"`
 	Hidden     *bool   `json:"hidden"`
 	Locked     *bool   `json:"locked"`
+
+	// Cover TIDAK berpointer, dan itu satu-satunya field di sini yang begitu.
+	//
+	// Frontend mengirimkannya hanya ketika bernilai true, dan MENCABUTNYA dengan
+	// mengirim pesan empat-field yang lama. Jadi "tidak disebut" memang berarti
+	// false — kebalikan dari keempat di atas, tempat penghilangan justru harus
+	// ditolak.
+	//
+	// Konsekuensinya sengaja disebut di sini karena ia tidak terlihat dari
+	// bentuk strukturnya: page.update apa pun yang tidak menyertakan cover akan
+	// MENCABUT sampul halaman itu. Aman selama pengirim selalu mengirim keadaan
+	// halaman seutuhnya — dan itulah yang frontend lakukan — tetapi klien yang
+	// menyunting satu properti saja akan menghapus sampul tanpa memintanya.
+	Cover bool `json:"cover"`
 }
 
 // DesignPageUpdatedMessage adalah siarannya.
@@ -383,6 +397,12 @@ type DesignPageUpdatedMessage struct {
 	Background string `json:"background"`
 	Hidden     bool   `json:"hidden"`
 	Locked     bool   `json:"locked"`
+	// Cover ikut TANPA omitempty walau pesan masuknya boleh menghilangkannya.
+	// Siaran yang mengatakan "sampulnya sekarang dicabut" wajib membawa
+	// cover: false; dihilangkan, kolaborator lain tidak dapat membedakannya dari
+	// pesan yang memang tidak menyebut apa-apa, dan sampulnya tidak pernah
+	// tercabut di layar mereka.
+	Cover bool `json:"cover"`
 }
 
 func NewDesignPageUpdatedMessage(version int64, origin, id string, props design.PageProps) ([]byte, error) {
@@ -395,6 +415,7 @@ func NewDesignPageUpdatedMessage(version int64, origin, id string, props design.
 		Background: props.Background,
 		Hidden:     props.Hidden,
 		Locked:     props.Locked,
+		Cover:      props.Cover,
 	})
 }
 

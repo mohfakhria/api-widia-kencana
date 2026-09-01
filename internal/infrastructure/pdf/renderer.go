@@ -135,7 +135,21 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 
 	master := document.Content.Master.Elements
 
-	for sheet, page := range pages {
+	// Sampul tidak ikut dihitung. Nomor lembar berbicara tentang dokumen yang
+	// DISAMPULI, bukan tentang tumpukan kertas — [sampul, isi, isi] mencetak
+	// "1 dari 2" pada isi yang pertama, bukan "2 dari 3".
+	//
+	// Dihitung lebih dulu di sini, bukan di dalam perulangan, karena penyebutnya
+	// dibutuhkan sejak lembar pertama yang bernomor.
+	sheets := 0
+	for _, page := range pages {
+		if !page.Cover {
+			sheets++
+		}
+	}
+
+	sheet := 0
+	for _, page := range pages {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
@@ -143,15 +157,32 @@ func (r *Renderer) RenderPDF(ctx context.Context, document output.RenderDocument
 		doc.AddPageFormat("P", size)
 		c.drawPageBackground(page.Background, width, height)
 
+		// Sampul berdiri DI LUAR dokumen yang disampulinya, jadi lapisan master
+		// dilewati seluruhnya: tidak ada kop, footer, nomor lembar, maupun
+		// watermark di sana. Elemennya tetap ada di dokumen dan tetap digambar
+		// pada lembar lain.
+		if page.Cover {
+			for index := range page.Elements {
+				if err := c.drawElement(&page.Elements[index]); err != nil {
+					return nil, err
+				}
+			}
+
+			continue
+		}
+
+		sheet++
+
 		// Master DI BAWAH elemen halaman, jadi digambar lebih dulu: di PDF yang
 		// belakangan menutupi yang terdahulu, persis seperti urutan elemen di
 		// dalam satu halaman.
 		//
-		// Nomor lembar dihitung dari `pages`, yang sudah menyaring halaman
-		// tersembunyi — sehingga "halaman 3 dari 5" berbicara tentang lembar yang
-		// benar-benar tercetak, bukan tentang baris di daftar halaman editor.
+		// Nomor lembar dihitung dari `pages` yang sudah menyaring halaman
+		// tersembunyi, dikurangi sampul — sehingga "halaman 3 dari 5" berbicara
+		// tentang lembar isi yang benar-benar tercetak, bukan tentang baris di
+		// daftar halaman editor.
 		for index := range master {
-			element := withSheetNumbers(master[index], sheet+1, len(pages))
+			element := withSheetNumbers(master[index], sheet, sheets)
 			if err := c.drawElement(&element); err != nil {
 				return nil, err
 			}

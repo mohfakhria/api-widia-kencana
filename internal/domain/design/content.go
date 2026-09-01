@@ -264,6 +264,19 @@ type Page struct {
 	Hidden bool `json:"hidden,omitempty"`
 	Locked bool `json:"locked,omitempty"`
 
+	// Cover menandai halaman sampul, dan sampul berdiri DI LUAR dokumen yang
+	// disampulinya. Dua akibatnya ada di renderer, bukan di sini:
+	//
+	//  1. Lapisan master tidak digambar di halaman ini — kop, footer, nomor
+	//     lembar, watermark. Elemennya tetap ada di dokumen; hanya tidak
+	//     digambar di sini.
+	//  2. Ia tidak ikut dihitung saat menomori lembar. Dokumen
+	//     [sampul, isi, isi] mencetak "1 dari 2" pada isi yang pertama.
+	//
+	// Bandingkan dengan Hidden, yang mudah tertukar: hidden TIDAK dicetak dan
+	// TIDAK dihitung; cover DICETAK tetapi tidak dihitung.
+	Cover bool `json:"cover,omitempty"`
+
 	// Background adalah warna latar halaman, digambar sebelum elemen mana pun.
 	// Kosong berarti tidak digambar sama sekali — kertasnya sendiri yang terlihat,
 	// dan itu tidak sama dengan putih: PDF di atas kertas berwarna akan berbeda.
