@@ -61,18 +61,30 @@ const payload = {
   original_filename: file.name,
   mime_type: file.type || "application/octet-stream",
   size: file.size,
-  scope: "documents"
+  group: "images/document"
 }
 ```
 
-Gunakan `scope` untuk folder object storage. Contoh scope yang disarankan:
+`group` **wajib**, dari kosakata tertutup — tidak ada bawaan:
 
-```text
-documents
-users/avatar
-```
+| group | isinya |
+|---|---|
+| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |
+| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |
+| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` |
 
-Backend akan sanitize scope dan filename.
+Yang di luar daftar ditolak `400 "invalid asset group"`. `fonts` sengaja bukan
+kelompok yang sah — berkas di bawahnya tidak punya baris di tabel aset.
+
+`group` sekaligus foldernya di object storage: tidak ada kolom kelompok di
+database, nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan
+kembali dari `object_name`.
+
+`key` **opsional**: nama slot yang isinya dapat diganti, mis. `logo-widia-kencana`.
+Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih
+berawalan UUID — dan yang terpenting, **mengganti isinya tidak mengubah token**,
+sehingga setiap dokumen yang menunjuk token itu ikut berubah tanpa disunting satu
+per satu. Backend menormalkan key dan nama berkasnya.
 
 ### 2. Request Presigned Upload URL
 
@@ -88,7 +100,7 @@ Request:
   "original_filename": "logo.png",
   "mime_type": "image/png",
   "size": 48291,
-  "scope": "documents"
+  "group": "images/document"
 }
 ```
 
@@ -101,7 +113,8 @@ Response:
   "data": {
     "asset": {
       "token": "98b5e767-0000-4000-9000-5f73d39cdd66",
-      "object_name": "documents/uuid-logo.png",
+      "object_name": "images/document/uuid-logo.png",
+      "group": "images/document",
       "original_filename": "logo.png",
       "stored_filename": "uuid-logo.png",
       "mime_type": "image/png",
@@ -225,14 +238,14 @@ Jangan cache URL ini sebagai data permanen. Simpan `asset_token`, lalu minta pre
 Untuk menampilkan library asset milik user:
 
 ```http
-GET /api/asset-list?status=uploaded&scope=documents
+GET /api/asset-list?status=uploaded&group=images/brand
 ```
 
 Filter opsional:
 
 ```text
 status=uploaded
-scope=documents
+group=images/brand
 mime_type=image/png
 extension=png
 ```
@@ -249,7 +262,7 @@ Response:
     "assets": [
       {
         "token": "98b5e767-0000-4000-9000-5f73d39cdd66",
-        "scope": "documents",
+        "group": "images/document",
         "original_filename": "logo.png",
         "mime_type": "image/png",
         "extension": "png",
@@ -283,8 +296,9 @@ mengembalikannya:
   "data": {
     "asset": {
       "token": "98b5e767-0000-4000-9000-5f73d39cdd66",
-      "scope": "documents",
-      "object_name": "documents/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png",
+      "group": "images/document",
+      "object_name": "images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png",
+        "group": "images/document",
       "original_filename": "logo.png",
       "stored_filename": "98b5e767-0000-4000-9000-5f73d39cdd66-logo.png",
       "mime_type": "image/png",
@@ -418,12 +432,13 @@ asset status failed
 ## Contoh Helper Frontend
 
 ```ts
-async function uploadAsset(file: File, scope = "documents") {
+async function uploadAsset(file: File, group = "images/document", key?: string) {
   const request = await api.post("/api/asset-upload-request", {
     original_filename: file.name,
     mime_type: file.type || "application/octet-stream",
     size: file.size,
-    scope
+    group,
+    key
   })
 
   const { asset, upload_url } = request.data.data

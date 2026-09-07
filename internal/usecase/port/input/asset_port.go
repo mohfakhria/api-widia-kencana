@@ -28,8 +28,12 @@ type RequestAssetUploadCommand struct {
 	OriginalFilename string
 	MimeType         string
 	Size             int64
-	Scope            string
-	UploadedBy       *int64
+	// Group adalah kelompok sekaligus folder tujuannya — images/brand,
+	// documents/quotation. Wajib, dari kosakata tertutup; tidak ada bawaan.
+	Group string
+	// Key opsional: nama slot yang isinya dapat diganti tanpa mengubah token.
+	Key        string
+	UploadedBy *int64
 }
 
 type AssetUploadRequestResult struct {
@@ -40,7 +44,7 @@ type AssetUploadRequestResult struct {
 
 type ListAssetQuery struct {
 	Status     string
-	Scope      string
+	Group      string
 	MimeType   string
 	Extension  string
 	UploadedBy *int64

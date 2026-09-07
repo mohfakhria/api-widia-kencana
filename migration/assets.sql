@@ -6,8 +6,20 @@ CREATE TABLE IF NOT EXISTS assets (
     token UUID NOT NULL DEFAULT gen_random_uuid(),
 
     bucket TEXT NOT NULL,
-    scope TEXT NOT NULL DEFAULT 'assets',
     object_name TEXT NOT NULL,
+    -- Nama objek di storage, DAN satu-satunya penentu kelompoknya: segmen
+    -- sebelum nama berkas adalah foldernya — images/brand, documents/quotation.
+    -- Tidak ada kolom kelompok tersendiri; lihat catatan pada indeks awalan di
+    -- bawah, dan usecase.AssetGroup yang membacanya balik.
+
+    key TEXT,
+    -- Nama slot yang dapat diganti isinya, mis. 'logo-widia-kencana'. NULL untuk
+    -- aset biasa, dan HARUS null — bukan string kosong — karena indeks uniknya
+    -- akan menganggap dua string kosong bertabrakan.
+    --
+    -- Gunanya menemukan aset TANPA tahu tokennya. Mengganti isi slot tidak
+    -- mengubah token, sehingga seluruh dokumen yang menunjuk token itu ikut
+    -- berubah tanpa disunting satu per satu.
 
     original_filename TEXT NOT NULL,
     stored_filename TEXT NOT NULL,
@@ -45,8 +57,8 @@ CREATE TABLE IF NOT EXISTS assets (
     CONSTRAINT assets_bucket_not_empty_chk
         CHECK (BTRIM(bucket) <> ''),
 
-    CONSTRAINT assets_scope_not_empty_chk
-        CHECK (BTRIM(scope) <> ''),
+    CONSTRAINT assets_key_not_empty_chk
+        CHECK (key IS NULL OR BTRIM(key) <> ''),
 
     CONSTRAINT assets_object_name_not_empty_chk
         CHECK (BTRIM(object_name) <> ''),
@@ -139,8 +151,18 @@ CREATE INDEX IF NOT EXISTS assets_created_at_idx
 CREATE INDEX IF NOT EXISTS assets_status_idx
     ON assets (status);
 
-CREATE INDEX IF NOT EXISTS assets_scope_idx
-    ON assets (scope);
+-- text_pattern_ops, dan itu bukan hiasan: tanpanya, penyaringan kelompok
+-- (object_name LIKE 'images/brand/%') tidak dapat memakai indeks sama sekali dan
+-- jatuh ke pemindaian penuh. Dengan opclass ini ia menjadi range scan.
+CREATE INDEX IF NOT EXISTS assets_object_name_prefix_idx
+    ON assets (object_name text_pattern_ops);
+
+-- Hanya untuk yang hidup, sehingga key milik aset yang sudah dihapus boleh
+-- dipakai ulang. Unik GLOBAL, bukan per kelompok: nama seperti
+-- 'logo-widia-kencana' tidak masuk akal muncul dua kali di tempat berbeda.
+CREATE UNIQUE INDEX IF NOT EXISTS assets_key_uq_idx
+    ON assets (key)
+    WHERE key IS NOT NULL AND deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS assets_mime_type_idx
     ON assets (mime_type);
@@ -150,10 +172,6 @@ CREATE INDEX IF NOT EXISTS assets_extension_idx
 
 CREATE INDEX IF NOT EXISTS assets_uploaded_by_created_at_idx
     ON assets (uploaded_by, created_at DESC)
-    WHERE deleted_at IS NULL;
-
-CREATE INDEX IF NOT EXISTS assets_uploaded_by_scope_created_at_idx
-    ON assets (uploaded_by, scope, created_at DESC)
     WHERE deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS assets_pending_expiry_idx

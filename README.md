@@ -106,6 +106,43 @@ ALTER TABLE users
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 ```
 
+Kolom `scope` pada `assets` **dihapus**, digantikan `key`. Kelompok aset kini
+disimpan sebagai folder di dalam `object_name` — `images/brand/logo.png` — dan
+dibaca balik oleh `entity.Asset.Group()`. Objek yang sudah ada perlu dipindahkan
+di object storage lebih dulu, lalu barisnya menyusul:
+
+```sql
+-- 1. Setelah objeknya dipindahkan di MinIO, samakan barisnya.
+UPDATE assets
+   SET object_name = 'images/brand/' || split_part(object_name, '/', 2)
+ WHERE object_name LIKE 'documents/%';
+
+-- 2. Kolom baru beserta indeksnya.
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS key TEXT;
+
+ALTER TABLE assets
+    ADD CONSTRAINT assets_key_not_empty_chk
+    CHECK (key IS NULL OR BTRIM(key) <> '');
+
+CREATE UNIQUE INDEX IF NOT EXISTS assets_key_uq_idx
+    ON assets (key) WHERE key IS NOT NULL AND deleted_at IS NULL;
+
+-- text_pattern_ops WAJIB. Tanpanya penyaringan kelompok
+-- (object_name LIKE 'images/brand/%') kehilangan indeksnya diam-diam dan
+-- jatuh ke pemindaian penuh.
+CREATE INDEX IF NOT EXISTS assets_object_name_prefix_idx
+    ON assets (object_name text_pattern_ops);
+
+-- 3. Terakhir, setelah semua di atas berhasil.
+ALTER TABLE assets DROP COLUMN IF EXISTS scope;
+DROP INDEX IF EXISTS assets_scope_idx;
+DROP INDEX IF EXISTS assets_uploaded_by_scope_created_at_idx;
+```
+
+Urutannya mengikat: `DROP COLUMN scope` **terakhir**, setelah `object_name`
+sudah benar. Dijalankan lebih dulu, satu-satunya keterangan kelompok yang
+tersisa untuk baris lama ikut hilang.
+
 Fitur workflow, quotation, dan purchase order dihapus pada 2026-08-10. Berkas
 migration-nya ikut hilang dari repo, tetapi tabelnya **tetap ada** di database
 yang sudah terlanjur dipasang. Buang manual, anak lebih dulu:

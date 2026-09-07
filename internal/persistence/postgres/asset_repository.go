@@ -26,13 +26,13 @@ func (r *AssetRepository) CreatePending(ctx context.Context, asset *entity.Asset
 	var token string
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO assets (
-			bucket, scope, object_name, original_filename, stored_filename, mime_type,
+			bucket, object_name, key, original_filename, stored_filename, mime_type,
 			extension, size, etag, checksum_sha256, status, upload_method, is_private,
 			uploaded_by, presigned_expires_at, created_at, updated_at
 		)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NOW(),NOW())
 		RETURNING token::text
-	`, asset.Bucket, asset.Scope, asset.ObjectName, asset.OriginalFilename, asset.StoredFilename,
+	`, asset.Bucket, asset.ObjectName, asset.Key, asset.OriginalFilename, asset.StoredFilename,
 		asset.MimeType, asset.Extension, asset.Size, asset.ETag, asset.ChecksumSHA256,
 		asset.Status, asset.UploadMethod, asset.IsPrivate, asset.UploadedBy,
 		asset.PresignedExpiresAt).Scan(&token)
@@ -73,9 +73,17 @@ func (r *AssetRepository) List(ctx context.Context, query input.ListAssetQuery) 
 	} else {
 		builder.WriteString(" AND status <> 'deleted'")
 	}
-	if query.Scope != "" {
-		args = append(args, query.Scope)
-		builder.WriteString(fmt.Sprintf(" AND scope = $%d", len(args)))
+	if query.Group != "" {
+		// Pencocokan AWALAN, bukan kolom tersendiri: kelompoknya tersimpan
+		// sebagai folder di dalam object_name. Indeks assets_object_name_prefix_idx
+		// memakai text_pattern_ops supaya ini menjadi range scan, bukan
+		// pemindaian penuh — tanpa opclass itu, penyaringan ini kehilangan
+		// indeksnya diam-diam.
+		//
+		// Kelompoknya berasal dari kosakata tertutup, jadi tidak ada karakter
+		// khusus LIKE yang perlu dilarikan.
+		args = append(args, query.Group+"/%")
+		builder.WriteString(fmt.Sprintf(" AND object_name LIKE $%d", len(args)))
 	}
 	if query.MimeType != "" {
 		args = append(args, query.MimeType)
@@ -218,8 +226,8 @@ func assetSelectQuery() string {
 			id,
 			token::text,
 			bucket,
-			scope,
 			object_name,
+			key,
 			original_filename,
 			stored_filename,
 			mime_type,
@@ -262,8 +270,8 @@ func scanAsset(row assetRowScanner, asset *entity.Asset) error {
 		&asset.ID,
 		&asset.Token,
 		&asset.Bucket,
-		&asset.Scope,
 		&asset.ObjectName,
+		&asset.Key,
 		&asset.OriginalFilename,
 		&asset.StoredFilename,
 		&asset.MimeType,

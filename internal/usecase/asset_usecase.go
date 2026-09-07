@@ -17,7 +17,45 @@ import (
 
 const defaultAssetUploadExpiry = 15 * time.Minute
 const defaultAssetPreviewExpiry = 15 * time.Minute
-const defaultAssetScope = "assets"
+
+// assetGroups adalah kosakata TERTUTUP kelompok aset, dan sekaligus folder
+// tempat objeknya mendarat.
+//
+// Tidak ada kolom kelompok di tabel: yang menyimpannya nama objek itu sendiri —
+// images/brand/logo.png — dan entity.Asset.Group membacanya balik. Pola yang
+// sama sudah dipakai font, yang bahkan tidak punya tabel sama sekali.
+//
+// TIDAK ADA BAWAAN. Kelompok yang tidak dikenal ditolak, bukan jatuh ke nilai
+// pilihan kami: bawaan yang menelan kekeliruan adalah persis sebabnya hari ini
+// ada folder bernama "documents" yang isinya dua berkas logo.
+//
+// Kelompok dokumen diturunkan dari allowedDocumentTypes, bukan ditulis ulang di
+// sini. Dua daftar yang menyebut hal yang sama pasti berselisih suatu hari, dan
+// yang menambahkan jenis dokumen baru tidak akan pernah menduga ada daftar kedua
+// yang perlu ikut disunting.
+//
+// fonts/ SENGAJA di luar daftar ini. Berkas di bawahnya tidak punya baris di
+// tabel assets — nama objeknya fungsi murni dari keluarga, bobot, dan style —
+// dan mengizinkan unggahan aset mendarat di sana menaruh berkas asing di ruang
+// nama yang dibaca font-list.
+const (
+	AssetGroupBrand    = "images/brand"
+	AssetGroupDocument = "images/document"
+
+	assetGroupDocumentPrefix = "documents"
+)
+
+func assetGroups() map[string]struct{} {
+	groups := map[string]struct{}{
+		AssetGroupBrand:    {},
+		AssetGroupDocument: {},
+	}
+	for documentType := range allowedDocumentTypes {
+		groups[assetGroupDocumentPrefix+"/"+documentType] = struct{}{}
+	}
+
+	return groups
+}
 
 var allowedAssetStatuses = map[string]struct{}{
 	"pending":   {},
@@ -52,15 +90,31 @@ func (uc *assetUseCase) RequestUpload(ctx context.Context, cmd input.RequestAsse
 		contentType = "application/octet-stream"
 	}
 
-	scope := sanitizeAssetScope(cmd.Scope)
+	group := strings.ToLower(strings.TrimSpace(cmd.Group))
+	if _, ok := assetGroups()[group]; !ok {
+		return nil, domain.NewError(domain.ErrInvalidInput, "invalid asset group")
+	}
+
+	key, err := sanitizeAssetKey(cmd.Key)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ber-key memakai namanya sendiri; tanpa key memakai bentuk lama yang
+	// berawalan UUID. Yang kedua tidak terbaca manusia, tetapi ia menjamin dua
+	// orang yang mengunggah "foto.png" pada detik yang sama tidak bertabrakan.
 	storedFilename := buildStoredAssetFilename(cmd.OriginalFilename)
-	objectName := fmt.Sprintf("%s/%s", scope, storedFilename)
+	if key != nil {
+		storedFilename = *key + extensionSuffix(cmd.OriginalFilename)
+	}
+
+	objectName := fmt.Sprintf("%s/%s", group, storedFilename)
 	expiresAt := time.Now().Add(defaultAssetUploadExpiry)
 
 	asset := &entity.Asset{
 		Bucket:             uc.storage.Bucket(),
-		Scope:              scope,
 		ObjectName:         objectName,
+		Key:                key,
 		OriginalFilename:   strings.TrimSpace(cmd.OriginalFilename),
 		StoredFilename:     storedFilename,
 		MimeType:           contentType,
@@ -134,7 +188,7 @@ func (uc *assetUseCase) CompleteUpload(ctx context.Context, token string, upload
 
 func (uc *assetUseCase) List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error) {
 	query.Status = strings.ToLower(strings.TrimSpace(query.Status))
-	query.Scope = sanitizeOptionalAssetScope(query.Scope)
+	query.Group = strings.ToLower(strings.TrimSpace(query.Group))
 	query.MimeType = strings.TrimSpace(query.MimeType)
 	query.Extension = strings.TrimPrefix(strings.ToLower(strings.TrimSpace(query.Extension)), ".")
 	if query.Status != "" {
@@ -246,35 +300,51 @@ func (uc *assetUseCase) Delete(ctx context.Context, token string, uploadedBy *in
 	return uc.repo.MarkDeleted(ctx, token)
 }
 
-func sanitizeAssetScope(scope string) string {
-	scope = strings.Trim(strings.ToLower(strings.TrimSpace(scope)), "/")
-	if scope == "" {
-		return defaultAssetScope
+// sanitizeAssetKey menormalkan nama slot, dan mengembalikan nil bila tidak ada.
+//
+// NIL, bukan string kosong. Indeks uniknya mengabaikan NULL tetapi menganggap
+// dua string kosong bertabrakan — sehingga unggahan KEDUA tanpa key akan
+// ditolak, dengan gejala yang jauh dari sebabnya. Nilai nol sebuah string di Go
+// adalah "", jadi pengubahan ini harus ditulis sadar; ia tidak terjadi sendiri.
+func sanitizeAssetKey(key string) (*string, error) {
+	key = strings.ToLower(strings.TrimSpace(key))
+	if key == "" {
+		return nil, nil
 	}
 
-	segments := strings.Split(scope, "/")
-	cleaned := make([]string, 0, len(segments))
-	for _, segment := range segments {
-		clean := sanitizeAssetFilename(segment)
-		clean = strings.Trim(clean, ".-_/")
-		if clean == "" {
-			continue
+	var builder strings.Builder
+	builder.Grow(len(key))
+	for _, symbol := range key {
+		switch {
+		case symbol >= 'a' && symbol <= 'z', symbol >= '0' && symbol <= '9':
+			builder.WriteRune(symbol)
+		case symbol == ' ', symbol == '-', symbol == '_', symbol == '.':
+			if builder.Len() > 0 && !strings.HasSuffix(builder.String(), "-") {
+				builder.WriteByte('-')
+			}
 		}
-		cleaned = append(cleaned, clean)
-	}
-	if len(cleaned) == 0 {
-		return defaultAssetScope
 	}
 
-	return strings.Join(cleaned, "/")
+	cleaned := strings.Trim(builder.String(), "-")
+	if cleaned == "" {
+		return nil, domain.NewError(domain.ErrInvalidInput, "asset key has no usable characters")
+	}
+
+	return &cleaned, nil
 }
 
-func sanitizeOptionalAssetScope(scope string) string {
-	if strings.TrimSpace(scope) == "" {
+// extensionSuffix mengembalikan ".png" dan sejenisnya, atau kosong.
+//
+// Dipakai HANYA supaya nama objek enak dibaca manusia. Yang stabil tetap
+// tokennya: mengganti isi slot dengan berkas berformat lain mengubah nama
+// objeknya, dan itu tidak apa-apa.
+func extensionSuffix(originalFilename string) string {
+	ext := strings.ToLower(filepath.Ext(originalFilename))
+	if ext == "." {
 		return ""
 	}
 
-	return sanitizeAssetScope(scope)
+	return ext
 }
 
 // ensureAssetReadable: siapa pun yang login boleh membaca aset, asal ia tahu
