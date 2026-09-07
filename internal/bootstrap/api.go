@@ -64,7 +64,7 @@ func (a *ApiApp) initialize() error {
 	userRepo := pg.NewUserRepository(a.db)
 	authUC := usecase.NewAuthUseCase(userRepo, sessionStore, tokenSigner)
 	assetRepo := pg.NewAssetRepository(a.db)
-	assetUC := usecase.NewAssetUseCase(assetRepo, a.objectStorage)
+	assetUC := usecase.NewAssetUseCase(assetRepo, a.objectStorage, a.ServiceLogger)
 
 	// Font tidak punya repository: nama objeknya fungsi murni dari family,
 	// bobot, dan style, sehingga object storage ITULAH indeksnya. Lihat

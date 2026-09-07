@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lib/pq"
+
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
@@ -37,10 +39,33 @@ func (r *AssetRepository) CreatePending(ctx context.Context, asset *entity.Asset
 		asset.Status, asset.UploadMethod, asset.IsPrivate, asset.UploadedBy,
 		asset.PresignedExpiresAt).Scan(&token)
 	if err != nil {
-		return nil, err
+		return nil, translateAssetConflict(err)
 	}
 
 	return r.GetByToken(ctx, token)
+}
+
+// translateAssetConflict mengubah pelanggaran indeks unik menjadi galat domain.
+//
+// Perlu sejak key ada, dan bukan kasus langka melainkan yang PALING WAJAR:
+// meminta unggahan untuk key yang sudah dipakai berarti orang itu bermaksud
+// mengganti isinya. Tanpa terjemahan ini, jawabannya galat mentah Postgres —
+// 500 yang membocorkan nama constraint ke klien, dan tidak menyebutkan sama
+// sekali bahwa yang dituju adalah asset-replace.
+func translateAssetConflict(err error) error {
+	var pgErr *pq.Error
+	if !errors.As(err, &pgErr) || pgErr.Code != "23505" {
+		return err
+	}
+
+	switch pgErr.Constraint {
+	case "assets_key_uq_idx":
+		return domain.NewError(domain.ErrConflict, "asset key is already used; replace its content instead")
+	case "assets_bucket_object_name_uq_idx":
+		return domain.NewError(domain.ErrConflict, "asset object name is already used")
+	}
+
+	return err
 }
 
 func (r *AssetRepository) GetByToken(ctx context.Context, token string) (*entity.Asset, error) {
@@ -85,6 +110,10 @@ func (r *AssetRepository) List(ctx context.Context, query input.ListAssetQuery) 
 		args = append(args, query.Group+"/%")
 		builder.WriteString(fmt.Sprintf(" AND object_name LIKE $%d", len(args)))
 	}
+	if query.Key != "" {
+		args = append(args, query.Key)
+		builder.WriteString(fmt.Sprintf(" AND key = $%d", len(args)))
+	}
 	if query.MimeType != "" {
 		args = append(args, query.MimeType)
 		builder.WriteString(fmt.Sprintf(" AND mime_type = $%d", len(args)))
@@ -120,6 +149,42 @@ func (r *AssetRepository) List(ctx context.Context, query input.ListAssetQuery) 
 	}
 
 	return assets, nil
+}
+
+// ReplaceContent menukar berkas yang diwakili satu aset.
+//
+// Token, key, kelompok, dan pemiliknya tidak disebut sama sekali di sini — dan
+// itu yang membuat penggantian ini aman: seluruh dokumen menunjuk token, dan
+// token tidak pernah ikut berubah.
+//
+// Hanya menyentuh baris ber-status uploaded yang masih hidup, sejalan dengan
+// pemeriksaan di usecase. Yang tidak memenuhi dijawab "asset not found" alih-alih
+// diam-diam tidak berbuat apa-apa.
+func (r *AssetRepository) ReplaceContent(ctx context.Context, token string, content output.ReplacedContent) (*entity.Asset, error) {
+	result, err := r.db.ExecContext(ctx, `
+		UPDATE assets
+		SET object_name = $1,
+			original_filename = $2,
+			stored_filename = $3,
+			mime_type = $4,
+			extension = $5,
+			size = $6,
+			etag = $7,
+			uploaded_at = NOW(),
+			updated_at = NOW()
+		WHERE token = $8::uuid
+			AND status = 'uploaded'
+			AND deleted_at IS NULL
+	`, content.ObjectName, content.OriginalFilename, content.StoredFilename,
+		content.MimeType, content.Extension, content.Size, content.ETag, token)
+	if err != nil {
+		return nil, err
+	}
+	if err := ensureAssetAffected(result, "asset not found"); err != nil {
+		return nil, err
+	}
+
+	return r.GetByToken(ctx, token)
 }
 
 func (r *AssetRepository) MarkUploaded(ctx context.Context, token string, stored *output.StoredObject) (*entity.Asset, error) {

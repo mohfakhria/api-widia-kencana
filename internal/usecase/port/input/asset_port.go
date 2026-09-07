@@ -10,6 +10,10 @@ import (
 type AssetUseCase interface {
 	RequestUpload(ctx context.Context, cmd RequestAssetUploadCommand) (*AssetUploadRequestResult, error)
 	CompleteUpload(ctx context.Context, token string, uploadedBy *int64) (*entity.Asset, error)
+
+	// ReplaceContent mengganti berkas di balik satu aset tanpa mengubah tokennya,
+	// sehingga dokumen yang menunjuknya ikut memakai berkas baru tanpa disunting.
+	ReplaceContent(ctx context.Context, cmd ReplaceAssetContentCommand) (*entity.Asset, error)
 	List(ctx context.Context, query ListAssetQuery) ([]entity.Asset, error)
 	GetByToken(ctx context.Context, token string, uploadedBy *int64) (*entity.Asset, error)
 	PresignGet(ctx context.Context, token string, uploadedBy *int64) (*AssetPresignGetResult, error)
@@ -36,6 +40,21 @@ type RequestAssetUploadCommand struct {
 	UploadedBy *int64
 }
 
+// ReplaceAssetContentCommand mengganti ISI sebuah aset, bukan identitasnya.
+//
+// Token, key, dan kelompoknya tidak berubah — dan itu seluruh gunanya: setiap
+// dokumen yang menunjuk token itu ikut memakai berkas yang baru tanpa disunting
+// satu per satu.
+//
+// Isinya dibawa langsung, bukan lewat presigned URL seperti unggahan biasa.
+// Lihat alasannya di assetUseCase.ReplaceContent.
+type ReplaceAssetContentCommand struct {
+	Token            string
+	OriginalFilename string
+	MimeType         string
+	Content          []byte
+}
+
 type AssetUploadRequestResult struct {
 	Asset     *entity.Asset
 	UploadURL string
@@ -43,8 +62,11 @@ type AssetUploadRequestResult struct {
 }
 
 type ListAssetQuery struct {
-	Status     string
-	Group      string
+	Status string
+	Group  string
+	// Key mencari satu slot. Unik di antara aset yang hidup, jadi hasilnya nol
+	// atau satu — inilah cara menemukan aset TANPA tahu tokennya.
+	Key        string
 	MimeType   string
 	Extension  string
 	UploadedBy *int64

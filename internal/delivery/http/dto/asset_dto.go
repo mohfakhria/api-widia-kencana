@@ -22,6 +22,7 @@ type AssetUploadRequest struct {
 type AssetListFilterRequest struct {
 	Status    string `form:"status"`
 	Group     string `form:"group"`
+	Key       string `form:"key"`
 	MimeType  string `form:"mime_type"`
 	Extension string `form:"extension"`
 }
@@ -86,6 +87,7 @@ func (r AssetListFilterRequest) ToListAssetQuery() input.ListAssetQuery {
 	return input.ListAssetQuery{
 		Status:    strings.TrimSpace(r.Status),
 		Group:     strings.TrimSpace(r.Group),
+		Key:       strings.TrimSpace(r.Key),
 		MimeType:  strings.TrimSpace(r.MimeType),
 		Extension: strings.TrimSpace(r.Extension),
 	}

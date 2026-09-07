@@ -429,6 +429,41 @@ asset status failed
   Jangan presign preview. Tampilkan "upload failed" dan opsi upload ulang.
 ```
 
+## Mengganti Isi Aset
+
+```http
+POST /api/asset-replace/:token
+Content-Type: multipart/form-data
+```
+
+Satu field: `file`. Token, `key`, dan `group` aset **tidak berubah** — yang
+berganti hanya berkas di baliknya.
+
+Itu seluruh gunanya. Setiap elemen dokumen menunjuk `assetToken`, jadi mengganti
+isi satu slot membuat semua dokumen yang memakainya ikut memakai berkas baru,
+tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka
+tiga puluh dokumen dan mengganti gambarnya satu per satu.
+
+Berbeda dari unggahan biasa, jalur ini **satu langkah** dan bytes-nya melewati
+API. Alur presigned dua langkah menuntut keadaan "sedang diganti" tersimpan di
+suatu tempat, dan tempat yang paling wajar untuk itu berbahaya: mengembalikan
+status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup**
+lima belas menit setelah seseorang membatalkan, tanpa satu pun galat.
+
+| | |
+|---|---|
+| Batas | 10 MiB |
+| Syarat | aset harus ber-status `uploaded` |
+| Format sama | objek lama **ditimpa**, nama tetap |
+| Format berbeda | nama objek berpindah (`.png` → `.svg`), yang lama dibuang setelah barisnya berpindah |
+
+Mencari slotnya tanpa tahu token: `GET /api/asset-list?key=logo-widia-kencana`.
+Key unik di antara aset yang hidup, jadi hasilnya nol atau satu.
+
+Meminta unggahan BARU dengan key yang sudah dipakai dijawab
+`409 "asset key is already used; replace its content instead"` — bukan galat
+mentah database.
+
 ## Contoh Helper Frontend
 
 ```ts

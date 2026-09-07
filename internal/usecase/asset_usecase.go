@@ -1,8 +1,10 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 	"time"
@@ -68,10 +70,19 @@ var allowedAssetStatuses = map[string]struct{}{
 type assetUseCase struct {
 	repo    output.AssetRepository
 	storage output.ObjectStorage
+	logger  *slog.Logger
 }
 
-func NewAssetUseCase(repo output.AssetRepository, storage output.ObjectStorage) input.AssetUseCase {
-	return &assetUseCase{repo: repo, storage: storage}
+// Logger dipakai untuk satu hal saja: melaporkan objek lama yang gagal dibuang
+// setelah isinya diganti. Kegagalan itu sengaja tidak menggagalkan permintaan —
+// berkas barunya sudah terpasang — sehingga tanpa catatan ini objek yatim
+// menumpuk tanpa ada yang pernah tahu.
+func NewAssetUseCase(repo output.AssetRepository, storage output.ObjectStorage, logger *slog.Logger) input.AssetUseCase {
+	if logger == nil {
+		logger = slog.Default()
+	}
+
+	return &assetUseCase{repo: repo, storage: storage, logger: logger}
 }
 
 func (uc *assetUseCase) RequestUpload(ctx context.Context, cmd input.RequestAssetUploadCommand) (*input.AssetUploadRequestResult, error) {
@@ -189,6 +200,7 @@ func (uc *assetUseCase) CompleteUpload(ctx context.Context, token string, upload
 func (uc *assetUseCase) List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error) {
 	query.Status = strings.ToLower(strings.TrimSpace(query.Status))
 	query.Group = strings.ToLower(strings.TrimSpace(query.Group))
+	query.Key = strings.ToLower(strings.TrimSpace(query.Key))
 	query.MimeType = strings.TrimSpace(query.MimeType)
 	query.Extension = strings.TrimPrefix(strings.ToLower(strings.TrimSpace(query.Extension)), ".")
 	if query.Status != "" {
@@ -298,6 +310,114 @@ func (uc *assetUseCase) Delete(ctx context.Context, token string, uploadedBy *in
 	}
 
 	return uc.repo.MarkDeleted(ctx, token)
+}
+
+// maxAssetReplacementBytes membatasi berkas pengganti.
+//
+// Lebih kecil daripada unggahan biasa dengan sengaja: yang lewat jalur ini aset
+// bernama — logo, stempel, tanda tangan — dan berkas sebesar itu di sana selalu
+// keliru.
+const maxAssetReplacementBytes = 10 << 20
+
+// ReplaceContent menukar berkas di balik sebuah aset, tanpa menyentuh token,
+// key, maupun kelompoknya.
+//
+// Itu seluruh gunanya: setiap dokumen menunjuk TOKEN, jadi mengganti isinya
+// membuat tiga puluh dokumen ikut memakai berkas baru tanpa satu pun disunting.
+//
+// ISINYA DIBAWA LANGSUNG, bukan lewat presigned URL seperti unggahan biasa, dan
+// itu keputusan yang diambil sadar. Alur presign menuntut keadaan "sedang
+// diganti" tersimpan di suatu tempat, dan setiap tempat yang wajar untuk itu
+// berbahaya: memakai kembali baris yang sama berarti mengembalikan statusnya ke
+// pending, dan penyapu — yang menghapus pending kedaluwarsa BESERTA objeknya —
+// akan menghapus logo yang sedang hidup lima belas menit setelah seseorang
+// berubah pikiran, tanpa satu pun galat. Menaruhnya di kolom baru menuntut
+// penyapu ikut tahu. Satu permintaan yang membawa bytes-nya menghapus seluruh
+// keadaan antara itu.
+//
+// Yang ditukar: bytes-nya melewati API, bukan langsung ke object storage. Untuk
+// jalur yang jarang dipakai dan berkas berukuran ratusan kilobita, itu murah —
+// dan font-add sudah menempuh jalan yang sama.
+func (uc *assetUseCase) ReplaceContent(ctx context.Context, cmd input.ReplaceAssetContentCommand) (*entity.Asset, error) {
+	if uc.storage == nil {
+		return nil, domain.NewError(domain.ErrUnavailable, "asset storage is unavailable")
+	}
+	if len(cmd.Content) == 0 {
+		return nil, domain.NewError(domain.ErrInvalidInput, "replacement file is empty")
+	}
+	if strings.TrimSpace(cmd.OriginalFilename) == "" {
+		return nil, domain.NewError(domain.ErrInvalidInput, "asset filename is required")
+	}
+
+	asset, err := uc.repo.GetByToken(ctx, cmd.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	// Hanya aset yang isinya memang sudah ada. Mengganti unggahan yang belum
+	// pernah selesai berarti mencampur dua alur yang berbeda pada satu baris,
+	// dan yang kedua sudah punya jalannya sendiri lewat asset-upload-complete.
+	if asset.Status != assetStatusUploaded {
+		return nil, domain.NewError(domain.ErrInvalidInput, "asset is not uploaded")
+	}
+
+	group := asset.Group()
+	if _, ok := assetGroups()[group]; !ok {
+		return nil, domain.NewError(domain.ErrInvalidInput, "invalid asset group")
+	}
+
+	contentType := strings.TrimSpace(cmd.MimeType)
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	// Aset ber-key mempertahankan namanya; yang tanpa key mendapat nama baru
+	// berawalan UUID. Akibatnya berbeda saat membersihkan: yang pertama menimpa
+	// objek yang sama — dan penimpaan pada object storage bersifat utuh, tidak
+	// ada keadaan setengah terlihat — sedangkan yang kedua menyisakan objek lama
+	// yang harus dibuang setelah barisnya berpindah.
+	storedFilename := buildStoredAssetFilename(cmd.OriginalFilename)
+	if asset.Key != nil {
+		storedFilename = *asset.Key + extensionSuffix(cmd.OriginalFilename)
+	}
+	objectName := fmt.Sprintf("%s/%s", group, storedFilename)
+
+	stored, err := uc.storage.Upload(ctx, output.UploadObject{
+		ObjectName:  objectName,
+		Reader:      bytes.NewReader(cmd.Content),
+		Size:        int64(len(cmd.Content)),
+		ContentType: contentType,
+	})
+	if err != nil {
+		return nil, domain.NewError(domain.ErrInternalFailure, "asset replacement could not be stored")
+	}
+
+	// Barisnya berpindah SETELAH berkasnya benar-benar ada. Kalau unggahan di
+	// atas gagal, aset lamanya sama sekali tidak tersentuh.
+	replaced, err := uc.repo.ReplaceContent(ctx, asset.Token, output.ReplacedContent{
+		ObjectName:       objectName,
+		OriginalFilename: strings.TrimSpace(cmd.OriginalFilename),
+		StoredFilename:   storedFilename,
+		MimeType:         contentType,
+		Extension:        strings.TrimPrefix(extensionSuffix(cmd.OriginalFilename), "."),
+		Size:             stored.Size,
+		ETag:             stored.ETag,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Objek lama dibuang hanya bila namanya memang berbeda, dan kegagalannya
+	// TIDAK menggagalkan penggantian: berkas barunya sudah terpasang dan sudah
+	// dipakai. Yang tertinggal objek yatim, bukan aset yang rusak.
+	if asset.ObjectName != objectName {
+		if err := uc.storage.Delete(ctx, asset.ObjectName); err != nil {
+			uc.logger.Warn("delete replaced asset object",
+				"asset", asset.Token, "object", asset.ObjectName, "error", err)
+		}
+	}
+
+	return replaced, nil
 }
 
 // sanitizeAssetKey menormalkan nama slot, dan mengembalikan nil bila tidak ada.

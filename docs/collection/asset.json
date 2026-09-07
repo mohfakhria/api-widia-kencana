@@ -555,6 +555,11 @@
 							"description": "Kelompok aset: images/brand, images/document, atau documents/<jenis-dokumen>. Dicocokkan sebagai AWALAN nama objek, bukan kolom tersendiri — kelompoknya memang folder tempat objeknya mendarat. Kosong berarti seluruh kelompok."
 						},
 						{
+							"key": "key",
+							"value": "",
+							"description": "Mencari SATU slot bernama, mis. logo-widia-kencana. Key unik di antara aset yang hidup, jadi hasilnya nol atau satu — inilah cara menemukan aset tanpa tahu tokennya. Kosong berarti tidak menyaring."
+						},
+						{
 							"key": "mime_type",
 							"value": ""
 						},
@@ -1046,6 +1051,319 @@
 						}
 					],
 					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Replace Asset Content",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/asset-replace/{{asset_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"asset-replace",
+						"{{asset_token}}"
+					]
+				},
+				"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+			},
+			"response": [
+				{
+					"name": "Replace Asset Content - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/asset-replace/{{asset_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"asset-replace",
+								"{{asset_token}}"
+							]
+						},
+						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"object_name\": \"images/brand/logo-widia-kencana.png\",\n      \"group\": \"images/brand\",\n      \"key\": \"logo-widia-kencana\",\n      \"original_filename\": \"logo-baru.png\",\n      \"stored_filename\": \"logo-widia-kencana.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 204813,\n      \"etag\": \"\\\"9b2c1f0e5a7d4c8b1e3f6a9d0c2b4e81\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-31T23:41:02Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-31T23:41:02Z\"\n    }\n  }\n}"
+				},
+				{
+					"name": "Replace Asset Content - File Missing",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/asset-replace/{{asset_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"asset-replace",
+								"{{asset_token}}"
+							]
+						},
+						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"replacement file is required\"\n}"
+				},
+				{
+					"name": "Replace Asset Content - Not Uploaded Yet",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/asset-replace/{{asset_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"asset-replace",
+								"{{asset_token}}"
+							]
+						},
+						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
+				},
+				{
+					"name": "Replace Asset Content - Not Found",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/asset-replace/{{asset_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"asset-replace",
+								"{{asset_token}}"
+							]
+						},
+						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+				},
+				{
+					"name": "Replace Asset Content - Too Large",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/asset-replace/{{asset_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"asset-replace",
+								"{{asset_token}}"
+							]
+						},
+						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+					},
+					"status": "Request Entity Too Large",
+					"code": 413,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"replacement is larger than 11534336 bytes\"\n}"
+				},
+				{
+					"name": "Replace Asset Content - Unauthorized",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/asset-replace/{{asset_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"asset-replace",
+								"{{asset_token}}"
+							]
+						},
+						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}"
 				}
 			]
 		},

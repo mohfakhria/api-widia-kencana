@@ -1,6 +1,9 @@
 package http
 
 import (
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
@@ -72,6 +75,68 @@ func (h *AssetHandler) Content(c *gin.Context) {
 	// yang paling sulit dilacak karena tidak dapat diulang.
 	c.Header("Cache-Control", "no-store")
 	c.Redirect(http.StatusFound, url)
+}
+
+// maxAssetReplacementBytes membatasi berkas pengganti yang mau diterima.
+//
+// Sedikit di atas batas usecase, dan selisihnya disengaja — sama seperti pada
+// font-add: dengan begitu penolakan datang dari aplikasi sebagai JSON yang
+// menyebut angkanya, bukan sebagai halaman HTML bawaan nginx.
+const maxAssetReplacementBytes = 11 << 20
+
+// Replace mengganti ISI sebuah aset. Token, key, dan kelompoknya tetap.
+//
+// Multipart dan satu permintaan, berbeda dari unggahan biasa yang memakai
+// presigned URL dua langkah. Alasannya ada di usecase: alur dua langkah menuntut
+// keadaan "sedang diganti" tersimpan di suatu tempat, dan tempat yang paling
+// wajar untuk itu membuat penyapu menghapus berkas yang sedang hidup.
+func (h *AssetHandler) Replace(c *gin.Context) {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxAssetReplacementBytes)
+
+	berkas, err := c.FormFile("file")
+	if err != nil {
+		var kebesaran *http.MaxBytesError
+		if errors.As(err, &kebesaran) {
+			dto.Error(c, http.StatusRequestEntityTooLarge,
+				fmt.Sprintf("replacement is larger than %d bytes", maxAssetReplacementBytes))
+
+			return
+		}
+
+		dto.Error(c, http.StatusBadRequest, "replacement file is required")
+
+		return
+	}
+
+	dibuka, err := berkas.Open()
+	if err != nil {
+		dto.Error(c, http.StatusBadRequest, "replacement file could not be read")
+		return
+	}
+	defer dibuka.Close()
+
+	isi, err := io.ReadAll(dibuka)
+	if err != nil {
+		dto.Error(c, http.StatusBadRequest, "replacement file could not be read")
+		return
+	}
+
+	asset, err := h.asset.ReplaceContent(c.Request.Context(), input.ReplaceAssetContentCommand{
+		Token:            c.Param("token"),
+		OriginalFilename: berkas.Filename,
+		// Tipe diambil dari bagian multipart-nya, bukan ditebak dari ekstensi:
+		// yang menentukan bagaimana peramban kelak menyajikannya adalah nilai
+		// ini, dan menebaknya salah menghasilkan gambar yang terunduh alih-alih
+		// tampil.
+		MimeType: berkas.Header.Get("Content-Type"),
+		Content:  isi,
+	})
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Success", gin.H{"asset": dto.NewAssetResponse(asset)})
 }
 
 func (h *AssetHandler) List(c *gin.Context) {

@@ -102,6 +102,9 @@ func NewRouter(deps RouterDeps) http.Handler {
 		agentAllowed.GET("/asset-list", deps.AssetHandler.List)
 		agentAllowed.GET("/asset-detail/:token", deps.AssetHandler.Get)
 		agentAllowed.GET("/asset-presign/:token", deps.AssetHandler.PresignGet)
+		// Mengganti ISI aset, bukan menambah yang baru. Token tetap, sehingga
+		// setiap dokumen yang menunjuknya ikut memakai berkas yang baru.
+		agentAllowed.POST("/asset-replace/:token", deps.AssetHandler.Replace)
 		agentAllowed.DELETE("/asset-delete/:token", deps.AssetHandler.Delete)
 
 		// Daftar font dibaca editor untuk menawarkan pilihan, jadi ia dibuka
