@@ -1,0 +1,538 @@
+{
+	"info": {
+		"_postman_id": "3d8b0e47-1a62-4c95-b7f0-6e2a9d4c81b5",
+		"name": "Widia Kencana - Company Contact",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"description": "Orang-orang di sebuah perusahaan. `salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**MEMBACANYA ada di koleksi Company**, bukan di sini: `company-detail` mengembalikan kontak perusahaan itu sekaligus, diurutkan kontak utama lebih dulu. Tidak ada endpoint daftar kontak tersendiri — kontak tidak pernah dicari lintas perusahaan, ia selalu dilihat dalam konteks perusahaannya.\n\n**Satu kontak utama per perusahaan, ditegakkan database.** `is_primary: true` otomatis menurunkan yang lama di dalam satu transaksi; tidak ada keadaan di mana satu perusahaan punya dua, maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nSeluruhnya superadmin.\n\n**Perhatikan id mana yang dipakai:** menambah memakai id PERUSAHAAN, sedangkan mengubah dan menghapus memakai id KONTAK. Perusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan menyebut pasangan perusahaan-kontak yang tidak berhubungan."
+	},
+	"item": [
+		{
+			"name": "Add Company Contact",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/company-contact-add/{{company_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"company-contact-add",
+						"{{company_id}}"
+					]
+				},
+				"description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak."
+			},
+			"response": [
+				{
+					"name": "Add Company Contact - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-add/{{company_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-add",
+								"{{company_id}}"
+							]
+						},
+						"description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company contact created successfully\",\n  \"data\": {\n    \"contact\": {\n      \"id\": \"7b2e1d90-3c4a-4f5b-9a8c-1d2e3f4a5b6c\",\n      \"company_id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"salutation\": \"Bapak\",\n      \"name\": \"Wahyudi\",\n      \"position\": \"Owner\",\n      \"department\": \"\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"mobile\": \"\",\n      \"is_primary\": true,\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n    }\n  }\n}"
+				},
+				{
+					"name": "Add Company Contact - Name Empty",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-add/{{company_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-add",
+								"{{company_id}}"
+							]
+						},
+						"description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"contact name cannot be empty\"\n}"
+				},
+				{
+					"name": "Add Company Contact - Primary Must Be Active",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-add/{{company_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-add",
+								"{{company_id}}"
+							]
+						},
+						"description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"primary contact must be active\"\n}"
+				},
+				{
+					"name": "Add Company Contact - Company Not Found",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-add/{{company_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-add",
+								"{{company_id}}"
+							]
+						},
+						"description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak."
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"company not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Update Company Contact",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/company-contact-update/{{contact_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"company-contact-update",
+						"{{contact_id}}"
+					]
+				},
+				"description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`."
+			},
+			"response": [
+				{
+					"name": "Update Company Contact - Success",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-update/{{contact_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-update",
+								"{{contact_id}}"
+							]
+						},
+						"description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company contact updated successfully\",\n  \"data\": null\n}"
+				},
+				{
+					"name": "Update Company Contact - Not Found",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-update/{{contact_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-update",
+								"{{contact_id}}"
+							]
+						},
+						"description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`."
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"contact not found\"\n}"
+				},
+				{
+					"name": "Update Company Contact - Invalid ID",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-update/{{contact_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-update",
+								"{{contact_id}}"
+							]
+						},
+						"description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid contact id\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete Company Contact",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/company-contact-delete/{{contact_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"company-contact-delete",
+						"{{contact_id}}"
+					]
+				},
+				"description": "`id` di URL adalah id **KONTAK**. Menghapus barisnya; tidak dapat dibatalkan."
+			},
+			"response": [
+				{
+					"name": "Delete Company Contact - Success",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-delete/{{contact_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-delete",
+								"{{contact_id}}"
+							]
+						},
+						"description": "`id` di URL adalah id **KONTAK**. Menghapus barisnya; tidak dapat dibatalkan."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company contact deleted successfully\",\n  \"data\": null\n}"
+				},
+				{
+					"name": "Delete Company Contact - Not Found",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/company-contact-delete/{{contact_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-contact-delete",
+								"{{contact_id}}"
+							]
+						},
+						"description": "`id` di URL adalah id **KONTAK**. Menghapus barisnya; tidak dapat dibatalkan."
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"contact not found\"\n}"
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8081"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "company_id",
+			"value": ""
+		},
+		{
+			"key": "contact_id",
+			"value": ""
+		}
+	]
+}
