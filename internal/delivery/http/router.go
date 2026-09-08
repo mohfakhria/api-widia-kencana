@@ -17,6 +17,7 @@ type RouterDeps struct {
 	TokenSigner           output.TokenSigner
 	SessionStore          output.SessionStore
 	AssetHandler          *AssetHandler
+	CompanyHandler        *CompanyHandler
 	FontHandler           *FontHandler
 	AuthHandler           *AuthHandler
 	DocumentHandler       *DocumentHandler
@@ -84,6 +85,19 @@ func NewRouter(deps RouterDeps) http.Handler {
 		// yang dipakai semuanya, jadi ia berhenti di sini bersama proyek dan
 		// ekspor.
 		protected.POST("/font-add", deps.FontHandler.Register)
+
+		// Master data perusahaan: MENGUBAHNYA di sini, MEMBACANYA di grup
+		// sebelah. Pembagian yang sama dengan font — yang dijaga superadmin
+		// adalah menambah dan menyunting, bukan mengetahui apa yang ada.
+		protected.POST("/company-add", deps.CompanyHandler.Create)
+		protected.PUT("/company-update/:id", deps.CompanyHandler.Update)
+		protected.DELETE("/company-delete/:id", deps.CompanyHandler.Delete)
+
+		// Kontak menyebut id KONTAK pada update dan delete, bukan id perusahaan —
+		// perusahaannya diambil dari baris kontaknya sendiri.
+		protected.POST("/company-contact-add/:id", deps.CompanyHandler.AddContact)
+		protected.PUT("/company-contact-update/:id", deps.CompanyHandler.UpdateContact)
+		protected.DELETE("/company-contact-delete/:id", deps.CompanyHandler.DeleteContact)
 	}
 
 	// agentAllowed dibuka untuk agent DI SAMPING manusia. Sengaja pendek, dan
@@ -116,6 +130,12 @@ func NewRouter(deps RouterDeps) http.Handler {
 		// selebar document-list. Yang dijaga superadmin adalah MENAMBAH font,
 		// bukan mengetahui font apa yang ada.
 		agentAllowed.GET("/font-list", deps.FontHandler.List)
+
+		// Dibaca saat menyusun dokumen — nama, alamat, dan kontak pelanggan
+		// mengisi blok "KEPADA YTH.". Karena itu agent ikut boleh membacanya,
+		// dengan alasan yang sama seperti font-list.
+		agentAllowed.GET("/company-list", deps.CompanyHandler.List)
+		agentAllowed.GET("/company-detail/:id", deps.CompanyHandler.Get)
 
 		// Di grup yang sama dengan document-add, karena keduanya dipakai
 		// berurutan: kertas dipilih lebih dulu, tokennya menjadi masukan wajib

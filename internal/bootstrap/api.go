@@ -72,6 +72,7 @@ func (a *ApiApp) initialize() error {
 	fontUC := usecase.NewFontUseCase(a.objectStorage, pdfrender.NewFontInspector(), a.ServiceLogger)
 	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
 	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
+	companyUC := usecase.NewCompanyUseCase(pg.NewCompanyRepository(a.db))
 	documentRepo := pg.NewDocumentRepository(a.db)
 	documentUC := usecase.NewDocumentUseCase(documentRepo)
 	documentDesign := documentdesign.NewService(
@@ -98,6 +99,7 @@ func (a *ApiApp) initialize() error {
 		// pemanggilnya — beserta nama dan perannya — tanpa menyentuh database.
 		SessionStore:    sessionStore,
 		AssetHandler:    deliveryhttp.NewAssetHandler(assetUC),
+		CompanyHandler:  deliveryhttp.NewCompanyHandler(companyUC),
 		AuthHandler:     deliveryhttp.NewAuthHandler(authUC, a.Config),
 		DocumentHandler: deliveryhttp.NewDocumentHandler(documentUC),
 		FontHandler:     deliveryhttp.NewFontHandler(fontUC),

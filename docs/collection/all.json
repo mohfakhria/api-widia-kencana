@@ -2157,6 +2157,1590 @@
         {
             "item": [
                 {
+                    "name": "List Companies",
+                    "request": {
+                        "description": "Daftar perusahaan, diurutkan menurut **nama** — bukan waktu dibuat. Ini master data yang dibaca manusia dari sebuah pemilih, dan yang dicari orang letaknya menurut abjad.\n\n**Kontak TIDAK disertakan di sini.** Daftar dipakai pemilih di layar, dan menyertakan seluruh kontak berarti satu kueri tambahan per baris untuk data yang tidak dilihat siapa pun sampai satu perusahaan benar-benar dibuka. Pakai `company-detail` untuk itu.\n\n**Perusahaan sendiri ikut muncul di sini.** PT. Widia Kencana duduk di tabel yang sama dengan pelanggan, dan tidak ada kolom yang membedakannya — penyaringnya urusan frontend, misalnya menyembunyikan `code = 'WIKEN'`.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-list"
+                            ],
+                            "query": [
+                                {
+                                    "description": "Saring menurut status: `active` atau `inactive`. Kosong berarti semuanya. Nilai lain ditolak 400.",
+                                    "key": "status",
+                                    "value": ""
+                                },
+                                {
+                                    "description": "Satu kata kunci diadu ke `code`, `name`, DAN `legal_name` sekaligus, tanpa peduli huruf besar-kecil. Orang yang mencari pelanggan tidak lebih dulu memutuskan sedang mengetik kode atau nama.",
+                                    "key": "search",
+                                    "value": ""
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/company-list?status=\u0026search="
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"companies\": [\n      {\n        \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n        \"code\": \"DIZKAA\",\n        \"name\": \"Dizkaa Putra Anugerah\",\n        \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n        \"company_type\": \"PT\",\n        \"description\": \"Perusahaan jasa konstruksi\",\n        \"established_date\": \"2023-11-16\",\n        \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n        \"email\": \"\",\n        \"phone\": \"\",\n        \"fax\": \"\",\n        \"timezone\": \"Asia/Jakarta\",\n        \"locale\": \"id-ID\",\n        \"currency_code\": \"IDR\",\n        \"status\": \"active\",\n        \"created_at\": \"2026-09-08T13:30:00+07:00\",\n        \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n      }\n    ]\n  }\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Companies - Success",
+                            "originalRequest": {
+                                "description": "Daftar perusahaan, diurutkan menurut **nama** — bukan waktu dibuat. Ini master data yang dibaca manusia dari sebuah pemilih, dan yang dicari orang letaknya menurut abjad.\n\n**Kontak TIDAK disertakan di sini.** Daftar dipakai pemilih di layar, dan menyertakan seluruh kontak berarti satu kueri tambahan per baris untuk data yang tidak dilihat siapa pun sampai satu perusahaan benar-benar dibuka. Pakai `company-detail` untuk itu.\n\n**Perusahaan sendiri ikut muncul di sini.** PT. Widia Kencana duduk di tabel yang sama dengan pelanggan, dan tidak ada kolom yang membedakannya — penyaringnya urusan frontend, misalnya menyembunyikan `code = 'WIKEN'`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "description": "Saring menurut status: `active` atau `inactive`. Kosong berarti semuanya. Nilai lain ditolak 400.",
+                                            "key": "status",
+                                            "value": ""
+                                        },
+                                        {
+                                            "description": "Satu kata kunci diadu ke `code`, `name`, DAN `legal_name` sekaligus, tanpa peduli huruf besar-kecil. Orang yang mencari pelanggan tidak lebih dulu memutuskan sedang mengetik kode atau nama.",
+                                            "key": "search",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/company-list?status=\u0026search="
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"companies\": []\n  }\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Companies - Empty",
+                            "originalRequest": {
+                                "description": "Daftar perusahaan, diurutkan menurut **nama** — bukan waktu dibuat. Ini master data yang dibaca manusia dari sebuah pemilih, dan yang dicari orang letaknya menurut abjad.\n\n**Kontak TIDAK disertakan di sini.** Daftar dipakai pemilih di layar, dan menyertakan seluruh kontak berarti satu kueri tambahan per baris untuk data yang tidak dilihat siapa pun sampai satu perusahaan benar-benar dibuka. Pakai `company-detail` untuk itu.\n\n**Perusahaan sendiri ikut muncul di sini.** PT. Widia Kencana duduk di tabel yang sama dengan pelanggan, dan tidak ada kolom yang membedakannya — penyaringnya urusan frontend, misalnya menyembunyikan `code = 'WIKEN'`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "description": "Saring menurut status: `active` atau `inactive`. Kosong berarti semuanya. Nilai lain ditolak 400.",
+                                            "key": "status",
+                                            "value": ""
+                                        },
+                                        {
+                                            "description": "Satu kata kunci diadu ke `code`, `name`, DAN `legal_name` sekaligus, tanpa peduli huruf besar-kecil. Orang yang mencari pelanggan tidak lebih dulu memutuskan sedang mengetik kode atau nama.",
+                                            "key": "search",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/company-list?status=\u0026search="
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid company status\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Companies - Invalid Status",
+                            "originalRequest": {
+                                "description": "Daftar perusahaan, diurutkan menurut **nama** — bukan waktu dibuat. Ini master data yang dibaca manusia dari sebuah pemilih, dan yang dicari orang letaknya menurut abjad.\n\n**Kontak TIDAK disertakan di sini.** Daftar dipakai pemilih di layar, dan menyertakan seluruh kontak berarti satu kueri tambahan per baris untuk data yang tidak dilihat siapa pun sampai satu perusahaan benar-benar dibuka. Pakai `company-detail` untuk itu.\n\n**Perusahaan sendiri ikut muncul di sini.** PT. Widia Kencana duduk di tabel yang sama dengan pelanggan, dan tidak ada kolom yang membedakannya — penyaringnya urusan frontend, misalnya menyembunyikan `code = 'WIKEN'`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "description": "Saring menurut status: `active` atau `inactive`. Kosong berarti semuanya. Nilai lain ditolak 400.",
+                                            "key": "status",
+                                            "value": ""
+                                        },
+                                        {
+                                            "description": "Satu kata kunci diadu ke `code`, `name`, DAN `legal_name` sekaligus, tanpa peduli huruf besar-kecil. Orang yang mencari pelanggan tidak lebih dulu memutuskan sedang mengetik kode atau nama.",
+                                            "key": "search",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/company-list?status=\u0026search="
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}",
+                            "code": 401,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Companies - Unauthorized",
+                            "originalRequest": {
+                                "description": "Daftar perusahaan, diurutkan menurut **nama** — bukan waktu dibuat. Ini master data yang dibaca manusia dari sebuah pemilih, dan yang dicari orang letaknya menurut abjad.\n\n**Kontak TIDAK disertakan di sini.** Daftar dipakai pemilih di layar, dan menyertakan seluruh kontak berarti satu kueri tambahan per baris untuk data yang tidak dilihat siapa pun sampai satu perusahaan benar-benar dibuka. Pakai `company-detail` untuk itu.\n\n**Perusahaan sendiri ikut muncul di sini.** PT. Widia Kencana duduk di tabel yang sama dengan pelanggan, dan tidak ada kolom yang membedakannya — penyaringnya urusan frontend, misalnya menyembunyikan `code = 'WIKEN'`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-list"
+                                    ],
+                                    "query": [
+                                        {
+                                            "description": "Saring menurut status: `active` atau `inactive`. Kosong berarti semuanya. Nilai lain ditolak 400.",
+                                            "key": "status",
+                                            "value": ""
+                                        },
+                                        {
+                                            "description": "Satu kata kunci diadu ke `code`, `name`, DAN `legal_name` sekaligus, tanpa peduli huruf besar-kecil. Orang yang mencari pelanggan tidak lebih dulu memutuskan sedang mengetik kode atau nama.",
+                                            "key": "search",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/company-list?status=\u0026search="
+                                }
+                            },
+                            "status": "Unauthorized"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Company Detail",
+                    "request": {
+                        "description": "Satu perusahaan **beserta kontaknya**, diurutkan kontak utama lebih dulu lalu menurut nama.\n\nUrutannya bukan soal kerapian: baris `Attn:` pada dokumen mengambil yang pertama.\n\n`id` harus UUID. Yang bukan dijawab `400 \"invalid company id\"` — bukan 500 dari Postgres yang menyebut galat sintaks tipe.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-detail",
+                                "{{company_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/company-detail/{{company_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"company\": {\n      \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"code\": \"DIZKAA\",\n      \"name\": \"Dizkaa Putra Anugerah\",\n      \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n      \"company_type\": \"PT\",\n      \"description\": \"Perusahaan jasa konstruksi\",\n      \"established_date\": \"2023-11-16\",\n      \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"fax\": \"\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"locale\": \"id-ID\",\n      \"currency_code\": \"IDR\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\",\n      \"contacts\": [\n        {\n          \"id\": \"7b2e1d90-3c4a-4f5b-9a8c-1d2e3f4a5b6c\",\n          \"company_id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n          \"salutation\": \"Bapak\",\n          \"name\": \"Wahyudi\",\n          \"position\": \"Owner\",\n          \"department\": \"\",\n          \"email\": \"\",\n          \"phone\": \"\",\n          \"mobile\": \"\",\n          \"is_primary\": true,\n          \"status\": \"active\",\n          \"created_at\": \"2026-09-08T13:30:00+07:00\",\n          \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n        }\n      ]\n    }\n  }\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Company Detail - Success",
+                            "originalRequest": {
+                                "description": "Satu perusahaan **beserta kontaknya**, diurutkan kontak utama lebih dulu lalu menurut nama.\n\nUrutannya bukan soal kerapian: baris `Attn:` pada dokumen mengambil yang pertama.\n\n`id` harus UUID. Yang bukan dijawab `400 \"invalid company id\"` — bukan 500 dari Postgres yang menyebut galat sintaks tipe.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-detail",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-detail/{{company_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid company id\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Company Detail - Invalid ID",
+                            "originalRequest": {
+                                "description": "Satu perusahaan **beserta kontaknya**, diurutkan kontak utama lebih dulu lalu menurut nama.\n\nUrutannya bukan soal kerapian: baris `Attn:` pada dokumen mengambil yang pertama.\n\n`id` harus UUID. Yang bukan dijawab `400 \"invalid company id\"` — bukan 500 dari Postgres yang menyebut galat sintaks tipe.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-detail",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-detail/{{company_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company not found\"\n}",
+                            "code": 404,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Company Detail - Not Found",
+                            "originalRequest": {
+                                "description": "Satu perusahaan **beserta kontaknya**, diurutkan kontak utama lebih dulu lalu menurut nama.\n\nUrutannya bukan soal kerapian: baris `Attn:` pada dokumen mengambil yang pertama.\n\n`id` harus UUID. Yang bukan dijawab `400 \"invalid company id\"` — bukan 500 dari Postgres yang menyebut galat sintaks tipe.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-detail",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-detail/{{company_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Company",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                        },
+                        "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-add"
+                            ],
+                            "raw": "{{base_url}}/api/company-add"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company created successfully\",\n  \"data\": {\n    \"company\": {\n      \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"code\": \"DIZKAA\",\n      \"name\": \"Dizkaa Putra Anugerah\",\n      \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n      \"company_type\": \"PT\",\n      \"description\": \"Perusahaan jasa konstruksi\",\n      \"established_date\": \"2023-11-16\",\n      \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"fax\": \"\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"locale\": \"id-ID\",\n      \"currency_code\": \"IDR\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n    }\n  }\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Company - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-add"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company code is already used\"\n}",
+                            "code": 409,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Company - Code Taken",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-add"
+                                }
+                            },
+                            "status": "Conflict"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company code cannot be empty\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Company - Code Empty",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company legal name cannot be empty\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Company - Legal Name Empty",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid company status\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Company - Invalid Status",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company currency code must be 3 letters\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Company - Invalid Currency",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"established_date must be formatted as YYYY-MM-DD\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Company - Invalid Date",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Company",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                        },
+                        "description": "**Mengganti SELURUH isi barisnya**, bukan menambal sebagian: field yang tidak dikirim menjadi kosong.\n\nBerbeda dari `page.update` pada dokumen, yang justru menolak field yang hilang — di sana halaman ditambal per-properti oleh banyak penyunting sekaligus. Master data disunting satu orang lewat satu formulir yang memuat semuanya.\n\nKontak **tidak** ikut di sini; ia punya endpointnya sendiri.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-update",
+                                "{{company_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/company-update/{{company_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Company - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**Mengganti SELURUH isi barisnya**, bukan menambal sebagian: field yang tidak dikirim menjadi kosong.\n\nBerbeda dari `page.update` pada dokumen, yang justru menolak field yang hilang — di sana halaman ditambal per-properti oleh banyak penyunting sekaligus. Master data disunting satu orang lewat satu formulir yang memuat semuanya.\n\nKontak **tidak** ikut di sini; ia punya endpointnya sendiri.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-update",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-update/{{company_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company not found\"\n}",
+                            "code": 404,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Company - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**Mengganti SELURUH isi barisnya**, bukan menambal sebagian: field yang tidak dikirim menjadi kosong.\n\nBerbeda dari `page.update` pada dokumen, yang justru menolak field yang hilang — di sana halaman ditambal per-properti oleh banyak penyunting sekaligus. Master data disunting satu orang lewat satu formulir yang memuat semuanya.\n\nKontak **tidak** ikut di sini; ia punya endpointnya sendiri.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-update",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-update/{{company_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company code is already used\"\n}",
+                            "code": 409,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Company - Code Taken",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "**Mengganti SELURUH isi barisnya**, bukan menambal sebagian: field yang tidak dikirim menjadi kosong.\n\nBerbeda dari `page.update` pada dokumen, yang justru menolak field yang hilang — di sana halaman ditambal per-properti oleh banyak penyunting sekaligus. Master data disunting satu orang lewat satu formulir yang memuat semuanya.\n\nKontak **tidak** ikut di sini; ia punya endpointnya sendiri.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-update",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-update/{{company_id}}"
+                                }
+                            },
+                            "status": "Conflict"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Company",
+                    "request": {
+                        "description": "Menghapus perusahaan **beserta seluruh kontaknya** lewat `ON DELETE CASCADE`.\n\n**Tidak dapat dibatalkan.** Tidak ada status `deleted`, tidak ada tempat sampah — sejalan dengan seluruh tabel lain di repo ini. Untuk memensiunkan pelanggan tanpa menghilangkan datanya, pakai `status: \"inactive\"` lewat `company-update`.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-delete",
+                                "{{company_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/company-delete/{{company_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company deleted successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Company - Success",
+                            "originalRequest": {
+                                "description": "Menghapus perusahaan **beserta seluruh kontaknya** lewat `ON DELETE CASCADE`.\n\n**Tidak dapat dibatalkan.** Tidak ada status `deleted`, tidak ada tempat sampah — sejalan dengan seluruh tabel lain di repo ini. Untuk memensiunkan pelanggan tanpa menghilangkan datanya, pakai `status: \"inactive\"` lewat `company-update`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-delete",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-delete/{{company_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company not found\"\n}",
+                            "code": 404,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Company - Not Found",
+                            "originalRequest": {
+                                "description": "Menghapus perusahaan **beserta seluruh kontaknya** lewat `ON DELETE CASCADE`.\n\n**Tidak dapat dibatalkan.** Tidak ada status `deleted`, tidak ada tempat sampah — sejalan dengan seluruh tabel lain di repo ini. Untuk memensiunkan pelanggan tanpa menghilangkan datanya, pakai `status: \"inactive\"` lewat `company-update`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-delete",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-delete/{{company_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid company id\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Company - Invalid ID",
+                            "originalRequest": {
+                                "description": "Menghapus perusahaan **beserta seluruh kontaknya** lewat `ON DELETE CASCADE`.\n\n**Tidak dapat dibatalkan.** Tidak ada status `deleted`, tidak ada tempat sampah — sejalan dengan seluruh tabel lain di repo ini. Untuk memensiunkan pelanggan tanpa menghilangkan datanya, pakai `status: \"inactive\"` lewat `company-update`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-delete",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-delete/{{company_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        }
+                    ]
+                },
+                {
+                    "name": "Add Company Contact",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                        },
+                        "description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-contact-add",
+                                "{{company_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/company-contact-add/{{company_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company contact created successfully\",\n  \"data\": {\n    \"contact\": {\n      \"id\": \"7b2e1d90-3c4a-4f5b-9a8c-1d2e3f4a5b6c\",\n      \"company_id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"salutation\": \"Bapak\",\n      \"name\": \"Wahyudi\",\n      \"position\": \"Owner\",\n      \"department\": \"\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"mobile\": \"\",\n      \"is_primary\": true,\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n    }\n  }\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Company Contact - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-add",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-add/{{company_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"contact name cannot be empty\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Company Contact - Name Empty",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-add",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-add/{{company_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"primary contact must be active\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Company Contact - Primary Must Be Active",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-add",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-add/{{company_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company not found\"\n}",
+                            "code": 404,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Company Contact - Company Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "Menambah kontak. `id` di URL adalah id **PERUSAHAAN**.\n\n`salutation` + `name` + `position` bersama-sama menyusun baris `Attn:` pada dokumen — `Bapak Wahyudi — Owner` adalah ketiganya, bukan satu teks.\n\n**`is_primary: true` otomatis menurunkan kontak utama yang lama**, di dalam satu transaksi. Database menolak kontak utama kedua lewat indeks unik parsial, jadi tidak ada keadaan di mana satu perusahaan punya dua — maupun keadaan sesaat ketika ia tidak punya satu pun.\n\nKontak utama **harus** aktif: `is_primary: true` bersama `status: \"inactive\"` ditolak, karena keduanya saling meniadakan dan hasilnya perusahaan yang tampak punya kontak utama padahal tidak ada yang akan tercetak.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-add",
+                                        "{{company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-add/{{company_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Company Contact",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            },
+                            "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                        },
+                        "description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-contact-update",
+                                "{{contact_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/company-contact-update/{{contact_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company contact updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Company Contact - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-update",
+                                        "{{contact_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-update/{{contact_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"contact not found\"\n}",
+                            "code": 404,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Company Contact - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-update",
+                                        "{{contact_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-update/{{contact_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid contact id\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Company Contact - Invalid ID",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    },
+                                    "raw": "{\n  \"salutation\": \"Bapak\",\n  \"name\": \"Wahyudi\",\n  \"position\": \"Owner\",\n  \"department\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"mobile\": \"\",\n  \"is_primary\": true,\n  \"status\": \"active\"\n}"
+                                },
+                                "description": "`id` di URL adalah id **KONTAK**, bukan id perusahaan.\n\nPerusahaannya diambil dari baris kontaknya sendiri, sehingga tidak ada kemungkinan pemanggil menyebut pasangan perusahaan-kontak yang tidak berhubungan — dan tidak ada pula pemeriksaan tambahan yang bisa terlupa.\n\nMengganti seluruh isinya, sama seperti `company-update`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-update",
+                                        "{{contact_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-update/{{contact_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Company Contact",
+                    "request": {
+                        "description": "`id` di URL adalah id **KONTAK**. Menghapus barisnya; tidak dapat dibatalkan.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "company-contact-delete",
+                                "{{contact_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/company-contact-delete/{{contact_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company contact deleted successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Company Contact - Success",
+                            "originalRequest": {
+                                "description": "`id` di URL adalah id **KONTAK**. Menghapus barisnya; tidak dapat dibatalkan.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-delete",
+                                        "{{contact_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-delete/{{contact_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"contact not found\"\n}",
+                            "code": 404,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Company Contact - Not Found",
+                            "originalRequest": {
+                                "description": "`id` di URL adalah id **KONTAK**. Menghapus barisnya; tidak dapat dibatalkan.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "company-contact-delete",
+                                        "{{contact_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/company-contact-delete/{{contact_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        }
+                    ]
+                }
+            ],
+            "name": "Company"
+        },
+        {
+            "item": [
+                {
                     "name": "List Documents",
                     "request": {
                         "description": "Daftar dokumen, diurutkan created_at DESC.\n\n**Yang paling mudah terlewat: `status` kosong bukan berarti semua.** Tanpa `status`, seluruh dokumen ikut — tidak ada lagi yang tersembunyi. Dokumen yang dihapus benar-benar hilang dari tabel, jadi tidak ada keadaan \"terhapus tetapi masih terlihat\".\n\n**Belum ada pembatasan jumlah maupun halaman.** Seluruh baris yang cocok dikembalikan sekaligus; tidak ada limit, offset, atau cursor.\n\nParameter yang tidak dikenal diabaikan diam-diam.",
@@ -4976,6 +6560,14 @@
         },
         {
             "key": "asset_token",
+            "value": ""
+        },
+        {
+            "key": "company_id",
+            "value": ""
+        },
+        {
+            "key": "contact_id",
             "value": ""
         },
         {
