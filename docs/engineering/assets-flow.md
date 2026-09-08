@@ -17,17 +17,17 @@ Authorization: Bearer <access_token>
 
 ```text
 POST   /api/asset-upload-request
-POST   /api/asset-upload-complete/:token
+POST   /api/asset-upload-complete?token=
 GET    /api/asset-list
-GET    /api/asset-detail/:token
-GET    /api/asset-presign/:token
-DELETE /api/asset-delete/:token
+GET    /api/asset-detail?token=
+GET    /api/asset-detail?token=…&presign=true
+DELETE /api/asset-delete?token=
 ```
 
 Satu endpoint lagi sengaja **di luar autentikasi**:
 
 ```text
-GET    /api/asset-content/:token
+GET    /api/asset-content?token=
 ```
 
 Ia dituju langsung oleh tag `<img>`, yang tidak dapat mengirim header
@@ -199,7 +199,7 @@ Jika complete gagal karena expired, size mismatch, MIME mismatch, atau object ti
 Frontend tidak memakai `object_name` langsung. Untuk preview/download, minta URL sementara:
 
 ```http
-GET /api/asset-presign/:asset_token
+GET /api/asset-detail?presign=true&token=:asset_token
 ```
 
 Response:
@@ -275,7 +275,7 @@ Response:
 }
 ```
 
-List asset hanya berisi metadata. Jika butuh thumbnail/preview, minta `asset-presign` saat item terlihat atau saat user membuka detail.
+List asset hanya berisi metadata. Jika butuh thumbnail/preview, minta `asset-detail?presign=true` saat item terlihat atau saat user membuka detail.
 
 ## Flow Detail Asset
 
@@ -351,7 +351,7 @@ Frontend setelah sukses:
 
 ## Menampilkan Gambar
 
-Untuk menampilkan gambar, **jangan** panggil `asset-presign` lebih dulu. Pakai
+Untuk menampilkan gambar, **jangan** panggil `asset-detail?presign=true` lebih dulu. Pakai
 `asset-content` langsung sebagai sumber tag `<img>`:
 
 ```tsx
@@ -366,13 +366,13 @@ Location: http://minio.example.com/widia-assets/documents/...?X-Amz-Signature=..
 Cache-Control: no-store
 ```
 
-Kenapa ini lebih baik daripada `asset-presign` untuk menampilkan:
+Kenapa ini lebih baik daripada `asset-detail?presign=true` untuk menampilkan:
 
 - **URL-nya tetap dan tidak pernah kedaluwarsa.** Yang kedaluwarsa hanya sasaran
   pengalihannya, dan itu disusun ulang setiap permintaan. Tidak ada yang perlu
   disegarkan, dan tidak ada gambar yang mendadak gagal dimuat setelah lima belas
   menit.
-- **Tanpa panggilan pendahuluan.** `asset-presign` menuntut satu permintaan per
+- **Tanpa panggilan pendahuluan.** Meminta presign menuntut satu permintaan per
   gambar sebelum apa pun tergambar.
 - `Cache-Control: no-store` disetel sengaja: pengalihan yang tersimpan akan
   menunjuk tanda tangan yang keburu mati, dan gejalanya gambar yang gagal lalu
@@ -385,7 +385,7 @@ Batasnya:
   membaca gambarnya.
 - Menjawab `400` bila asetnya belum `uploaded`, dan `404` bila sudah tidak ada.
 
-Pakai `asset-presign` hanya ketika Anda membutuhkan URL bertandanya **sendiri**,
+Pakai `asset-detail?presign=true` hanya ketika Anda membutuhkan URL bertandanya **sendiri**,
 misalnya untuk mengunduh atau meneruskannya ke luar aplikasi.
 
 ## Error Handling Frontend
@@ -403,7 +403,7 @@ Recommended handling:
 ```
 
 **Membaca dan mengubah punya wewenang yang berbeda, dan ini mudah disalahpahami.**
-`asset-detail`, `asset-presign`, dan `asset-content` terbuka bagi siapa pun yang
+`asset-detail`, `asset-detail?presign=true`, dan `asset-content` terbuka bagi siapa pun yang
 login asal ia tahu tokennya — kepemilikan **tidak** diperiksa. Aset milik orang
 lain menjawab `200`, bukan `403` maupun `404`. Itu disengaja: dokumen di
 aplikasi ini milik bersama, dan gambar yang tokennya sudah masuk ke `assetToken`
@@ -432,7 +432,7 @@ asset status failed
 ## Mengganti Isi Aset
 
 ```http
-POST /api/asset-replace/:token
+POST /api/asset-replace?token=
 Content-Type: multipart/form-data
 ```
 
@@ -499,7 +499,7 @@ Preview helper:
 
 ```ts
 async function getAssetPreviewUrl(assetToken: string) {
-  const response = await api.get(`/api/asset-presign/${assetToken}`)
+  const response = await api.get(`/api/asset-detail?presign=true&token=${assetToken}`)
   return response.data.data.url
 }
 ```
@@ -519,11 +519,11 @@ Contoh document settings:
 Saat perlu render/preview logo:
 
 1. Ambil `logo_asset_token`.
-2. Pakai `/api/asset-content/:token` langsung sebagai `src` — tanpa panggilan
+2. Pakai `/api/asset-content?token=` langsung sebagai `src` — tanpa panggilan
    pendahuluan, dan tanpa yang perlu disegarkan. Lihat
    [Menampilkan Gambar](#menampilkan-gambar).
 
-`asset-presign` hanya bila URL bertandanya sendiri yang dibutuhkan, misalnya
+`asset-detail?presign=true` hanya bila URL bertandanya sendiri yang dibutuhkan, misalnya
 untuk mengunduh.
 
 Dengan pola ini asset management tetap menjadi satu pintu utama untuk upload, preview, download, dan delete.

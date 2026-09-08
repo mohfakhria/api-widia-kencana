@@ -348,10 +348,16 @@
                             ],
                             "path": [
                                 "api",
-                                "asset-upload-complete",
-                                "{{asset_token}}"
+                                "asset-upload-complete"
                             ],
-                            "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                            "query": [
+                                {
+                                    "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400.",
+                                    "key": "token",
+                                    "value": "{{asset_token}}"
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}"
                         }
                     },
                     "response": [
@@ -381,10 +387,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-upload-complete",
-                                        "{{asset_token}}"
+                                        "asset-upload-complete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}"
                                 }
                             },
                             "status": "OK"
@@ -415,10 +426,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-upload-complete",
-                                        "{{asset_token}}"
+                                        "asset-upload-complete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}"
                                 }
                             },
                             "status": "Bad Request"
@@ -449,10 +465,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-upload-complete",
-                                        "{{asset_token}}"
+                                        "asset-upload-complete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}"
                                 }
                             },
                             "status": "Bad Request"
@@ -483,10 +504,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-upload-complete",
-                                        "{{asset_token}}"
+                                        "asset-upload-complete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}"
                                 }
                             },
                             "status": "Bad Request"
@@ -517,10 +543,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-upload-complete",
-                                        "{{asset_token}}"
+                                        "asset-upload-complete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-upload-complete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}"
                                 }
                             },
                             "status": "Not Found"
@@ -728,6 +759,7 @@
                 {
                     "name": "Get Asset Detail",
                     "request": {
+                        "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -741,10 +773,26 @@
                             ],
                             "path": [
                                 "api",
-                                "asset-detail",
-                                "{{asset_token}}"
+                                "asset-detail"
                             ],
-                            "raw": "{{base_url}}/api/asset-detail/{{asset_token}}"
+                            "query": [
+                                {
+                                    "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400.",
+                                    "key": "token",
+                                    "value": "{{asset_token}}"
+                                },
+                                {
+                                    "description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya.",
+                                    "key": "key",
+                                    "value": ""
+                                },
+                                {
+                                    "description": "Isi `true` untuk sekaligus menerbitkan URL unduh sementara. Menggantikan rute asset-presign yang dulu terpisah. Tidak disertakan secara bawaan: menerbitkannya menandatangani alamat yang dapat dipakai siapa pun yang menerimanya.",
+                                    "key": "presign",
+                                    "value": ""
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}\u0026key=\u0026presign="
                         }
                     },
                     "response": [
@@ -773,10 +821,23 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-detail",
-                                        "{{asset_token}}"
+                                        "asset-detail"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-detail/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "presign",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}\u0026key=\u0026presign="
                                 }
                             },
                             "status": "OK"
@@ -806,40 +867,27 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-detail",
-                                        "{{asset_token}}"
+                                        "asset-detail"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-detail/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "presign",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}\u0026key=\u0026presign="
                                 }
                             },
                             "status": "Not Found"
-                        }
-                    ]
-                },
-                {
-                    "name": "Presign Asset Download",
-                    "request": {
-                        "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires.",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            }
-                        ],
-                        "method": "GET",
-                        "url": {
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "asset-presign",
-                                "{{asset_token}}"
-                            ],
-                            "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
-                        }
-                    },
-                    "response": [
+                        },
                         {
                             "_postman_previewlanguage": "json",
                             "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"url\": \"http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=...\",\n    \"expires_in\": 900\n  }\n}",
@@ -850,9 +898,9 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "name": "Presign Asset Download - Success",
+                            "name": "Get Asset Detail (presign) - Success",
                             "originalRequest": {
-                                "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires.",
+                                "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -866,10 +914,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-presign",
-                                        "{{asset_token}}"
+                                        "asset-detail"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "presign",
+                                            "value": "true"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}\u0026presign=true"
                                 }
                             },
                             "status": "OK"
@@ -884,9 +941,9 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "name": "Presign Asset Download - Not Uploaded Yet",
+                            "name": "Get Asset Detail (presign) - Not Uploaded Yet",
                             "originalRequest": {
-                                "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires.",
+                                "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -900,10 +957,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-presign",
-                                        "{{asset_token}}"
+                                        "asset-detail"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "presign",
+                                            "value": "true"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}\u0026presign=true"
                                 }
                             },
                             "status": "Bad Request"
@@ -918,9 +984,9 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "name": "Presign Asset Download - Not Found",
+                            "name": "Get Asset Detail (presign) - Not Found",
                             "originalRequest": {
-                                "description": "Returns a temporary GET URL for preview or download. Requires login.\n\nFor displaying an image, prefer asset-content: it needs no prior call and its URL never expires.",
+                                "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -934,13 +1000,101 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-presign",
-                                        "{{asset_token}}"
+                                        "asset-detail"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-presign/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "presign",
+                                            "value": "true"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}\u0026presign=true"
                                 }
                             },
                             "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"use either asset token or key, not both\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Asset Detail - Token And Key Together",
+                            "originalRequest": {
+                                "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-detail"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": "logo-widia-kencana"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}\u0026key=logo-widia-kencana"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset token or key is required\"\n}",
+                            "code": 400,
+                            "cookie": [],
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Get Asset Detail - No Identifier",
+                            "originalRequest": {
+                                "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "asset-detail"
+                                    ],
+                                    "query": [],
+                                    "raw": "{{base_url}}/api/asset-detail"
+                                }
+                            },
+                            "status": "Bad Request"
                         }
                     ]
                 },
@@ -956,10 +1110,21 @@
                             ],
                             "path": [
                                 "api",
-                                "asset-content",
-                                "{{asset_token}}"
+                                "asset-content"
                             ],
-                            "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
+                            "query": [
+                                {
+                                    "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400.",
+                                    "key": "token",
+                                    "value": "{{asset_token}}"
+                                },
+                                {
+                                    "description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya.",
+                                    "key": "key",
+                                    "value": ""
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/asset-content?token={{asset_token}}\u0026key="
                         }
                     },
                     "response": [
@@ -988,10 +1153,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-content",
-                                        "{{asset_token}}"
+                                        "asset-content"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-content?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Found"
@@ -1017,10 +1191,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-content",
-                                        "{{asset_token}}"
+                                        "asset-content"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-content?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Bad Request"
@@ -1046,10 +1229,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-content",
-                                        "{{asset_token}}"
+                                        "asset-content"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-content/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-content?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Not Found"
@@ -1084,10 +1276,21 @@
                             ],
                             "path": [
                                 "api",
-                                "asset-replace",
-                                "{{asset_token}}"
+                                "asset-replace"
                             ],
-                            "raw": "{{base_url}}/api/asset-replace/{{asset_token}}"
+                            "query": [
+                                {
+                                    "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400.",
+                                    "key": "token",
+                                    "value": "{{asset_token}}"
+                                },
+                                {
+                                    "description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya.",
+                                    "key": "key",
+                                    "value": ""
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}\u0026key="
                         }
                     },
                     "response": [
@@ -1129,10 +1332,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-replace",
-                                        "{{asset_token}}"
+                                        "asset-replace"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-replace/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "OK"
@@ -1175,10 +1387,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-replace",
-                                        "{{asset_token}}"
+                                        "asset-replace"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-replace/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Bad Request"
@@ -1221,10 +1442,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-replace",
-                                        "{{asset_token}}"
+                                        "asset-replace"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-replace/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Bad Request"
@@ -1267,10 +1497,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-replace",
-                                        "{{asset_token}}"
+                                        "asset-replace"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-replace/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Not Found"
@@ -1313,10 +1552,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-replace",
-                                        "{{asset_token}}"
+                                        "asset-replace"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-replace/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Request Entity Too Large"
@@ -1359,10 +1607,19 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-replace",
-                                        "{{asset_token}}"
+                                        "asset-replace"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-replace/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        },
+                                        {
+                                            "key": "key",
+                                            "value": ""
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}\u0026key="
                                 }
                             },
                             "status": "Unauthorized"
@@ -1386,10 +1643,16 @@
                             ],
                             "path": [
                                 "api",
-                                "asset-delete",
-                                "{{asset_token}}"
+                                "asset-delete"
                             ],
-                            "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                            "query": [
+                                {
+                                    "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400.",
+                                    "key": "token",
+                                    "value": "{{asset_token}}"
+                                }
+                            ],
+                            "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}"
                         }
                     },
                     "response": [
@@ -1419,10 +1682,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-delete",
-                                        "{{asset_token}}"
+                                        "asset-delete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}"
                                 }
                             },
                             "status": "OK"
@@ -1453,10 +1721,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-delete",
-                                        "{{asset_token}}"
+                                        "asset-delete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}"
                                 }
                             },
                             "status": "Forbidden"
@@ -1487,10 +1760,15 @@
                                     ],
                                     "path": [
                                         "api",
-                                        "asset-delete",
-                                        "{{asset_token}}"
+                                        "asset-delete"
                                     ],
-                                    "raw": "{{base_url}}/api/asset-delete/{{asset_token}}"
+                                    "query": [
+                                        {
+                                            "key": "token",
+                                            "value": "{{asset_token}}"
+                                        }
+                                    ],
+                                    "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}"
                                 }
                             },
                             "status": "Not Found"

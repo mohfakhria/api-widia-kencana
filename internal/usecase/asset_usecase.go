@@ -85,6 +85,35 @@ func NewAssetUseCase(repo output.AssetRepository, storage output.ObjectStorage, 
 	return &assetUseCase{repo: repo, storage: storage, logger: logger}
 }
 
+// find menyelesaikan rujukan menjadi satu aset, lewat token ATAU key.
+//
+// Satu kueri, bukan dua: menyelesaikan key menjadi token lalu mengambilnya lagi
+// berarti dua perjalanan ke database untuk setiap gambar ber-key yang dimuat
+// peramban — dan kop surat yang memakai key muncul di setiap halaman.
+//
+// Keduanya sekaligus DITOLAK. Memilih salah satu diam-diam berarti permintaan
+// yang menyebut dua benda berbeda dijawab dengan satu di antaranya, dan yang
+// keliru tidak akan pernah tahu ia keliru.
+func (uc *assetUseCase) find(ctx context.Context, ref input.AssetRef) (*entity.Asset, error) {
+	token := strings.TrimSpace(ref.Token)
+	key := strings.ToLower(strings.TrimSpace(ref.Key))
+
+	switch {
+	case token != "" && key != "":
+		return nil, domain.NewError(domain.ErrInvalidInput, "use either asset token or key, not both")
+	case token != "":
+		if err := validateAssetUUIDToken(token, "asset token"); err != nil {
+			return nil, err
+		}
+
+		return uc.repo.GetByToken(ctx, token)
+	case key != "":
+		return uc.repo.GetByKey(ctx, key)
+	default:
+		return nil, domain.NewError(domain.ErrInvalidInput, "asset token or key is required")
+	}
+}
+
 func (uc *assetUseCase) RequestUpload(ctx context.Context, cmd input.RequestAssetUploadCommand) (*input.AssetUploadRequestResult, error) {
 	if uc.storage == nil {
 		return nil, domain.NewError(domain.ErrUnavailable, "asset storage is unavailable")
@@ -156,13 +185,8 @@ func (uc *assetUseCase) RequestUpload(ctx context.Context, cmd input.RequestAsse
 	}, nil
 }
 
-func (uc *assetUseCase) CompleteUpload(ctx context.Context, token string, uploadedBy *int64) (*entity.Asset, error) {
-	token = strings.TrimSpace(token)
-	if err := validateAssetUUIDToken(token, "asset token"); err != nil {
-		return nil, err
-	}
-
-	asset, err := uc.repo.GetByToken(ctx, token)
+func (uc *assetUseCase) CompleteUpload(ctx context.Context, ref input.AssetRef, uploadedBy *int64) (*entity.Asset, error) {
+	asset, err := uc.find(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -176,25 +200,25 @@ func (uc *assetUseCase) CompleteUpload(ctx context.Context, token string, upload
 		return nil, domain.NewError(domain.ErrInvalidInput, "asset cannot be completed from current status")
 	}
 	if asset.PresignedExpiresAt != nil && time.Now().After(*asset.PresignedExpiresAt) {
-		_ = uc.repo.MarkFailed(ctx, token, "upload_expired", "asset upload URL expired")
+		_ = uc.repo.MarkFailed(ctx, asset.Token, "upload_expired", "asset upload URL expired")
 		return nil, domain.NewError(domain.ErrInvalidInput, "asset upload URL expired")
 	}
 
 	stored, err := uc.storage.Stat(ctx, asset.ObjectName)
 	if err != nil {
-		_ = uc.repo.MarkFailed(ctx, token, "object_not_found", err.Error())
+		_ = uc.repo.MarkFailed(ctx, asset.Token, "object_not_found", err.Error())
 		return nil, domain.NewError(domain.ErrNotFound, "uploaded asset object not found")
 	}
 	if stored.Size != asset.Size {
-		_ = uc.repo.MarkFailed(ctx, token, "size_mismatch", "uploaded asset size does not match request")
+		_ = uc.repo.MarkFailed(ctx, asset.Token, "size_mismatch", "uploaded asset size does not match request")
 		return nil, domain.NewError(domain.ErrInvalidInput, "uploaded asset size does not match request")
 	}
 	if !assetContentTypeMatches(asset.MimeType, stored.ContentType) {
-		_ = uc.repo.MarkFailed(ctx, token, "mime_type_mismatch", "uploaded asset MIME type does not match request")
+		_ = uc.repo.MarkFailed(ctx, asset.Token, "mime_type_mismatch", "uploaded asset MIME type does not match request")
 		return nil, domain.NewError(domain.ErrInvalidInput, "uploaded asset MIME type does not match request")
 	}
 
-	return uc.repo.MarkUploaded(ctx, token, stored)
+	return uc.repo.MarkUploaded(ctx, asset.Token, stored)
 }
 
 func (uc *assetUseCase) List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error) {
@@ -212,13 +236,8 @@ func (uc *assetUseCase) List(ctx context.Context, query input.ListAssetQuery) ([
 	return uc.repo.List(ctx, query)
 }
 
-func (uc *assetUseCase) GetByToken(ctx context.Context, token string, uploadedBy *int64) (*entity.Asset, error) {
-	token = strings.TrimSpace(token)
-	if err := validateAssetUUIDToken(token, "asset token"); err != nil {
-		return nil, err
-	}
-
-	asset, err := uc.repo.GetByToken(ctx, token)
+func (uc *assetUseCase) Get(ctx context.Context, ref input.AssetRef, uploadedBy *int64) (*entity.Asset, error) {
+	asset, err := uc.find(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -229,13 +248,8 @@ func (uc *assetUseCase) GetByToken(ctx context.Context, token string, uploadedBy
 	return asset, nil
 }
 
-func (uc *assetUseCase) PresignGet(ctx context.Context, token string, uploadedBy *int64) (*input.AssetPresignGetResult, error) {
-	token = strings.TrimSpace(token)
-	if err := validateAssetUUIDToken(token, "asset token"); err != nil {
-		return nil, err
-	}
-
-	asset, err := uc.repo.GetByToken(ctx, token)
+func (uc *assetUseCase) PresignGet(ctx context.Context, ref input.AssetRef, uploadedBy *int64) (*input.AssetPresignGetResult, error) {
+	asset, err := uc.find(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -273,13 +287,8 @@ func (uc *assetUseCase) PresignGet(ctx context.Context, token string, uploadedBy
 // dilewati, melainkan karena di sini memang tidak ada siapa pun untuk diperiksa —
 // menyamarkannya sebagai pemeriksaan yang lolos akan membuat pembaca berikutnya
 // mengira jalur ini terjaga.
-func (uc *assetUseCase) ContentURL(ctx context.Context, token string) (string, error) {
-	token = strings.TrimSpace(token)
-	if err := validateAssetUUIDToken(token, "asset token"); err != nil {
-		return "", err
-	}
-
-	asset, err := uc.repo.GetByToken(ctx, token)
+func (uc *assetUseCase) ContentURL(ctx context.Context, ref input.AssetRef) (string, error) {
+	asset, err := uc.find(ctx, ref)
 	if err != nil {
 		return "", err
 	}
@@ -349,7 +358,7 @@ func (uc *assetUseCase) ReplaceContent(ctx context.Context, cmd input.ReplaceAss
 		return nil, domain.NewError(domain.ErrInvalidInput, "asset filename is required")
 	}
 
-	asset, err := uc.repo.GetByToken(ctx, cmd.Token)
+	asset, err := uc.find(ctx, cmd.Ref)
 	if err != nil {
 		return nil, err
 	}

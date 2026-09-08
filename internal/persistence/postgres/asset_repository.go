@@ -84,6 +84,22 @@ func (r *AssetRepository) GetByToken(ctx context.Context, token string) (*entity
 	return &asset, nil
 }
 
+func (r *AssetRepository) GetByKey(ctx context.Context, key string) (*entity.Asset, error) {
+	var asset entity.Asset
+	err := scanAsset(r.db.QueryRowContext(ctx, assetSelectQuery()+`
+		WHERE key = $1
+			AND deleted_at IS NULL
+	`, key), &asset)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.NewError(domain.ErrNotFound, "asset not found")
+		}
+		return nil, err
+	}
+
+	return &asset, nil
+}
+
 func (r *AssetRepository) List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error) {
 	builder := strings.Builder{}
 	builder.WriteString(assetSelectQuery())

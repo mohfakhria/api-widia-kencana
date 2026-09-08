@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/dto"
 	"github.com/mohfakhria/api-widia-kencana/internal/delivery/http/middleware"
@@ -20,6 +21,19 @@ type AssetHandler struct {
 
 func NewAssetHandler(asset input.AssetUseCase) *AssetHandler {
 	return &AssetHandler{asset: asset}
+}
+
+// assetRef menyusun rujukan dari query, bukan dari path.
+//
+// Satu rute menerima kedua cara menyebut aset — ?token= dan ?key= — sehingga
+// tidak ada rute kembar yang isinya sama persis kecuali cara memanggilnya.
+// Pemeriksaan "keduanya sekaligus" ada di usecase, bukan di sini: ia aturan
+// tentang aset, bukan tentang HTTP.
+func assetRef(c *gin.Context) input.AssetRef {
+	return input.AssetRef{
+		Token: c.Query("token"),
+		Key:   c.Query("key"),
+	}
 }
 
 func (h *AssetHandler) RequestUpload(c *gin.Context) {
@@ -39,7 +53,7 @@ func (h *AssetHandler) RequestUpload(c *gin.Context) {
 }
 
 func (h *AssetHandler) CompleteUpload(c *gin.Context) {
-	asset, err := h.asset.CompleteUpload(c.Request.Context(), c.Param("token"), currentUserID(c))
+	asset, err := h.asset.CompleteUpload(c.Request.Context(), assetRef(c), currentUserID(c))
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
@@ -50,20 +64,31 @@ func (h *AssetHandler) CompleteUpload(c *gin.Context) {
 
 // Content mengalihkan ke isi aset di object storage.
 //
-// Ada supaya frontend dapat menulis <img src="/api/asset-content/{token}"> dan
+// Ada supaya frontend dapat menulis <img src="/api/asset-content?token=..."> dan
 // selesai — URL-nya tetap, tidak pernah kedaluwarsa, dan tidak menuntut mesin
 // penyegar. Yang kedaluwarsa adalah sasaran pengalihannya, dan itu disusun ulang
 // pada setiap permintaan.
 //
 // TIDAK DIJAGA AuthRequired, dan memang tidak bisa: tag <img> tidak dapat
-// mengirim header Authorization. Token aset yang menjadi kredensialnya.
+// mengirim header Authorization.
+//
+// MENERIMA ?key= JUGA, dan itu melonggarkan sifat yang dulu menjadi seluruh
+// pengamanannya. Dulu kredensialnya adalah tokennya sendiri: UUID acak yang
+// tidak dapat ditebak, sehingga yang dapat membacanya hanya orang yang memang
+// diberi tahu. Key justru dirancang untuk mudah ditebak — logo-widia-kencana —
+// sehingga aset ber-key menjadi dapat dienumerasi siapa pun.
+//
+// Diterima dengan sadar, dengan batas yang jelas: hanya aset yang SENGAJA
+// DINAMAI yang terjangkau begitu. Gambar yang diunggah orang ke dalam dokumen
+// tidak punya key, jadi ia tetap hanya dapat dibuka lewat tokennya. Jangan
+// memberi key kepada aset yang tidak boleh dilihat sembarang orang.
 //
 // Byte-nya tidak pernah melewati proses ini — hanya alamatnya. Menyalurkan
 // isinya sendiri akan membuat setiap pembukaan dokumen berisi sepuluh gambar
 // mendorong puluhan megabyte melalui API, yang justru dihindari seluruh
 // rancangan presigned.
 func (h *AssetHandler) Content(c *gin.Context) {
-	url, err := h.asset.ContentURL(c.Request.Context(), c.Param("token"))
+	url, err := h.asset.ContentURL(c.Request.Context(), assetRef(c))
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
@@ -122,7 +147,7 @@ func (h *AssetHandler) Replace(c *gin.Context) {
 	}
 
 	asset, err := h.asset.ReplaceContent(c.Request.Context(), input.ReplaceAssetContentCommand{
-		Token:            c.Param("token"),
+		Ref:              assetRef(c),
 		OriginalFilename: berkas.Filename,
 		// Tipe diambil dari bagian multipart-nya, bukan ditebak dari ekstensi:
 		// yang menentukan bagaimana peramban kelak menyajikannya adalah nilai
@@ -157,8 +182,32 @@ func (h *AssetHandler) List(c *gin.Context) {
 	dto.Success(c, "Success", dto.NewAssetListResponse(assets))
 }
 
+// Get mengembalikan satu aset, dan dengan ?presign=true sekaligus URL sementara
+// untuk mengunduhnya.
+//
+// Dulu keduanya dua rute. Yang kedua sebenarnya "detail ditambah satu URL",
+// bukan perilaku yang berbeda — dan rute yang hanya menambah satu field pada
+// jawaban rute lain adalah rute yang menuntut perawatan tanpa membawa apa pun.
+//
+// Presign TIDAK disertakan secara bawaan, dan itu bukan penghematan byte:
+// menerbitkannya menandatangani alamat yang dapat dipakai siapa pun yang
+// menerimanya, jadi ia harus diminta secara sadar.
 func (h *AssetHandler) Get(c *gin.Context) {
-	asset, err := h.asset.GetByToken(c.Request.Context(), c.Param("token"), currentUserID(c))
+	ref := assetRef(c)
+
+	if strings.EqualFold(c.Query("presign"), "true") {
+		result, err := h.asset.PresignGet(c.Request.Context(), ref, currentUserID(c))
+		if err != nil {
+			dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+			return
+		}
+
+		dto.Success(c, "Success", dto.NewAssetPresignGetResponse(result))
+
+		return
+	}
+
+	asset, err := h.asset.Get(c.Request.Context(), ref, currentUserID(c))
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
@@ -167,18 +216,8 @@ func (h *AssetHandler) Get(c *gin.Context) {
 	dto.Success(c, "Success", dto.NewAssetDataResponse(asset))
 }
 
-func (h *AssetHandler) PresignGet(c *gin.Context) {
-	result, err := h.asset.PresignGet(c.Request.Context(), c.Param("token"), currentUserID(c))
-	if err != nil {
-		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
-		return
-	}
-
-	dto.Success(c, "Asset URL generated successfully", dto.NewAssetPresignGetResponse(result))
-}
-
 func (h *AssetHandler) Delete(c *gin.Context) {
-	if err := h.asset.Delete(c.Request.Context(), c.Param("token"), currentUserID(c)); err != nil {
+	if err := h.asset.Delete(c.Request.Context(), c.Query("token"), currentUserID(c)); err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return
 	}

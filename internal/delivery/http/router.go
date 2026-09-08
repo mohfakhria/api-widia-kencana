@@ -42,7 +42,7 @@ func NewRouter(deps RouterDeps) http.Handler {
 		// Di grup publik, dan itu keharusan bukan kelalaian: rute ini dituju
 		// langsung oleh tag <img>, yang tidak dapat mengirim header Authorization.
 		// Token aset yang menjadi kredensialnya — lihat AssetHandler.Content.
-		api.GET("/asset-content/:token", deps.AssetHandler.Content)
+		api.GET("/asset-content", deps.AssetHandler.Content)
 
 		// Alasan yang sama persis: rute ini dituju oleh aturan @font-face di
 		// dalam CSS, yang juga tidak dapat mengirim header Authorization. Yang
@@ -98,14 +98,19 @@ func NewRouter(deps RouterDeps) http.Handler {
 		agentAllowed.POST("/logout-all", deps.AuthHandler.LogoutAll)
 
 		agentAllowed.POST("/asset-upload-request", deps.AssetHandler.RequestUpload)
-		agentAllowed.POST("/asset-upload-complete/:token", deps.AssetHandler.CompleteUpload)
+		agentAllowed.POST("/asset-upload-complete", deps.AssetHandler.CompleteUpload)
 		agentAllowed.GET("/asset-list", deps.AssetHandler.List)
-		agentAllowed.GET("/asset-detail/:token", deps.AssetHandler.Get)
-		agentAllowed.GET("/asset-presign/:token", deps.AssetHandler.PresignGet)
+
+		// Satu rute, dua cara menyebut asetnya — ?token= atau ?key= — dan
+		// ?presign=true menggantikan rute asset-presign yang dulu terpisah.
+		agentAllowed.GET("/asset-detail", deps.AssetHandler.Get)
 		// Mengganti ISI aset, bukan menambah yang baru. Token tetap, sehingga
 		// setiap dokumen yang menunjuknya ikut memakai berkas yang baru.
-		agentAllowed.POST("/asset-replace/:token", deps.AssetHandler.Replace)
-		agentAllowed.DELETE("/asset-delete/:token", deps.AssetHandler.Delete)
+		agentAllowed.POST("/asset-replace", deps.AssetHandler.Replace)
+		// Hanya ?token=. Key nama panggilan yang boleh berpindah pemilik setelah
+		// aset lama dibuang; menghapus lewat nama berarti menghapus benda yang
+		// keliru.
+		agentAllowed.DELETE("/asset-delete", deps.AssetHandler.Delete)
 
 		// Daftar font dibaca editor untuk menawarkan pilihan, jadi ia dibuka
 		// selebar document-list. Yang dijaga superadmin adalah MENAMBAH font,

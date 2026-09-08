@@ -11,6 +11,11 @@ import (
 type AssetRepository interface {
 	CreatePending(ctx context.Context, asset *entity.Asset) (*entity.Asset, error)
 	GetByToken(ctx context.Context, token string) (*entity.Asset, error)
+
+	// GetByKey mencari aset lewat nama slotnya. Hanya yang hidup — key milik
+	// aset yang sudah dihapus boleh dipakai ulang, sehingga menyertakan yang
+	// terhapus akan mengembalikan benda yang sudah tidak ada.
+	GetByKey(ctx context.Context, key string) (*entity.Asset, error)
 	List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error)
 	MarkUploaded(ctx context.Context, token string, stored *StoredObject) (*entity.Asset, error)
 	MarkDeleted(ctx context.Context, token string) error
