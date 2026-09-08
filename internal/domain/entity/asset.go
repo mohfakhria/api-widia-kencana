@@ -26,7 +26,6 @@ type Asset struct {
 	PresignedExpiresAt *time.Time
 	UploadedAt         *time.Time
 	FailedAt           *time.Time
-	DeletedAt          *time.Time
 	FailureCode        *string
 	FailureMessage     *string
 	CreatedAt          time.Time

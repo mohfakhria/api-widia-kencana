@@ -109,18 +109,22 @@ func (s *AssetSweeper) sweep(ctx context.Context, now time.Time) {
 		"found", len(expired), "swept", disapu)
 }
 
-// discard membuang objeknya lebih dulu, baru menandai barisnya.
+// discard membuang objeknya lebih dulu, baru barisnya.
 //
-// URUTAN INI YANG MENENTUKAN BENAR-TIDAKNYA. Baris yang ditandai gagal tidak
-// lagi cocok dengan pencarian di atas, sehingga ia tidak akan pernah disapu
-// lagi. Menandai lebih dulu lalu gagal menghapus objeknya berarti objek itu
-// yatim selamanya — tanpa satu pun baris yang menunjuk ke sana, jadi tidak ada
-// yang bisa menemukannya kembali.
+// URUTAN INI YANG MENENTUKAN BENAR-TIDAKNYA. Menghapus baris lebih dulu lalu
+// gagal menghapus objeknya berarti objek itu yatim selamanya — tanpa satu pun
+// baris yang menunjuk ke sana, jadi tidak ada yang bisa menemukannya kembali.
 //
-// Terbalik begini, kegagalan menandai hanya berarti aset yang sama diurus lagi
-// pada denyut berikutnya. Penghapusan objek bersifat idempoten pada object
-// storage — objek yang memang tidak pernah terunggah, yaitu kasus yang paling
-// umum, dilaporkan berhasil.
+// Terbalik begini, kegagalan menghapus baris hanya berarti aset yang sama
+// diurus lagi pada denyut berikutnya. Penghapusan objek bersifat idempoten pada
+// object storage — objek yang memang tidak pernah terunggah, yaitu kasus yang
+// paling umum, dilaporkan berhasil.
+//
+// BARISNYA DIHAPUS, bukan ditandai gagal. Objeknya sudah lenyap, jadi baris
+// yang tertinggal tidak dapat melanjutkan apa pun — ia hanya menyandera nama
+// objek dan key-nya. Berbeda dari kegagalan di CompleteUpload, yang objeknya
+// justru ADA tetapi ditolak: baris itu tetap ditandai gagal, karena ia masih
+// menunjuk berkas yang benar-benar ada.
 func (s *AssetSweeper) discard(ctx context.Context, token, objectName string) bool {
 	if err := s.storage.Delete(ctx, objectName); err != nil {
 		if ctx.Err() == nil {
@@ -130,11 +134,9 @@ func (s *AssetSweeper) discard(ctx context.Context, token, objectName string) bo
 		return false
 	}
 
-	// Kode kegagalannya sama dengan yang dipakai CompleteUpload ketika menolak
-	// unggahan yang lewat tenggat, supaya keduanya terbaca sebagai satu sebab.
-	if err := s.repo.MarkFailed(ctx, token, "upload_expired", "asset upload was never completed"); err != nil {
+	if err := s.repo.Delete(ctx, token); err != nil {
 		if ctx.Err() == nil {
-			s.logger.Warn("mark expired asset failed", "asset", token, "error", err)
+			s.logger.Warn("delete expired asset row", "asset", token, "error", err)
 		}
 		return false
 	}

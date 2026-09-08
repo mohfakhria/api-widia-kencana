@@ -64,7 +64,6 @@ var allowedAssetStatuses = map[string]struct{}{
 	"uploading": {},
 	"uploaded":  {},
 	"failed":    {},
-	"deleted":   {},
 }
 
 type assetUseCase struct {
@@ -318,7 +317,7 @@ func (uc *assetUseCase) Delete(ctx context.Context, token string, uploadedBy *in
 		}
 	}
 
-	return uc.repo.MarkDeleted(ctx, token)
+	return uc.repo.Delete(ctx, token)
 }
 
 // maxAssetReplacementBytes membatasi berkas pengganti.

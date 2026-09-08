@@ -523,7 +523,7 @@
             "1"
           ]
         },
-        "description": "Soft delete project by setting status to deleted."
+        "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus."
       },
       "response": [
         {
@@ -554,7 +554,7 @@
                 "1"
               ]
             },
-            "description": "Soft delete project by setting status to deleted."
+            "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus."
           },
           "status": "Not Found",
           "code": 404,
@@ -588,7 +588,7 @@
                 "1"
               ]
             },
-            "description": "Soft delete project by setting status to deleted."
+            "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus."
           },
           "status": "Forbidden",
           "code": 403,

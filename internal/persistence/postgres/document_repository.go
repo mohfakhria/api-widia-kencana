@@ -92,7 +92,7 @@ func (r *DocumentRepository) List(ctx context.Context, query input.ListDocumentQ
 
 	args := make([]any, 0)
 	if query.Status == "" {
-		builder.WriteString(" WHERE d.status <> 'deleted'")
+		builder.WriteString(" WHERE 1 = 1")
 	} else {
 		args = append(args, query.Status)
 		builder.WriteString(fmt.Sprintf(" WHERE d.status = $%d", len(args)))
@@ -126,7 +126,6 @@ func (r *DocumentRepository) GetByToken(ctx context.Context, token string) (*ent
 	var document entity.Document
 	err := scanDocument(r.db.QueryRowContext(ctx, documentSelectQuery()+`
 		WHERE d.token = $1::uuid
-			AND d.status <> 'deleted'
 	`, token), &document)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -189,7 +188,6 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 			status = $5,
 			updated_at = NOW()
 		WHERE token = $6::uuid
-			AND status <> 'deleted'
 	`, paperID, parentID, document.Name, document.DocumentType, document.Status, token)
 	if err != nil {
 		return err
@@ -198,13 +196,20 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 	return ensureDocumentAffected(result, "document not found")
 }
 
+// Delete MENGHAPUS barisnya, bukan menandainya.
+//
+// Berbeda dari aset, yang hilang di sini isi dokumennya — content JSONB berisi
+// seluruh desainnya. Itu keputusan yang diambil sadar: tempat sampah yang tidak
+// punya pintu keluar hanya menunda kehilangan sambil menyimpan ilusi bahwa masih
+// ada jalan kembali. Sebelum ini status 'deleted' dapat dilihat lewat
+// document-list tetapi tidak dapat dipulihkan oleh siapa pun, karena Update
+// menolak baris yang berstatus itu.
+//
+// parent_id memakai ON DELETE SET NULL, jadi menghapus induk hanya memutus
+// silsilah anaknya — bukan ikut menghapusnya.
 func (r *DocumentRepository) Delete(ctx context.Context, token string) error {
 	result, err := r.db.ExecContext(ctx, `
-		UPDATE documents
-		SET status = 'deleted',
-			updated_at = NOW()
-		WHERE token = $1::uuid
-			AND status <> 'deleted'
+		DELETE FROM documents WHERE token = $1::uuid
 	`, token)
 	if err != nil {
 		return err
@@ -225,7 +230,6 @@ func (r *DocumentRepository) GetContent(ctx context.Context, token string) (*ent
 		FROM documents d
 		JOIN document_papers paper ON paper.id = d.document_paper_id
 		WHERE d.token = $1::uuid
-			AND d.status <> 'deleted'
 	`, token).Scan(&raw, &version, &paper.Width, &paper.Height, &paper.Unit)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -251,7 +255,6 @@ func (r *DocumentRepository) SaveContent(ctx context.Context, token string, cont
 			content_version = $2,
 			updated_at = NOW()
 		WHERE token = $3::uuid
-			AND status <> 'deleted'
 			AND content_version = $4
 	`, string(content), toVersion, token, fromVersion)
 	if err != nil {
@@ -321,7 +324,6 @@ func (r *DocumentRepository) getOptionalDocumentIDByToken(ctx context.Context, t
 		SELECT id
 		FROM documents
 		WHERE token = $1::uuid
-			AND status <> 'deleted'
 	`, token).Scan(&id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

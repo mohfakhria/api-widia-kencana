@@ -97,10 +97,10 @@ func (r *ProjectRepository) Update(ctx context.Context, id int64, project *entit
 }
 
 func (r *ProjectRepository) Delete(ctx context.Context, id int64) error {
+	// Dihapus, bukan ditandai. Tidak ada tabel lain yang merujuk projects, jadi
+	// tidak ada silsilah yang perlu dijaga.
 	result, err := r.db.ExecContext(ctx, `
-		UPDATE projects
-		SET status = 'deleted', updated_at = NOW()
-		WHERE id = $1
+		DELETE FROM projects WHERE id = $1
 	`, id)
 	if err != nil {
 		return err

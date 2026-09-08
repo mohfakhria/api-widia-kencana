@@ -45,7 +45,6 @@ var allowedDocumentStatuses = map[string]struct{}{
 	"active":   {},
 	"inactive": {},
 	"archived": {},
-	"deleted":  {},
 }
 
 type documentUseCase struct {

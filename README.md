@@ -153,6 +153,53 @@ Urutannya mengikat: `DROP COLUMN scope` **terakhir**, setelah `object_name`
 sudah benar. Dijalankan lebih dulu, satu-satunya keterangan kelompok yang
 tersisa untuk baris lama ikut hilang.
 
+Menghapus kini benar-benar menghapus — barisnya, dan objeknya di object storage.
+Status `deleted` dicabut dari aset, dokumen, dan proyek; kolom `assets.deleted_at`
+ikut hilang beserta seluruh predikat parsial yang mengandalkannya.
+
+**Bersihkan datanya lebih dulu, baru ubah skemanya.** Nisan aset menunjuk objek
+yang sudah lenyap — kecuali bila key-nya sempat dipakai ulang, dan pada kasus itu
+nama objeknya kini milik baris yang HIDUP. Karena itu jangan pernah menghapus
+objek berdasarkan nama yang tercatat pada nisan:
+
+```sql
+-- Aman: hanya barisnya. Objek yang mereka sebut sudah lenyap, atau sudah
+-- menjadi milik baris hidup yang memakai key yang sama.
+DELETE FROM assets WHERE deleted_at IS NOT NULL;
+
+-- Dokumen dan proyek yang dulu ditandai terhapus.
+DELETE FROM documents WHERE status = 'deleted';
+DELETE FROM projects  WHERE status = 'deleted';
+```
+
+Lalu skemanya:
+
+```sql
+ALTER TABLE assets DROP COLUMN IF EXISTS deleted_at;
+ALTER TABLE assets DROP CONSTRAINT IF EXISTS assets_deleted_state_chk;
+ALTER TABLE assets DROP CONSTRAINT IF EXISTS assets_status_chk;
+ALTER TABLE assets ADD CONSTRAINT assets_status_chk
+    CHECK (status IN ('pending', 'uploading', 'uploaded', 'failed'));
+
+ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_status_chk;
+ALTER TABLE documents ADD CONSTRAINT documents_status_chk
+    CHECK (status IN ('draft', 'active', 'inactive', 'archived'));
+```
+
+Indeks yang predikatnya menyebut `deleted_at` harus dibuat ulang tanpa predikat
+itu — `DROP COLUMN` akan menolak selama masih ada yang bergantung padanya:
+
+```sql
+DROP INDEX IF EXISTS assets_bucket_object_name_uq_idx;
+DROP INDEX IF EXISTS assets_uploaded_by_idx;
+DROP INDEX IF EXISTS assets_uploaded_by_created_at_idx;
+DROP INDEX IF EXISTS assets_pending_expiry_idx;
+DROP INDEX IF EXISTS assets_key_uq_idx;
+```
+
+lalu jalankan ulang bagian `CREATE INDEX` di `migration/assets.sql` — seluruhnya
+memakai `IF NOT EXISTS`, jadi aman diulang.
+
 Fitur workflow, quotation, dan purchase order dihapus pada 2026-08-10. Berkas
 migration-nya ikut hilang dari repo, tetapi tabelnya **tetap ada** di database
 yang sudah terlanjur dipasang. Buang manual, anak lebih dulu:

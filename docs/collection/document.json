@@ -44,11 +44,11 @@
             {
               "key": "status",
               "value": "",
-              "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+              "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
             }
           ]
         },
-        "description": "Daftar dokumen, diurutkan created_at DESC.\n\n**Yang paling mudah terlewat: `status` kosong bukan berarti semua.** Tanpa `status`, kueri memakai `status <> 'deleted'` — dokumen terhapus disembunyikan. Untuk melihatnya, sebut `status=deleted` secara eksplisit.\n\n**Belum ada pembatasan jumlah maupun halaman.** Seluruh baris yang cocok dikembalikan sekaligus; tidak ada limit, offset, atau cursor.\n\nParameter yang tidak dikenal diabaikan diam-diam."
+        "description": "Daftar dokumen, diurutkan created_at DESC.\n\n**Yang paling mudah terlewat: `status` kosong bukan berarti semua.** Tanpa `status`, seluruh dokumen ikut — tidak ada lagi yang tersembunyi. Dokumen yang dihapus benar-benar hilang dari tabel, jadi tidak ada keadaan \"terhapus tetapi masih terlihat\".\n\n**Belum ada pembatasan jumlah maupun halaman.** Seluruh baris yang cocok dikembalikan sekaligus; tidak ada limit, offset, atau cursor.\n\nParameter yang tidak dikenal diabaikan diam-diam."
       },
       "response": [
         {
@@ -89,7 +89,7 @@
                 {
                   "key": "status",
                   "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -143,7 +143,7 @@
                 {
                   "key": "status",
                   "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -197,7 +197,7 @@
                 {
                   "key": "status",
                   "value": "ngawur",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -251,7 +251,7 @@
                 {
                   "key": "status",
                   "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -305,7 +305,7 @@
                 {
                   "key": "status",
                   "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
                 }
               ]
             }
@@ -440,7 +440,7 @@
             {
               "key": "status",
               "value": "",
-              "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+              "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
             }
           ]
         },
@@ -470,7 +470,7 @@
                 {
                   "key": "status",
                   "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+                  "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
                 }
               ]
             }
@@ -509,7 +509,7 @@
                 {
                   "key": "status",
                   "value": "inactive",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+                  "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
                 }
               ]
             }
@@ -548,7 +548,7 @@
                 {
                   "key": "status",
                   "value": "ngawur",
-                  "description": "Salah satu dari draft, active, inactive, archived, deleted. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+                  "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
                 }
               ]
             }
@@ -1186,7 +1186,7 @@
             "{{document_token}}"
           ]
         },
-        "description": "Soft delete document by setting status to deleted."
+        "description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
       },
       "response": [
         {
@@ -1210,7 +1210,7 @@
                 "{{document_token}}"
               ]
             },
-            "description": "Soft delete document by setting status to deleted."
+            "description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
           },
           "status": "OK",
           "code": 200,
@@ -1244,7 +1244,7 @@
                 "{{document_token}}"
               ]
             },
-            "description": "Soft delete document by setting status to deleted."
+            "description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
           },
           "status": "Not Found",
           "code": 404,

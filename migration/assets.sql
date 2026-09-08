@@ -46,7 +46,6 @@ CREATE TABLE IF NOT EXISTS assets (
     presigned_expires_at TIMESTAMPTZ,
     uploaded_at TIMESTAMPTZ,
     failed_at TIMESTAMPTZ,
-    deleted_at TIMESTAMPTZ,
 
     failure_code TEXT,
     failure_message TEXT,
@@ -90,8 +89,7 @@ CREATE TABLE IF NOT EXISTS assets (
                 'pending',
                 'uploading',
                 'uploaded',
-                'failed',
-                'deleted'
+                'failed'
             )
         ),
 
@@ -125,25 +123,17 @@ CREATE TABLE IF NOT EXISTS assets (
         CHECK (
             status <> 'failed'
             OR failed_at IS NOT NULL
-        ),
-
-    CONSTRAINT assets_deleted_state_chk
-        CHECK (
-            status <> 'deleted'
-            OR deleted_at IS NOT NULL
         )
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS assets_bucket_object_name_uq_idx
-    ON assets (bucket, object_name)
-    WHERE deleted_at IS NULL;
+    ON assets (bucket, object_name);
 
 CREATE UNIQUE INDEX IF NOT EXISTS assets_token_uq_idx
     ON assets (token);
 
 CREATE INDEX IF NOT EXISTS assets_uploaded_by_idx
-    ON assets (uploaded_by)
-    WHERE deleted_at IS NULL;
+    ON assets (uploaded_by);
 
 CREATE INDEX IF NOT EXISTS assets_created_at_idx
     ON assets (created_at DESC);
@@ -157,9 +147,9 @@ CREATE INDEX IF NOT EXISTS assets_status_idx
 CREATE INDEX IF NOT EXISTS assets_object_name_prefix_idx
     ON assets (object_name text_pattern_ops);
 
--- Hanya untuk yang hidup, sehingga key milik aset yang sudah dihapus boleh
--- dipakai ulang. Unik GLOBAL, bukan per kelompok: nama seperti
--- 'logo-widia-kencana' tidak masuk akal muncul dua kali di tempat berbeda.
+-- Unik GLOBAL, bukan per kelompok: nama seperti 'logo-widia-kencana' tidak masuk
+-- akal muncul dua kali di tempat berbeda. Aset yang dihapus melepaskan key-nya
+-- dengan sendirinya, karena barisnya memang tidak ada lagi.
 --
 -- Status 'failed' DIKECUALIKAN, dan itu menutup jalan buntu yang nyata: unggahan
 -- yang gagal tidak pernah punya isi, tetapi barisnya tetap menyandera key-nya.
@@ -173,7 +163,7 @@ CREATE INDEX IF NOT EXISTS assets_object_name_prefix_idx
 -- saat bersamaan harus ditolak salah satunya.
 CREATE UNIQUE INDEX IF NOT EXISTS assets_key_uq_idx
     ON assets (key)
-    WHERE key IS NOT NULL AND deleted_at IS NULL AND status <> 'failed';
+    WHERE key IS NOT NULL AND status <> 'failed';
 
 CREATE INDEX IF NOT EXISTS assets_mime_type_idx
     ON assets (mime_type);
@@ -182,13 +172,11 @@ CREATE INDEX IF NOT EXISTS assets_extension_idx
     ON assets (extension);
 
 CREATE INDEX IF NOT EXISTS assets_uploaded_by_created_at_idx
-    ON assets (uploaded_by, created_at DESC)
-    WHERE deleted_at IS NULL;
+    ON assets (uploaded_by, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS assets_pending_expiry_idx
     ON assets (presigned_expires_at)
-    WHERE status IN ('pending', 'uploading')
-      AND deleted_at IS NULL;
+    WHERE status IN ('pending', 'uploading');
 
 CREATE INDEX IF NOT EXISTS assets_multipart_upload_id_idx
     ON assets (multipart_upload_id)

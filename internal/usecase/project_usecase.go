@@ -18,7 +18,6 @@ var allowedProjectStatuses = map[string]struct{}{
 	"inactive":  {},
 	"decline":   {},
 	"completed": {},
-	"deleted":   {},
 }
 
 type projectUseCase struct {

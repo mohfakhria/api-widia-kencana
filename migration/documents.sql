@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS documents (
     -- baris lama tidak berubah artinya; jangan diandalkan.
 
     status TEXT NOT NULL DEFAULT 'draft',
-    -- Values: draft, active, inactive, archived, deleted
+    -- Values: draft, active, inactive, archived
+    -- Menghapus dokumen MENGHAPUS barisnya; tidak ada status 'deleted'.
 
     content JSONB NOT NULL DEFAULT '{"pages": []}',
     -- Isi kanvas: halaman beserta elemennya.
@@ -43,7 +44,7 @@ CREATE TABLE IF NOT EXISTS documents (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT documents_status_chk
-        CHECK (status IN ('draft', 'active', 'inactive', 'archived', 'deleted'))
+        CHECK (status IN ('draft', 'active', 'inactive', 'archived'))
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS documents_token_uq_idx

@@ -18,7 +18,9 @@ type AssetRepository interface {
 	GetByKey(ctx context.Context, key string) (*entity.Asset, error)
 	List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error)
 	MarkUploaded(ctx context.Context, token string, stored *StoredObject) (*entity.Asset, error)
-	MarkDeleted(ctx context.Context, token string) error
+	// Delete MENGHAPUS barisnya. Objeknya sudah lenyap sebelum ini dipanggil,
+	// jadi baris yang tertinggal tidak dapat memulihkan apa pun.
+	Delete(ctx context.Context, token string) error
 
 	// ReplaceContent menukar berkas yang diwakili satu aset, tanpa menyentuh
 	// token maupun key-nya.

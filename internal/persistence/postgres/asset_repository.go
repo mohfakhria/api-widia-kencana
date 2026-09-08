@@ -72,7 +72,6 @@ func (r *AssetRepository) GetByToken(ctx context.Context, token string) (*entity
 	var asset entity.Asset
 	err := scanAsset(r.db.QueryRowContext(ctx, assetSelectQuery()+`
 		WHERE token = $1::uuid
-			AND deleted_at IS NULL
 	`, token), &asset)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -92,7 +91,6 @@ func (r *AssetRepository) GetByKey(ctx context.Context, key string) (*entity.Ass
 	// memang tidak pernah ada.
 	err := scanAsset(r.db.QueryRowContext(ctx, assetSelectQuery()+`
 		WHERE key = $1
-			AND deleted_at IS NULL
 			AND status <> 'failed'
 	`, key), &asset)
 	if err != nil {
@@ -108,16 +106,12 @@ func (r *AssetRepository) GetByKey(ctx context.Context, key string) (*entity.Ass
 func (r *AssetRepository) List(ctx context.Context, query input.ListAssetQuery) ([]entity.Asset, error) {
 	builder := strings.Builder{}
 	builder.WriteString(assetSelectQuery())
-	builder.WriteString(`
-		WHERE deleted_at IS NULL
-	`)
+	builder.WriteString(" WHERE 1 = 1")
 
 	args := make([]any, 0)
 	if query.Status != "" {
 		args = append(args, query.Status)
 		builder.WriteString(fmt.Sprintf(" AND status = $%d", len(args)))
-	} else {
-		builder.WriteString(" AND status <> 'deleted'")
 	}
 	if query.Group != "" {
 		// Pencocokan AWALAN, bukan kolom tersendiri: kelompoknya tersimpan
@@ -195,7 +189,6 @@ func (r *AssetRepository) ReplaceContent(ctx context.Context, token string, cont
 			updated_at = NOW()
 		WHERE token = $8::uuid
 			AND status = 'uploaded'
-			AND deleted_at IS NULL
 	`, content.ObjectName, content.OriginalFilename, content.StoredFilename,
 		content.MimeType, content.Extension, content.Size, content.ETag, token)
 	if err != nil {
@@ -225,7 +218,6 @@ func (r *AssetRepository) MarkUploaded(ctx context.Context, token string, stored
 			failure_message = NULL
 		WHERE token = $4::uuid
 			AND status IN ('pending', 'uploading')
-			AND deleted_at IS NULL
 	`, stored.Size, stored.ETag, stored.ContentType, token)
 	if err != nil {
 		return nil, err
@@ -237,13 +229,20 @@ func (r *AssetRepository) MarkUploaded(ctx context.Context, token string, stored
 	return r.GetByToken(ctx, token)
 }
 
-func (r *AssetRepository) MarkDeleted(ctx context.Context, token string) error {
+// Delete MENGHAPUS barisnya, bukan menandainya.
+//
+// Objeknya sudah lenyap dari object storage sebelum ini dipanggil, jadi baris
+// yang tertinggal hanya metadata tentang berkas yang tidak ada — nisan tanpa
+// jenazah, yang tidak dapat memulihkan apa pun.
+//
+// Akibat yang penting: nama objek dan key langsung bebas dipakai ulang, dan
+// indeks uniknya tidak lagi perlu predikat parsial untuk mengabaikan yang mati.
+// Selama nisan masih ada, satu nama objek dapat dipegang sebuah nisan DAN sebuah
+// baris hidup sekaligus — dan itu sudah pernah terjadi di sini pada
+// images/brand/icon-whatsapp.png.
+func (r *AssetRepository) Delete(ctx context.Context, token string) error {
 	result, err := r.db.ExecContext(ctx, `
-		UPDATE assets
-		SET status = 'deleted',
-			deleted_at = NOW()
-		WHERE token = $1::uuid
-			AND deleted_at IS NULL
+		DELETE FROM assets WHERE token = $1::uuid
 	`, token)
 	if err != nil {
 		return err
@@ -265,8 +264,7 @@ func (r *AssetRepository) MarkDeleted(ctx context.Context, token string) error {
 // tenggatnya, dan tenggat itu dihitung di Go saat presigned diterbitkan.
 func (r *AssetRepository) FindExpired(ctx context.Context, before time.Time, limit int) ([]entity.Asset, error) {
 	rows, err := r.db.QueryContext(ctx, assetSelectQuery()+`
-		WHERE deleted_at IS NULL
-			AND status IN ('pending', 'uploading')
+		WHERE status IN ('pending', 'uploading')
 			AND presigned_expires_at IS NOT NULL
 			AND presigned_expires_at < $1
 		ORDER BY presigned_expires_at
@@ -297,7 +295,6 @@ func (r *AssetRepository) MarkFailed(ctx context.Context, token string, code str
 			failure_code = $1,
 			failure_message = $2
 		WHERE token = $3::uuid
-			AND deleted_at IS NULL
 	`, code, message, token)
 	if err != nil {
 		return err
@@ -328,8 +325,7 @@ func assetSelectQuery() string {
 			presigned_expires_at,
 			uploaded_at,
 			failed_at,
-			deleted_at,
-			failure_code,
+						failure_code,
 			failure_message,
 			created_at,
 			updated_at
@@ -348,7 +344,6 @@ func scanAsset(row assetRowScanner, asset *entity.Asset) error {
 		presignedExpiresAt sql.NullTime
 		uploadedAt         sql.NullTime
 		failedAt           sql.NullTime
-		deletedAt          sql.NullTime
 		failureCode        sql.NullString
 		failureMessage     sql.NullString
 	)
@@ -372,7 +367,6 @@ func scanAsset(row assetRowScanner, asset *entity.Asset) error {
 		&presignedExpiresAt,
 		&uploadedAt,
 		&failedAt,
-		&deletedAt,
 		&failureCode,
 		&failureMessage,
 		&asset.CreatedAt,
@@ -395,9 +389,6 @@ func scanAsset(row assetRowScanner, asset *entity.Asset) error {
 	}
 	if failedAt.Valid {
 		asset.FailedAt = &failedAt.Time
-	}
-	if deletedAt.Valid {
-		asset.DeletedAt = &deletedAt.Time
 	}
 	if failureCode.Valid {
 		asset.FailureCode = &failureCode.String

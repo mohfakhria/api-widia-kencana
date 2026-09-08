@@ -45,7 +45,6 @@ type AssetResponse struct {
 	PresignedExpiresAt *time.Time `json:"presigned_expires_at,omitempty"`
 	UploadedAt         *time.Time `json:"uploaded_at,omitempty"`
 	FailedAt           *time.Time `json:"failed_at,omitempty"`
-	DeletedAt          *time.Time `json:"deleted_at,omitempty"`
 	FailureCode        *string    `json:"failure_code,omitempty"`
 	FailureMessage     *string    `json:"failure_message,omitempty"`
 	CreatedAt          time.Time  `json:"created_at"`
@@ -111,7 +110,6 @@ func NewAssetResponse(asset *entity.Asset) AssetResponse {
 		PresignedExpiresAt: asset.PresignedExpiresAt,
 		UploadedAt:         asset.UploadedAt,
 		FailedAt:           asset.FailedAt,
-		DeletedAt:          asset.DeletedAt,
 		FailureCode:        asset.FailureCode,
 		FailureMessage:     asset.FailureMessage,
 		CreatedAt:          asset.CreatedAt,
