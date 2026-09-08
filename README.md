@@ -139,6 +139,16 @@ DROP INDEX IF EXISTS assets_scope_idx;
 DROP INDEX IF EXISTS assets_uploaded_by_scope_created_at_idx;
 ```
 
+Indeks unik key kemudian dipersempit supaya unggahan yang gagal tidak menyandera
+nama slotnya:
+
+```sql
+DROP INDEX IF EXISTS assets_key_uq_idx;
+CREATE UNIQUE INDEX IF NOT EXISTS assets_key_uq_idx
+    ON assets (key)
+    WHERE key IS NOT NULL AND deleted_at IS NULL AND status <> 'failed';
+```
+
 Urutannya mengikat: `DROP COLUMN scope` **terakhir**, setelah `object_name`
 sudah benar. Dijalankan lebih dulu, satu-satunya keterangan kelompok yang
 tersisa untuk baris lama ikut hilang.

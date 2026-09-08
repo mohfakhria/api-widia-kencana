@@ -160,9 +160,20 @@ CREATE INDEX IF NOT EXISTS assets_object_name_prefix_idx
 -- Hanya untuk yang hidup, sehingga key milik aset yang sudah dihapus boleh
 -- dipakai ulang. Unik GLOBAL, bukan per kelompok: nama seperti
 -- 'logo-widia-kencana' tidak masuk akal muncul dua kali di tempat berbeda.
+--
+-- Status 'failed' DIKECUALIKAN, dan itu menutup jalan buntu yang nyata: unggahan
+-- yang gagal tidak pernah punya isi, tetapi barisnya tetap menyandera key-nya.
+-- Akibatnya pemakai terkurung — mengunggah ulang dijawab "key sudah dipakai,
+-- ganti isinya saja", sedangkan mengganti isinya dijawab "aset belum terunggah".
+-- Satu-satunya jalan keluar menghapusnya lebih dulu, dan tidak ada satu pun
+-- pesan yang menyebutkan itu.
+--
+-- 'pending' dan 'uploading' TETAP menyandera, dan itu disengaja: keduanya
+-- unggahan yang masih berjalan, dan dua orang yang merebut slot yang sama pada
+-- saat bersamaan harus ditolak salah satunya.
 CREATE UNIQUE INDEX IF NOT EXISTS assets_key_uq_idx
     ON assets (key)
-    WHERE key IS NOT NULL AND deleted_at IS NULL;
+    WHERE key IS NOT NULL AND deleted_at IS NULL AND status <> 'failed';
 
 CREATE INDEX IF NOT EXISTS assets_mime_type_idx
     ON assets (mime_type);

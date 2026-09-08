@@ -86,9 +86,14 @@ func (r *AssetRepository) GetByToken(ctx context.Context, token string) (*entity
 
 func (r *AssetRepository) GetByKey(ctx context.Context, key string) (*entity.Asset, error) {
 	var asset entity.Asset
+	// Sejalan dengan predikat indeks uniknya: baris yang gagal diunggah tidak
+	// menyandera key-nya, jadi ia juga tidak boleh ditemukan lewat key. Kalau
+	// ikut ditemukan, pemakai akan diarahkan mengganti isi sesuatu yang isinya
+	// memang tidak pernah ada.
 	err := scanAsset(r.db.QueryRowContext(ctx, assetSelectQuery()+`
 		WHERE key = $1
 			AND deleted_at IS NULL
+			AND status <> 'failed'
 	`, key), &asset)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
