@@ -323,48 +323,6 @@ func (uc *documentExportUseCase) downloadFont(ctx context.Context, objectName st
 	return data, nil
 }
 
-// fontFamilies mengumpulkan keluarga font yang dipakai, tanpa pengulangan.
-//
-// Keluarga inti dilewati: metriknya melekat pada spesifikasi PDF dan tidak ada
-// berkas yang perlu diambil untuknya.
-//
-// Sel tabel tidak menyimpan keluarga sendiri — hanya bobot per sel — sehingga
-// keluarga elemen tabel sudah mewakili seluruh selnya.
-func fontFamilies(content *design.Content) []string {
-	seen := make(map[string]struct{})
-	families := make([]string, 0)
-
-	kumpulkan := func(elements []design.Element) {
-		for index := range elements {
-			element := &elements[index]
-			if element.Type != design.ElementText && element.Type != design.ElementTable {
-				continue
-			}
-
-			family := element.ResolvedFontFamily()
-			if family == design.DefaultFontFamily {
-				continue
-			}
-			if _, exists := seen[family]; exists {
-				continue
-			}
-			seen[family] = struct{}{}
-			families = append(families, family)
-		}
-	}
-
-	for _, page := range content.VisiblePages() {
-		kumpulkan(page.Elements)
-	}
-
-	// Lapisan master digambar di SETIAP halaman, jadi fontnya sama wajibnya.
-	// Melewatkannya menghasilkan kop surat ber-Helvetica di atas badan dokumen
-	// yang hurufnya benar — persis satu-satunya tempat yang paling terlihat.
-	kumpulkan(content.Master.Elements)
-
-	return families
-}
-
 // downloadImage mengembalikan nil tanpa error bila asetnya melebihi batas — satu
 // gambar raksasa tidak sepadan dengan ekspor yang gagal seluruhnya.
 func (uc *documentExportUseCase) downloadImage(ctx context.Context, objectName string) ([]byte, error) {

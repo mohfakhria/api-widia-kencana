@@ -353,6 +353,14 @@ func (uc *assetUseCase) ReplaceContent(ctx context.Context, cmd input.ReplaceAss
 	if len(cmd.Content) == 0 {
 		return nil, domain.NewError(domain.ErrInvalidInput, "replacement file is empty")
 	}
+	// Batasnya ditegakkan di sini JUGA, bukan hanya di handler. Yang di handler
+	// menjaga jalur HTTP; yang di sini menjaga usecase-nya sendiri, yang kelak
+	// dapat dipanggil dari tempat lain — agent MCP, perintah baris, atau tugas
+	// berkala — dan tidak satu pun dari mereka melewati MaxBytesReader.
+	if len(cmd.Content) > maxAssetReplacementBytes {
+		return nil, domain.NewError(domain.ErrInvalidInput,
+			fmt.Sprintf("replacement is larger than %d bytes", maxAssetReplacementBytes))
+	}
 	if strings.TrimSpace(cmd.OriginalFilename) == "" {
 		return nil, domain.NewError(domain.ErrInvalidInput, "asset filename is required")
 	}
