@@ -39,10 +39,11 @@ var allowedAttachmentKinds = map[string]struct{}{
 }
 
 type projectUseCase struct {
-	repo    output.ProjectRepository
-	assets  output.AssetRepository
-	storage output.ObjectStorage
-	logger  *slog.Logger
+	repo      output.ProjectRepository
+	assets    output.AssetRepository
+	documents output.DocumentRepository
+	storage   output.ObjectStorage
+	logger    *slog.Logger
 }
 
 // Menerima penyimpanan aset karena MENGHAPUS LAMPIRAN ikut menghapus berkasnya.
@@ -52,6 +53,7 @@ type projectUseCase struct {
 func NewProjectUseCase(
 	repo output.ProjectRepository,
 	assets output.AssetRepository,
+	documents output.DocumentRepository,
 	storage output.ObjectStorage,
 	logger *slog.Logger,
 ) input.ProjectUseCase {
@@ -66,7 +68,9 @@ func NewProjectUseCase(
 		allowedAttachmentKinds[documentType] = struct{}{}
 	}
 
-	return &projectUseCase{repo: repo, assets: assets, storage: storage, logger: logger}
+	return &projectUseCase{
+		repo: repo, assets: assets, documents: documents, storage: storage, logger: logger,
+	}
 }
 
 func (uc *projectUseCase) List(ctx context.Context) ([]entity.Project, error) {
@@ -88,6 +92,9 @@ func (uc *projectUseCase) GetByID(ctx context.Context, id string) (*entity.Proje
 		return nil, err
 	}
 	if project.Attachments, err = uc.repo.ListAttachments(ctx, projectID); err != nil {
+		return nil, err
+	}
+	if project.Documents, err = uc.repo.ListDocuments(ctx, projectID); err != nil {
 		return nil, err
 	}
 
@@ -157,8 +164,9 @@ func mapProjectCommand(cmd input.CreateProjectCommand) *entity.Project {
 	}
 
 	return &entity.Project{
-		Name:   strings.TrimSpace(cmd.Name),
-		Status: strings.ToLower(status),
+		Name:      strings.TrimSpace(cmd.Name),
+		Status:    strings.ToLower(status),
+		Variables: cmd.Variables,
 	}
 }
 
@@ -170,7 +178,10 @@ func validateProject(project *entity.Project) error {
 		return domain.NewError(domain.ErrInvalidInput, "invalid project status")
 	}
 
-	return nil
+	// Penjaga yang sama dengan kantong dokumen, hanya berbeda kunci bertipenya.
+	// Ia yang menolak project_value negatif — indeks ekspresi di database sudah
+	// menolak yang bukan angka, tetapi negatif baginya angka yang sah.
+	return projectVariableRules.validate(project.Variables)
 }
 
 func parseProjectID(raw string) (int64, error) {
@@ -354,6 +365,69 @@ func (uc *projectUseCase) removeAttachmentFile(ctx context.Context, attachment *
 	}
 
 	return uc.assets.Delete(ctx, attachment.Asset.Token)
+}
+
+// ── Dokumen proyek ──────────────────────────────────────────────────────────
+
+// AddDocument MENGAITKAN dokumen yang sudah ada, bukan membuatnya.
+//
+// Dokumen dibuat lewat document-add dan disunting di editor; yang dikirim ke
+// sini hanya tokennya. Urutan itu memang begitu di lapangan: penawaran dibuat
+// lebih dulu, proyeknya menyusul ketika PO datang.
+func (uc *projectUseCase) AddDocument(ctx context.Context, projectID string, cmd input.ProjectDocumentCommand) (*entity.ProjectDocument, error) {
+	id, err := parseProjectID(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Proyeknya dipastikan ada lebih dulu supaya jawabannya "project not found",
+	// bukan pelanggaran foreign key yang menyebut nama constraint.
+	if _, err := uc.repo.GetByID(ctx, id); err != nil {
+		return nil, err
+	}
+
+	token := strings.TrimSpace(cmd.DocumentToken)
+	if err := validateUUIDToken(token, "document token"); err != nil {
+		return nil, err
+	}
+
+	document, err := uc.documents.GetByToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	return uc.repo.AddDocument(ctx, &entity.ProjectDocument{
+		ProjectID:  id,
+		DocumentID: document.ID,
+		Note:       strings.TrimSpace(cmd.Note),
+	})
+}
+
+func (uc *projectUseCase) UpdateDocument(ctx context.Context, id string, cmd input.ProjectDocumentCommand) error {
+	documentID, err := parseUUID(id, "project document id")
+	if err != nil {
+		return err
+	}
+
+	return uc.repo.UpdateDocument(ctx, documentID, &entity.ProjectDocument{
+		Note: strings.TrimSpace(cmd.Note),
+	})
+}
+
+// RemoveDocument HANYA memutus kaitannya; dokumennya tetap hidup.
+//
+// Sengaja tidak menyerupai RemoveAttachment, yang ikut membuang berkasnya.
+// Lampiran adalah berkas yang DITERIMA dan tidak punya hidup di luar proyeknya;
+// dokumen DIBUAT sendiri di editor, punya riwayat, induk, dan isinya sendiri.
+// Melepasnya dari proyek yang keliru tidak boleh berarti kehilangan pekerjaan —
+// dan yang benar-benar ingin membuangnya memanggil document-delete.
+func (uc *projectUseCase) RemoveDocument(ctx context.Context, id string) error {
+	documentID, err := parseUUID(id, "project document id")
+	if err != nil {
+		return err
+	}
+
+	return uc.repo.RemoveDocument(ctx, documentID)
 }
 
 // resolveAttachmentCompany memastikan pemilik berkas memang peserta proyek itu.

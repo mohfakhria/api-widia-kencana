@@ -10,6 +10,14 @@ import (
 type ProjectRequest struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
+
+	// Variables adalah objek datar bernilai skalar, dan project_value tinggal di
+	// dalamnya. DIISI ORANG — nilai yang mengikat ada pada PO pelanggan, yang
+	// masuk sebagai berkas pindaian tanpa angka yang dapat dibaca mesin.
+	//
+	// MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan saat
+	// update akan hilang. Kirim kantongnya selengkapnya.
+	Variables map[string]any `json:"variables"`
 }
 
 type ProjectResponse struct {
@@ -21,8 +29,15 @@ type ProjectResponse struct {
 	// memang tidak punya peserta".
 	Companies   []ProjectCompanyResponse    `json:"companies,omitempty"`
 	Attachments []ProjectAttachmentResponse `json:"attachments,omitempty"`
-	CreatedAt   time.Time                   `json:"created_at"`
-	UpdatedAt   time.Time                   `json:"updated_at"`
+	Documents   []ProjectDocumentResponse   `json:"documents,omitempty"`
+
+	// Variables selalu objek, tidak pernah null: kolomnya NOT NULL DEFAULT '{}',
+	// dan klien yang melakukan iterasi atasnya gagal justru pada proyek yang
+	// paling wajar — yang belum punya satu variabel pun.
+	Variables map[string]any `json:"variables"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type ProjectCompanyRequest struct {
@@ -31,6 +46,14 @@ type ProjectCompanyRequest struct {
 	CompanyID string `json:"company_id"`
 	Role      string `json:"role"`
 	Note      string `json:"note"`
+}
+
+type ProjectDocumentRequest struct {
+	// DocumentToken hanya dibaca saat menambah. Mengganti dokumen di balik
+	// sebuah kaitan adalah kaitan yang berbeda, bukan kaitan yang sama dengan
+	// isi baru.
+	DocumentToken string `json:"document_token"`
+	Note          string `json:"note"`
 }
 
 type ProjectAttachmentRequest struct {
@@ -83,6 +106,29 @@ type ProjectAttachmentResponse struct {
 	UpdatedAt        time.Time                  `json:"updated_at"`
 }
 
+// ProjectDocumentResponse membawa dokumen SECUKUPNYA untuk ditampilkan di dalam
+// proyek. Isi kanvasnya tidak ikut — yang membukanya memanggil document-detail.
+type ProjectDocumentResponse struct {
+	ID        string `json:"id"`
+	ProjectID int64  `json:"project_id"`
+	Note      string `json:"note"`
+
+	// DocumentToken yang dipakai membuka dokumennya. Id numeriknya tidak pernah
+	// keluar.
+	DocumentToken string         `json:"document_token"`
+	Name          string         `json:"name"`
+	DocumentType  string         `json:"document_type"`
+	Status        string         `json:"status"`
+	Variables     map[string]any `json:"variables"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ProjectDocumentDataResponse struct {
+	Document ProjectDocumentResponse `json:"project_document"`
+}
+
 type ProjectCompanyDataResponse struct {
 	Company ProjectCompanyResponse `json:"project_company"`
 }
@@ -93,6 +139,10 @@ type ProjectAttachmentDataResponse struct {
 
 func (r ProjectCompanyRequest) ToProjectCompanyCommand() input.ProjectCompanyCommand {
 	return input.ProjectCompanyCommand{CompanyID: r.CompanyID, Role: r.Role, Note: r.Note}
+}
+
+func (r ProjectDocumentRequest) ToProjectDocumentCommand() input.ProjectDocumentCommand {
+	return input.ProjectDocumentCommand{DocumentToken: r.DocumentToken, Note: r.Note}
 }
 
 func (r ProjectAttachmentRequest) ToProjectAttachmentCommand() input.ProjectAttachmentCommand {
@@ -148,6 +198,31 @@ func NewProjectAttachmentResponse(item *entity.ProjectAttachment) ProjectAttachm
 	return response
 }
 
+func NewProjectDocumentResponse(item *entity.ProjectDocument) ProjectDocumentResponse {
+	response := ProjectDocumentResponse{
+		ID:        item.ID,
+		ProjectID: item.ProjectID,
+		Note:      item.Note,
+		Variables: map[string]any{},
+		CreatedAt: item.CreatedAt,
+		UpdatedAt: item.UpdatedAt,
+	}
+
+	if item.Document != nil {
+		response.DocumentToken = item.Document.Token
+		response.Name = item.Document.Name
+		response.DocumentType = item.Document.DocumentType
+		response.Status = item.Document.Status
+		response.Variables = variablesOf(item.Document.Variables)
+	}
+
+	return response
+}
+
+func NewProjectDocumentDataResponse(item *entity.ProjectDocument) ProjectDocumentDataResponse {
+	return ProjectDocumentDataResponse{Document: NewProjectDocumentResponse(item)}
+}
+
 func NewProjectCompanyDataResponse(item *entity.ProjectCompany) ProjectCompanyDataResponse {
 	return ProjectCompanyDataResponse{Company: NewProjectCompanyResponse(item)}
 }
@@ -166,8 +241,9 @@ type ProjectListResponse struct {
 
 func (r ProjectRequest) ToCreateProjectCommand() input.CreateProjectCommand {
 	return input.CreateProjectCommand{
-		Name:   r.Name,
-		Status: r.Status,
+		Name:      r.Name,
+		Status:    r.Status,
+		Variables: r.Variables,
 	}
 }
 
@@ -180,6 +256,7 @@ func NewProjectResponse(project *entity.Project) ProjectResponse {
 		ID:        project.ID,
 		Name:      project.Name,
 		Status:    project.Status,
+		Variables: variablesOf(project.Variables),
 		CreatedAt: project.CreatedAt,
 		UpdatedAt: project.UpdatedAt,
 	}
@@ -189,6 +266,9 @@ func NewProjectResponse(project *entity.Project) ProjectResponse {
 	}
 	for index := range project.Attachments {
 		response.Attachments = append(response.Attachments, NewProjectAttachmentResponse(&project.Attachments[index]))
+	}
+	for index := range project.Documents {
+		response.Documents = append(response.Documents, NewProjectDocumentResponse(&project.Documents[index]))
 	}
 
 	return response

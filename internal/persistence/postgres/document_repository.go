@@ -162,7 +162,7 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 		) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
 		RETURNING token::text
 	`, paperID, parentID, document.Name, document.DocumentType, document.Status,
-		encodeDocumentVariables(document.Variables)).Scan(&createdToken)
+		encodeVariables(document.Variables)).Scan(&createdToken)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 			updated_at = NOW()
 		WHERE token = $7::uuid
 	`, paperID, parentID, document.Name, document.DocumentType, document.Status,
-		encodeDocumentVariables(document.Variables), token)
+		encodeVariables(document.Variables), token)
 	if err != nil {
 		return err
 	}
@@ -427,15 +427,24 @@ func scanDocument(row documentRowScanner, document *entity.Document) error {
 	if parentID.Valid {
 		document.ParentID = &parentID.Int64
 	}
-	// Kolomnya NOT NULL DEFAULT '{}', jadi yang kosong tetap objek — bukan nil.
-	// Klien yang melakukan iterasi atasnya karenanya tidak pernah menemui null.
-	if len(variables) > 0 {
-		if err := json.Unmarshal(variables, &document.Variables); err != nil {
-			return err
-		}
+	if err := decodeVariables(variables, &document.Variables); err != nil {
+		return err
 	}
 
 	return nil
+}
+
+// decodeVariables membaca kantong JSONB balik ke peta.
+//
+// Kolomnya NOT NULL DEFAULT '{}', jadi yang kosong tetap objek — bukan nil. Yang
+// benar-benar kosong dibiarkan nil di sini, dan lapisan DTO yang mengubahnya
+// menjadi {} sebelum keluar; klien karenanya tidak pernah menemui null.
+func decodeVariables(raw []byte, target *map[string]any) error {
+	if len(raw) == 0 {
+		return nil
+	}
+
+	return json.Unmarshal(raw, target)
 }
 
 func ensureDocumentAffected(result sql.Result, message string) error {
@@ -452,10 +461,12 @@ func ensureDocumentAffected(result sql.Result, message string) error {
 
 // encodeDocumentVariables selalu mengembalikan objek JSON, tidak pernah null.
 //
+// encodeVariables dipakai dokumen maupun proyek — kedua kantong bentuknya sama.
+//
 // Kolomnya NOT NULL, dan mengirim nil ke sana akan ditolak database dengan galat
-// yang menyebut constraint — padahal yang terjadi cuma dokumen tanpa variabel,
+// yang menyebut constraint — padahal yang terjadi cuma baris tanpa variabel,
 // keadaan yang paling wajar.
-func encodeDocumentVariables(variables map[string]any) []byte {
+func encodeVariables(variables map[string]any) []byte {
 	if len(variables) == 0 {
 		return []byte("{}")
 	}

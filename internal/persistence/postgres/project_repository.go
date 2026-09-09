@@ -22,7 +22,7 @@ func NewProjectRepository(db *sql.DB) output.ProjectRepository {
 
 func (r *ProjectRepository) List(ctx context.Context) ([]entity.Project, error) {
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, name, status, created_at, updated_at
+		SELECT id, name, status, variables, created_at, updated_at
 		FROM projects
 		ORDER BY created_at DESC
 	`)
@@ -33,8 +33,15 @@ func (r *ProjectRepository) List(ctx context.Context) ([]entity.Project, error) 
 
 	var projects []entity.Project
 	for rows.Next() {
-		var project entity.Project
-		if err := rows.Scan(&project.ID, &project.Name, &project.Status, &project.CreatedAt, &project.UpdatedAt); err != nil {
+		var (
+			project   entity.Project
+			variables []byte
+		)
+		if err := rows.Scan(&project.ID, &project.Name, &project.Status, &variables,
+			&project.CreatedAt, &project.UpdatedAt); err != nil {
+			return nil, err
+		}
+		if err := decodeVariables(variables, &project.Variables); err != nil {
 			return nil, err
 		}
 		projects = append(projects, project)
@@ -47,16 +54,23 @@ func (r *ProjectRepository) List(ctx context.Context) ([]entity.Project, error) 
 }
 
 func (r *ProjectRepository) GetByID(ctx context.Context, id int64) (*entity.Project, error) {
-	var project entity.Project
+	var (
+		project   entity.Project
+		variables []byte
+	)
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, name, status, created_at, updated_at
+		SELECT id, name, status, variables, created_at, updated_at
 		FROM projects
 		WHERE id = $1
-	`, id).Scan(&project.ID, &project.Name, &project.Status, &project.CreatedAt, &project.UpdatedAt)
+	`, id).Scan(&project.ID, &project.Name, &project.Status, &variables,
+		&project.CreatedAt, &project.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.NewError(domain.ErrNotFound, "project not found")
 		}
+		return nil, err
+	}
+	if err := decodeVariables(variables, &project.Variables); err != nil {
 		return nil, err
 	}
 
@@ -64,13 +78,21 @@ func (r *ProjectRepository) GetByID(ctx context.Context, id int64) (*entity.Proj
 }
 
 func (r *ProjectRepository) Create(ctx context.Context, project *entity.Project) (*entity.Project, error) {
-	var created entity.Project
+	var (
+		created   entity.Project
+		variables []byte
+	)
 	err := r.db.QueryRowContext(ctx, `
-		INSERT INTO projects (name, status, created_at, updated_at)
-		VALUES ($1, $2, NOW(), NOW())
-		RETURNING id, name, status, created_at, updated_at
-	`, project.Name, project.Status).Scan(&created.ID, &created.Name, &created.Status, &created.CreatedAt, &created.UpdatedAt)
+		INSERT INTO projects (name, status, variables, created_at, updated_at)
+		VALUES ($1, $2, $3, NOW(), NOW())
+		RETURNING id, name, status, variables, created_at, updated_at
+	`, project.Name, project.Status, encodeVariables(project.Variables)).
+		Scan(&created.ID, &created.Name, &created.Status, &variables,
+			&created.CreatedAt, &created.UpdatedAt)
 	if err != nil {
+		return nil, err
+	}
+	if err := decodeVariables(variables, &created.Variables); err != nil {
 		return nil, err
 	}
 
@@ -80,9 +102,9 @@ func (r *ProjectRepository) Create(ctx context.Context, project *entity.Project)
 func (r *ProjectRepository) Update(ctx context.Context, id int64, project *entity.Project) error {
 	result, err := r.db.ExecContext(ctx, `
 		UPDATE projects
-		SET name = $1, status = $2, updated_at = NOW()
-		WHERE id = $3
-	`, project.Name, project.Status, id)
+		SET name = $1, status = $2, variables = $3, updated_at = NOW()
+		WHERE id = $4
+	`, project.Name, project.Status, encodeVariables(project.Variables), id)
 	if err != nil {
 		return err
 	}
@@ -99,8 +121,10 @@ func (r *ProjectRepository) Update(ctx context.Context, id int64, project *entit
 }
 
 func (r *ProjectRepository) Delete(ctx context.Context, id int64) error {
-	// Dihapus, bukan ditandai. Tidak ada tabel lain yang merujuk projects, jadi
-	// tidak ada silsilah yang perlu dijaga.
+	// Dihapus, bukan ditandai. Peserta, lampiran, dan kaitan dokumennya ikut
+	// lenyap lewat ON DELETE CASCADE — tetapi BERKAS lampirannya tidak dapat
+	// dibuang database, dan itu diurus usecase sebelum sampai ke sini. Dokumen
+	// yang tertaut TIDAK ikut terhapus; yang putus hanya kaitannya.
 	result, err := r.db.ExecContext(ctx, `
 		DELETE FROM projects WHERE id = $1
 	`, id)
@@ -375,6 +399,8 @@ func translateProjectConflict(err error) error {
 			return domain.NewError(domain.ErrConflict, "company already has this role in the project")
 		case "project_attachments_asset_uq_idx":
 			return domain.NewError(domain.ErrConflict, "file is already attached to a project")
+		case "project_documents_document_uq_idx":
+			return domain.NewError(domain.ErrConflict, "document already belongs to a project")
 		}
 	case "23503":
 		switch pgErr.Constraint {
@@ -382,7 +408,10 @@ func translateProjectConflict(err error) error {
 			return domain.NewError(domain.ErrNotFound, "company not found")
 		case "fk_project_attachments_asset":
 			return domain.NewError(domain.ErrNotFound, "asset not found")
-		case "fk_project_companies_project", "fk_project_attachments_project":
+		case "fk_project_documents_document":
+			return domain.NewError(domain.ErrNotFound, "document not found")
+		case "fk_project_companies_project", "fk_project_attachments_project",
+			"fk_project_documents_project":
 			return domain.NewError(domain.ErrNotFound, "project not found")
 		}
 	}
@@ -400,4 +429,126 @@ func ensureProjectAffected(result sql.Result, pesan string) error {
 	}
 
 	return nil
+}
+
+// ── Dokumen proyek ──────────────────────────────────────────────────────────
+
+// Proyeksi dokumen SECUKUPNYA untuk ditampilkan di dalam proyek: yang menjawab
+// "dokumen apa ini dan berapa nilainya". Isi kanvasnya — content JSONB yang
+// dapat berukuran ratusan kilobyte — sengaja tidak ikut; yang membukanya
+// memanggil document-detail.
+func projectDocumentSelectQuery() string {
+	return `
+		SELECT
+			pd.id::text, pd.project_id, pd.document_id, COALESCE(pd.note, ''),
+			pd.created_at, pd.updated_at,
+			d.token::text, d.name, d.document_type, d.status, d.variables
+		FROM project_documents pd
+		JOIN documents d ON d.id = pd.document_id
+	`
+}
+
+func scanProjectDocument(row interface{ Scan(...any) error }) (*entity.ProjectDocument, error) {
+	var (
+		item      entity.ProjectDocument
+		document  entity.Document
+		variables []byte
+	)
+	if err := row.Scan(
+		&item.ID, &item.ProjectID, &item.DocumentID, &item.Note,
+		&item.CreatedAt, &item.UpdatedAt,
+		&document.Token, &document.Name, &document.DocumentType, &document.Status, &variables,
+	); err != nil {
+		return nil, err
+	}
+	if err := decodeVariables(variables, &document.Variables); err != nil {
+		return nil, err
+	}
+
+	document.ID = item.DocumentID
+	item.Document = &document
+
+	return &item, nil
+}
+
+func (r *ProjectRepository) ListDocuments(ctx context.Context, projectID int64) ([]entity.ProjectDocument, error) {
+	rows, err := r.db.QueryContext(ctx, projectDocumentSelectQuery()+`
+		WHERE pd.project_id = $1
+		ORDER BY pd.created_at DESC
+	`, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]entity.ProjectDocument, 0)
+	for rows.Next() {
+		item, err := scanProjectDocument(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, *item)
+	}
+
+	return items, rows.Err()
+}
+
+func (r *ProjectRepository) GetDocumentByID(ctx context.Context, id string) (*entity.ProjectDocument, error) {
+	item, err := scanProjectDocument(r.db.QueryRowContext(ctx,
+		projectDocumentSelectQuery()+` WHERE pd.id = $1::uuid`, id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.NewError(domain.ErrNotFound, "project document not found")
+		}
+
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (r *ProjectRepository) AddDocument(ctx context.Context, document *entity.ProjectDocument) (*entity.ProjectDocument, error) {
+	var id string
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO project_documents (project_id, document_id, note)
+		VALUES ($1, $2, $3)
+		RETURNING id::text
+	`, document.ProjectID, document.DocumentID, document.Note).Scan(&id)
+	if err != nil {
+		return nil, translateProjectConflict(err)
+	}
+
+	return r.GetDocumentByID(ctx, id)
+}
+
+func (r *ProjectRepository) UpdateDocument(ctx context.Context, id string, document *entity.ProjectDocument) error {
+	// document_id tidak ikut, dengan alasan yang sama seperti asset_id pada
+	// lampiran: mengganti dokumen di balik sebuah kaitan adalah kaitan yang
+	// berbeda, bukan kaitan yang sama dengan isi baru.
+	result, err := r.db.ExecContext(ctx, `
+		UPDATE project_documents SET note = $1 WHERE id = $2::uuid
+	`, document.Note, id)
+	if err != nil {
+		return err
+	}
+
+	return ensureProjectAffected(result, "project document not found")
+}
+
+// RemoveDocument HANYA memutus kaitannya.
+//
+// Tidak ada penghapusan berkas maupun baris dokumen di sini, dan itu perbedaan
+// yang menentukan dari RemoveAttachment. Lampiran adalah berkas yang diterima
+// dan tidak punya hidup di luar proyeknya; dokumen dibuat sendiri di editor,
+// punya riwayat, induk, dan isinya sendiri. Melepasnya dari proyek yang keliru
+// tidak boleh berarti kehilangan pekerjaan.
+func (r *ProjectRepository) RemoveDocument(ctx context.Context, id string) error {
+	result, err := r.db.ExecContext(ctx, `
+		DELETE FROM project_documents WHERE id = $1::uuid
+	`, id)
+	if err != nil {
+		return err
+	}
+
+	return ensureProjectAffected(result, "project document not found")
 }

@@ -91,6 +91,13 @@ func NewRouter(deps RouterDeps) http.Handler {
 		protected.PUT("/project-attachment-update/:id", deps.ProjectHandler.UpdateAttachment)
 		protected.DELETE("/project-attachment-delete/:id", deps.ProjectHandler.RemoveAttachment)
 
+		// Menambah memakai id PROYEK; mengubah dan menghapus memakai id
+		// KAITAN. Melepas kaitan TIDAK menghapus dokumennya — berbeda dari
+		// lampiran, yang berkasnya ikut dibuang.
+		protected.POST("/project-document-add/:id", deps.ProjectHandler.AddDocument)
+		protected.PUT("/project-document-update/:id", deps.ProjectHandler.UpdateDocument)
+		protected.DELETE("/project-document-delete/:id", deps.ProjectHandler.RemoveDocument)
+
 		// Ekspor adalah tindakan manusia: agent menyusun, orang yang mencetak.
 		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
 

@@ -27,11 +27,22 @@ type ProjectUseCase interface {
 	// tautannya. Satu berkas milik satu proyek — indeks unik pada asset_id yang
 	// menjaminnya — sehingga tidak ada keraguan siapa lagi yang memakainya.
 	RemoveAttachment(ctx context.Context, id string) error
+
+	AddDocument(ctx context.Context, projectID string, cmd ProjectDocumentCommand) (*entity.ProjectDocument, error)
+	UpdateDocument(ctx context.Context, id string, cmd ProjectDocumentCommand) error
+
+	// RemoveDocument HANYA memutus kaitannya; dokumennya tetap hidup. Berbeda
+	// dari RemoveAttachment, dan perbedaannya disengaja.
+	RemoveDocument(ctx context.Context, id string) error
 }
 
 type CreateProjectCommand struct {
 	Name   string
 	Status string
+
+	// Variables DIKIRIM pemanggil, tidak diurai dari dokumen proyek ini —
+	// angkanya ada di PO pelanggan, yang masuk sebagai berkas pindaian.
+	Variables map[string]any
 }
 
 type UpdateProjectCommand = CreateProjectCommand
@@ -54,4 +65,12 @@ type ProjectAttachmentCommand struct {
 	// CompanyID kosong berarti tidak milik siapa-siapa — foto lapangan, misalnya.
 	CompanyID string
 	Note      string
+}
+
+type ProjectDocumentCommand struct {
+	// DocumentToken hanya dibaca saat menambah. Mengganti dokumen di balik
+	// sebuah kaitan adalah kaitan yang berbeda, bukan kaitan yang sama dengan
+	// isi baru.
+	DocumentToken string
+	Note          string
 }

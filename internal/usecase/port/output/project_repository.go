@@ -24,6 +24,15 @@ type ProjectRepository interface {
 	AddAttachment(ctx context.Context, attachment *entity.ProjectAttachment) (*entity.ProjectAttachment, error)
 	UpdateAttachment(ctx context.Context, id string, attachment *entity.ProjectAttachment) error
 
+	ListDocuments(ctx context.Context, projectID int64) ([]entity.ProjectDocument, error)
+	GetDocumentByID(ctx context.Context, id string) (*entity.ProjectDocument, error)
+	AddDocument(ctx context.Context, document *entity.ProjectDocument) (*entity.ProjectDocument, error)
+	UpdateDocument(ctx context.Context, id string, document *entity.ProjectDocument) error
+
+	// RemoveDocument hanya memutus kaitannya. Dokumennya TIDAK dihapus —
+	// berbeda dari lampiran, yang berkasnya ikut dibuang.
+	RemoveDocument(ctx context.Context, id string) error
+
 	// HasCompany menjawab apakah sebuah perusahaan benar-benar peserta proyek.
 	//
 	// Ada di sini, bukan sebagai foreign key, karena menjaminnya di database

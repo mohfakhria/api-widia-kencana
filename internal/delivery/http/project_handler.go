@@ -172,3 +172,53 @@ func (h *ProjectHandler) RemoveAttachment(c *gin.Context) {
 
 	dto.Success(c, "Project attachment removed successfully", nil)
 }
+
+// ── Dokumen proyek ──────────────────────────────────────────────────────────
+
+// AddDocument MENGAITKAN dokumen yang sudah ada, bukan membuatnya.
+//
+// Dokumen dibuat lewat document-add dan disunting di editor; yang dikirim ke
+// sini hanya tokennya.
+func (h *ProjectHandler) AddDocument(c *gin.Context) {
+	var req dto.ProjectDocumentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	item, err := h.project.AddDocument(c.Request.Context(), c.Param("id"), req.ToProjectDocumentCommand())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project document added successfully", dto.NewProjectDocumentDataResponse(item))
+}
+
+func (h *ProjectHandler) UpdateDocument(c *gin.Context) {
+	var req dto.ProjectDocumentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	if err := h.project.UpdateDocument(c.Request.Context(), c.Param("id"), req.ToProjectDocumentCommand()); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project document updated successfully", nil)
+}
+
+// RemoveDocument HANYA memutus kaitannya; dokumennya tetap hidup.
+//
+// Sengaja tidak menyerupai RemoveAttachment, yang ikut membuang berkasnya.
+// Yang benar-benar ingin membuang dokumennya memanggil document-delete.
+func (h *ProjectHandler) RemoveDocument(c *gin.Context) {
+	if err := h.project.RemoveDocument(c.Request.Context(), c.Param("id")); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project document removed successfully", nil)
+}

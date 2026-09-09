@@ -126,7 +126,7 @@ func NewDocumentResponse(document *entity.Document) DocumentResponse {
 		Name:         document.Name,
 		DocumentType: document.DocumentType,
 		Status:       document.Status,
-		Variables:    documentVariablesOf(document.Variables),
+		Variables:    variablesOf(document.Variables),
 		Paper:        NewDocumentPaperResponse(document.Paper),
 		CreatedAt:    document.CreatedAt,
 		UpdatedAt:    document.UpdatedAt,
@@ -164,12 +164,13 @@ func NewDocumentListResponse(documents []entity.Document) DocumentListResponse {
 	return response
 }
 
-// documentVariablesOf memastikan balasannya objek, bukan null.
+// variablesOf memastikan balasannya objek, bukan null. Dipakai dokumen maupun
+// proyek — kedua kantong bentuknya sama.
 //
 // Peta nil di Go menjadi null di JSON, dan klien yang melakukan iterasi atasnya
 // gagal justru pada dokumen yang paling wajar: yang belum punya satu variabel
 // pun.
-func documentVariablesOf(variables map[string]any) map[string]any {
+func variablesOf(variables map[string]any) map[string]any {
 	if variables == nil {
 		return map[string]any{}
 	}

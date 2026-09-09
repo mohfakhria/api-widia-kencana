@@ -71,9 +71,12 @@ func (a *ApiApp) initialize() error {
 	// usecase.FontObjectName.
 	fontUC := usecase.NewFontUseCase(a.objectStorage, pdfrender.NewFontInspector(), a.ServiceLogger)
 	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
-	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db), assetRepo, a.objectStorage, a.ServiceLogger)
 	companyUC := usecase.NewCompanyUseCase(pg.NewCompanyRepository(a.db))
 	documentRepo := pg.NewDocumentRepository(a.db)
+	// Proyek menerima documentRepo karena dokumen dikaitkan lewat TOKEN, dan yang
+	// menerjemahkannya ke baris hanya repository itu.
+	projectUC := usecase.NewProjectUseCase(
+		pg.NewProjectRepository(a.db), assetRepo, documentRepo, a.objectStorage, a.ServiceLogger)
 	documentUC := usecase.NewDocumentUseCase(documentRepo)
 	documentDesign := documentdesign.NewService(
 		a.Context, documentRepo,

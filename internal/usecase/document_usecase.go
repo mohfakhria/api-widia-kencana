@@ -2,8 +2,6 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
@@ -171,108 +169,6 @@ func mapDocumentCommand(cmd input.CreateDocumentCommand) *entity.Document {
 }
 
 // Batas kantong variabel.
-//
-// maxDocumentVariables dan maxDocumentVariableBytes ada untuk satu sebab: tanpa
-// keduanya, kantong ini pelan-pelan menjadi penyimpan isi dokumen yang kedua.
-// Seseorang akan menaruh seluruh baris tabel harga di sana karena "lebih mudah
-// dibaca", lalu content dan variables menyimpan hal yang sama dan mulai
-// berselisih.
-const (
-	maxDocumentVariables     = 50
-	maxDocumentVariableBytes = 16 << 10
-)
-
-// validateDocumentVariables menjaga BENTUKNYA, bukan isinya.
-//
-// Kuncinya sengaja tidak dibatasi kosakata: itulah gunanya kantong ini. Yang
-// dijaga hanya hal-hal yang membuatnya berhenti menjadi kantong — kunci kosong,
-// nilai bersarang, dan ukuran yang tak berbatas.
-//
-// NILAINYA HARUS SKALAR. Objek atau larik di dalamnya berarti struktur, dan
-// struktur yang cukup penting untuk disimpan cukup penting pula untuk punya
-// tabel. Membiarkannya menghasilkan model isi kedua yang tidak pernah divalidasi
-// siapa pun.
-func validateDocumentVariables(variables map[string]any) error {
-	if len(variables) == 0 {
-		return nil
-	}
-	if len(variables) > maxDocumentVariables {
-		return domain.NewError(domain.ErrInvalidInput,
-			fmt.Sprintf("document variables cannot exceed %d entries", maxDocumentVariables))
-	}
-
-	for key, value := range variables {
-		if strings.TrimSpace(key) == "" {
-			return domain.NewError(domain.ErrInvalidInput, "document variable key cannot be empty")
-		}
-
-		switch value.(type) {
-		case nil, bool, float64, string:
-			// Skalar JSON. float64 karena encoding/json menguraikan seluruh angka
-			// ke sana, termasuk yang bulat.
-		default:
-			return domain.NewError(domain.ErrInvalidInput,
-				fmt.Sprintf("document variable %q must be a string, number, boolean, or null", key))
-		}
-	}
-
-	if err := validateNumericVariables(variables); err != nil {
-		return err
-	}
-
-	encoded, err := json.Marshal(variables)
-	if err != nil {
-		return domain.NewError(domain.ErrInvalidInput, "document variables are not valid")
-	}
-	if len(encoded) > maxDocumentVariableBytes {
-		return domain.NewError(domain.ErrInvalidInput,
-			fmt.Sprintf("document variables cannot exceed %d bytes", maxDocumentVariableBytes))
-	}
-
-	return nil
-}
-
-// numericVariableKeys adalah kunci yang WAJIB berupa angka bila ada.
-//
-// Kantong ini sengaja tanpa kosakata — itu gunanya. Tetapi begitu sebuah kunci
-// benar-benar DIJUMLAHKAN oleh laporan, kebebasannya berubah menjadi jebakan:
-// satu dokumen yang mengirim "Rp 184.405.410" alih-alih 184405410 membuat
-// SUM((variables->>'grand_total')::numeric) meledak SAAT LAPORAN DIJALANKAN —
-// berbulan-bulan setelah datanya ditulis, di depan orang yang sedang menunggu
-// angka.
-//
-// Karena itu hanya kunci yang dilaporkan yang dijaga tipenya, bukan seluruh
-// kantong. Daftarnya bertambah ketika ada kunci baru yang ikut dijumlahkan.
-var numericVariableKeys = map[string]struct{}{
-	"grand_total": {},
-}
-
-// validateNumericVariables menegakkan tipe pada kunci yang dilaporkan.
-//
-// Negatif ditolak, nol tidak: dokumen bernilai nol adalah keadaan yang sah —
-// penawaran gratis, atau penggantian garansi. Yang memang tidak bernilai uang
-// tidak menyertakan kuncinya sama sekali; itu berbeda dari nol.
-func validateNumericVariables(variables map[string]any) error {
-	for key := range numericVariableKeys {
-		value, ada := variables[key]
-		if !ada || value == nil {
-			continue
-		}
-
-		angka, ok := value.(float64)
-		if !ok {
-			return domain.NewError(domain.ErrInvalidInput,
-				fmt.Sprintf("document variable %q must be a number", key))
-		}
-		if angka < 0 {
-			return domain.NewError(domain.ErrInvalidInput,
-				fmt.Sprintf("document variable %q cannot be negative", key))
-		}
-	}
-
-	return nil
-}
-
 func validateDocument(document *entity.Document) error {
 	if err := validateUUIDToken(document.Paper.Token, "document paper token"); err != nil {
 		return err
@@ -295,7 +191,7 @@ func validateDocument(document *entity.Document) error {
 	if _, ok := allowedDocumentStatuses[document.Status]; !ok {
 		return domain.NewError(domain.ErrInvalidInput, "invalid document status")
 	}
-	if err := validateDocumentVariables(document.Variables); err != nil {
+	if err := documentVariableRules.validate(document.Variables); err != nil {
 		return err
 	}
 

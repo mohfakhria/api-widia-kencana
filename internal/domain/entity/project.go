@@ -9,12 +9,18 @@ type Project struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	// Keduanya hanya terisi saat mengambil SATU proyek, bukan pada daftar.
+	// Variables adalah kantong nilai tingkat proyek yang diisi orang, dan
+	// project_value tinggal di dalamnya. TIDAK diturunkan dari dokumen — lihat
+	// alasan lengkapnya di migration/projects.sql.
+	Variables map[string]any
+
+	// Ketiganya hanya terisi saat mengambil SATU proyek, bukan pada daftar.
 	// Daftar dipakai pemilih di layar, dan menyertakan peserta beserta lampiran
 	// di sana berarti dua kueri tambahan per baris untuk data yang tidak dilihat
 	// siapa pun sampai satu proyek benar-benar dibuka.
 	Companies   []ProjectCompany
 	Attachments []ProjectAttachment
+	Documents   []ProjectDocument
 }
 
 // ProjectCompany adalah keterlibatan satu perusahaan dalam satu proyek.
@@ -55,4 +61,25 @@ type ProjectAttachment struct {
 	// pemanggil untuk membuka berkasnya — id numeriknya tidak pernah keluar.
 	Asset   *Asset
 	Company *Company
+}
+
+// ProjectDocument adalah dokumen yang dibuat di editor dan dikaitkan ke sebuah
+// proyek.
+//
+// BEDA TAJAM dari ProjectAttachment, dan perbedaannya menentukan cara
+// menghapusnya. Lampiran adalah berkas yang DITERIMA — scan PO, foto lapangan —
+// yang tidak punya hidup di luar proyeknya, sehingga melepasnya ikut membuang
+// berkasnya. Dokumen DIBUAT sendiri, punya riwayat, induk, dan isinya sendiri;
+// melepasnya dari proyek hanya memutus kaitannya.
+type ProjectDocument struct {
+	ID         string
+	ProjectID  int64
+	DocumentID int64
+	Note       string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+
+	// Document dibawa serta saat dibaca. Token yang dipakai pemanggil untuk
+	// membukanya — id numeriknya tidak pernah keluar.
+	Document *Document
 }
