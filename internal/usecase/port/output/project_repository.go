@@ -33,6 +33,11 @@ type ProjectRepository interface {
 	// berbeda dari lampiran, yang berkasnya ikut dibuang.
 	RemoveDocument(ctx context.Context, id string) error
 
+	ListMilestones(ctx context.Context, projectID int64) ([]entity.ProjectMilestone, error)
+	AddMilestone(ctx context.Context, milestone *entity.ProjectMilestone) (*entity.ProjectMilestone, error)
+	UpdateMilestone(ctx context.Context, id string, milestone *entity.ProjectMilestone) error
+	RemoveMilestone(ctx context.Context, id string) error
+
 	// HasCompany menjawab apakah sebuah perusahaan benar-benar peserta proyek.
 	//
 	// Ada di sini, bukan sebagai foreign key, karena menjaminnya di database

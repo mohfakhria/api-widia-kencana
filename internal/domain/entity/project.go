@@ -14,13 +14,14 @@ type Project struct {
 	// alasan lengkapnya di migration/projects.sql.
 	Variables map[string]any
 
-	// Ketiganya hanya terisi saat mengambil SATU proyek, bukan pada daftar.
+	// Keempatnya hanya terisi saat mengambil SATU proyek, bukan pada daftar.
 	// Daftar dipakai pemilih di layar, dan menyertakan peserta beserta lampiran
 	// di sana berarti dua kueri tambahan per baris untuk data yang tidak dilihat
 	// siapa pun sampai satu proyek benar-benar dibuka.
 	Companies   []ProjectCompany
 	Attachments []ProjectAttachment
 	Documents   []ProjectDocument
+	Milestones  []ProjectMilestone
 }
 
 // ProjectCompany adalah keterlibatan satu perusahaan dalam satu proyek.
@@ -82,4 +83,23 @@ type ProjectDocument struct {
 	// Document dibawa serta saat dibaca. Token yang dipakai pemanggil untuk
 	// membukanya — id numeriknya tidak pernah keluar.
 	Document *Document
+}
+
+// ProjectMilestone adalah satu tonggak yang SUDAH tercapai, beserta tanggalnya.
+//
+// Barisnya hanya ada ketika tercapai — ketiadaannya itulah "belum". Tidak ada
+// kolom sudah/belum, dan tidak ada penyemaian saat proyek dibuat.
+//
+// Milestone adalah TEKS BEBAS yang dinormalkan, bukan kosakata tertutup seperti
+// role dan kind. Akibatnya progress bukan angka persen melainkan linimasa —
+// "4 dari 6" hanya berarti bila himpunannya tetap. Lihat catatan lengkapnya di
+// migration/project_milestones.sql.
+type ProjectMilestone struct {
+	ID        string
+	ProjectID int64
+	Milestone string
+	ReachedAt time.Time
+	Note      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

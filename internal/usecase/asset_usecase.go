@@ -443,14 +443,38 @@ func (uc *assetUseCase) ReplaceContent(ctx context.Context, cmd input.ReplaceAss
 // ditolak, dengan gejala yang jauh dari sebabnya. Nilai nol sebuah string di Go
 // adalah "", jadi pengubahan ini harus ditulis sadar; ia tidak terjadi sendiri.
 func sanitizeAssetKey(key string) (*string, error) {
-	key = strings.ToLower(strings.TrimSpace(key))
-	if key == "" {
+	if strings.TrimSpace(key) == "" {
 		return nil, nil
 	}
 
+	cleaned := slugify(key)
+	if cleaned == "" {
+		return nil, domain.NewError(domain.ErrInvalidInput, "asset key has no usable characters")
+	}
+
+	return &cleaned, nil
+}
+
+// slugify menyatukan ejaan yang berbeda menjadi satu bentuk: huruf dikecilkan,
+// spasi dan titik menjadi hubung, hubung ganda dirapatkan, hubung di ujung
+// dibuang.
+//
+// Dipakai key aset dan nama tonggak proyek — keduanya TEKS BEBAS yang dipakai
+// sebagai penyaring. Tanpa penyatuan ini 'BAST Ditandatangani' dan
+// 'bast_ditandatangani' menjadi dua nilai berbeda, lalu saringan "yang sudah
+// BAST" mengembalikan separuhnya tanpa ada yang menyadari separuhnya hilang.
+//
+// TIDAK menghapus seluruh percabangan, dan batasnya perlu diketahui: titik di
+// antara huruf tunggal adalah PEMISAH, sehingga 'B.A.S.T' menjadi 'b-a-s-t' dan
+// tetap terpisah dari 'bast'. Begitu pula 'bast' polos tetap terpisah dari
+// 'bast-ditandatangani'. Yang ditutup percabangan karena besar-kecil huruf dan
+// tanda baca biasa; nama yang memang berbeda tetap berbeda.
+func slugify(value string) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+
 	var builder strings.Builder
-	builder.Grow(len(key))
-	for _, symbol := range key {
+	builder.Grow(len(value))
+	for _, symbol := range value {
 		switch {
 		case symbol >= 'a' && symbol <= 'z', symbol >= '0' && symbol <= '9':
 			builder.WriteRune(symbol)
@@ -461,12 +485,7 @@ func sanitizeAssetKey(key string) (*string, error) {
 		}
 	}
 
-	cleaned := strings.Trim(builder.String(), "-")
-	if cleaned == "" {
-		return nil, domain.NewError(domain.ErrInvalidInput, "asset key has no usable characters")
-	}
-
-	return &cleaned, nil
+	return strings.Trim(builder.String(), "-")
 }
 
 // extensionSuffix mengembalikan ".png" dan sejenisnya, atau kosong.

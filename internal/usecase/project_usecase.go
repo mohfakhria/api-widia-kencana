@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
@@ -95,6 +97,9 @@ func (uc *projectUseCase) GetByID(ctx context.Context, id string) (*entity.Proje
 		return nil, err
 	}
 	if project.Documents, err = uc.repo.ListDocuments(ctx, projectID); err != nil {
+		return nil, err
+	}
+	if project.Milestones, err = uc.repo.ListMilestones(ctx, projectID); err != nil {
 		return nil, err
 	}
 
@@ -428,6 +433,113 @@ func (uc *projectUseCase) RemoveDocument(ctx context.Context, id string) error {
 	}
 
 	return uc.repo.RemoveDocument(ctx, documentID)
+}
+
+// ── Tonggak proyek ──────────────────────────────────────────────────────────
+
+// maxMilestoneLength sejalan dengan VARCHAR(60) di kolomnya. Yang lebih panjang
+// ditolak di sini supaya jawabannya 400 yang menyebut batasnya, bukan galat
+// Postgres mentah yang sampai ke klien sebagai 500.
+const maxMilestoneLength = 60
+
+// milestoneSuggestions adalah tonggak yang lazim dipakai, urut sesuai alur
+// pekerjaan.
+//
+// SARAN, BUKAN ATURAN. milestone adalah teks bebas, dan yang di luar daftar ini
+// tetap diterima — alur tiap proyek tidak sama, dan kosakata tertutup memaksa
+// setiap pekerjaan tak lazim menunggu ALTER TABLE.
+//
+// Hidup di kode, bukan di database, supaya berubah tanpa migrasi. Disajikan
+// lewat endpoint supaya frontend tidak menyalinnya lalu ketinggalan.
+var milestoneSuggestions = []input.MilestoneSuggestion{
+	{Milestone: "penawaran-terkirim", Description: "Penawaran sampai ke pelanggan, bukan draft di editor"},
+	{Milestone: "po-diterima", Description: "PO pelanggan diterima"},
+	{Milestone: "pekerjaan-dimulai", Description: "Produksi atau pekerjaan lapangan berjalan"},
+	{Milestone: "barang-diserahkan", Description: "Serah terima fisik di lokasi"},
+	{Milestone: "bast-ditandatangani", Description: "Pelanggan menerima secara resmi"},
+	// Sengaja terpisah dari lunas: jarak antara keduanya yang paling sering
+	// dikejar orang, dan digabung ia tidak dapat direkonstruksi.
+	{Milestone: "faktur-terbit", Description: "Tagihan dikirim ke pelanggan"},
+	{Milestone: "lunas", Description: "Pembayaran diterima penuh"},
+}
+
+func (uc *projectUseCase) MilestoneSuggestions() []input.MilestoneSuggestion {
+	return milestoneSuggestions
+}
+
+func (uc *projectUseCase) AddMilestone(ctx context.Context, projectID string, cmd input.ProjectMilestoneCommand) (*entity.ProjectMilestone, error) {
+	id, err := parseProjectID(projectID)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := uc.repo.GetByID(ctx, id); err != nil {
+		return nil, err
+	}
+
+	milestone, err := mapMilestoneCommand(cmd)
+	if err != nil {
+		return nil, err
+	}
+	milestone.ProjectID = id
+
+	return uc.repo.AddMilestone(ctx, milestone)
+}
+
+func (uc *projectUseCase) UpdateMilestone(ctx context.Context, id string, cmd input.ProjectMilestoneCommand) error {
+	milestoneID, err := parseUUID(id, "project milestone id")
+	if err != nil {
+		return err
+	}
+
+	milestone, err := mapMilestoneCommand(cmd)
+	if err != nil {
+		return err
+	}
+
+	return uc.repo.UpdateMilestone(ctx, milestoneID, milestone)
+}
+
+func (uc *projectUseCase) RemoveMilestone(ctx context.Context, id string) error {
+	milestoneID, err := parseUUID(id, "project milestone id")
+	if err != nil {
+		return err
+	}
+
+	return uc.repo.RemoveMilestone(ctx, milestoneID)
+}
+
+// mapMilestoneCommand MENORMALKAN nama tonggaknya, dan itu bagian terpenting
+// dari seluruh berkas ini.
+//
+// milestone adalah teks bebas yang dipakai sebagai penyaring lintas proyek.
+// Tanpa penyatuan ejaan, 'BAST', 'B.A.S.T', dan 'Bast' menjadi tiga tonggak
+// berbeda — dan saringan "proyek yang sudah BAST" mengembalikan sepertiganya
+// tanpa ada yang menyadari dua pertiganya hilang. Database tidak dapat
+// mencegahnya; di sinilah satu-satunya tempat yang bisa.
+func mapMilestoneCommand(cmd input.ProjectMilestoneCommand) (*entity.ProjectMilestone, error) {
+	milestone := slugify(cmd.Milestone)
+	if milestone == "" {
+		return nil, domain.NewError(domain.ErrInvalidInput, "milestone has no usable characters")
+	}
+	if len(milestone) > maxMilestoneLength {
+		return nil, domain.NewError(domain.ErrInvalidInput,
+			fmt.Sprintf("milestone cannot exceed %d characters", maxMilestoneLength))
+	}
+
+	// Kosong berarti sekarang. Waktu yang dikirim TIDAK dibatasi harus masa lalu:
+	// tonggak yang dijadwalkan — jatuh tempo faktur, rencana serah terima —
+	// adalah pemakaian yang sah, dan menolaknya berarti memaksa orang menunggu
+	// tanggalnya lewat sebelum boleh mencatatnya.
+	reachedAt := time.Now()
+	if cmd.ReachedAt != nil {
+		reachedAt = *cmd.ReachedAt
+	}
+
+	return &entity.ProjectMilestone{
+		Milestone: milestone,
+		ReachedAt: reachedAt,
+		Note:      strings.TrimSpace(cmd.Note),
+	}, nil
 }
 
 // resolveAttachmentCompany memastikan pemilik berkas memang peserta proyek itu.

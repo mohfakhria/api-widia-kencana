@@ -401,6 +401,8 @@ func translateProjectConflict(err error) error {
 			return domain.NewError(domain.ErrConflict, "file is already attached to a project")
 		case "project_documents_document_uq_idx":
 			return domain.NewError(domain.ErrConflict, "document already belongs to a project")
+		case "project_milestones_uq_idx":
+			return domain.NewError(domain.ErrConflict, "milestone already recorded for this project")
 		}
 	case "23503":
 		switch pgErr.Constraint {
@@ -411,7 +413,7 @@ func translateProjectConflict(err error) error {
 		case "fk_project_documents_document":
 			return domain.NewError(domain.ErrNotFound, "document not found")
 		case "fk_project_companies_project", "fk_project_attachments_project",
-			"fk_project_documents_project":
+			"fk_project_documents_project", "fk_project_milestones_project":
 			return domain.NewError(domain.ErrNotFound, "project not found")
 		}
 	}
@@ -551,4 +553,84 @@ func (r *ProjectRepository) RemoveDocument(ctx context.Context, id string) error
 	}
 
 	return ensureProjectAffected(result, "project document not found")
+}
+
+// ── Tonggak proyek ──────────────────────────────────────────────────────────
+
+func scanProjectMilestone(row interface{ Scan(...any) error }) (*entity.ProjectMilestone, error) {
+	var item entity.ProjectMilestone
+	if err := row.Scan(&item.ID, &item.ProjectID, &item.Milestone, &item.ReachedAt,
+		&item.Note, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		return nil, err
+	}
+
+	return &item, nil
+}
+
+// ListMilestones mengurutkan TERLAMA lebih dulu, berbeda dari lampiran dan
+// dokumen yang terbaru di atas. Di sana yang dicari yang paling akhir masuk; di
+// sini yang dicari jalan ceritanya.
+func (r *ProjectRepository) ListMilestones(ctx context.Context, projectID int64) ([]entity.ProjectMilestone, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id::text, project_id, milestone, reached_at, COALESCE(note, ''), created_at, updated_at
+		FROM project_milestones
+		WHERE project_id = $1
+		ORDER BY reached_at
+	`, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]entity.ProjectMilestone, 0)
+	for rows.Next() {
+		item, err := scanProjectMilestone(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, *item)
+	}
+
+	return items, rows.Err()
+}
+
+func (r *ProjectRepository) AddMilestone(ctx context.Context, milestone *entity.ProjectMilestone) (*entity.ProjectMilestone, error) {
+	item, err := scanProjectMilestone(r.db.QueryRowContext(ctx, `
+		INSERT INTO project_milestones (project_id, milestone, reached_at, note)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id::text, project_id, milestone, reached_at, COALESCE(note, ''), created_at, updated_at
+	`, milestone.ProjectID, milestone.Milestone, milestone.ReachedAt, milestone.Note))
+	if err != nil {
+		return nil, translateProjectConflict(err)
+	}
+
+	return item, nil
+}
+
+func (r *ProjectRepository) UpdateMilestone(ctx context.Context, id string, milestone *entity.ProjectMilestone) error {
+	// Nama tonggaknya IKUT dapat diubah, berbeda dari asset_id pada lampiran dan
+	// document_id pada kaitan dokumen. Sebabnya berbeda pula: yang di sana
+	// menunjuk benda lain, sedangkan ini sekadar label — dan salah ketik pada
+	// label harus dapat dibetulkan tanpa kehilangan tanggalnya.
+	result, err := r.db.ExecContext(ctx, `
+		UPDATE project_milestones
+		SET milestone = $1, reached_at = $2, note = $3
+		WHERE id = $4::uuid
+	`, milestone.Milestone, milestone.ReachedAt, milestone.Note, id)
+	if err != nil {
+		return translateProjectConflict(err)
+	}
+
+	return ensureProjectAffected(result, "project milestone not found")
+}
+
+func (r *ProjectRepository) RemoveMilestone(ctx context.Context, id string) error {
+	result, err := r.db.ExecContext(ctx, `
+		DELETE FROM project_milestones WHERE id = $1::uuid
+	`, id)
+	if err != nil {
+		return err
+	}
+
+	return ensureProjectAffected(result, "project milestone not found")
 }

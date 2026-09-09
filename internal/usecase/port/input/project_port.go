@@ -2,6 +2,7 @@ package input
 
 import (
 	"context"
+	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 )
@@ -34,6 +35,29 @@ type ProjectUseCase interface {
 	// RemoveDocument HANYA memutus kaitannya; dokumennya tetap hidup. Berbeda
 	// dari RemoveAttachment, dan perbedaannya disengaja.
 	RemoveDocument(ctx context.Context, id string) error
+
+	// MilestoneSuggestions menyodorkan tonggak yang lazim dipakai. SARAN, bukan
+	// aturan: milestone adalah teks bebas, dan yang di luar daftar ini tetap
+	// diterima. Ada di kode supaya berubah tanpa migrasi maupun deploy frontend.
+	MilestoneSuggestions() []MilestoneSuggestion
+
+	AddMilestone(ctx context.Context, projectID string, cmd ProjectMilestoneCommand) (*entity.ProjectMilestone, error)
+	UpdateMilestone(ctx context.Context, id string, cmd ProjectMilestoneCommand) error
+	RemoveMilestone(ctx context.Context, id string) error
+}
+
+type MilestoneSuggestion struct {
+	Milestone   string
+	Description string
+}
+
+type ProjectMilestoneCommand struct {
+	Milestone string
+	// ReachedAt kosong berarti sekarang. Boleh mundur — tonggak sering dicatat
+	// beberapa hari setelah kejadiannya, dan memaksanya waktu penyimpanan
+	// menghasilkan linimasa yang rapi tetapi salah.
+	ReachedAt *time.Time
+	Note      string
 }
 
 type CreateProjectCommand struct {

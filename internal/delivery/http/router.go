@@ -98,6 +98,13 @@ func NewRouter(deps RouterDeps) http.Handler {
 		protected.PUT("/project-document-update/:id", deps.ProjectHandler.UpdateDocument)
 		protected.DELETE("/project-document-delete/:id", deps.ProjectHandler.RemoveDocument)
 
+		// Tonggaknya TEKS BEBAS; daftar di bawah hanya saran, dan ia rute
+		// tersendiri supaya frontend tidak menyalinnya lalu ketinggalan.
+		protected.GET("/project-milestone-suggestions", deps.ProjectHandler.MilestoneSuggestions)
+		protected.POST("/project-milestone-add/:id", deps.ProjectHandler.AddMilestone)
+		protected.PUT("/project-milestone-update/:id", deps.ProjectHandler.UpdateMilestone)
+		protected.DELETE("/project-milestone-delete/:id", deps.ProjectHandler.RemoveMilestone)
+
 		// Ekspor adalah tindakan manusia: agent menyusun, orang yang mencetak.
 		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
 

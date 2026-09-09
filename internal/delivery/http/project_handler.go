@@ -222,3 +222,54 @@ func (h *ProjectHandler) RemoveDocument(c *gin.Context) {
 
 	dto.Success(c, "Project document removed successfully", nil)
 }
+
+// ── Tonggak proyek ──────────────────────────────────────────────────────────
+
+// MilestoneSuggestions menyodorkan tonggak yang lazim dipakai.
+//
+// SARAN, bukan kosakata tertutup: `milestone` adalah teks bebas, dan yang di
+// luar daftar ini tetap diterima. Ada supaya frontend tidak menyalin daftarnya
+// lalu ketinggalan ketika ia berubah.
+func (h *ProjectHandler) MilestoneSuggestions(c *gin.Context) {
+	dto.Success(c, "Success", dto.NewMilestoneSuggestionListResponse(h.project.MilestoneSuggestions()))
+}
+
+func (h *ProjectHandler) AddMilestone(c *gin.Context) {
+	var req dto.ProjectMilestoneRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	item, err := h.project.AddMilestone(c.Request.Context(), c.Param("id"), req.ToProjectMilestoneCommand())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project milestone added successfully", dto.NewProjectMilestoneDataResponse(item))
+}
+
+func (h *ProjectHandler) UpdateMilestone(c *gin.Context) {
+	var req dto.ProjectMilestoneRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	if err := h.project.UpdateMilestone(c.Request.Context(), c.Param("id"), req.ToProjectMilestoneCommand()); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project milestone updated successfully", nil)
+}
+
+func (h *ProjectHandler) RemoveMilestone(c *gin.Context) {
+	if err := h.project.RemoveMilestone(c.Request.Context(), c.Param("id")); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project milestone removed successfully", nil)
+}

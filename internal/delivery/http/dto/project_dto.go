@@ -30,6 +30,7 @@ type ProjectResponse struct {
 	Companies   []ProjectCompanyResponse    `json:"companies,omitempty"`
 	Attachments []ProjectAttachmentResponse `json:"attachments,omitempty"`
 	Documents   []ProjectDocumentResponse   `json:"documents,omitempty"`
+	Milestones  []ProjectMilestoneResponse  `json:"milestones,omitempty"`
 
 	// Variables selalu objek, tidak pernah null: kolomnya NOT NULL DEFAULT '{}',
 	// dan klien yang melakukan iterasi atasnya gagal justru pada proyek yang
@@ -46,6 +47,16 @@ type ProjectCompanyRequest struct {
 	CompanyID string `json:"company_id"`
 	Role      string `json:"role"`
 	Note      string `json:"note"`
+}
+
+type ProjectMilestoneRequest struct {
+	// Milestone TEKS BEBAS, dinormalkan backend: huruf dikecilkan, spasi dan
+	// titik menjadi hubung. "BAST Ditandatangani" tersimpan sebagai
+	// "bast-ditandatangani". Daftar saran ada di project-milestone-suggestions.
+	Milestone string `json:"milestone"`
+	// ReachedAt kosong berarti sekarang. Boleh mundur maupun maju.
+	ReachedAt *time.Time `json:"reached_at"`
+	Note      string     `json:"note"`
 }
 
 type ProjectDocumentRequest struct {
@@ -125,6 +136,32 @@ type ProjectDocumentResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type ProjectMilestoneResponse struct {
+	ID        string    `json:"id"`
+	ProjectID int64     `json:"project_id"`
+	Milestone string    `json:"milestone"`
+	ReachedAt time.Time `json:"reached_at"`
+	Note      string    `json:"note"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ProjectMilestoneDataResponse struct {
+	Milestone ProjectMilestoneResponse `json:"project_milestone"`
+}
+
+// MilestoneSuggestionResponse adalah SARAN, bukan kosakata tertutup. Tonggak di
+// luar daftar ini tetap diterima — tampilkan sebagai pilihan yang dapat
+// diketik sendiri, bukan sebagai dropdown tertutup.
+type MilestoneSuggestionResponse struct {
+	Milestone   string `json:"milestone"`
+	Description string `json:"description"`
+}
+
+type MilestoneSuggestionListResponse struct {
+	Milestones []MilestoneSuggestionResponse `json:"milestones"`
+}
+
 type ProjectDocumentDataResponse struct {
 	Document ProjectDocumentResponse `json:"project_document"`
 }
@@ -139,6 +176,12 @@ type ProjectAttachmentDataResponse struct {
 
 func (r ProjectCompanyRequest) ToProjectCompanyCommand() input.ProjectCompanyCommand {
 	return input.ProjectCompanyCommand{CompanyID: r.CompanyID, Role: r.Role, Note: r.Note}
+}
+
+func (r ProjectMilestoneRequest) ToProjectMilestoneCommand() input.ProjectMilestoneCommand {
+	return input.ProjectMilestoneCommand{
+		Milestone: r.Milestone, ReachedAt: r.ReachedAt, Note: r.Note,
+	}
 }
 
 func (r ProjectDocumentRequest) ToProjectDocumentCommand() input.ProjectDocumentCommand {
@@ -219,6 +262,35 @@ func NewProjectDocumentResponse(item *entity.ProjectDocument) ProjectDocumentRes
 	return response
 }
 
+func NewProjectMilestoneResponse(item *entity.ProjectMilestone) ProjectMilestoneResponse {
+	return ProjectMilestoneResponse{
+		ID:        item.ID,
+		ProjectID: item.ProjectID,
+		Milestone: item.Milestone,
+		ReachedAt: item.ReachedAt,
+		Note:      item.Note,
+		CreatedAt: item.CreatedAt,
+		UpdatedAt: item.UpdatedAt,
+	}
+}
+
+func NewProjectMilestoneDataResponse(item *entity.ProjectMilestone) ProjectMilestoneDataResponse {
+	return ProjectMilestoneDataResponse{Milestone: NewProjectMilestoneResponse(item)}
+}
+
+func NewMilestoneSuggestionListResponse(items []input.MilestoneSuggestion) MilestoneSuggestionListResponse {
+	response := MilestoneSuggestionListResponse{
+		Milestones: make([]MilestoneSuggestionResponse, 0, len(items)),
+	}
+	for _, item := range items {
+		response.Milestones = append(response.Milestones, MilestoneSuggestionResponse{
+			Milestone: item.Milestone, Description: item.Description,
+		})
+	}
+
+	return response
+}
+
 func NewProjectDocumentDataResponse(item *entity.ProjectDocument) ProjectDocumentDataResponse {
 	return ProjectDocumentDataResponse{Document: NewProjectDocumentResponse(item)}
 }
@@ -269,6 +341,9 @@ func NewProjectResponse(project *entity.Project) ProjectResponse {
 	}
 	for index := range project.Documents {
 		response.Documents = append(response.Documents, NewProjectDocumentResponse(&project.Documents[index]))
+	}
+	for index := range project.Milestones {
+		response.Milestones = append(response.Milestones, NewProjectMilestoneResponse(&project.Milestones[index]))
 	}
 
 	return response
