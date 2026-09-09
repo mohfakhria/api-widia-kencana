@@ -1,1791 +1,1791 @@
 {
-	"info": {
-		"_postman_id": "fe503373-8a91-4c01-a884-0deff835f5eb",
-		"name": "Widia Kencana - Asset",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"description": "Asset management endpoints with presigned upload and download URLs."
-	},
-	"item": [
-		{
-			"name": "Request Asset Upload",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{token}}"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/api/asset-upload-request",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"asset-upload-request"
-					]
-				},
-				"description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup — tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` — quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database — nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting — **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` — bukan string kosong."
-			},
-			"response": [
-				{
-					"name": "Request Asset Upload - Success",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-request",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-request"
-							]
-						},
-						"description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\",\n      \"status\": \"pending\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"presigned_expires_at\": \"2026-08-11T17:15:00Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"upload_url\": \"http://localhost:9002/widia-assets/images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Signature=...\",\n    \"expires_at\": \"2026-08-11T17:15:00Z\"\n  }\n}"
-				},
-				{
-					"name": "Request Asset Upload - Success (dengan key)",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/brand\",\n  \"key\": \"Logo Widia Kencana\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-request",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-request"
-							]
-						},
-						"description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup — tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` — quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database — nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting — **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` — bukan string kosong."
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/brand\",\n      \"object_name\": \"images/brand/logo-widia-kencana.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"logo-widia-kencana.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\",\n      \"status\": \"pending\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"presigned_expires_at\": \"2026-08-11T17:15:00Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\",\n      \"key\": \"logo-widia-kencana\"\n    },\n    \"upload_url\": \"http://localhost:9002/widia-assets/images/brand/logo-widia-kencana.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Signature=...\",\n    \"expires_at\": \"2026-08-11T17:15:00Z\"\n  }\n}"
-				},
-				{
-					"name": "Request Asset Upload - Invalid Group",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"imges/brand\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-request",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-request"
-							]
-						},
-						"description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup — tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` — quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database — nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting — **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` — bukan string kosong."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid asset group\"\n}"
-				},
-				{
-					"name": "Request Asset Upload - Group Missing",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-request",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-request"
-							]
-						},
-						"description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup — tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` — quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database — nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting — **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` — bukan string kosong."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid asset group\"\n}"
-				},
-				{
-					"name": "Request Asset Upload - Unusable Key",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/brand\",\n  \"key\": \"!!!\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-request",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-request"
-							]
-						},
-						"description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup — tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` — quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database — nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting — **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` — bukan string kosong."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset key has no usable characters\"\n}"
-				},
-				{
-					"name": "Request Asset Upload - Size Must Be Positive",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-request",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-request"
-							]
-						},
-						"description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset size must be greater than 0\"\n}"
-				},
-				{
-					"name": "Request Asset Upload - Storage Down",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-request",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-request"
-							]
-						},
-						"description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
-					},
-					"status": "Service Unavailable",
-					"code": 503,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset storage is unavailable\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Complete Asset Upload",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{token}}"
-					}
-				],
-				"url": {
-					"raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"asset-upload-complete"
-					],
-					"query": [
-						{
-							"key": "token",
-							"value": "{{asset_token}}",
-							"description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400."
-						}
-					]
-				},
-				"description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
-			},
-			"response": [
-				{
-					"name": "Complete Asset Upload - Success",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-complete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload completed successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}"
-				},
-				{
-					"name": "Complete Asset Upload - Size Mismatch",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-complete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset size does not match request\"\n}"
-				},
-				{
-					"name": "Complete Asset Upload - MIME Type Mismatch",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-complete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset MIME type does not match request\"\n}"
-				},
-				{
-					"name": "Complete Asset Upload - Upload URL Expired",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-complete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset upload URL expired\"\n}"
-				},
-				{
-					"name": "Complete Asset Upload - Object Never Uploaded",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-upload-complete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset object not found\"\n}"
-				}
-			]
-		},
-		{
-			"name": "List Assets",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{token}}"
-					}
-				],
-				"url": {
-					"raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"asset-list"
-					],
-					"query": [
-						{
-							"key": "status",
-							"value": "uploaded"
-						},
-						{
-							"key": "group",
-							"value": "images/brand",
-							"description": "Kelompok aset: images/brand, images/document, atau documents/<jenis-dokumen>. Dicocokkan sebagai AWALAN nama objek, bukan kolom tersendiri — kelompoknya memang folder tempat objeknya mendarat. Kosong berarti seluruh kelompok."
-						},
-						{
-							"key": "key",
-							"value": "",
-							"description": "Mencari SATU slot bernama, mis. logo-widia-kencana. Key unik di antara aset yang hidup, jadi hasilnya nol atau satu — inilah cara menemukan aset tanpa tahu tokennya. Kosong berarti tidak menyaring."
-						},
-						{
-							"key": "mime_type",
-							"value": ""
-						},
-						{
-							"key": "extension",
-							"value": ""
-						}
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "List Assets - Success",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-list"
-							],
-							"query": [
-								{
-									"key": "status",
-									"value": "uploaded"
-								},
-								{
-									"key": "group",
-									"value": "images/brand"
-								},
-								{
-									"key": "mime_type",
-									"value": ""
-								},
-								{
-									"key": "extension",
-									"value": ""
-								}
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": [\n      {\n        \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n        \"group\": \"images/document\",\n        \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"original_filename\": \"logo.png\",\n        \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"mime_type\": \"image/png\",\n        \"extension\": \"png\",\n        \"size\": 48291,\n        \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n        \"status\": \"uploaded\",\n        \"upload_method\": \"presigned_put\",\n        \"is_private\": true,\n        \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n        \"created_at\": \"2026-08-11T17:00:00Z\",\n        \"updated_at\": \"2026-08-11T17:00:00Z\"\n      }\n    ]\n  }\n}"
-				},
-				{
-					"name": "List Assets - Empty",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-list"
-							],
-							"query": [
-								{
-									"key": "status",
-									"value": "uploaded"
-								},
-								{
-									"key": "group",
-									"value": "images/brand"
-								},
-								{
-									"key": "mime_type",
-									"value": ""
-								},
-								{
-									"key": "extension",
-									"value": ""
-								}
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": []\n  }\n}"
-				},
-				{
-					"name": "List Assets - Invalid Query",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-list"
-							],
-							"query": [
-								{
-									"key": "status",
-									"value": "uploaded"
-								},
-								{
-									"key": "group",
-									"value": "images/brand"
-								},
-								{
-									"key": "mime_type",
-									"value": ""
-								},
-								{
-									"key": "extension",
-									"value": ""
-								}
-							]
-						}
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid query parameters\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Get Asset Detail",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{token}}"
-					}
-				],
-				"url": {
-					"raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=&presign=",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"asset-detail"
-					],
-					"query": [
-						{
-							"key": "token",
-							"value": "{{asset_token}}",
-							"description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400."
-						},
-						{
-							"key": "key",
-							"value": "",
-							"description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya."
-						},
-						{
-							"key": "presign",
-							"value": "",
-							"description": "Isi `true` untuk sekaligus menerbitkan URL unduh sementara. Menggantikan rute asset-presign yang dulu terpisah. Tidak disertakan secara bawaan: menerbitkannya menandatangani alamat yang dapat dipakai siapa pun yang menerimanya."
-						}
-					]
-				},
-				"description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
-			},
-			"response": [
-				{
-					"name": "Get Asset Detail - Success",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=&presign=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-detail"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								},
-								{
-									"key": "presign",
-									"value": ""
-								}
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}"
-				},
-				{
-					"name": "Get Asset Detail - Not Found",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=&presign=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-detail"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								},
-								{
-									"key": "presign",
-									"value": ""
-								}
-							]
-						}
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
-				},
-				{
-					"name": "Get Asset Detail (presign) - Success",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&presign=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-detail"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "presign",
-									"value": "true"
-								}
-							]
-						},
-						"description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"url\": \"http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=...\",\n    \"expires_in\": 900\n  }\n}"
-				},
-				{
-					"name": "Get Asset Detail (presign) - Not Uploaded Yet",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&presign=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-detail"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "presign",
-									"value": "true"
-								}
-							]
-						},
-						"description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
-				},
-				{
-					"name": "Get Asset Detail (presign) - Not Found",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&presign=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-detail"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "presign",
-									"value": "true"
-								}
-							]
-						},
-						"description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
-				},
-				{
-					"name": "Get Asset Detail - Token And Key Together",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=logo-widia-kencana",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-detail"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": "logo-widia-kencana"
-								}
-							]
-						},
-						"description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"use either asset token or key, not both\"\n}"
-				},
-				{
-					"name": "Get Asset Detail - No Identifier",
-					"originalRequest": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-detail",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-detail"
-							],
-							"query": []
-						},
-						"description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah — ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset token or key is required\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Get Asset Content",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"asset-content"
-					],
-					"query": [
-						{
-							"key": "token",
-							"value": "{{asset_token}}",
-							"description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400."
-						},
-						{
-							"key": "key",
-							"value": "",
-							"description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya."
-						}
-					]
-				},
-				"description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
-			},
-			"response": [
-				{
-					"name": "Get Asset Content - Success - 302 Redirect",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-content"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
-					},
-					"status": "Found",
-					"code": 302,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Location",
-							"value": "http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=..."
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-store"
-						}
-					],
-					"body": ""
-				},
-				{
-					"name": "Get Asset Content - Not Uploaded Yet",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-content"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
-				},
-				{
-					"name": "Get Asset Content - Not Found",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-content"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires — only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Replace Asset Content",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{token}}"
-					}
-				],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file",
-							"type": "file",
-							"src": [],
-							"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
-						}
-					]
-				},
-				"url": {
-					"raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"asset-replace"
-					],
-					"query": [
-						{
-							"key": "token",
-							"value": "{{asset_token}}",
-							"description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400."
-						},
-						{
-							"key": "key",
-							"value": "",
-							"description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya."
-						}
-					]
-				},
-				"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
-			},
-			"response": [
-				{
-					"name": "Replace Asset Content - Success",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
-								}
-							]
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-replace"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"object_name\": \"images/brand/logo-widia-kencana.png\",\n      \"group\": \"images/brand\",\n      \"key\": \"logo-widia-kencana\",\n      \"original_filename\": \"logo-baru.png\",\n      \"stored_filename\": \"logo-widia-kencana.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 204813,\n      \"etag\": \"\\\"9b2c1f0e5a7d4c8b1e3f6a9d0c2b4e81\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-31T23:41:02Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-31T23:41:02Z\"\n    }\n  }\n}"
-				},
-				{
-					"name": "Replace Asset Content - File Missing",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
-								}
-							]
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-replace"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"replacement file is required\"\n}"
-				},
-				{
-					"name": "Replace Asset Content - Not Uploaded Yet",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
-								}
-							]
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-replace"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
-				},
-				{
-					"name": "Replace Asset Content - Not Found",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
-								}
-							]
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-replace"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
-				},
-				{
-					"name": "Replace Asset Content - Too Large",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
-								}
-							]
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-replace"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
-					},
-					"status": "Request Entity Too Large",
-					"code": 413,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"replacement is larger than 11534336 bytes\"\n}"
-				},
-				{
-					"name": "Replace Asset Content - Unauthorized",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
-								}
-							]
-						},
-						"url": {
-							"raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-replace"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								},
-								{
-									"key": "key",
-									"value": ""
-								}
-							]
-						},
-						"description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru — tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` → `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
-					},
-					"status": "Unauthorized",
-					"code": 401,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"cookie": [],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}"
-				}
-			]
-		},
-		{
-			"name": "Delete Asset",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer {{token}}"
-					}
-				],
-				"url": {
-					"raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"asset-delete"
-					],
-					"query": [
-						{
-							"key": "token",
-							"value": "{{asset_token}}",
-							"description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus — permintaan yang menyebut dua benda ditolak 400."
-						}
-					]
-				},
-				"description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
-			},
-			"response": [
-				{
-					"name": "Delete Asset - Success",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-delete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset deleted successfully\",\n  \"data\": null\n}"
-				},
-				{
-					"name": "Delete Asset - Not The Uploader",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-delete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
-					},
-					"status": "Forbidden",
-					"code": 403,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset access forbidden\"\n}"
-				},
-				{
-					"name": "Delete Asset - Not Found",
-					"originalRequest": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"asset-delete"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{asset_token}}"
-								}
-							]
-						},
-						"description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						}
-					],
-					"body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
-				}
-			]
-		}
-	],
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:8081"
-		},
-		{
-			"key": "token",
-			"value": ""
-		},
-		{
-			"key": "asset_token",
-			"value": ""
-		}
-	]
+  "info": {
+    "_postman_id": "fe503373-8a91-4c01-a884-0deff835f5eb",
+    "name": "Widia Kencana - Asset",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Asset management endpoints with presigned upload and download URLs."
+  },
+  "item": [
+    {
+      "name": "Request Asset Upload",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/asset-upload-request",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-upload-request"
+          ]
+        },
+        "description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup \u2014 tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` \u2014 quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database \u2014 nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting \u2014 **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` \u2014 bukan string kosong."
+      },
+      "response": [
+        {
+          "name": "Request Asset Upload - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\",\n      \"status\": \"pending\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"presigned_expires_at\": \"2026-08-11T17:15:00Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"upload_url\": \"http://localhost:9002/widia-assets/images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Signature=...\",\n    \"expires_at\": \"2026-08-11T17:15:00Z\"\n  }\n}"
+        },
+        {
+          "name": "Request Asset Upload - Success (dengan key)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/brand\",\n  \"key\": \"Logo Widia Kencana\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup \u2014 tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` \u2014 quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database \u2014 nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting \u2014 **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` \u2014 bukan string kosong."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/brand\",\n      \"object_name\": \"images/brand/logo-widia-kencana.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"logo-widia-kencana.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\",\n      \"status\": \"pending\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"presigned_expires_at\": \"2026-08-11T17:15:00Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\",\n      \"key\": \"logo-widia-kencana\"\n    },\n    \"upload_url\": \"http://localhost:9002/widia-assets/images/brand/logo-widia-kencana.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Signature=...\",\n    \"expires_at\": \"2026-08-11T17:15:00Z\"\n  }\n}"
+        },
+        {
+          "name": "Request Asset Upload - Invalid Group",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"imges/brand\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup \u2014 tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` \u2014 quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database \u2014 nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting \u2014 **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` \u2014 bukan string kosong."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid asset group\"\n}"
+        },
+        {
+          "name": "Request Asset Upload - Group Missing",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup \u2014 tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` \u2014 quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database \u2014 nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting \u2014 **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` \u2014 bukan string kosong."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid asset group\"\n}"
+        },
+        {
+          "name": "Request Asset Upload - Unusable Key",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/brand\",\n  \"key\": \"!!!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Membuat baris aset berstatus pending dan mengembalikan URL PUT sementara untuk unggahan langsung ke object storage.\n\n**`group` WAJIB**, dari kosakata tertutup \u2014 tidak ada bawaan:\n\n| group | isinya |\n|---|---|\n| `images/brand` | logo, stempel, tanda tangan; dipakai lintas dokumen |\n| `images/document` | gambar yang ditaruh orang ke dalam satu dokumen |\n| `documents/<jenis>` | berkas dokumen; `<jenis>` mengikuti `document_type` \u2014 quotation, purchase-order, bast, delivery-note, service-report, invoice |\n\nYang di luar daftar ditolak `400 \"invalid asset group\"`. `fonts` sengaja **bukan** kelompok yang sah: berkas di bawahnya tidak punya baris di tabel aset.\n\n**`group` sekaligus foldernya.** Tidak ada kolom kelompok di database \u2014 nama objeknya yang menyimpannya, dan `group` pada balasan diturunkan dari `object_name`.\n\n**`key` OPSIONAL.** Ia nama slot yang isinya dapat diganti: `logo-widia-kencana`. Aset ber-key mendarat sebagai `images/brand/logo-widia-kencana.png` alih-alih berawalan UUID, dan yang terpenting \u2014 **mengganti isinya tidak mengubah token**, sehingga seluruh dokumen yang menunjuk token itu ikut berubah tanpa disunting satu per satu.\n\nKey dinormalkan: dihuruf-kecilkan, spasi dan `_` menjadi `-`, selain huruf-angka dibuang. `\"Logo Widia Kencana\"` menjadi `logo-widia-kencana`. Yang tidak menyisakan satu pun huruf atau angka ditolak `400`. Key **unik**; tanpa key, kolomnya `null` \u2014 bukan string kosong."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset key has no usable characters\"\n}"
+        },
+        {
+          "name": "Request Asset Upload - Size Must Be Positive",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset size must be greater than 0\"\n}"
+        },
+        {
+          "name": "Request Asset Upload - Storage Down",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"original_filename\": \"logo.png\",\n  \"mime_type\": \"image/png\",\n  \"size\": 48291,\n  \"group\": \"images/document\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-request"
+              ]
+            },
+            "description": "Creates a pending asset record and returns a temporary PUT URL for direct upload to object storage."
+          },
+          "status": "Service Unavailable",
+          "code": 503,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset storage is unavailable\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Complete Asset Upload",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-upload-complete"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{asset_token}}",
+              "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus \u2014 permintaan yang menyebut dua benda ditolak 400."
+            }
+          ]
+        },
+        "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+      },
+      "response": [
+        {
+          "name": "Complete Asset Upload - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset upload completed successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}"
+        },
+        {
+          "name": "Complete Asset Upload - Size Mismatch",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset size does not match request\"\n}"
+        },
+        {
+          "name": "Complete Asset Upload - MIME Type Mismatch",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset MIME type does not match request\"\n}"
+        },
+        {
+          "name": "Complete Asset Upload - Upload URL Expired",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset upload URL expired\"\n}"
+        },
+        {
+          "name": "Complete Asset Upload - Object Never Uploaded",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-upload-complete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-upload-complete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Call after the frontend uploads the file to the presigned PUT URL. Backend validates the object in storage and marks the asset uploaded."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"uploaded asset object not found\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Assets",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-list"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "uploaded"
+            },
+            {
+              "key": "group",
+              "value": "images/brand",
+              "description": "Kelompok aset: images/brand, images/document, atau documents/<jenis-dokumen>. Dicocokkan sebagai AWALAN nama objek, bukan kolom tersendiri \u2014 kelompoknya memang folder tempat objeknya mendarat. Kosong berarti seluruh kelompok."
+            },
+            {
+              "key": "key",
+              "value": "",
+              "description": "Mencari SATU slot bernama, mis. logo-widia-kencana. Key unik di antara aset yang hidup, jadi hasilnya nol atau satu \u2014 inilah cara menemukan aset tanpa tahu tokennya. Kosong berarti tidak menyaring."
+            },
+            {
+              "key": "mime_type",
+              "value": ""
+            },
+            {
+              "key": "extension",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "List Assets - Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "uploaded"
+                },
+                {
+                  "key": "group",
+                  "value": "images/brand"
+                },
+                {
+                  "key": "mime_type",
+                  "value": ""
+                },
+                {
+                  "key": "extension",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": [\n      {\n        \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n        \"group\": \"images/document\",\n        \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"original_filename\": \"logo.png\",\n        \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n        \"mime_type\": \"image/png\",\n        \"extension\": \"png\",\n        \"size\": 48291,\n        \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n        \"status\": \"uploaded\",\n        \"upload_method\": \"presigned_put\",\n        \"is_private\": true,\n        \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n        \"created_at\": \"2026-08-11T17:00:00Z\",\n        \"updated_at\": \"2026-08-11T17:00:00Z\"\n      }\n    ]\n  }\n}"
+        },
+        {
+          "name": "List Assets - Empty",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "uploaded"
+                },
+                {
+                  "key": "group",
+                  "value": "images/brand"
+                },
+                {
+                  "key": "mime_type",
+                  "value": ""
+                },
+                {
+                  "key": "extension",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"assets\": []\n  }\n}"
+        },
+        {
+          "name": "List Assets - Invalid Query",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-list?status=uploaded&group=images/brand&mime_type=&extension=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-list"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "uploaded"
+                },
+                {
+                  "key": "group",
+                  "value": "images/brand"
+                },
+                {
+                  "key": "mime_type",
+                  "value": ""
+                },
+                {
+                  "key": "extension",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid query parameters\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Asset Detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=&presign=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-detail"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{asset_token}}",
+              "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus \u2014 permintaan yang menyebut dua benda ditolak 400."
+            },
+            {
+              "key": "key",
+              "value": "",
+              "description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya."
+            },
+            {
+              "key": "presign",
+              "value": "",
+              "description": "Isi `true` untuk sekaligus menerbitkan URL unduh sementara. Menggantikan rute asset-presign yang dulu terpisah. Tidak disertakan secara bawaan: menerbitkannya menandatangani alamat yang dapat dipakai siapa pun yang menerimanya."
+            }
+          ]
+        },
+        "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah \u2014 ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
+      },
+      "response": [
+        {
+          "name": "Get Asset Detail - Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=&presign=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                },
+                {
+                  "key": "presign",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    }\n  }\n}"
+        },
+        {
+          "name": "Get Asset Detail - Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=&presign=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                },
+                {
+                  "key": "presign",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        },
+        {
+          "name": "Get Asset Detail (presign) - Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&presign=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "presign",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah \u2014 ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"url\": \"http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=...\",\n    \"expires_in\": 900\n  }\n}"
+        },
+        {
+          "name": "Get Asset Detail (presign) - Not Uploaded Yet",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&presign=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "presign",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah \u2014 ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
+        },
+        {
+          "name": "Get Asset Detail (presign) - Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&presign=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "presign",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah \u2014 ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        },
+        {
+          "name": "Get Asset Detail - Token And Key Together",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail?token={{asset_token}}&key=logo-widia-kencana",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": "logo-widia-kencana"
+                }
+              ]
+            },
+            "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah \u2014 ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"use either asset token or key, not both\"\n}"
+        },
+        {
+          "name": "Get Asset Detail - No Identifier",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-detail",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-detail"
+              ],
+              "query": []
+            },
+            "description": "Satu aset, dialamatkan lewat `?token=` **atau** `?key=`. Menyebut keduanya sekaligus ditolak `400 \"use either asset token or key, not both\"`; tanpa keduanya ditolak `400 \"asset token or key is required\"`.\n\n**`?presign=true`** menggantikan rute `asset-presign` yang dulu terpisah \u2014 ia sebenarnya hanya detail ditambah satu URL sementara, bukan perilaku yang berbeda. Balasannya lalu memuat `url` dan `expires_at` di samping asetnya."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset token or key is required\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Asset Content",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-content"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{asset_token}}",
+              "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus \u2014 permintaan yang menyebut dua benda ditolak 400."
+            },
+            {
+              "key": "key",
+              "value": "",
+              "description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya."
+            }
+          ]
+        },
+        "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires \u2014 only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
+      },
+      "response": [
+        {
+          "name": "Get Asset Content - Success - 302 Redirect",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-content"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires \u2014 only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
+          },
+          "status": "Found",
+          "code": 302,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Location",
+              "value": "http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=..."
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-store"
+            }
+          ],
+          "body": ""
+        },
+        {
+          "name": "Get Asset Content - Not Uploaded Yet",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-content"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires \u2014 only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
+        },
+        {
+          "name": "Get Asset Content - Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/asset-content?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-content"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Redirects (302) to the object in storage, with a signature rebuilt on every request. Meant to be used directly as an image source:\n\n    <img src=\"/api/asset-content/{assetToken}\">\n\nThe URL is stable and never expires \u2014 only the redirect target does, and that is regenerated each time. No presign call is needed beforehand and nothing has to be refreshed.\n\nNO Authorization header: an <img> tag cannot send one, so the asset token itself is the credential. Anyone holding the UUID can read the image. Use asset-presign instead when you need the signed URL itself, for example to download it.\n\nResponds 400 when the asset is not uploaded yet, and 404 when it no longer exists."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Replace Asset Content",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": [],
+              "description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-replace"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{asset_token}}",
+              "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus \u2014 permintaan yang menyebut dua benda ditolak 400."
+            },
+            {
+              "key": "key",
+              "value": "",
+              "description": "Nama slot, mis. `logo-widia-kencana`. Alternatif dari `token`; berguna ketika pemanggil tahu namanya tetapi bukan tokennya."
+            }
+          ]
+        },
+        "description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru \u2014 tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` \u2192 `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+      },
+      "response": [
+        {
+          "name": "Replace Asset Content - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-replace"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru \u2014 tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` \u2192 `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"object_name\": \"images/brand/logo-widia-kencana.png\",\n      \"group\": \"images/brand\",\n      \"key\": \"logo-widia-kencana\",\n      \"original_filename\": \"logo-baru.png\",\n      \"stored_filename\": \"logo-widia-kencana.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 204813,\n      \"etag\": \"\\\"9b2c1f0e5a7d4c8b1e3f6a9d0c2b4e81\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-31T23:41:02Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-31T23:41:02Z\"\n    }\n  }\n}"
+        },
+        {
+          "name": "Replace Asset Content - File Missing",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-replace"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru \u2014 tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` \u2192 `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"replacement file is required\"\n}"
+        },
+        {
+          "name": "Replace Asset Content - Not Uploaded Yet",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-replace"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru \u2014 tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` \u2192 `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
+        },
+        {
+          "name": "Replace Asset Content - Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-replace"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru \u2014 tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` \u2192 `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        },
+        {
+          "name": "Replace Asset Content - Too Large",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-replace"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru \u2014 tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` \u2192 `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+          },
+          "status": "Request Entity Too Large",
+          "code": 413,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"replacement is larger than 11534336 bytes\"\n}"
+        },
+        {
+          "name": "Replace Asset Content - Unauthorized",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Berkas pengganti. Boleh berbeda format, ukuran, dan namanya dari yang lama."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/asset-replace?token={{asset_token}}&key=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-replace"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                },
+                {
+                  "key": "key",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Mengganti **isi** sebuah aset. Token, `key`, dan `group`-nya **tidak berubah**.\n\nItu seluruh gunanya: setiap elemen dokumen menunjuk `assetToken`, sehingga mengganti isinya membuat semua dokumen yang memakainya ikut memakai berkas baru \u2014 tanpa satu pun disunting. Tanpa endpoint ini, memperbaiki logo berarti membuka tiap dokumen dan mengganti gambarnya satu per satu.\n\n**Multipart satu langkah**, berbeda dari `asset-upload-request` yang memakai presigned URL dua langkah. Alur dua langkah menuntut keadaan \"sedang diganti\" disimpan, dan tempat paling wajar untuk itu berbahaya: mengembalikan status baris ke `pending` membuat penyapu menghapus berkas yang **sedang hidup** lima belas menit setelah seseorang membatalkan. Satu permintaan yang membawa bytes-nya menghapus seluruh keadaan antara itu.\n\nBatas 10 MiB. Hanya aset ber-status `uploaded` yang dapat diganti.\n\n**Nama objeknya** mengikuti: aset ber-key mempertahankan namanya bila formatnya sama (`images/brand/logo-widia-kencana.png` ditimpa utuh), dan berpindah bila formatnya berubah (`.png` \u2192 `.svg`), dengan objek lama dibuang setelah barisnya berpindah."
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Missing or invalid Authorization header\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Asset",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "asset-delete"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{asset_token}}",
+              "description": "Token aset. Pakai INI atau `key`, tidak keduanya sekaligus \u2014 permintaan yang menyebut dua benda ditolak 400."
+            }
+          ]
+        },
+        "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+      },
+      "response": [
+        {
+          "name": "Delete Asset - Success",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-delete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset deleted successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Delete Asset - Not The Uploader",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-delete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset access forbidden\"\n}"
+        },
+        {
+          "name": "Delete Asset - Not Found",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "asset-delete"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{asset_token}}"
+                }
+              ]
+            },
+            "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "asset_token",
+      "value": ""
+    }
+  ]
 }

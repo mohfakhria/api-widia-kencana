@@ -890,7 +890,7 @@
                         },
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset URL generated successfully\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"url\": \"http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=...\",\n    \"expires_in\": 900\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"asset\": {\n      \"token\": \"98b5e767-0000-4000-9000-5f73d39cdd66\",\n      \"group\": \"images/document\",\n      \"object_name\": \"images/document/98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"original_filename\": \"logo.png\",\n      \"stored_filename\": \"98b5e767-0000-4000-9000-5f73d39cdd66-logo.png\",\n      \"mime_type\": \"image/png\",\n      \"extension\": \"png\",\n      \"size\": 48291,\n      \"etag\": \"\\\"d41d8cd98f00b204e9800998ecf8427e\\\"\",\n      \"status\": \"uploaded\",\n      \"upload_method\": \"presigned_put\",\n      \"is_private\": true,\n      \"uploaded_at\": \"2026-08-11T17:02:31Z\",\n      \"created_at\": \"2026-08-11T17:00:00Z\",\n      \"updated_at\": \"2026-08-11T17:00:00Z\"\n    },\n    \"url\": \"http://localhost:9002/widia-assets/documents/98b5e767-...?X-Amz-Signature=...\",\n    \"expires_in\": 900\n  }\n}",
                             "code": 200,
                             "header": [
                                 {
@@ -7928,6 +7928,745 @@
         {
             "item": [
                 {
+                    "name": "Add Project Document",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                        },
+                        "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-document-add",
+                                "{{project_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project document added successfully\",\n  \"data\": {\n    \"project_document\": {\n      \"id\": \"7d3e9a04-52bc-4f61-8a27-6c9014ab3e58\",\n      \"project_id\": 1,\n      \"note\": \"Penawaran yang disetujui pelanggan.\",\n      \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n      \"name\": \"Penawaran Panel Listrik\",\n      \"document_type\": \"quotation\",\n      \"status\": \"active\",\n      \"variables\": {\n        \"grand_total\": 184405410,\n        \"ppn_rate\": 11\n      },\n      \"created_at\": \"2026-09-09T10:10:00Z\",\n      \"updated_at\": \"2026-09-09T10:10:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document token\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Invalid Document Token",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document token cannot be empty\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Document Token Empty",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Project Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Document Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"document already belongs to a project\"\n}",
+                            "code": 409,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Already Linked",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Conflict"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Document - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n  \"note\": \"Penawaran yang disetujui pelanggan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENGAITKAN dokumen yang sudah ada — dokumennya dibuat lewat `document-add` dan disunting di editor; yang dikirim ke sini hanya tokennya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Project Document",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"note\": \"Direvisi setelah negosiasi.\"\n}"
+                        },
+                        "description": "Memakai id KAITAN. `document_token` TIDAK dibaca di sini — mengganti dokumen di balik sebuah kaitan adalah kaitan yang berbeda, bukan kaitan yang sama dengan isi baru. Hanya `note` yang dapat diubah.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-document-update",
+                                "{{project_document_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-document-update/{{project_document_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project document updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Document - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"note\": \"Direvisi setelah negosiasi.\"\n}"
+                                },
+                                "description": "Memakai id KAITAN. `document_token` TIDAK dibaca di sini — mengganti dokumen di balik sebuah kaitan adalah kaitan yang berbeda, bukan kaitan yang sama dengan isi baru. Hanya `note` yang dapat diubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-update",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-update/{{project_document_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project document id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Document - Invalid ID",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"note\": \"Direvisi setelah negosiasi.\"\n}"
+                                },
+                                "description": "Memakai id KAITAN. `document_token` TIDAK dibaca di sini — mengganti dokumen di balik sebuah kaitan adalah kaitan yang berbeda, bukan kaitan yang sama dengan isi baru. Hanya `note` yang dapat diubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-update",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-update/{{project_document_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Document - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"note\": \"Direvisi setelah negosiasi.\"\n}"
+                                },
+                                "description": "Memakai id KAITAN. `document_token` TIDAK dibaca di sini — mengganti dokumen di balik sebuah kaitan adalah kaitan yang berbeda, bukan kaitan yang sama dengan isi baru. Hanya `note` yang dapat diubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-update",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-update/{{project_document_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Document - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"note\": \"Direvisi setelah negosiasi.\"\n}"
+                                },
+                                "description": "Memakai id KAITAN. `document_token` TIDAK dibaca di sini — mengganti dokumen di balik sebuah kaitan adalah kaitan yang berbeda, bukan kaitan yang sama dengan isi baru. Hanya `note` yang dapat diubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-update",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-update/{{project_document_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Remove Project Document",
+                    "request": {
+                        "description": "Memakai id KAITAN. HANYA memutus kaitannya — dokumennya TETAP HIDUP, berbeda dari `project-attachment-delete` yang ikut membuang berkasnya. Yang benar-benar ingin membuang dokumennya memanggil `document-delete`.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-document-delete",
+                                "{{project_document_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-document-delete/{{project_document_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project document removed successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Document - Success",
+                            "originalRequest": {
+                                "description": "Memakai id KAITAN. HANYA memutus kaitannya — dokumennya TETAP HIDUP, berbeda dari `project-attachment-delete` yang ikut membuang berkasnya. Yang benar-benar ingin membuang dokumennya memanggil `document-delete`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-delete",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-delete/{{project_document_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project document id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Document - Invalid ID",
+                            "originalRequest": {
+                                "description": "Memakai id KAITAN. HANYA memutus kaitannya — dokumennya TETAP HIDUP, berbeda dari `project-attachment-delete` yang ikut membuang berkasnya. Yang benar-benar ingin membuang dokumennya memanggil `document-delete`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-delete",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-delete/{{project_document_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project document not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Document - Not Found",
+                            "originalRequest": {
+                                "description": "Memakai id KAITAN. HANYA memutus kaitannya — dokumennya TETAP HIDUP, berbeda dari `project-attachment-delete` yang ikut membuang berkasnya. Yang benar-benar ingin membuang dokumennya memanggil `document-delete`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-delete",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-delete/{{project_document_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Document - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Memakai id KAITAN. HANYA memutus kaitannya — dokumennya TETAP HIDUP, berbeda dari `project-attachment-delete` yang ikut membuang berkasnya. Yang benar-benar ingin membuang dokumennya memanggil `document-delete`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-document-delete",
+                                        "{{project_document_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-document-delete/{{project_document_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                }
+            ],
+            "name": "Project Document"
+        },
+        {
+            "item": [
+                {
                     "name": "List Projects",
                     "request": {
                         "header": [
@@ -7951,7 +8690,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"projects\": [\n      {\n        \"id\": 1,\n        \"name\": \"Website Revamp\",\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"projects\": [\n      {\n        \"id\": 1,\n        \"name\": \"Website Revamp\",\n        \"status\": \"active\",\n        \"variables\": {\n          \"project_value\": 184405410,\n          \"nomor_po\": \"PO-2026-0142\",\n          \"sudah_ppn\": true\n        },\n        \"created_at\": \"2026-07-06T10:00:00Z\",\n        \"updated_at\": \"2026-07-06T10:00:00Z\"\n      }\n    ]\n  }\n}",
                             "code": 200,
                             "name": "List Projects - Success",
                             "status": "OK"
@@ -8025,7 +8764,7 @@
                 {
                     "name": "Get Project Detail",
                     "request": {
-                        "description": "Replace last path segment with project id. Mengembalikan `companies` dan `attachments` sekaligus — keduanya TIDAK muncul di `project-list`.",
+                        "description": "Replace last path segment with project id. Mengembalikan `companies`, `attachments`, dan `documents` sekaligus — ketiganya TIDAK muncul di `project-list`, sedangkan `variables` muncul di keduanya.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -8048,7 +8787,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"companies\": [\n        {\n          \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n          \"project_id\": 1,\n          \"role\": \"customer\",\n          \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:00:00Z\",\n          \"updated_at\": \"2026-09-09T10:00:00Z\"\n        },\n        {\n          \"id\": \"5a8d3f76-b210-4c9e-a4f1-8b6e0d2c7a39\",\n          \"project_id\": 1,\n          \"role\": \"end-user\",\n          \"note\": \"Pekerjaannya di Factory D milik mereka.\",\n          \"company\": {\n            \"id\": \"c47e2b19-8d05-4f6a-b3e8-25c1a7f9d403\",\n            \"code\": \"UTAC\",\n            \"name\": \"UTAC Manufacturing Services Indonesia\",\n            \"legal_name\": \"PT UTAC Manufacturing Services Indonesia\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:01:00Z\",\n          \"updated_at\": \"2026-09-09T10:01:00Z\"\n        }\n      ],\n      \"attachments\": [\n        {\n          \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n          \"project_id\": 1,\n          \"kind\": \"purchase-order\",\n          \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n          \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n          \"original_filename\": \"PO-2026-0142.pdf\",\n          \"mime_type\": \"application/pdf\",\n          \"size\": 184320,\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:05:00Z\",\n          \"updated_at\": \"2026-09-09T10:05:00Z\"\n        },\n        {\n          \"id\": \"d70f4a8e-6c31-4b25-89da-1e5f3c0b9764\",\n          \"project_id\": 1,\n          \"kind\": \"site-photo\",\n          \"note\": \"Kondisi panel sebelum pekerjaan dimulai.\",\n          \"asset_token\": \"9d2c5e83-4a17-4f60-b8c9-3e7a1d05f2b6\",\n          \"original_filename\": \"panel-sebelum.jpg\",\n          \"mime_type\": \"image/jpeg\",\n          \"size\": 942108,\n          \"created_at\": \"2026-09-09T10:06:00Z\",\n          \"updated_at\": \"2026-09-09T10:06:00Z\"\n        }\n      ],\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"companies\": [\n        {\n          \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n          \"project_id\": 1,\n          \"role\": \"customer\",\n          \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:00:00Z\",\n          \"updated_at\": \"2026-09-09T10:00:00Z\"\n        },\n        {\n          \"id\": \"5a8d3f76-b210-4c9e-a4f1-8b6e0d2c7a39\",\n          \"project_id\": 1,\n          \"role\": \"end-user\",\n          \"note\": \"Pekerjaannya di Factory D milik mereka.\",\n          \"company\": {\n            \"id\": \"c47e2b19-8d05-4f6a-b3e8-25c1a7f9d403\",\n            \"code\": \"UTAC\",\n            \"name\": \"UTAC Manufacturing Services Indonesia\",\n            \"legal_name\": \"PT UTAC Manufacturing Services Indonesia\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:01:00Z\",\n          \"updated_at\": \"2026-09-09T10:01:00Z\"\n        }\n      ],\n      \"attachments\": [\n        {\n          \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n          \"project_id\": 1,\n          \"kind\": \"purchase-order\",\n          \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n          \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n          \"original_filename\": \"PO-2026-0142.pdf\",\n          \"mime_type\": \"application/pdf\",\n          \"size\": 184320,\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:05:00Z\",\n          \"updated_at\": \"2026-09-09T10:05:00Z\"\n        },\n        {\n          \"id\": \"d70f4a8e-6c31-4b25-89da-1e5f3c0b9764\",\n          \"project_id\": 1,\n          \"kind\": \"site-photo\",\n          \"note\": \"Kondisi panel sebelum pekerjaan dimulai.\",\n          \"asset_token\": \"9d2c5e83-4a17-4f60-b8c9-3e7a1d05f2b6\",\n          \"original_filename\": \"panel-sebelum.jpg\",\n          \"mime_type\": \"image/jpeg\",\n          \"size\": 942108,\n          \"created_at\": \"2026-09-09T10:06:00Z\",\n          \"updated_at\": \"2026-09-09T10:06:00Z\"\n        }\n      ],\n      \"documents\": [\n        {\n          \"id\": \"7d3e9a04-52bc-4f61-8a27-6c9014ab3e58\",\n          \"project_id\": 1,\n          \"note\": \"Penawaran yang disetujui pelanggan.\",\n          \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n          \"name\": \"Penawaran Panel Listrik\",\n          \"document_type\": \"quotation\",\n          \"status\": \"active\",\n          \"variables\": {\n            \"grand_total\": 184405410,\n            \"ppn_rate\": 11\n          },\n          \"created_at\": \"2026-09-09T10:10:00Z\",\n          \"updated_at\": \"2026-09-09T10:10:00Z\"\n        }\n      ],\n      \"variables\": {\n        \"project_value\": 184405410,\n        \"nomor_po\": \"PO-2026-0142\",\n        \"sudah_ppn\": true\n      },\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                             "code": 200,
                             "name": "Get Project Detail - Success",
                             "status": "OK"
@@ -8135,8 +8874,9 @@
                     "request": {
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\"\n}"
+                            "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
                         },
+                        "description": "`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -8162,7 +8902,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project created successfully\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project created successfully\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"variables\": {\n        \"project_value\": 184405410,\n        \"nomor_po\": \"PO-2026-0142\",\n        \"sudah_ppn\": true\n      },\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                             "code": 200,
                             "name": "Create Project - Success",
                             "status": "OK"
@@ -8188,8 +8928,132 @@
                             "originalRequest": {
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\"\n}"
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
                                 },
+                                "description": "`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project variable \\\"project_value\\\" must be a number\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Project - Project Value Not A Number",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
+                                },
+                                "description": "`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project variable \\\"project_value\\\" cannot be negative\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Project - Project Value Negative",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
+                                },
+                                "description": "`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-add"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-add"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project variable \\\"rincian\\\" must be a string, number, boolean, or null\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Create Project - Nested Variable",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
+                                },
+                                "description": "`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -8228,8 +9092,9 @@
                             "originalRequest": {
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\"\n}"
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
                                 },
+                                "description": "`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -8261,9 +9126,9 @@
                     "request": {
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                            "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
                         },
-                        "description": "Replace last path segment with project id.",
+                        "description": "Replace last path segment with project id.\n\n`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -8309,9 +9174,9 @@
                             "originalRequest": {
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
                                 },
-                                "description": "Replace last path segment with project id.",
+                                "description": "Replace last path segment with project id.\n\n`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -8351,9 +9216,9 @@
                             "originalRequest": {
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
                                 },
-                                "description": "Replace last path segment with project id.",
+                                "description": "Replace last path segment with project id.\n\n`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -8381,6 +9246,132 @@
                         },
                         {
                             "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project variable \\\"project_value\\\" must be a number\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project - Project Value Not A Number",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
+                                },
+                                "description": "Replace last path segment with project id.\n\n`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-update/1"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project variable \\\"project_value\\\" cannot be negative\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project - Project Value Negative",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
+                                },
+                                "description": "Replace last path segment with project id.\n\n`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-update/1"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project variable \\\"rincian\\\" must be a string, number, boolean, or null\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project - Nested Variable",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
+                                },
+                                "description": "Replace last path segment with project id.\n\n`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-update",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-update/1"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
                             "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
                             "code": 403,
                             "header": [
@@ -8393,9 +9384,9 @@
                             "originalRequest": {
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"name\": \"Website Revamp Phase 2\",\n  \"status\": \"completed\"\n}"
+                                    "raw": "{\n  \"name\": \"Website Revamp\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"project_value\": 184405410,\n    \"nomor_po\": \"PO-2026-0142\",\n    \"sudah_ppn\": true\n  }\n}"
                                 },
-                                "description": "Replace last path segment with project id.",
+                                "description": "Replace last path segment with project id.\n\n`variables` MENIMPA seluruhnya, tidak menggabung: bidang yang tidak disertakan akan hilang, dan bila `variables` tidak dikirim sama sekali ia menjadi `{}`. Baca yang sekarang lewat `project-detail`, ubah kunci yang berubah, kirim balik utuh.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -8609,6 +9600,10 @@
         },
         {
             "key": "project_company_id",
+            "value": ""
+        },
+        {
+            "key": "project_document_id",
             "value": ""
         }
     ]
