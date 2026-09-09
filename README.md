@@ -283,6 +283,7 @@ ditemukan:
 ```text
 users · document_papers · documents · assets · projects   ← berdiri sendiri
 project_documents          ← menuntut projects + documents
+project_milestones         ← menuntut projects
 companies
   └── company_contacts
       project_companies      ← menuntut projects + companies
@@ -334,6 +335,7 @@ document_papers.sql
 documents.sql
 assets.sql
 project_documents.sql
+project_milestones.sql
 companies.sql
 company_contacts.sql
 project_companies.sql
