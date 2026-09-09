@@ -3,53 +3,58 @@ CREATE TABLE IF NOT EXISTS projects (
     name TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'active', -- Values: active, inactive, decline, completed
 
-    project_value NUMERIC(18,2),
-    -- Nilai proyek yang DISEPAKATI, dalam rupiah penuh. NULL berarti belum
-    -- ditentukan, dan itu berbeda dari nol.
+    variables JSONB NOT NULL DEFAULT '{}',
+    -- Kantong nilai tingkat proyek yang DIISI ORANG, bukan diturunkan dari
+    -- dokumen. project_value tinggal di sini bersama yang lain.
     --
-    -- DICATAT, BUKAN DITURUNKAN, dan itu keputusan yang diambil sadar setelah
-    -- sempat dirancang sebaliknya. Yang mengikat adalah angka pada PO pelanggan,
-    -- sementara PO itu masuk sebagai LAMPIRAN — berkas pindaian tanpa satu pun
-    -- angka yang dapat dibaca mesin. Penawaran kita punya grand_total, tetapi ia
-    -- tawaran, bukan kesepakatan: ia sering direvisi di meja negosiasi, dan
-    -- menjumlahkannya berarti melaporkan angka yang kita usulkan sebagai angka
-    -- yang disetujui.
+    -- Bentuknya mengikuti documents.variables persis: objek datar bernilai
+    -- skalar, dengan penjaga yang sama di usecase. Dua kantong yang bentuknya
+    -- berbeda akan menuntut dua penjaga, dua penjelasan, dan dua tempat yang
+    -- suatu hari berselisih.
+    --
+    -- DIISI, BUKAN DITURUNKAN, dan itu bukan kemalasan. Nilai yang mengikat ada
+    -- pada PO PELANGGAN, dan PO itu masuk sebagai lampiran — berkas pindaian
+    -- tanpa satu pun angka yang dapat dibaca mesin. Penawaran kita punya
+    -- grand_total, tetapi ia tawaran, bukan kesepakatan: ia direvisi di meja
+    -- negosiasi, sehingga memakainya berarti melaporkan angka yang kita usulkan
+    -- sebagai angka yang disetujui.
     --
     -- Menjumlahkan grand_total seluruh dokumen yang tertaut lewat
-    -- project_documents juga SALAH, dan salahnya dua sampai tiga kali lipat:
-    -- satu pekerjaan lazimnya punya penawaran, PO, dan faktur yang menyebut
-    -- nilai yang sama. Ditambah dokumen ber-jenis purchase-order adalah kita
-    -- MEMESAN KE PEMASOK — itu biaya, bukan pendapatan.
+    -- project_documents pun salah berlipat: satu pekerjaan lazimnya punya
+    -- penawaran, PO, dan faktur yang menyebut nilai yang sama. Ditambah dokumen
+    -- ber-jenis purchase-order adalah KITA memesan ke pemasok — biaya, bukan
+    -- pendapatan.
     --
-    -- Kemudahan "langsung dari dokumen" tetap ada, tetapi di frontend sebagai
-    -- USULAN: grand_total penawaran terakhir disodorkan sebagai nilai awal yang
-    -- tinggal dikonfirmasi. Yang tersimpan di sini tetap angka yang benar-benar
-    -- disetujui seseorang.
+    -- Kemudahan "langsung dari dokumen" tetap dapat diberikan, tetapi di
+    -- frontend sebagai USULAN: grand_total penawaran terakhir disodorkan sebagai
+    -- nilai awal yang tinggal dikonfirmasi atau dikoreksi. Yang tersimpan di
+    -- sini tetap angka yang benar-benar disetujui seseorang.
     --
-    -- Kolom, BUKAN kantong JSONB seperti documents.variables. Kantong berguna
-    -- ketika kuncinya berbeda-beda antar baris; di sini hanya ada satu angka,
-    -- dan justru angka yang paling sering dilaporkan di seluruh sistem.
-    -- Menaruhnya di kantong menukar penegakan tipe dan indeks biasa dengan
-    -- pengecoran teks di setiap laporan — persis ongkos yang di documents
-    -- terpaksa ditebus numericVariableKeys dan indeks ekspresi.
+    -- JSONB sendiri tidak bertipe, tetapi INDEKS EKSPRESI di bawah ikut
+    -- menegakkannya tanpa diminta: nilainya dihitung ketika barisnya DITULIS,
+    -- sehingga "Rp 184.405.410" ditolak saat INSERT, bukan meledak saat laporan
+    -- dibaca berbulan-bulan kemudian. Diperiksa langsung, bukan diduga.
+    --
+    -- Penjagaan itu tetap tidak cukup, dan penjaga di usecase tetap wajib —
+    -- seperti numericVariableKeys pada dokumen. Dua sebabnya: galat dari indeks
+    -- adalah galat Postgres mentah yang sampai ke klien sebagai 500 menyebut
+    -- nama indeks, dan NEGATIF tetap lolos karena ia angka yang sah.
+    --
+    -- Ikutan yang harus diketahui: selama masih ada satu baris bernilai teks,
+    -- indeks ini TIDAK DAPAT DIBUAT. Memasangnya belakangan pada data yang
+    -- terlanjur kotor menuntut barisnya dibereskan lebih dulu.
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    -- Negatif ditolak; nol tidak. Proyek bernilai nol adalah keadaan yang sah —
-    -- penggantian garansi, atau pekerjaan yang ditanggung sendiri. Yang memang
-    -- belum ditentukan memakai NULL, dan itu perbedaan yang harus tetap terbaca.
-    CONSTRAINT projects_value_non_negative_chk
-        CHECK (project_value IS NULL OR project_value >= 0)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS projects_status_idx ON projects (status);
 CREATE INDEX IF NOT EXISTS projects_created_at_idx ON projects (created_at DESC);
 
--- Menyaring "proyek di atas sekian" dan mengurutkan menurut nilai. Baris yang
--- belum bernilai tidak ikut terindeks — ia memang tidak pernah dicari lewat
--- sini, dan mengeluarkannya membuat indeksnya hanya sebesar yang benar-benar
--- dipakai.
+-- Indeks EKSPRESI atas project_value di dalam kantong.
+--
+-- Dengan kolom biasa indeks ini datang sendirinya. Dengan kantong ia harus
+-- disebut, dan tanpanya setiap "proyek di atas sekian" dan setiap penjumlahan
+-- memindai seluruh tabel sambil mengecor tiap barisnya.
 CREATE INDEX IF NOT EXISTS projects_value_idx
-    ON projects (project_value)
-    WHERE project_value IS NOT NULL;
+    ON projects (((variables->>'project_value')::numeric));

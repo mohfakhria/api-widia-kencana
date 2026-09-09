@@ -126,51 +126,59 @@ sana, tetapi sebagai gambar: satu elemen teks berbunyi `"Rp 184.405.410"` dengan
 `format: "currency"` yang menurut model isi adalah penanda, bukan perintah.
 
 Kuncinya bebas **kecuali yang dilaporkan**. `grand_total` wajib berupa angka dan
-tidak boleh negatif, ditegakkan usecase — database tidak dapat menegakkannya
-karena JSONB tidak bertipe, dan tanpa penjaga itu satu baris yang mengirim
-`"Rp 184.405.410"` membuat `SUM((variables->>'grand_total')::numeric)` meledak
-saat laporan **dibaca**, berbulan-bulan setelah datanya ditulis. Daftar kunci
-bertipe ada di `numericVariableKeys`; tambahkan ke sana setiap kali ada kunci
-baru yang ikut dijumlahkan.
+tidak boleh negatif, ditegakkan usecase lewat `numericVariableKeys`; tambahkan ke
+sana setiap kali ada kunci baru yang ikut dijumlahkan.
 
-Indeks ekspresinya wajib disebut. Dengan kolom biasa ia datang sendirinya;
-dengan kantong, tanpa itu setiap laporan memindai seluruh tabel dan mengecor tiap
-barisnya.
+**Indeks ekspresinya wajib dijalankan, dan ia bukan sekadar soal kecepatan.**
+Nilainya dihitung ketika barisnya **ditulis**, sehingga baris yang menyimpan
+`"Rp 184.405.410"` ditolak saat `INSERT` — bukan meledak saat laporan dibaca
+berbulan-bulan kemudian. Tanpa indeks itu, teks masuk dengan tenang dan
+`SUM((variables->>'grand_total')::numeric)` baru gagal di depan orang yang sedang
+menunggu angka.
 
-`projects` mendapat nilai proyeknya, beserta penjaga dan indeksnya:
+Penjaga di usecase tetap wajib dan bukan pengulangan: galat dari indeks adalah
+galat Postgres mentah yang sampai ke klien sebagai 500 menyebut nama indeks,
+sedangkan usecase menjawabnya 400 dengan kalimat yang menyebut kuncinya. Negatif
+pun hanya dijaga di sana — bagi database ia angka yang sah.
+
+Ikutannya: selama masih ada satu baris bernilai teks, indeksnya **tidak dapat
+dibuat**. Memasangnya pada data yang terlanjur kotor menuntut barisnya dibereskan
+lebih dulu, jadi jalankan indeksnya bersamaan dengan `ADD COLUMN`, bukan
+belakangan.
+
+`projects` mendapat kantongnya sendiri, beserta indeksnya:
 
 ```sql
 ALTER TABLE projects
-    ADD COLUMN IF NOT EXISTS project_value NUMERIC(18,2);
-
-ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_value_non_negative_chk;
-ALTER TABLE projects ADD CONSTRAINT projects_value_non_negative_chk
-    CHECK (project_value IS NULL OR project_value >= 0);
+    ADD COLUMN IF NOT EXISTS variables JSONB NOT NULL DEFAULT '{}';
 
 CREATE INDEX IF NOT EXISTS projects_value_idx
-    ON projects (project_value)
-    WHERE project_value IS NOT NULL;
+    ON projects (((variables->>'project_value')::numeric));
 ```
 
-Kolom biasa, **bukan** kantong seperti `documents.variables`, dan perbedaannya
-disengaja. Kantong berguna ketika kuncinya berbeda-beda antar baris — dan di
-dokumen memang begitu. Pada proyek hanya ada satu angka, justru angka yang paling
-sering dilaporkan; menaruhnya di kantong menukar penegakan tipe dan indeks biasa
-dengan pengecoran teks di setiap laporan, persis ongkos yang di `documents`
-terpaksa ditebus `numericVariableKeys` dan indeks ekspresi.
+Bentuknya mengikuti `documents.variables` persis — objek datar bernilai skalar,
+dengan penjaga yang sama di usecase. Dua kantong yang bentuknya berbeda akan
+menuntut dua penjaga dan dua penjelasan yang suatu hari berselisih.
 
-Nilainya **dicatat, bukan diturunkan** dari dokumen. Yang mengikat adalah angka
-pada PO pelanggan, dan PO itu masuk sebagai lampiran — berkas pindaian tanpa
-angka yang dapat dibaca mesin. Penawaran kita punya `grand_total`, tetapi ia
-tawaran, bukan kesepakatan. Menjumlahkan seluruh dokumen yang tertaut lewat
-`project_documents` pun salah berlipat: satu pekerjaan lazimnya punya penawaran,
-PO, dan faktur yang menyebut nilai yang sama, sementara dokumen ber-jenis
-`purchase-order` adalah kita memesan ke pemasok — biaya, bukan pendapatan.
+`project_value` tinggal di dalamnya, dan ia **diisi orang, bukan diturunkan dari
+dokumen**. Nilai yang mengikat ada pada PO pelanggan, dan PO itu masuk sebagai
+lampiran — berkas pindaian tanpa angka yang dapat dibaca mesin. Penawaran kita
+punya `grand_total`, tetapi ia tawaran, bukan kesepakatan. Menjumlahkan seluruh
+dokumen yang tertaut lewat `project_documents` pun salah berlipat: satu pekerjaan
+lazimnya punya penawaran, PO, dan faktur yang menyebut nilai yang sama, sementara
+dokumen ber-jenis `purchase-order` adalah kita memesan ke pemasok — biaya, bukan
+pendapatan.
 
-Kemudahan "langsung dari dokumen" tetap ada, tetapi di frontend sebagai usulan:
-`grand_total` penawaran terakhir disodorkan sebagai nilai awal yang tinggal
-dikonfirmasi. NULL berarti belum ditentukan, dan itu berbeda dari nol — proyek
-bernilai nol adalah keadaan yang sah.
+Kemudahan "langsung dari dokumen" tetap dapat diberikan di frontend sebagai
+usulan: `grand_total` penawaran terakhir disodorkan sebagai nilai awal yang
+tinggal dikonfirmasi. Yang tersimpan tetap angka yang benar-benar disetujui
+seseorang.
+
+Kunci yang tidak disertakan berarti belum ditentukan, dan itu berbeda dari nol —
+proyek bernilai nol adalah keadaan yang sah. **Penjaga tipe di usecase wajib
+menyusul**, sama seperti `numericVariableKeys` pada dokumen: JSONB tidak bertipe,
+dan satu baris yang menyimpan `"Rp 184.405.410"` membuat laporan meledak saat
+dibaca, bukan saat ditulis.
 
 Kolom `scope` pada `assets` **dihapus**, digantikan `key`. Kelompok aset kini
 disimpan sebagai folder di dalam `object_name` — `images/brand/logo.png` — dan

@@ -44,14 +44,16 @@ CREATE TABLE IF NOT EXISTS documents (
     -- kunci tidak punya kosakata.
     --
     -- grand_total TINGGAL DI SINI juga, bukan sebagai kolom tersendiri. Yang
-    -- ditukar dengan itu penegakan tipe oleh database: SUM menuntut pengecoran,
-    -- dan satu baris yang mengirim "Rp 184.405.410" alih-alih angka membuat
-    -- laporan meledak saat DIBACA, bukan saat ditulis.
+    -- ditukar dengan itu penegakan tipe oleh database — tetapi tidak seluruhnya:
+    -- INDEKS EKSPRESI di bawah menghitung nilainya ketika barisnya DITULIS,
+    -- sehingga "Rp 184.405.410" ditolak saat INSERT. Selama indeks itu terpasang,
+    -- baris bertipe salah tidak pernah masuk.
     --
-    -- Penggantinya ada di usecase — numericVariableKeys menolak grand_total yang
-    -- bukan angka atau negatif, sehingga baris yang merusak laporan tidak pernah
-    -- masuk. Ditambah indeks ekspresi di bawah supaya penjumlahannya tetap
-    -- cepat.
+    -- Penjaga di usecase tetap wajib, dan bukan pengulangan: galat dari indeks
+    -- adalah galat Postgres mentah yang sampai ke klien sebagai 500 menyebut nama
+    -- indeks, sedangkan numericVariableKeys menjawabnya 400 dengan kalimat yang
+    -- menyebut kuncinya. NEGATIF pun hanya dijaga di sana — bagi database ia
+    -- angka yang sah.
 
     content JSONB NOT NULL DEFAULT '{"pages": []}',
     -- Isi kanvas: halaman beserta elemennya.
