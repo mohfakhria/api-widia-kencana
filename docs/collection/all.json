@@ -8667,6 +8667,878 @@
         {
             "item": [
                 {
+                    "name": "List Milestone Suggestions",
+                    "request": {
+                        "description": "Tonggak yang lazim dipakai, urut sesuai alur pekerjaan. SARAN, bukan kosakata tertutup — tonggak di luar daftar ini tetap diterima. Baca dari sini, jangan disalin ke frontend: daftarnya berubah tanpa migrasi maupun deploy.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "GET",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-milestone-suggestions"
+                            ],
+                            "raw": "{{base_url}}/api/project-milestone-suggestions"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"milestones\": [\n      {\n        \"milestone\": \"penawaran-terkirim\",\n        \"description\": \"Penawaran sampai ke pelanggan, bukan draft di editor\"\n      },\n      {\n        \"milestone\": \"po-diterima\",\n        \"description\": \"PO pelanggan diterima\"\n      },\n      {\n        \"milestone\": \"pekerjaan-dimulai\",\n        \"description\": \"Produksi atau pekerjaan lapangan berjalan\"\n      },\n      {\n        \"milestone\": \"barang-diserahkan\",\n        \"description\": \"Serah terima fisik di lokasi\"\n      },\n      {\n        \"milestone\": \"bast-ditandatangani\",\n        \"description\": \"Pelanggan menerima secara resmi\"\n      },\n      {\n        \"milestone\": \"faktur-terbit\",\n        \"description\": \"Tagihan dikirim ke pelanggan\"\n      },\n      {\n        \"milestone\": \"lunas\",\n        \"description\": \"Pembayaran diterima penuh\"\n      }\n    ]\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Milestone Suggestions - Success",
+                            "originalRequest": {
+                                "description": "Tonggak yang lazim dipakai, urut sesuai alur pekerjaan. SARAN, bukan kosakata tertutup — tonggak di luar daftar ini tetap diterima. Baca dari sini, jangan disalin ke frontend: daftarnya berubah tanpa migrasi maupun deploy.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-suggestions"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-suggestions"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "List Milestone Suggestions - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Tonggak yang lazim dipakai, urut sesuai alur pekerjaan. SARAN, bukan kosakata tertutup — tonggak di luar daftar ini tetap diterima. Baca dari sini, jangan disalin ke frontend: daftarnya berubah tanpa migrasi maupun deploy.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "GET",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-suggestions"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-suggestions"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Add Project Milestone",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                        },
+                        "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-milestone-add",
+                                "{{project_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project milestone added successfully\",\n  \"data\": {\n    \"project_milestone\": {\n      \"id\": \"b62f8d15-4a09-4c73-91e6-27d5f0a3b8c4\",\n      \"project_id\": 1,\n      \"milestone\": \"bast-ditandatangani\",\n      \"reached_at\": \"2026-09-02T00:00:00Z\",\n      \"note\": \"Ditandatangani Bapak Wahyudi.\",\n      \"created_at\": \"2026-09-09T11:00:00Z\",\n      \"updated_at\": \"2026-09-09T11:00:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Milestone - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"milestone has no usable characters\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Milestone - No Usable Characters",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"milestone cannot exceed 60 characters\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Milestone - Too Long",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Milestone - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Milestone - Project Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"milestone already recorded for this project\"\n}",
+                            "code": 409,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Milestone - Already Recorded",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Conflict"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Milestone - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"BAST Ditandatangani\",\n  \"reached_at\": \"2026-09-02T00:00:00Z\",\n  \"note\": \"Ditandatangani Bapak Wahyudi.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `milestone` TEKS BEBAS yang dinormalkan backend — contoh di atas tersimpan sebagai `bast-ditandatangani`. `reached_at` boleh dikosongkan (berarti sekarang), boleh mundur, boleh maju.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Project Milestone",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"milestone\": \"bast-ditandatangani\",\n  \"reached_at\": \"2026-09-03T00:00:00Z\",\n  \"note\": \"Revisi tanggal.\"\n}"
+                        },
+                        "description": "Memakai id TONGGAK. Nama tonggaknya IKUT dapat diubah — berbeda dari lampiran dan kaitan dokumen yang benda rujukannya terkunci. Sebabnya: ini sekadar label, dan salah ketik harus dapat dibetulkan tanpa kehilangan tanggalnya. Bidang yang tidak dikirim akan tertimpa nilai kosong; kirim ketiganya.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-milestone-update",
+                                "{{project_milestone_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-milestone-update/{{project_milestone_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project milestone updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Milestone - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"bast-ditandatangani\",\n  \"reached_at\": \"2026-09-03T00:00:00Z\",\n  \"note\": \"Revisi tanggal.\"\n}"
+                                },
+                                "description": "Memakai id TONGGAK. Nama tonggaknya IKUT dapat diubah — berbeda dari lampiran dan kaitan dokumen yang benda rujukannya terkunci. Sebabnya: ini sekadar label, dan salah ketik harus dapat dibetulkan tanpa kehilangan tanggalnya. Bidang yang tidak dikirim akan tertimpa nilai kosong; kirim ketiganya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-update",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-update/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"milestone has no usable characters\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Milestone - No Usable Characters",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"bast-ditandatangani\",\n  \"reached_at\": \"2026-09-03T00:00:00Z\",\n  \"note\": \"Revisi tanggal.\"\n}"
+                                },
+                                "description": "Memakai id TONGGAK. Nama tonggaknya IKUT dapat diubah — berbeda dari lampiran dan kaitan dokumen yang benda rujukannya terkunci. Sebabnya: ini sekadar label, dan salah ketik harus dapat dibetulkan tanpa kehilangan tanggalnya. Bidang yang tidak dikirim akan tertimpa nilai kosong; kirim ketiganya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-update",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-update/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project milestone id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Milestone - Invalid ID",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"bast-ditandatangani\",\n  \"reached_at\": \"2026-09-03T00:00:00Z\",\n  \"note\": \"Revisi tanggal.\"\n}"
+                                },
+                                "description": "Memakai id TONGGAK. Nama tonggaknya IKUT dapat diubah — berbeda dari lampiran dan kaitan dokumen yang benda rujukannya terkunci. Sebabnya: ini sekadar label, dan salah ketik harus dapat dibetulkan tanpa kehilangan tanggalnya. Bidang yang tidak dikirim akan tertimpa nilai kosong; kirim ketiganya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-update",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-update/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project milestone not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Milestone - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"bast-ditandatangani\",\n  \"reached_at\": \"2026-09-03T00:00:00Z\",\n  \"note\": \"Revisi tanggal.\"\n}"
+                                },
+                                "description": "Memakai id TONGGAK. Nama tonggaknya IKUT dapat diubah — berbeda dari lampiran dan kaitan dokumen yang benda rujukannya terkunci. Sebabnya: ini sekadar label, dan salah ketik harus dapat dibetulkan tanpa kehilangan tanggalnya. Bidang yang tidak dikirim akan tertimpa nilai kosong; kirim ketiganya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-update",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-update/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"milestone already recorded for this project\"\n}",
+                            "code": 409,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Milestone - Already Recorded",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"bast-ditandatangani\",\n  \"reached_at\": \"2026-09-03T00:00:00Z\",\n  \"note\": \"Revisi tanggal.\"\n}"
+                                },
+                                "description": "Memakai id TONGGAK. Nama tonggaknya IKUT dapat diubah — berbeda dari lampiran dan kaitan dokumen yang benda rujukannya terkunci. Sebabnya: ini sekadar label, dan salah ketik harus dapat dibetulkan tanpa kehilangan tanggalnya. Bidang yang tidak dikirim akan tertimpa nilai kosong; kirim ketiganya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-update",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-update/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Conflict"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Milestone - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"milestone\": \"bast-ditandatangani\",\n  \"reached_at\": \"2026-09-03T00:00:00Z\",\n  \"note\": \"Revisi tanggal.\"\n}"
+                                },
+                                "description": "Memakai id TONGGAK. Nama tonggaknya IKUT dapat diubah — berbeda dari lampiran dan kaitan dokumen yang benda rujukannya terkunci. Sebabnya: ini sekadar label, dan salah ketik harus dapat dibetulkan tanpa kehilangan tanggalnya. Bidang yang tidak dikirim akan tertimpa nilai kosong; kirim ketiganya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-update",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-update/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Remove Project Milestone",
+                    "request": {
+                        "description": "Memakai id TONGGAK. Menghapusnya berarti tonggak itu dianggap belum tercapai — ketiadaan baris ITULAH \"belum\".",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-milestone-delete",
+                                "{{project_milestone_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-milestone-delete/{{project_milestone_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project milestone removed successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Milestone - Success",
+                            "originalRequest": {
+                                "description": "Memakai id TONGGAK. Menghapusnya berarti tonggak itu dianggap belum tercapai — ketiadaan baris ITULAH \"belum\".",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-delete",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-delete/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project milestone id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Milestone - Invalid ID",
+                            "originalRequest": {
+                                "description": "Memakai id TONGGAK. Menghapusnya berarti tonggak itu dianggap belum tercapai — ketiadaan baris ITULAH \"belum\".",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-delete",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-delete/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project milestone not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Milestone - Not Found",
+                            "originalRequest": {
+                                "description": "Memakai id TONGGAK. Menghapusnya berarti tonggak itu dianggap belum tercapai — ketiadaan baris ITULAH \"belum\".",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-delete",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-delete/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Milestone - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Memakai id TONGGAK. Menghapusnya berarti tonggak itu dianggap belum tercapai — ketiadaan baris ITULAH \"belum\".",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-milestone-delete",
+                                        "{{project_milestone_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-milestone-delete/{{project_milestone_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                }
+            ],
+            "name": "Project Milestone"
+        },
+        {
+            "item": [
+                {
                     "name": "List Projects",
                     "request": {
                         "header": [
@@ -8764,7 +9636,7 @@
                 {
                     "name": "Get Project Detail",
                     "request": {
-                        "description": "Replace last path segment with project id. Mengembalikan `companies`, `attachments`, dan `documents` sekaligus — ketiganya TIDAK muncul di `project-list`, sedangkan `variables` muncul di keduanya.",
+                        "description": "Replace last path segment with project id. Mengembalikan `companies`, `attachments`, `documents`, dan `milestones` sekaligus — keempatnya TIDAK muncul di `project-list`, sedangkan `variables` muncul di keduanya. `milestones` urut TERLAMA dulu; `attachments` dan `documents` terbaru dulu.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -8787,7 +9659,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"companies\": [\n        {\n          \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n          \"project_id\": 1,\n          \"role\": \"customer\",\n          \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:00:00Z\",\n          \"updated_at\": \"2026-09-09T10:00:00Z\"\n        },\n        {\n          \"id\": \"5a8d3f76-b210-4c9e-a4f1-8b6e0d2c7a39\",\n          \"project_id\": 1,\n          \"role\": \"end-user\",\n          \"note\": \"Pekerjaannya di Factory D milik mereka.\",\n          \"company\": {\n            \"id\": \"c47e2b19-8d05-4f6a-b3e8-25c1a7f9d403\",\n            \"code\": \"UTAC\",\n            \"name\": \"UTAC Manufacturing Services Indonesia\",\n            \"legal_name\": \"PT UTAC Manufacturing Services Indonesia\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:01:00Z\",\n          \"updated_at\": \"2026-09-09T10:01:00Z\"\n        }\n      ],\n      \"attachments\": [\n        {\n          \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n          \"project_id\": 1,\n          \"kind\": \"purchase-order\",\n          \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n          \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n          \"original_filename\": \"PO-2026-0142.pdf\",\n          \"mime_type\": \"application/pdf\",\n          \"size\": 184320,\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:05:00Z\",\n          \"updated_at\": \"2026-09-09T10:05:00Z\"\n        },\n        {\n          \"id\": \"d70f4a8e-6c31-4b25-89da-1e5f3c0b9764\",\n          \"project_id\": 1,\n          \"kind\": \"site-photo\",\n          \"note\": \"Kondisi panel sebelum pekerjaan dimulai.\",\n          \"asset_token\": \"9d2c5e83-4a17-4f60-b8c9-3e7a1d05f2b6\",\n          \"original_filename\": \"panel-sebelum.jpg\",\n          \"mime_type\": \"image/jpeg\",\n          \"size\": 942108,\n          \"created_at\": \"2026-09-09T10:06:00Z\",\n          \"updated_at\": \"2026-09-09T10:06:00Z\"\n        }\n      ],\n      \"documents\": [\n        {\n          \"id\": \"7d3e9a04-52bc-4f61-8a27-6c9014ab3e58\",\n          \"project_id\": 1,\n          \"note\": \"Penawaran yang disetujui pelanggan.\",\n          \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n          \"name\": \"Penawaran Panel Listrik\",\n          \"document_type\": \"quotation\",\n          \"status\": \"active\",\n          \"variables\": {\n            \"grand_total\": 184405410,\n            \"ppn_rate\": 11\n          },\n          \"created_at\": \"2026-09-09T10:10:00Z\",\n          \"updated_at\": \"2026-09-09T10:10:00Z\"\n        }\n      ],\n      \"variables\": {\n        \"project_value\": 184405410,\n        \"nomor_po\": \"PO-2026-0142\",\n        \"sudah_ppn\": true\n      },\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"companies\": [\n        {\n          \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n          \"project_id\": 1,\n          \"role\": \"customer\",\n          \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:00:00Z\",\n          \"updated_at\": \"2026-09-09T10:00:00Z\"\n        },\n        {\n          \"id\": \"5a8d3f76-b210-4c9e-a4f1-8b6e0d2c7a39\",\n          \"project_id\": 1,\n          \"role\": \"end-user\",\n          \"note\": \"Pekerjaannya di Factory D milik mereka.\",\n          \"company\": {\n            \"id\": \"c47e2b19-8d05-4f6a-b3e8-25c1a7f9d403\",\n            \"code\": \"UTAC\",\n            \"name\": \"UTAC Manufacturing Services Indonesia\",\n            \"legal_name\": \"PT UTAC Manufacturing Services Indonesia\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:01:00Z\",\n          \"updated_at\": \"2026-09-09T10:01:00Z\"\n        }\n      ],\n      \"attachments\": [\n        {\n          \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n          \"project_id\": 1,\n          \"kind\": \"purchase-order\",\n          \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n          \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n          \"original_filename\": \"PO-2026-0142.pdf\",\n          \"mime_type\": \"application/pdf\",\n          \"size\": 184320,\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:05:00Z\",\n          \"updated_at\": \"2026-09-09T10:05:00Z\"\n        },\n        {\n          \"id\": \"d70f4a8e-6c31-4b25-89da-1e5f3c0b9764\",\n          \"project_id\": 1,\n          \"kind\": \"site-photo\",\n          \"note\": \"Kondisi panel sebelum pekerjaan dimulai.\",\n          \"asset_token\": \"9d2c5e83-4a17-4f60-b8c9-3e7a1d05f2b6\",\n          \"original_filename\": \"panel-sebelum.jpg\",\n          \"mime_type\": \"image/jpeg\",\n          \"size\": 942108,\n          \"created_at\": \"2026-09-09T10:06:00Z\",\n          \"updated_at\": \"2026-09-09T10:06:00Z\"\n        }\n      ],\n      \"documents\": [\n        {\n          \"id\": \"7d3e9a04-52bc-4f61-8a27-6c9014ab3e58\",\n          \"project_id\": 1,\n          \"note\": \"Penawaran yang disetujui pelanggan.\",\n          \"document_token\": \"3f8c1b26-90da-4e57-b143-5a70e2c9f814\",\n          \"name\": \"Penawaran Panel Listrik\",\n          \"document_type\": \"quotation\",\n          \"status\": \"active\",\n          \"variables\": {\n            \"grand_total\": 184405410,\n            \"ppn_rate\": 11\n          },\n          \"created_at\": \"2026-09-09T10:10:00Z\",\n          \"updated_at\": \"2026-09-09T10:10:00Z\"\n        }\n      ],\n      \"variables\": {\n        \"project_value\": 184405410,\n        \"nomor_po\": \"PO-2026-0142\",\n        \"sudah_ppn\": true\n      },\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\",\n      \"milestones\": [\n        {\n          \"id\": \"9c04e7b3-1f58-4d20-86ae-3b7d1c90a52\",\n          \"project_id\": 1,\n          \"milestone\": \"penawaran-terkirim\",\n          \"reached_at\": \"2026-08-01T00:00:00Z\",\n          \"note\": \"\",\n          \"created_at\": \"2026-09-09T11:00:00Z\",\n          \"updated_at\": \"2026-09-09T11:00:00Z\"\n        },\n        {\n          \"id\": \"b62f8d15-4a09-4c73-91e6-27d5f0a3b8c4\",\n          \"project_id\": 1,\n          \"milestone\": \"po-diterima\",\n          \"reached_at\": \"2026-08-12T00:00:00Z\",\n          \"note\": \"PO-2026-0142.\",\n          \"created_at\": \"2026-09-09T11:01:00Z\",\n          \"updated_at\": \"2026-09-09T11:01:00Z\"\n        }\n      ]\n    }\n  }\n}",
                             "code": 200,
                             "name": "Get Project Detail - Success",
                             "status": "OK"
@@ -9604,6 +10476,10 @@
         },
         {
             "key": "project_document_id",
+            "value": ""
+        },
+        {
+            "key": "project_milestone_id",
             "value": ""
         }
     ]
