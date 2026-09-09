@@ -254,9 +254,9 @@ func FontContentPath(family string, weight int, style string) string {
 // Bucket dapat memuat berkas yang ditaruh tangan manusia, dan satu nama yang
 // salah bentuk tidak sepadan dengan seluruh daftar font yang hilang dari editor.
 func (uc *fontUseCase) List(ctx context.Context) ([]input.FontFamilyListing, error) {
-	objects, err := uc.storage.List(ctx, FontScope+"/")
+	objects, err := uc.storage.List(ctx, FontGroup+"/")
 	if err != nil {
-		uc.logger.Error("list font objects", "prefix", FontScope+"/", "error", err)
+		uc.logger.Error("list font objects", "prefix", FontGroup+"/", "error", err)
 
 		return nil, domain.NewError(domain.ErrInternalFailure, "font list could not be read")
 	}

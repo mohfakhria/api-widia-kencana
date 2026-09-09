@@ -261,7 +261,15 @@ ALTER TABLE documents ADD CONSTRAINT documents_status_chk
 ```
 
 Indeks yang predikatnya menyebut `deleted_at` harus dibuat ulang tanpa predikat
-itu — `DROP COLUMN` akan menolak selama masih ada yang bergantung padanya:
+itu, dan **`DROP COLUMN` tidak akan memperingatkan Anda**. Ia tidak menolak —
+diperiksa langsung, dan yang terjadi justru sebaliknya: setiap indeks yang
+bergantung pada kolom itu ikut dibuang diam-diam, termasuk
+`assets_bucket_object_name_uq_idx` yang menjaga nama objek tetap unik. Tidak ada
+galat, tidak ada catatan di log, dan tabelnya tampak baik-baik saja sampai ada
+dua baris memakai nama objek yang sama.
+
+Karena itu **jalankan pembuangan kolom dan pembuatan ulang indeksnya dalam SATU
+transaksi**. Di antara keduanya, keunikan tidak ditegakkan siapa pun:
 
 ```sql
 DROP INDEX IF EXISTS assets_bucket_object_name_uq_idx;

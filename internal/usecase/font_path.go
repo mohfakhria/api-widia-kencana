@@ -8,8 +8,17 @@ import (
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/design"
 )
 
-// FontScope adalah prefix objek untuk seluruh berkas font di object storage.
-const FontScope = "fonts"
+// FontGroup adalah prefix objek untuk seluruh berkas font di object storage.
+//
+// "Group", bukan "scope": istilahnya disamakan dengan aset, yang kelompoknya juga
+// hidup sebagai folder di dalam nama objek — images/brand, documents/quotation.
+// Dulu bernama FontScope, sisa dari masa assets masih punya kolom scope.
+//
+// fonts/ SENGAJA di luar kosakata kelompok aset. Berkas di bawahnya tidak punya
+// baris di tabel assets — nama objeknya fungsi murni dari keluarga, bobot, dan
+// style — sehingga mengizinkan unggahan aset mendarat di sini akan menaruh
+// berkas asing di ruang nama yang dibaca font-list.
+const FontGroup = "fonts"
 
 // FontObjectName menyusun nama objek dari tiga sifat yang dibawa elemen.
 //
@@ -27,7 +36,7 @@ const FontScope = "fonts"
 // yang sama. Tidak ada baris kembar yang perlu didamaikan, dan "perbarui font
 // ini" tidak butuh operasi tersendiri.
 func FontObjectName(family string, weight int, style string) string {
-	return fmt.Sprintf("%s/%s/%d-%s.ttf", FontScope, FontFamilySlug(family), weight, normalizeFontStyle(style))
+	return fmt.Sprintf("%s/%s/%d-%s.ttf", FontGroup, FontFamilySlug(family), weight, normalizeFontStyle(style))
 }
 
 // FontFamilySlug mengubah nama keluarga menjadi satu segmen path yang aman.
@@ -77,7 +86,7 @@ func normalizeFontStyle(style string) string {
 // bolak-baliknya tepat. Menebak "Barlow Condensed" dari "barlow-condensed" justru
 // akan salah pada keluarga yang namanya memang bertanda hubung.
 func ParseFontObjectName(objectName string) (family string, weight int, style string, ok bool) {
-	sisa, cocok := strings.CutPrefix(objectName, FontScope+"/")
+	sisa, cocok := strings.CutPrefix(objectName, FontGroup+"/")
 	if !cocok {
 		return "", 0, "", false
 	}

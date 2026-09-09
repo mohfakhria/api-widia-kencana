@@ -199,7 +199,7 @@ func (uc *documentExportUseCase) loadFonts(ctx context.Context, content *design.
 			continue
 		}
 
-		objects, err := uc.storage.List(ctx, FontScope+"/"+slug+"/")
+		objects, err := uc.storage.List(ctx, FontGroup+"/"+slug+"/")
 		if err != nil {
 			return nil, domain.NewError(domain.ErrInternalFailure, "failed to read document export fonts")
 		}
