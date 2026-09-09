@@ -71,7 +71,7 @@ func (a *ApiApp) initialize() error {
 	// usecase.FontObjectName.
 	fontUC := usecase.NewFontUseCase(a.objectStorage, pdfrender.NewFontInspector(), a.ServiceLogger)
 	assetSweeper := usecase.NewAssetSweeper(assetRepo, a.objectStorage, a.ServiceLogger)
-	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db))
+	projectUC := usecase.NewProjectUseCase(pg.NewProjectRepository(a.db), assetRepo, a.objectStorage, a.ServiceLogger)
 	companyUC := usecase.NewCompanyUseCase(pg.NewCompanyRepository(a.db))
 	documentRepo := pg.NewDocumentRepository(a.db)
 	documentUC := usecase.NewDocumentUseCase(documentRepo)

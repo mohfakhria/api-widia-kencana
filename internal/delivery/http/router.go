@@ -77,6 +77,20 @@ func NewRouter(deps RouterDeps) http.Handler {
 		protected.PUT("/project-update/:id", deps.ProjectHandler.Update)
 		protected.DELETE("/project-delete/:id", deps.ProjectHandler.Delete)
 
+		// Peserta proyek dan lampirannya ikut di grup ini, bukan di agentAllowed.
+		// Alasannya sama dengan proyeknya sendiri: agent menyusun ISI dokumen; ia
+		// tidak menentukan siapa yang terlibat dalam sebuah pekerjaan.
+		//
+		// Menambah memakai id PROYEK; mengubah dan menghapus memakai id BARISNYA
+		// — perusahaan maupun berkasnya diambil dari baris itu sendiri.
+		protected.POST("/project-company-add/:id", deps.ProjectHandler.AddCompany)
+		protected.PUT("/project-company-update/:id", deps.ProjectHandler.UpdateCompany)
+		protected.DELETE("/project-company-delete/:id", deps.ProjectHandler.RemoveCompany)
+
+		protected.POST("/project-attachment-add/:id", deps.ProjectHandler.AddAttachment)
+		protected.PUT("/project-attachment-update/:id", deps.ProjectHandler.UpdateAttachment)
+		protected.DELETE("/project-attachment-delete/:id", deps.ProjectHandler.RemoveAttachment)
+
 		// Ekspor adalah tindakan manusia: agent menyusun, orang yang mencetak.
 		protected.POST("/document-export/:token", deps.DocumentExportHandler.ExportPDF)
 

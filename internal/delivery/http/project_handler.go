@@ -77,3 +77,98 @@ func (h *ProjectHandler) Delete(c *gin.Context) {
 
 	dto.Success(c, "Project deleted successfully", nil)
 }
+
+// ── Peserta proyek ──────────────────────────────────────────────────────────
+
+func (h *ProjectHandler) AddCompany(c *gin.Context) {
+	var req dto.ProjectCompanyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	item, err := h.project.AddCompany(c.Request.Context(), c.Param("id"), req.ToProjectCompanyCommand())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project company added successfully", dto.NewProjectCompanyDataResponse(item))
+}
+
+// UpdateCompany dan RemoveCompany memakai id KETERLIBATAN, bukan id proyek —
+// perusahaannya diambil dari baris keterlibatan itu sendiri.
+func (h *ProjectHandler) UpdateCompany(c *gin.Context) {
+	var req dto.ProjectCompanyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	if err := h.project.UpdateCompany(c.Request.Context(), c.Param("id"), req.ToProjectCompanyCommand()); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project company updated successfully", nil)
+}
+
+func (h *ProjectHandler) RemoveCompany(c *gin.Context) {
+	if err := h.project.RemoveCompany(c.Request.Context(), c.Param("id")); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project company removed successfully", nil)
+}
+
+// ── Lampiran ────────────────────────────────────────────────────────────────
+
+// AddAttachment MENAUTKAN berkas yang sudah diunggah, bukan menerimanya.
+//
+// Unggahannya memakai alur aset yang sudah ada — asset-upload-request dengan
+// group 'documents/<jenis>', PUT ke presigned URL, lalu asset-upload-complete.
+// Yang dikirim ke sini hanya tokennya.
+func (h *ProjectHandler) AddAttachment(c *gin.Context) {
+	var req dto.ProjectAttachmentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	item, err := h.project.AddAttachment(c.Request.Context(), c.Param("id"), req.ToProjectAttachmentCommand())
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project attachment added successfully", dto.NewProjectAttachmentDataResponse(item))
+}
+
+func (h *ProjectHandler) UpdateAttachment(c *gin.Context) {
+	var req dto.ProjectAttachmentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		dto.Error(c, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	if err := h.project.UpdateAttachment(c.Request.Context(), c.Param("id"), req.ToProjectAttachmentCommand()); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project attachment updated successfully", nil)
+}
+
+// RemoveAttachment MENGHAPUS BERKASNYA JUGA, bukan sekadar melepas tautannya.
+//
+// Satu berkas milik satu proyek — indeks unik pada asset_id yang menjaminnya —
+// sehingga tidak ada keraguan siapa lagi yang memakainya.
+func (h *ProjectHandler) RemoveAttachment(c *gin.Context) {
+	if err := h.project.RemoveAttachment(c.Request.Context(), c.Param("id")); err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Project attachment removed successfully", nil)
+}

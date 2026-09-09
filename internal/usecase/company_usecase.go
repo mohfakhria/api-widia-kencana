@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain"
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
@@ -53,7 +52,7 @@ func (uc *companyUseCase) List(ctx context.Context, query input.ListCompanyQuery
 }
 
 func (uc *companyUseCase) Get(ctx context.Context, id string) (*entity.Company, error) {
-	companyID, err := parseCompanyID(id, "company id")
+	companyID, err := parseUUID(id, "company id")
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +81,7 @@ func (uc *companyUseCase) Create(ctx context.Context, cmd input.CompanyCommand) 
 }
 
 func (uc *companyUseCase) Update(ctx context.Context, id string, cmd input.CompanyCommand) error {
-	companyID, err := parseCompanyID(id, "company id")
+	companyID, err := parseUUID(id, "company id")
 	if err != nil {
 		return err
 	}
@@ -96,7 +95,7 @@ func (uc *companyUseCase) Update(ctx context.Context, id string, cmd input.Compa
 }
 
 func (uc *companyUseCase) Delete(ctx context.Context, id string) error {
-	companyID, err := parseCompanyID(id, "company id")
+	companyID, err := parseUUID(id, "company id")
 	if err != nil {
 		return err
 	}
@@ -108,7 +107,7 @@ func (uc *companyUseCase) Delete(ctx context.Context, id string) error {
 }
 
 func (uc *companyUseCase) AddContact(ctx context.Context, companyID string, cmd input.CompanyContactCommand) (*entity.CompanyContact, error) {
-	id, err := parseCompanyID(companyID, "company id")
+	id, err := parseUUID(companyID, "company id")
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +128,7 @@ func (uc *companyUseCase) AddContact(ctx context.Context, companyID string, cmd 
 }
 
 func (uc *companyUseCase) UpdateContact(ctx context.Context, contactID string, cmd input.CompanyContactCommand) error {
-	id, err := parseCompanyID(contactID, "contact id")
+	id, err := parseUUID(contactID, "contact id")
 	if err != nil {
 		return err
 	}
@@ -149,7 +148,7 @@ func (uc *companyUseCase) UpdateContact(ctx context.Context, contactID string, c
 }
 
 func (uc *companyUseCase) DeleteContact(ctx context.Context, contactID string) error {
-	id, err := parseCompanyID(contactID, "contact id")
+	id, err := parseUUID(contactID, "contact id")
 	if err != nil {
 		return err
 	}
@@ -247,23 +246,6 @@ func validateCompanyContact(contact *entity.CompanyContact) error {
 	}
 
 	return nil
-}
-
-// parseCompanyID memastikan yang datang memang UUID.
-//
-// Tanpa ini, id yang bukan UUID sampai ke Postgres dan kembali sebagai galat
-// sintaks tipe — 500 yang menyebut "invalid input syntax for type uuid" alih-alih
-// 400 yang menyebut fieldnya.
-func parseCompanyID(raw, label string) (string, error) {
-	id := strings.TrimSpace(raw)
-	if id == "" {
-		return "", domain.NewError(domain.ErrInvalidInput, label+" is required")
-	}
-	if _, err := uuid.Parse(id); err != nil {
-		return "", domain.NewError(domain.ErrInvalidInput, "invalid "+label)
-	}
-
-	return id, nil
 }
 
 func firstNonEmpty(value, fallback string) string {
