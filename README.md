@@ -231,6 +231,24 @@ DROP INDEX IF EXISTS assets_key_uq_idx;
 lalu jalankan ulang bagian `CREATE INDEX` di `migration/assets.sql` — seluruhnya
 memakai `IF NOT EXISTS`, jadi aman diulang.
 
+Sebagian berkas migration menuntut berkas lain sudah dijalankan — foreign
+key-nya menyebut tabel yang dibuat di sana. Berkas yang dijalankan terlalu awal
+gagal dengan pesan yang menyebut sebabnya (`relation "…" does not exist`), bukan
+galat yang harus ditebak, tetapi urutannya lebih baik diketahui daripada
+ditemukan:
+
+```text
+users · document_papers · documents · assets · projects   ← berdiri sendiri
+companies
+  └── company_contacts
+      project_companies      ← menuntut projects + companies
+      project_attachments    ← menuntut projects + assets + companies
+```
+
+Seluruhnya idempoten: `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT
+EXISTS`, dan `DROP TRIGGER IF EXISTS` sebelum membuatnya, sehingga dijalankan
+ulang tidak berakibat apa pun.
+
 Fitur workflow, quotation, dan purchase order dihapus pada 2026-08-10. Berkas
 migration-nya ikut hilang dari repo, tetapi tabelnya **tetap ada** di database
 yang sudah terlanjur dipasang. Buang manual, anak lebih dulu:
