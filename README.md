@@ -137,6 +137,41 @@ Indeks ekspresinya wajib disebut. Dengan kolom biasa ia datang sendirinya;
 dengan kantong, tanpa itu setiap laporan memindai seluruh tabel dan mengecor tiap
 barisnya.
 
+`projects` mendapat nilai proyeknya, beserta penjaga dan indeksnya:
+
+```sql
+ALTER TABLE projects
+    ADD COLUMN IF NOT EXISTS project_value NUMERIC(18,2);
+
+ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_value_non_negative_chk;
+ALTER TABLE projects ADD CONSTRAINT projects_value_non_negative_chk
+    CHECK (project_value IS NULL OR project_value >= 0);
+
+CREATE INDEX IF NOT EXISTS projects_value_idx
+    ON projects (project_value)
+    WHERE project_value IS NOT NULL;
+```
+
+Kolom biasa, **bukan** kantong seperti `documents.variables`, dan perbedaannya
+disengaja. Kantong berguna ketika kuncinya berbeda-beda antar baris — dan di
+dokumen memang begitu. Pada proyek hanya ada satu angka, justru angka yang paling
+sering dilaporkan; menaruhnya di kantong menukar penegakan tipe dan indeks biasa
+dengan pengecoran teks di setiap laporan, persis ongkos yang di `documents`
+terpaksa ditebus `numericVariableKeys` dan indeks ekspresi.
+
+Nilainya **dicatat, bukan diturunkan** dari dokumen. Yang mengikat adalah angka
+pada PO pelanggan, dan PO itu masuk sebagai lampiran — berkas pindaian tanpa
+angka yang dapat dibaca mesin. Penawaran kita punya `grand_total`, tetapi ia
+tawaran, bukan kesepakatan. Menjumlahkan seluruh dokumen yang tertaut lewat
+`project_documents` pun salah berlipat: satu pekerjaan lazimnya punya penawaran,
+PO, dan faktur yang menyebut nilai yang sama, sementara dokumen ber-jenis
+`purchase-order` adalah kita memesan ke pemasok — biaya, bukan pendapatan.
+
+Kemudahan "langsung dari dokumen" tetap ada, tetapi di frontend sebagai usulan:
+`grand_total` penawaran terakhir disodorkan sebagai nilai awal yang tinggal
+dikonfirmasi. NULL berarti belum ditentukan, dan itu berbeda dari nol — proyek
+bernilai nol adalah keadaan yang sah.
+
 Kolom `scope` pada `assets` **dihapus**, digantikan `key`. Kelompok aset kini
 disimpan sebagai folder di dalam `object_name` — `images/brand/logo.png` — dan
 dibaca balik oleh `entity.Asset.Group()`. Objek yang sudah ada perlu dipindahkan
