@@ -14,6 +14,14 @@ type DocumentRequest struct {
 	Name               string `json:"name"`
 	DocumentType       string `json:"document_type"`
 	Status             string `json:"status"`
+
+	// Variables adalah objek datar bernilai skalar, dan grand_total tinggal di
+	// dalamnya bersama yang lain.
+	//
+	// Kuncinya bebas KECUALI yang dilaporkan: grand_total wajib berupa angka
+	// dan tidak boleh negatif. Yang tidak bernilai uang — BAST, service
+	// report — tidak menyertakan kuncinya sama sekali, dan itu berbeda dari nol.
+	Variables map[string]any `json:"variables"`
 }
 
 type DocumentListFilterRequest struct {
@@ -24,14 +32,17 @@ type DocumentListFilterRequest struct {
 }
 
 type DocumentResponse struct {
-	Token        string                `json:"token"`
-	ParentToken  string                `json:"parent_token"`
-	Name         string                `json:"name"`
-	DocumentType string                `json:"document_type"`
-	Status       string                `json:"status"`
-	Paper        DocumentPaperResponse `json:"paper"`
-	CreatedAt    time.Time             `json:"created_at"`
-	UpdatedAt    time.Time             `json:"updated_at"`
+	Token        string `json:"token"`
+	ParentToken  string `json:"parent_token"`
+	Name         string `json:"name"`
+	DocumentType string `json:"document_type"`
+	Status       string `json:"status"`
+	// Variables selalu objek, tidak pernah null: kolomnya NOT NULL DEFAULT '{}',
+	// sehingga klien yang melakukan iterasi atasnya tidak perlu menjaga nil.
+	Variables map[string]any        `json:"variables"`
+	Paper     DocumentPaperResponse `json:"paper"`
+	CreatedAt time.Time             `json:"created_at"`
+	UpdatedAt time.Time             `json:"updated_at"`
 }
 
 type DocumentPaperResponse struct {
@@ -91,6 +102,7 @@ func (r DocumentRequest) ToCreateDocumentCommand() input.CreateDocumentCommand {
 		Name:               r.Name,
 		DocumentType:       r.DocumentType,
 		Status:             r.Status,
+		Variables:          r.Variables,
 	}
 }
 
@@ -114,6 +126,7 @@ func NewDocumentResponse(document *entity.Document) DocumentResponse {
 		Name:         document.Name,
 		DocumentType: document.DocumentType,
 		Status:       document.Status,
+		Variables:    documentVariablesOf(document.Variables),
 		Paper:        NewDocumentPaperResponse(document.Paper),
 		CreatedAt:    document.CreatedAt,
 		UpdatedAt:    document.UpdatedAt,
@@ -149,4 +162,17 @@ func NewDocumentListResponse(documents []entity.Document) DocumentListResponse {
 	}
 
 	return response
+}
+
+// documentVariablesOf memastikan balasannya objek, bukan null.
+//
+// Peta nil di Go menjadi null di JSON, dan klien yang melakukan iterasi atasnya
+// gagal justru pada dokumen yang paling wajar: yang belum punya satu variabel
+// pun.
+func documentVariablesOf(variables map[string]any) map[string]any {
+	if variables == nil {
+		return map[string]any{}
+	}
+
+	return variables
 }

@@ -32,6 +32,27 @@ CREATE TABLE IF NOT EXISTS documents (
     -- Values: draft, active, inactive, archived
     -- Menghapus dokumen MENGHAPUS barisnya; tidak ada status 'deleted'.
 
+    variables JSONB NOT NULL DEFAULT '{}',
+    -- Kantong nilai turunan lain yang ingin ditanyakan kembali: dp_percentage,
+    -- ppn_rate, nomor kendaraan pada surat jalan, jam teknisi pada service
+    -- report. Bentuknya objek datar — lihat penjaganya di usecase.
+    --
+    -- JSONB, BUKAN tabel key-value. Di database yang punya JSONB, tabel EAV
+    -- menukar satu kolom dengan sebuah tabel, sebuah join per variabel, dan
+    -- pengecoran tipe di setiap kueri laporan — sementara keluwesannya sama
+    -- persis. Yang hilang pada keduanya juga sama: tipe tidak ditegakkan dan
+    -- kunci tidak punya kosakata.
+    --
+    -- grand_total TINGGAL DI SINI juga, bukan sebagai kolom tersendiri. Yang
+    -- ditukar dengan itu penegakan tipe oleh database: SUM menuntut pengecoran,
+    -- dan satu baris yang mengirim "Rp 184.405.410" alih-alih angka membuat
+    -- laporan meledak saat DIBACA, bukan saat ditulis.
+    --
+    -- Penggantinya ada di usecase — numericVariableKeys menolak grand_total yang
+    -- bukan angka atau negatif, sehingga baris yang merusak laporan tidak pernah
+    -- masuk. Ditambah indeks ekspresi di bawah supaya penjumlahannya tetap
+    -- cepat.
+
     content JSONB NOT NULL DEFAULT '{"pages": []}',
     -- Isi kanvas: halaman beserta elemennya.
     -- Dikelola realtime lewat ws /document-design/:token, bukan lewat REST.
@@ -58,6 +79,14 @@ CREATE INDEX IF NOT EXISTS documents_parent_id_idx
 
 CREATE INDEX IF NOT EXISTS documents_document_type_idx
     ON documents (document_type);
+
+-- Indeks EKSPRESI atas grand_total di dalam kantong.
+--
+-- Tanpa ini, setiap laporan yang menjumlahkan nilai dokumen memindai seluruh
+-- tabel dan mengecor tiap barisnya. Dengan kolom biasa indeks ini datang
+-- sendirinya; dengan kantong, ia harus disebut.
+CREATE INDEX IF NOT EXISTS documents_grand_total_idx
+    ON documents (((variables->>'grand_total')::numeric));
 
 CREATE INDEX IF NOT EXISTS documents_status_idx
     ON documents (status);

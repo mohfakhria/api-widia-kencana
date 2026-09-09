@@ -43,6 +43,10 @@ type CreateDocumentCommand struct {
 	Name               string
 	DocumentType       string
 	Status             string
+	// Variables DIKIRIM pemanggil, tidak diurai dari isi dokumen — angkanya ada
+	// di sana sebagai gambar, bukan sebagai angka. Lihat catatannya di
+	// migration/documents.sql.
+	Variables map[string]any
 }
 
 type UpdateDocumentCommand = CreateDocumentCommand

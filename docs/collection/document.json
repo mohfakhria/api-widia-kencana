@@ -1,1281 +1,1491 @@
 {
-  "info": {
-    "_postman_id": "d22bfab3-0585-43b7-b11d-1293d39f0d72",
-    "name": "Widia Kencana - Document",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Document CRUD endpoints for the current documents table."
-  },
-  "item": [
-    {
-      "name": "List Documents",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "document-list"
-          ],
-          "query": [
-            {
-              "key": "name",
-              "value": "",
-              "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
-            },
-            {
-              "key": "token",
-              "value": "",
-              "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
-            },
-            {
-              "key": "document_type",
-              "value": "",
-              "description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
-            },
-            {
-              "key": "status",
-              "value": "",
-              "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
-            }
-          ]
-        },
-        "description": "Daftar dokumen, diurutkan created_at DESC.\n\n**Yang paling mudah terlewat: `status` kosong bukan berarti semua.** Tanpa `status`, seluruh dokumen ikut — tidak ada lagi yang tersembunyi. Dokumen yang dihapus benar-benar hilang dari tabel, jadi tidak ada keadaan \"terhapus tetapi masih terlihat\".\n\n**Belum ada pembatasan jumlah maupun halaman.** Seluruh baris yang cocok dikembalikan sekaligus; tidak ada limit, offset, atau cursor.\n\nParameter yang tidak dikenal diabaikan diam-diam."
-      },
-      "response": [
-        {
-          "name": "List Documents - Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-list"
-              ],
-              "query": [
-                {
-                  "key": "name",
-                  "value": "",
-                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
-                },
-                {
-                  "key": "token",
-                  "value": "",
-                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
-                },
-                {
-                  "key": "document_type",
-                  "value": "",
-                  "description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
-                },
-                {
-                  "key": "status",
-                  "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
-                }
-              ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": [\n      {\n        \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n        \"parent_token\": \"\",\n        \"name\": \"Quotation Default\",\n        \"document_type\": \"quotation\",\n        \"status\": \"draft\",\n        \"paper\": {\n          \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n          \"name\": \"A4\",\n          \"media_type\": \"paper\",\n          \"width\": 210.0,\n          \"height\": 297.0,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\",\n          \"created_at\": \"2026-08-01T09:00:00Z\",\n          \"updated_at\": \"2026-08-01T09:00:00Z\"\n        },\n        \"created_at\": \"2026-08-11T10:00:00Z\",\n        \"updated_at\": \"2026-08-11T10:00:00Z\"\n      }\n    ]\n  }\n}"
-        },
-        {
-          "name": "List Documents - Empty",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-list"
-              ],
-              "query": [
-                {
-                  "key": "name",
-                  "value": "",
-                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
-                },
-                {
-                  "key": "token",
-                  "value": "",
-                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
-                },
-                {
-                  "key": "document_type",
-                  "value": "",
-                  "description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
-                },
-                {
-                  "key": "status",
-                  "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
-                }
-              ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": []\n  }\n}"
-        },
-        {
-          "name": "List Documents - Invalid Status",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=ngawur",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-list"
-              ],
-              "query": [
-                {
-                  "key": "name",
-                  "value": "",
-                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
-                },
-                {
-                  "key": "token",
-                  "value": "",
-                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
-                },
-                {
-                  "key": "document_type",
-                  "value": "",
-                  "description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
-                },
-                {
-                  "key": "status",
-                  "value": "ngawur",
-                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
-                }
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document status\"\n}"
-        },
-        {
-          "name": "List Documents - Invalid Token",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-list?name=&token=bukan-uuid&document_type=&status=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-list"
-              ],
-              "query": [
-                {
-                  "key": "name",
-                  "value": "",
-                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
-                },
-                {
-                  "key": "token",
-                  "value": "bukan-uuid",
-                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
-                },
-                {
-                  "key": "document_type",
-                  "value": "",
-                  "description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
-                },
-                {
-                  "key": "status",
-                  "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
-                }
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document token\"\n}"
-        },
-        {
-          "name": "List Documents - Invalid Type",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-list?name=&token=&document_type=purchase_order&status=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-list"
-              ],
-              "query": [
-                {
-                  "key": "name",
-                  "value": "",
-                  "description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
-                },
-                {
-                  "key": "token",
-                  "value": "",
-                  "description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
-                },
-                {
-                  "key": "document_type",
-                  "value": "purchase_order",
-                  "description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
-                },
-                {
-                  "key": "status",
-                  "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
-                }
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Get Document Detail",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/api/document-detail/{{document_token}}",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "document-detail",
-            "{{document_token}}"
-          ]
-        },
-        "description": "Replace document_token with the document token returned by create/list."
-      },
-      "response": [
-        {
-          "name": "Get Document Detail - Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-detail/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-detail",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token returned by create/list."
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n        \"name\": \"A4\",\n        \"media_type\": \"paper\",\n        \"width\": 210.0,\n        \"height\": 297.0,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-08-01T09:00:00Z\",\n        \"updated_at\": \"2026-08-01T09:00:00Z\"\n      },\n      \"created_at\": \"2026-08-11T10:00:00Z\",\n      \"updated_at\": \"2026-08-11T10:00:00Z\"\n    }\n  }\n}"
-        },
-        {
-          "name": "Get Document Detail - Not Found",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-detail/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-detail",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token returned by create/list."
-          },
-          "status": "Not Found",
-          "code": 404,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "List Document Papers",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/api/paper-list?status=",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "paper-list"
-          ],
-          "query": [
-            {
-              "key": "status",
-              "value": "",
-              "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
-            }
-          ]
-        },
-        "description": "Kertas yang tersedia untuk dokumen baru. **Satu-satunya cara memperoleh `document_paper_token`**, yang wajib diisi oleh Create Document.\n\n**`status` kosong berarti `active`, bukan semua.** Penukaran token menjadi id saat membuat dokumen sudah menuntut status active — kertas non-aktif ditolak 404 \"document paper not found\" — jadi menawarkannya di daftar hanya akan menyajikan pilihan yang pasti gagal begitu dipilih.\n\nDiurutkan `name ASC, width ASC, height ASC`. Urutan itu penting bagi tampilan: enam kertas bernama sama persis, \"Continuous Form\", dan hanya ukurannya yang membedakan. **Pemilih yang menampilkan nama saja akan menyajikan enam pilihan yang terlihat identik** — tampilkan `width × height` beserta `unit`.\n\nTidak ada penyaringan nama maupun jenis media, dan tidak ada paginasi: daftarnya belasan baris dan tidak tumbuh oleh pemakaian."
-      },
-      "response": [
-        {
-          "name": "List Document Papers - Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/paper-list?status=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "paper-list"
-              ],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "",
-                  "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
-                }
-              ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": [\n      {\n        \"token\": \"eaba4126-0b0f-418c-8c8c-04e5fffc574b\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      },\n      {\n        \"token\": \"417e55b3-3d90-4b72-9a9e-69d0a56d19fa\",\n        \"name\": \"Continuous Form\",\n        \"media_type\": \"continuous\",\n        \"width\": 9.5,\n        \"height\": 5.5,\n        \"unit\": \"in\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      },\n      {\n        \"token\": \"162bba69-4488-4959-9c85-03e1031bcf21\",\n        \"name\": \"Continuous Form\",\n        \"media_type\": \"continuous\",\n        \"width\": 9.5,\n        \"height\": 11,\n        \"unit\": \"in\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      }\n    ]\n  }\n}"
-        },
-        {
-          "name": "List Document Papers - Empty",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/paper-list?status=inactive",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "paper-list"
-              ],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "inactive",
-                  "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
-                }
-              ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": []\n  }\n}"
-        },
-        {
-          "name": "List Document Papers - Invalid Status",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/paper-list?status=ngawur",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "paper-list"
-              ],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "ngawur",
-                  "description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
-                }
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document paper status\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Create Document",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/document-add",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "document-add"
-          ]
-        },
-        "description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
-      },
-      "response": [
-        {
-          "name": "Create Document - Success",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-add",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-add"
-              ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document created successfully\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"status\": \"draft\",\n      \"paper\": {\n        \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n        \"name\": \"A4\",\n        \"media_type\": \"paper\",\n        \"width\": 210.0,\n        \"height\": 297.0,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-08-01T09:00:00Z\",\n        \"updated_at\": \"2026-08-01T09:00:00Z\"\n      },\n      \"created_at\": \"2026-08-11T10:00:00Z\",\n      \"updated_at\": \"2026-08-11T10:00:00Z\"\n    }\n  }\n}"
-        },
-        {
-          "name": "Create Document - Invalid Payload",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-add",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-add"
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}"
-        },
-        {
-          "name": "Create Document - Name Empty",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-add",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-add"
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document name cannot be empty\"\n}"
-        },
-        {
-          "name": "Create Document - Paper Not Found",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-add",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-add"
-              ]
-            }
-          },
-          "status": "Not Found",
-          "code": 404,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document paper not found\"\n}"
-        },
-        {
-          "name": "Create Document - Parent Not Found",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-add",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-add"
-              ]
-            }
-          },
-          "status": "Not Found",
-          "code": 404,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"parent document not found\"\n}"
-        },
-        {
-          "name": "Create Document - Type Empty",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"status\": \"draft\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-add",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-add"
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document type cannot be empty\"\n}"
-        },
-        {
-          "name": "Create Document - Invalid Type",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"purchase_order\",\n  \"status\": \"draft\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-add",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-add"
-              ]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Update Document",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/document-update/{{document_token}}",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "document-update",
-            "{{document_token}}"
-          ]
-        },
-        "description": "Replace document_token with the document token.\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
-      },
-      "response": [
-        {
-          "name": "Update Document - Success",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-update/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-update",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token."
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document updated successfully\",\n  \"data\": null\n}"
-        },
-        {
-          "name": "Update Document - Invalid Payload",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-update/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-update",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token."
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}"
-        },
-        {
-          "name": "Update Document - Invalid Status",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-update/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-update",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token."
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document status\"\n}"
-        },
-        {
-          "name": "Update Document - Not Found",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-update/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-update",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token."
-          },
-          "status": "Not Found",
-          "code": 404,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
-        },
-        {
-          "name": "Update Document - Type Empty",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"status\": \"active\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-update/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-update",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token."
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document type cannot be empty\"\n}"
-        },
-        {
-          "name": "Update Document - Invalid Type",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"purchase_order\",\n  \"status\": \"active\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/document-update/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-update",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Replace document_token with the document token."
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Delete Document",
-      "request": {
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{base_url}}/api/document-delete/{{document_token}}",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "api",
-            "document-delete",
-            "{{document_token}}"
-          ]
-        },
-        "description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
-      },
-      "response": [
-        {
-          "name": "Delete Document - Success",
-          "originalRequest": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-delete/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-delete",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document deleted successfully\",\n  \"data\": null\n}"
-        },
-        {
-          "name": "Delete Document - Not Found",
-          "originalRequest": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/document-delete/{{document_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "document-delete",
-                "{{document_token}}"
-              ]
-            },
-            "description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
-          },
-          "status": "Not Found",
-          "code": 404,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
-        }
-      ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8081"
-    },
-    {
-      "key": "token",
-      "value": ""
-    },
-    {
-      "key": "document_token",
-      "value": ""
-    },
-    {
-      "key": "document_paper_token",
-      "value": ""
-    }
-  ]
+	"info": {
+		"_postman_id": "d22bfab3-0585-43b7-b11d-1293d39f0d72",
+		"name": "Widia Kencana - Document",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"description": "Document CRUD endpoints for the current documents table."
+	},
+	"item": [
+		{
+			"name": "List Documents",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"document-list"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "",
+							"description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+						},
+						{
+							"key": "token",
+							"value": "",
+							"description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+						},
+						{
+							"key": "document_type",
+							"value": "",
+							"description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
+						},
+						{
+							"key": "status",
+							"value": "",
+							"description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+						}
+					]
+				},
+				"description": "Daftar dokumen, diurutkan created_at DESC.\n\n**Yang paling mudah terlewat: `status` kosong bukan berarti semua.** Tanpa `status`, seluruh dokumen ikut — tidak ada lagi yang tersembunyi. Dokumen yang dihapus benar-benar hilang dari tabel, jadi tidak ada keadaan \"terhapus tetapi masih terlihat\".\n\n**Belum ada pembatasan jumlah maupun halaman.** Seluruh baris yang cocok dikembalikan sekaligus; tidak ada limit, offset, atau cursor.\n\nParameter yang tidak dikenal diabaikan diam-diam."
+			},
+			"response": [
+				{
+					"name": "List Documents - Success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-list"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+								},
+								{
+									"key": "token",
+									"value": "",
+									"description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+								},
+								{
+									"key": "document_type",
+									"value": "",
+									"description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": [\n      {\n        \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n        \"parent_token\": \"\",\n        \"name\": \"Quotation Default\",\n        \"document_type\": \"quotation\",\n        \"status\": \"draft\",\n        \"variables\": {\n          \"grand_total\": 184405410,\n          \"ppn_rate\": 11\n        },\n        \"paper\": {\n          \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n          \"name\": \"A4\",\n          \"media_type\": \"paper\",\n          \"width\": 210.0,\n          \"height\": 297.0,\n          \"unit\": \"mm\",\n          \"allow_portrait\": true,\n          \"allow_landscape\": true,\n          \"status\": \"active\",\n          \"created_at\": \"2026-08-01T09:00:00Z\",\n          \"updated_at\": \"2026-08-01T09:00:00Z\"\n        },\n        \"created_at\": \"2026-08-11T10:00:00Z\",\n        \"updated_at\": \"2026-08-11T10:00:00Z\"\n      }\n    ]\n  }\n}"
+				},
+				{
+					"name": "List Documents - Empty",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-list"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+								},
+								{
+									"key": "token",
+									"value": "",
+									"description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+								},
+								{
+									"key": "document_type",
+									"value": "",
+									"description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"documents\": []\n  }\n}"
+				},
+				{
+					"name": "List Documents - Invalid Status",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-list?name=&token=&document_type=&status=ngawur",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-list"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+								},
+								{
+									"key": "token",
+									"value": "",
+									"description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+								},
+								{
+									"key": "document_type",
+									"value": "",
+									"description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
+								},
+								{
+									"key": "status",
+									"value": "ngawur",
+									"description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document status\"\n}"
+				},
+				{
+					"name": "List Documents - Invalid Token",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-list?name=&token=bukan-uuid&document_type=&status=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-list"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+								},
+								{
+									"key": "token",
+									"value": "bukan-uuid",
+									"description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+								},
+								{
+									"key": "document_type",
+									"value": "",
+									"description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document token\"\n}"
+				},
+				{
+					"name": "List Documents - Invalid Type",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-list?name=&token=&document_type=purchase_order&status=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-list"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Cocok SEBAGIAN dan tidak peka huruf besar-kecil (ILIKE %...%). Kosong berarti tidak menyaring."
+								},
+								{
+									"key": "token",
+									"value": "",
+									"description": "UUID dokumen, cocok PERSIS. Nilai yang bukan UUID ditolak 400 \"invalid document token\" — bukan diabaikan."
+								},
+								{
+									"key": "document_type",
+									"value": "purchase_order",
+									"description": "Salah satu dari quotation, purchase-order, bast, delivery-note, service-report, invoice. Cocok PERSIS, dihuruf-kecilkan dan dipangkas spasinya lebih dulu. Di luar keenamnya ditolak 400 \"invalid document type\" — sebelumnya nilai asing menghasilkan daftar kosong 200, yang tidak dapat dibedakan dari \"memang tidak ada\"."
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Salah satu dari draft, active, inactive, archived. Cocok PERSIS. Di luar itu ditolak 400 \"invalid document status\". KOSONG BUKAN BERARTI SEMUA — lihat deskripsi permintaan."
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Document Detail",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/document-detail/{{document_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"document-detail",
+						"{{document_token}}"
+					]
+				},
+				"description": "Replace document_token with the document token returned by create/list."
+			},
+			"response": [
+				{
+					"name": "Get Document Detail - Success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-detail/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-detail",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token returned by create/list."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"status\": \"draft\",\n      \"variables\": {\n        \"grand_total\": 184405410,\n        \"ppn_rate\": 11\n      },\n      \"paper\": {\n        \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n        \"name\": \"A4\",\n        \"media_type\": \"paper\",\n        \"width\": 210.0,\n        \"height\": 297.0,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-08-01T09:00:00Z\",\n        \"updated_at\": \"2026-08-01T09:00:00Z\"\n      },\n      \"created_at\": \"2026-08-11T10:00:00Z\",\n      \"updated_at\": \"2026-08-11T10:00:00Z\"\n    }\n  }\n}"
+				},
+				{
+					"name": "Get Document Detail - Not Found",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-detail/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-detail",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token returned by create/list."
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "List Document Papers",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/paper-list?status=",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"paper-list"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "",
+							"description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+						}
+					]
+				},
+				"description": "Kertas yang tersedia untuk dokumen baru. **Satu-satunya cara memperoleh `document_paper_token`**, yang wajib diisi oleh Create Document.\n\n**`status` kosong berarti `active`, bukan semua.** Penukaran token menjadi id saat membuat dokumen sudah menuntut status active — kertas non-aktif ditolak 404 \"document paper not found\" — jadi menawarkannya di daftar hanya akan menyajikan pilihan yang pasti gagal begitu dipilih.\n\nDiurutkan `name ASC, width ASC, height ASC`. Urutan itu penting bagi tampilan: enam kertas bernama sama persis, \"Continuous Form\", dan hanya ukurannya yang membedakan. **Pemilih yang menampilkan nama saja akan menyajikan enam pilihan yang terlihat identik** — tampilkan `width × height` beserta `unit`.\n\nTidak ada penyaringan nama maupun jenis media, dan tidak ada paginasi: daftarnya belasan baris dan tidak tumbuh oleh pemakaian."
+			},
+			"response": [
+				{
+					"name": "List Document Papers - Success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/paper-list?status=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"paper-list"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "",
+									"description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": [\n      {\n        \"token\": \"eaba4126-0b0f-418c-8c8c-04e5fffc574b\",\n        \"name\": \"A4\",\n        \"media_type\": \"sheet\",\n        \"width\": 210,\n        \"height\": 297,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      },\n      {\n        \"token\": \"417e55b3-3d90-4b72-9a9e-69d0a56d19fa\",\n        \"name\": \"Continuous Form\",\n        \"media_type\": \"continuous\",\n        \"width\": 9.5,\n        \"height\": 5.5,\n        \"unit\": \"in\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      },\n      {\n        \"token\": \"162bba69-4488-4959-9c85-03e1031bcf21\",\n        \"name\": \"Continuous Form\",\n        \"media_type\": \"continuous\",\n        \"width\": 9.5,\n        \"height\": 11,\n        \"unit\": \"in\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-07-27T11:24:35.65986+07:00\",\n        \"updated_at\": \"2026-07-27T11:24:35.65986+07:00\"\n      }\n    ]\n  }\n}"
+				},
+				{
+					"name": "List Document Papers - Empty",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/paper-list?status=inactive",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"paper-list"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "inactive",
+									"description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"papers\": []\n  }\n}"
+				},
+				{
+					"name": "List Document Papers - Invalid Status",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/paper-list?status=ngawur",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"paper-list"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "ngawur",
+									"description": "Salah satu dari draft, active, inactive, archived. KOSONG BERARTI active, bukan semua — lihat deskripsi permintaan. Di luar keenamnya ditolak 400 \"invalid document paper status\"."
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document paper status\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Create Document",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/document-add",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"document-add"
+					]
+				},
+				"description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
+			},
+			"response": [
+				{
+					"name": "Create Document - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document created successfully\",\n  \"data\": {\n    \"document\": {\n      \"token\": \"c1d4e7f0-2a3b-4c5d-8e9f-0a1b2c3d4e5f\",\n      \"parent_token\": \"\",\n      \"name\": \"Quotation Default\",\n      \"document_type\": \"quotation\",\n      \"status\": \"draft\",\n      \"variables\": {\n        \"grand_total\": 184405410,\n        \"ppn_rate\": 11\n      },\n      \"paper\": {\n        \"token\": \"3f9a1c22-7b41-4e0a-9d55-1c8e0b6a42d7\",\n        \"name\": \"A4\",\n        \"media_type\": \"paper\",\n        \"width\": 210.0,\n        \"height\": 297.0,\n        \"unit\": \"mm\",\n        \"allow_portrait\": true,\n        \"allow_landscape\": true,\n        \"status\": \"active\",\n        \"created_at\": \"2026-08-01T09:00:00Z\",\n        \"updated_at\": \"2026-08-01T09:00:00Z\"\n      },\n      \"created_at\": \"2026-08-11T10:00:00Z\",\n      \"updated_at\": \"2026-08-11T10:00:00Z\"\n    }\n  }\n}"
+				},
+				{
+					"name": "Create Document - Invalid Payload",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}"
+				},
+				{
+					"name": "Create Document - Name Empty",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document name cannot be empty\"\n}"
+				},
+				{
+					"name": "Create Document - Paper Not Found",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document paper not found\"\n}"
+				},
+				{
+					"name": "Create Document - Parent Not Found",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"parent document not found\"\n}"
+				},
+				{
+					"name": "Create Document - Type Empty",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document type cannot be empty\"\n}"
+				},
+				{
+					"name": "Create Document - Invalid Type",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
+				},
+				{
+					"name": "Create Document - Negative Grand Total",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						},
+						"description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document variable \\\"grand_total\\\" cannot be negative\"\n}"
+				},
+				{
+					"name": "Create Document - Nested Variable",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						},
+						"description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document variable \\\"items\\\" must be a string, number, boolean, or null\"\n}"
+				},
+				{
+					"name": "Create Document - Empty Variable Key",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						},
+						"description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document variable key cannot be empty\"\n}"
+				},
+				{
+					"name": "Create Document - Too Many Variables",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						},
+						"description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document variables cannot exceed 50 entries\"\n}"
+				},
+				{
+					"name": "Create Document - Grand Total Not A Number",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default\",\n  \"document_type\": \"quotation\",\n  \"status\": \"draft\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-add"
+							]
+						},
+						"description": "\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document variable \\\"grand_total\\\" must be a number\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Update Document",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/document-update/{{document_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"document-update",
+						"{{document_token}}"
+					]
+				},
+				"description": "Replace document_token with the document token.\n\n**`document_type` WAJIB** dan harus salah satu dari: quotation, purchase-order, bast, delivery-note, service-report, invoice. Bertanda hubung, bukan garis bawah — `purchase_order` ditolak. Dihuruf-kecilkan dan dipangkas spasinya lebih dulu, jadi `\"  BAST \"` diterima.\n\nTidak ada bawaan. Sebelumnya jenis yang tidak disebut menjadi `custom`; itu dicabut karena keenam jenis di atas semuanya dokumen bisnis bermakna, dan memilih salah satunya untuk pemanggil yang diam berarti melabeli dokumennya secara diam-diam.\n\n`status` opsional, bawaannya `draft`."
+			},
+			"response": [
+				{
+					"name": "Update Document - Success",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-update/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-update",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document updated successfully\",\n  \"data\": null\n}"
+				},
+				{
+					"name": "Update Document - Invalid Payload",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-update/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-update",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}"
+				},
+				{
+					"name": "Update Document - Invalid Status",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-update/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-update",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document status\"\n}"
+				},
+				{
+					"name": "Update Document - Not Found",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-update/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-update",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token."
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+				},
+				{
+					"name": "Update Document - Type Empty",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-update/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-update",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document type cannot be empty\"\n}"
+				},
+				{
+					"name": "Update Document - Invalid Type",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_paper_token\": \"{{document_paper_token}}\",\n  \"parent_token\": \"\",\n  \"name\": \"Quotation Default v2\",\n  \"document_type\": \"quotation\",\n  \"status\": \"active\",\n  \"variables\": {\n    \"grand_total\": 184405410,\n    \"ppn_rate\": 11,\n    \"dp_percentage\": 50,\n    \"payment_terms\": \"DP 50% saat PO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/document-update/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-update",
+								"{{document_token}}"
+							]
+						},
+						"description": "Replace document_token with the document token."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid document type\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete Document",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/document-delete/{{document_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"document-delete",
+						"{{document_token}}"
+					]
+				},
+				"description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
+			},
+			"response": [
+				{
+					"name": "Delete Document - Success",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-delete/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-delete",
+								"{{document_token}}"
+							]
+						},
+						"description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Document deleted successfully\",\n  \"data\": null\n}"
+				},
+				{
+					"name": "Delete Document - Not Found",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/document-delete/{{document_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"document-delete",
+								"{{document_token}}"
+							]
+						},
+						"description": "Menghapus dokumen beserta isinya. TIDAK dapat dibatalkan: content JSONB berisi seluruh desainnya, dan barisnya benar-benar dihapus. Sebelumnya ini menandai status 'deleted' — terlihat di daftar tetapi tidak dapat dipulihkan siapa pun, yang hanya menunda kehilangan sambil menyimpan ilusi masih ada jalan kembali."
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"document not found\"\n}"
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8081"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "document_token",
+			"value": ""
+		},
+		{
+			"key": "document_paper_token",
+			"value": ""
+		}
+	]
 }

@@ -106,6 +106,37 @@ ALTER TABLE users
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 ```
 
+`documents` mendapat satu kolom untuk analitik, beserta indeksnya:
+
+```sql
+ALTER TABLE documents
+    ADD COLUMN IF NOT EXISTS variables JSONB NOT NULL DEFAULT '{}';
+
+CREATE INDEX IF NOT EXISTS documents_grand_total_idx
+    ON documents (((variables->>'grand_total')::numeric));
+```
+
+`variables` adalah kantong nilai turunan: `grand_total`, `ppn_rate`, nomor
+kendaraan pada surat jalan, jam teknisi pada service report. Objek datar bernilai
+skalar, paling banyak 50 entri dan 16 KB — batas itu yang mencegahnya pelan-pelan
+menjadi penyimpan isi dokumen yang kedua.
+
+Isinya **dikirim frontend**, bukan diurai dari `content`. Angkanya memang ada di
+sana, tetapi sebagai gambar: satu elemen teks berbunyi `"Rp 184.405.410"` dengan
+`format: "currency"` yang menurut model isi adalah penanda, bukan perintah.
+
+Kuncinya bebas **kecuali yang dilaporkan**. `grand_total` wajib berupa angka dan
+tidak boleh negatif, ditegakkan usecase — database tidak dapat menegakkannya
+karena JSONB tidak bertipe, dan tanpa penjaga itu satu baris yang mengirim
+`"Rp 184.405.410"` membuat `SUM((variables->>'grand_total')::numeric)` meledak
+saat laporan **dibaca**, berbulan-bulan setelah datanya ditulis. Daftar kunci
+bertipe ada di `numericVariableKeys`; tambahkan ke sana setiap kali ada kunci
+baru yang ikut dijumlahkan.
+
+Indeks ekspresinya wajib disebut. Dengan kolom biasa ia datang sendirinya;
+dengan kantong, tanpa itu setiap laporan memindai seluruh tabel dan mengecor tiap
+barisnya.
+
 Kolom `scope` pada `assets` **dihapus**, digantikan `key`. Kelompok aset kini
 disimpan sebagai folder di dalam `object_name` — `images/brand/logo.png` — dan
 dibaca balik oleh `entity.Asset.Group()`. Objek yang sudah ada perlu dipindahkan

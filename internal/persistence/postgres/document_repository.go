@@ -156,11 +156,13 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 			name,
 			document_type,
 			status,
+			variables,
 			created_at,
 			updated_at
-		) VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+		) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
 		RETURNING token::text
-	`, paperID, parentID, document.Name, document.DocumentType, document.Status).Scan(&createdToken)
+	`, paperID, parentID, document.Name, document.DocumentType, document.Status,
+		encodeDocumentVariables(document.Variables)).Scan(&createdToken)
 	if err != nil {
 		return nil, err
 	}
@@ -186,9 +188,11 @@ func (r *DocumentRepository) Update(ctx context.Context, token string, document 
 			name = $3,
 			document_type = $4,
 			status = $5,
+			variables = $6,
 			updated_at = NOW()
-		WHERE token = $6::uuid
-	`, paperID, parentID, document.Name, document.DocumentType, document.Status, token)
+		WHERE token = $7::uuid
+	`, paperID, parentID, document.Name, document.DocumentType, document.Status,
+		encodeDocumentVariables(document.Variables), token)
 	if err != nil {
 		return err
 	}
@@ -346,6 +350,7 @@ func documentSelectQuery() string {
 			d.name,
 			d.document_type,
 			d.status,
+			d.variables,
 			d.created_at,
 			d.updated_at,
 			paper.id,
@@ -387,7 +392,10 @@ type documentRowScanner interface {
 }
 
 func scanDocument(row documentRowScanner, document *entity.Document) error {
-	var parentID sql.NullInt64
+	var (
+		parentID  sql.NullInt64
+		variables []byte
+	)
 	if err := row.Scan(
 		&document.ID,
 		&document.Token,
@@ -397,6 +405,7 @@ func scanDocument(row documentRowScanner, document *entity.Document) error {
 		&document.Name,
 		&document.DocumentType,
 		&document.Status,
+		&variables,
 		&document.CreatedAt,
 		&document.UpdatedAt,
 		&document.Paper.ID,
@@ -418,6 +427,13 @@ func scanDocument(row documentRowScanner, document *entity.Document) error {
 	if parentID.Valid {
 		document.ParentID = &parentID.Int64
 	}
+	// Kolomnya NOT NULL DEFAULT '{}', jadi yang kosong tetap objek — bukan nil.
+	// Klien yang melakukan iterasi atasnya karenanya tidak pernah menemui null.
+	if len(variables) > 0 {
+		if err := json.Unmarshal(variables, &document.Variables); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -432,4 +448,22 @@ func ensureDocumentAffected(result sql.Result, message string) error {
 	}
 
 	return nil
+}
+
+// encodeDocumentVariables selalu mengembalikan objek JSON, tidak pernah null.
+//
+// Kolomnya NOT NULL, dan mengirim nil ke sana akan ditolak database dengan galat
+// yang menyebut constraint — padahal yang terjadi cuma dokumen tanpa variabel,
+// keadaan yang paling wajar.
+func encodeDocumentVariables(variables map[string]any) []byte {
+	if len(variables) == 0 {
+		return []byte("{}")
+	}
+
+	encoded, err := json.Marshal(variables)
+	if err != nil {
+		return []byte("{}")
+	}
+
+	return encoded
 }

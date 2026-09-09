@@ -12,8 +12,11 @@ type Document struct {
 	Name            string
 	DocumentType    string
 	Status          string
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	// Variables adalah objek datar bernilai skalar, termasuk grand_total.
+	// Lihat penjaganya di usecase — beberapa kunci punya aturan tipe sendiri.
+	Variables map[string]any
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type DocumentPaper struct {
