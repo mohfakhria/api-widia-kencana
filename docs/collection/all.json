@@ -6164,6 +6164,1770 @@
         {
             "item": [
                 {
+                    "name": "Add Project Attachment",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                        },
+                        "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-attachment-add",
+                                "{{project_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project attachment added successfully\",\n  \"data\": {\n    \"project_attachment\": {\n      \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n      \"project_id\": 1,\n      \"kind\": \"purchase-order\",\n      \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n      \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n      \"original_filename\": \"PO-2026-0142.pdf\",\n      \"mime_type\": \"application/pdf\",\n      \"size\": 184320,\n      \"company\": {\n        \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n        \"code\": \"DIZKAA\",\n        \"name\": \"Dizkaa Putra Anugerah\",\n        \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-09-09T10:05:00Z\",\n      \"updated_at\": \"2026-09-09T10:05:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid attachment kind\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Invalid Kind",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Asset Not Uploaded Yet",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company is not involved in this project\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Company Not Involved",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Project Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Asset Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"file is already attached to a project\"\n}",
+                            "code": 409,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - File Already Attached",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Conflict"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Attachment - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah — bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/\u003cjenis\u003e`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Project Attachment",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+                        },
+                        "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini — mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-attachment-update",
+                                "{{project_attachment_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project attachment updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Attachment - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+                                },
+                                "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini — mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-update",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid attachment kind\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Attachment - Invalid Kind",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+                                },
+                                "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini — mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-update",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company is not involved in this project\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Attachment - Company Not Involved",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+                                },
+                                "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini — mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-update",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project attachment id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Attachment - Invalid ID",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+                                },
+                                "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini — mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-update",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project attachment not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Attachment - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+                                },
+                                "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini — mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-update",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Attachment - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+                                },
+                                "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini — mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-update",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Remove Project Attachment",
+                    "request": {
+                        "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya — objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-attachment-delete",
+                                "{{project_attachment_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project attachment removed successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Attachment - Success",
+                            "originalRequest": {
+                                "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya — objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-delete",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project attachment id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Attachment - Invalid ID",
+                            "originalRequest": {
+                                "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya — objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-delete",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project attachment not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Attachment - Not Found",
+                            "originalRequest": {
+                                "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya — objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-delete",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"attachment file could not be removed\"\n}",
+                            "code": 500,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Attachment - Storage Failure",
+                            "originalRequest": {
+                                "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya — objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-delete",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Internal Server Error"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Attachment - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya — objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-attachment-delete",
+                                        "{{project_attachment_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                }
+            ],
+            "name": "Project Attachment"
+        },
+        {
+            "item": [
+                {
+                    "name": "Add Project Company",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                        },
+                        "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "POST",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-company-add",
+                                "{{project_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project company added successfully\",\n  \"data\": {\n    \"project_company\": {\n      \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n      \"project_id\": 1,\n      \"role\": \"customer\",\n      \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n      \"company\": {\n        \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n        \"code\": \"DIZKAA\",\n        \"name\": \"Dizkaa Putra Anugerah\",\n        \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-09-09T10:00:00Z\",\n      \"updated_at\": \"2026-09-09T10:00:00Z\"\n    }\n  }\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company role\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Invalid Role",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid company id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Invalid Company ID",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Invalid Payload",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Project Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Company Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company already has this role in the project\"\n}",
+                            "code": 409,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Role Already Taken",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Conflict"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company id is required\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Company ID Empty",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Add Project Company - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+                                },
+                                "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-add",
+                                        "{{project_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-add/{{project_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Project Company",
+                    "request": {
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+                        },
+                        "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini — memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "PUT",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-company-update",
+                                "{{project_company_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project company updated successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Company - Success",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+                                },
+                                "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini — memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-update",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company role\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Company - Invalid Role",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+                                },
+                                "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini — memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-update",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Company - Invalid ID",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+                                },
+                                "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini — memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-update",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project company not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Company - Not Found",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+                                },
+                                "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini — memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-update",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"company already has this role in the project\"\n}",
+                            "code": 409,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Company - Role Already Taken",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+                                },
+                                "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini — memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-update",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Conflict"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Update Project Company - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+                                },
+                                "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini — memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "PUT",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-update",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                },
+                {
+                    "name": "Remove Project Company",
+                    "request": {
+                        "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh.",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "method": "DELETE",
+                        "url": {
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "project-company-delete",
+                                "{{project_company_id}}"
+                            ],
+                            "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project company removed successfully\",\n  \"data\": null\n}",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Company - Success",
+                            "originalRequest": {
+                                "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-delete",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}"
+                                }
+                            },
+                            "status": "OK"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company id\"\n}",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Company - Invalid ID",
+                            "originalRequest": {
+                                "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-delete",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Bad Request"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"project company not found\"\n}",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Company - Not Found",
+                            "originalRequest": {
+                                "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-delete",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Not Found"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}",
+                            "code": 403,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Remove Project Company - Forbidden For AI Agent",
+                            "originalRequest": {
+                                "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-company-delete",
+                                        "{{project_company_id}}"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}"
+                                }
+                            },
+                            "status": "Forbidden"
+                        }
+                    ]
+                }
+            ],
+            "name": "Project Company"
+        },
+        {
+            "item": [
+                {
                     "name": "List Projects",
                     "request": {
                         "header": [
@@ -6261,7 +8025,7 @@
                 {
                     "name": "Get Project Detail",
                     "request": {
-                        "description": "Replace last path segment with project id.",
+                        "description": "Replace last path segment with project id. Mengembalikan `companies` dan `attachments` sekaligus — keduanya TIDAK muncul di `project-list`.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -6284,7 +8048,7 @@
                     "response": [
                         {
                             "_postman_previewlanguage": "json",
-                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
+                            "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"companies\": [\n        {\n          \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n          \"project_id\": 1,\n          \"role\": \"customer\",\n          \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:00:00Z\",\n          \"updated_at\": \"2026-09-09T10:00:00Z\"\n        },\n        {\n          \"id\": \"5a8d3f76-b210-4c9e-a4f1-8b6e0d2c7a39\",\n          \"project_id\": 1,\n          \"role\": \"end-user\",\n          \"note\": \"Pekerjaannya di Factory D milik mereka.\",\n          \"company\": {\n            \"id\": \"c47e2b19-8d05-4f6a-b3e8-25c1a7f9d403\",\n            \"code\": \"UTAC\",\n            \"name\": \"UTAC Manufacturing Services Indonesia\",\n            \"legal_name\": \"PT UTAC Manufacturing Services Indonesia\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:01:00Z\",\n          \"updated_at\": \"2026-09-09T10:01:00Z\"\n        }\n      ],\n      \"attachments\": [\n        {\n          \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n          \"project_id\": 1,\n          \"kind\": \"purchase-order\",\n          \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n          \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n          \"original_filename\": \"PO-2026-0142.pdf\",\n          \"mime_type\": \"application/pdf\",\n          \"size\": 184320,\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:05:00Z\",\n          \"updated_at\": \"2026-09-09T10:05:00Z\"\n        },\n        {\n          \"id\": \"d70f4a8e-6c31-4b25-89da-1e5f3c0b9764\",\n          \"project_id\": 1,\n          \"kind\": \"site-photo\",\n          \"note\": \"Kondisi panel sebelum pekerjaan dimulai.\",\n          \"asset_token\": \"9d2c5e83-4a17-4f60-b8c9-3e7a1d05f2b6\",\n          \"original_filename\": \"panel-sebelum.jpg\",\n          \"mime_type\": \"image/jpeg\",\n          \"size\": 942108,\n          \"created_at\": \"2026-09-09T10:06:00Z\",\n          \"updated_at\": \"2026-09-09T10:06:00Z\"\n        }\n      ],\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}",
                             "code": 200,
                             "name": "Get Project Detail - Success",
                             "status": "OK"
@@ -6662,7 +8426,7 @@
                 {
                     "name": "Delete Project",
                     "request": {
-                        "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus.",
+                        "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** — objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih.",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -6702,7 +8466,7 @@
                             ],
                             "name": "Delete Project - Not Found",
                             "originalRequest": {
-                                "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus.",
+                                "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** — objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -6736,7 +8500,7 @@
                             ],
                             "name": "Delete Project - Forbidden For AI Agent",
                             "originalRequest": {
-                                "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus.",
+                                "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** — objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih.",
                                 "header": [
                                     {
                                         "key": "Authorization",
@@ -6757,6 +8521,40 @@
                                 }
                             },
                             "status": "Forbidden"
+                        },
+                        {
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"status\": \"error\",\n  \"message\": \"attachment file could not be removed\"\n}",
+                            "code": 500,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "name": "Delete Project - Storage Failure",
+                            "originalRequest": {
+                                "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** — objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih.",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "method": "DELETE",
+                                "url": {
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "project-delete",
+                                        "1"
+                                    ],
+                                    "raw": "{{base_url}}/api/project-delete/1"
+                                }
+                            },
+                            "status": "Internal Server Error"
                         }
                     ]
                 }
@@ -6799,6 +8597,18 @@
         },
         {
             "key": "design_socket_url",
+            "value": ""
+        },
+        {
+            "key": "project_id",
+            "value": "1"
+        },
+        {
+            "key": "project_attachment_id",
+            "value": ""
+        },
+        {
+            "key": "project_company_id",
             "value": ""
         }
     ]

@@ -3,7 +3,7 @@
     "_postman_id": "3f5a8e5c-1c71-4d41-bdaa-841ac9103dc3",
     "name": "Widia Kencana - Project",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Project endpoints for Widia Kencana API. Rule: 1 route = 1 endpoint item."
+    "description": "Project endpoints for Widia Kencana API. Rule: 1 route = 1 endpoint item.\n\n**Peserta dan lampirannya ada di koleksi terpisah** \u2014 Project Company dan Project Attachment \u2014 tetapi DIBACA dari sini: `project-detail` mengembalikan `companies` dan `attachments` sekaligus. Pada `project-list` keduanya dihilangkan, bukan dikirim kosong; larik kosong akan terbaca sebagai \"proyek ini memang tidak punya peserta\"."
   },
   "item": [
     {
@@ -122,7 +122,7 @@
             "1"
           ]
         },
-        "description": "Replace last path segment with project id."
+        "description": "Replace last path segment with project id. Mengembalikan `companies` dan `attachments` sekaligus \u2014 keduanya TIDAK muncul di `project-list`."
       },
       "response": [
         {
@@ -130,7 +130,7 @@
           "status": "OK",
           "code": 200,
           "_postman_previewlanguage": "json",
-          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}"
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"project\": {\n      \"id\": 1,\n      \"name\": \"Website Revamp\",\n      \"status\": \"active\",\n      \"companies\": [\n        {\n          \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n          \"project_id\": 1,\n          \"role\": \"customer\",\n          \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:00:00Z\",\n          \"updated_at\": \"2026-09-09T10:00:00Z\"\n        },\n        {\n          \"id\": \"5a8d3f76-b210-4c9e-a4f1-8b6e0d2c7a39\",\n          \"project_id\": 1,\n          \"role\": \"end-user\",\n          \"note\": \"Pekerjaannya di Factory D milik mereka.\",\n          \"company\": {\n            \"id\": \"c47e2b19-8d05-4f6a-b3e8-25c1a7f9d403\",\n            \"code\": \"UTAC\",\n            \"name\": \"UTAC Manufacturing Services Indonesia\",\n            \"legal_name\": \"PT UTAC Manufacturing Services Indonesia\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:01:00Z\",\n          \"updated_at\": \"2026-09-09T10:01:00Z\"\n        }\n      ],\n      \"attachments\": [\n        {\n          \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n          \"project_id\": 1,\n          \"kind\": \"purchase-order\",\n          \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n          \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n          \"original_filename\": \"PO-2026-0142.pdf\",\n          \"mime_type\": \"application/pdf\",\n          \"size\": 184320,\n          \"company\": {\n            \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n            \"code\": \"DIZKAA\",\n            \"name\": \"Dizkaa Putra Anugerah\",\n            \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n            \"status\": \"active\"\n          },\n          \"created_at\": \"2026-09-09T10:05:00Z\",\n          \"updated_at\": \"2026-09-09T10:05:00Z\"\n        },\n        {\n          \"id\": \"d70f4a8e-6c31-4b25-89da-1e5f3c0b9764\",\n          \"project_id\": 1,\n          \"kind\": \"site-photo\",\n          \"note\": \"Kondisi panel sebelum pekerjaan dimulai.\",\n          \"asset_token\": \"9d2c5e83-4a17-4f60-b8c9-3e7a1d05f2b6\",\n          \"original_filename\": \"panel-sebelum.jpg\",\n          \"mime_type\": \"image/jpeg\",\n          \"size\": 942108,\n          \"created_at\": \"2026-09-09T10:06:00Z\",\n          \"updated_at\": \"2026-09-09T10:06:00Z\"\n        }\n      ],\n      \"created_at\": \"2026-07-06T10:00:00Z\",\n      \"updated_at\": \"2026-07-06T10:00:00Z\"\n    }\n  }\n}"
         },
         {
           "name": "Get Project Detail - Not Found",
@@ -523,7 +523,7 @@
             "1"
           ]
         },
-        "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus."
+        "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih."
       },
       "response": [
         {
@@ -554,7 +554,7 @@
                 "1"
               ]
             },
-            "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus."
+            "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih."
           },
           "status": "Not Found",
           "code": 404,
@@ -588,7 +588,7 @@
                 "1"
               ]
             },
-            "description": "Menghapus proyek. TIDAK dapat dibatalkan — barisnya benar-benar dihapus. Tidak ada tabel lain yang merujuk projects, jadi tidak ada silsilah yang ikut putus."
+            "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih."
           },
           "status": "Forbidden",
           "code": 403,
@@ -600,6 +600,40 @@
             }
           ],
           "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
+        },
+        {
+          "name": "Delete Project - Storage Failure",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-delete/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-delete",
+                "1"
+              ]
+            },
+            "description": "Menghapus proyek. TIDAK dapat dibatalkan.\n\n**BERKAS SETIAP LAMPIRANNYA IKUT DIHAPUS** \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang. Keterlibatan perusahaannya juga ikut lepas, tetapi perusahaannya sendiri tidak tersentuh.\n\nBila salah satu berkas gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada; permintaan yang sama dapat diulang setelah penyimpanannya pulih."
+          },
+          "status": "Internal Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"attachment file could not be removed\"\n}"
         }
       ]
     }

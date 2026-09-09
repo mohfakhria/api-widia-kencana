@@ -1,0 +1,926 @@
+{
+  "info": {
+    "_postman_id": "b81d6f37-2ac4-49e8-8f75-6d0a3b9e2c17",
+    "name": "Widia Kencana - Project Attachment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Berkas yang DITERIMA dalam sebuah proyek \u2014 PO dari pelanggan, kontrak, foto lapangan, faktur pajak. Berbeda dari koleksi Document, yang berisi dokumen yang DIBUAT sendiri di editor.\n\n**Menautkan, bukan mengunggah.** Berkasnya diunggah lebih dulu lewat alur aset yang sudah ada: `asset-upload-request` dengan `group: documents/<jenis>` \u2192 PUT ke `upload_url` \u2192 `asset-upload-complete`. Yang dikirim ke sini hanya `asset_token`-nya. Aset yang belum selesai diunggah ditolak 400 \u2014 menautkannya menghasilkan lampiran yang tidak dapat dibuka siapa pun, dan penyapu aset akan membuangnya lima belas menit kemudian beserta tautannya.\n\n**MEMBACANYA ada di koleksi Project**: `project-detail` mengembalikan `attachments` sekaligus, terbaru lebih dulu. Isinya dibuka lewat `asset-content` memakai `asset_token`.\n\n**Sembilan `kind`, kosakata tertutup.** Enam sama persis dengan `document_type` \u2014 `quotation`, `purchase-order`, `bast`, `delivery-note`, `service-report`, `invoice` \u2014 karena PO yang datang dari pelanggan tetap sebuah purchase order. Tiga sisanya khas unggahan dan tidak pernah dibuat di editor: `contract`, `site-photo`, `tax-invoice`.\n\n**`company_id` menjawab \"punya siapa\"** dan boleh kosong \u2014 foto lapangan tidak milik siapa-siapa. Yang diisi HARUS perusahaan yang sudah terdaftar sebagai peserta proyek itu lewat `project-company-add`; selain itu ditolak 400. Daftarkan pesertanya dulu, baru lampirkan berkasnya.\n\n**Satu berkas milik satu proyek.** Token yang sudah tertaut di mana pun ditolak 409. Itu pula yang membuat penghapusannya sederhana: `project-attachment-delete` ikut membuang berkasnya, tanpa perlu menghitung siapa lagi yang memakainya.\n\n**`project-delete` ikut menghapus seluruh berkas lampirannya.** Bila salah satu gagal dibuang dari object storage, penghapusan dibatalkan seluruhnya dan proyeknya tetap ada \u2014 permintaan yang sama dapat diulang.\n\nSeluruhnya superadmin."
+  },
+  "item": [
+    {
+      "name": "Add Project Attachment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-attachment-add",
+            "{{project_id}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+        },
+        "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+      },
+      "response": [
+        {
+          "name": "Add Project Attachment - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project attachment added successfully\",\n  \"data\": {\n    \"project_attachment\": {\n      \"id\": \"a94c7b52-1de6-42f8-90cb-33a7de5f4c02\",\n      \"project_id\": 1,\n      \"kind\": \"purchase-order\",\n      \"note\": \"PO revisi 2, yang pertama dibatalkan.\",\n      \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n      \"original_filename\": \"PO-2026-0142.pdf\",\n      \"mime_type\": \"application/pdf\",\n      \"size\": 184320,\n      \"company\": {\n        \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n        \"code\": \"DIZKAA\",\n        \"name\": \"Dizkaa Putra Anugerah\",\n        \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-09-09T10:05:00Z\",\n      \"updated_at\": \"2026-09-09T10:05:00Z\"\n    }\n  }\n}"
+        },
+        {
+          "name": "Add Project Attachment - Invalid Kind",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid attachment kind\"\n}"
+        },
+        {
+          "name": "Add Project Attachment - Asset Not Uploaded Yet",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset is not uploaded\"\n}"
+        },
+        {
+          "name": "Add Project Attachment - Company Not Involved",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"company is not involved in this project\"\n}"
+        },
+        {
+          "name": "Add Project Attachment - Invalid Payload",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}"
+        },
+        {
+          "name": "Add Project Attachment - Project Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}"
+        },
+        {
+          "name": "Add Project Attachment - Asset Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset not found\"\n}"
+        },
+        {
+          "name": "Add Project Attachment - File Already Attached",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Conflict",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"file is already attached to a project\"\n}"
+        },
+        {
+          "name": "Add Project Attachment - Forbidden For AI Agent",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_token\": \"0f3a9c71-5b28-4d6e-8a14-7c9e2f0b3d55\",\n  \"kind\": \"purchase-order\",\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"note\": \"PO revisi 2, yang pertama dibatalkan.\"\n}"
+            },
+            "description": "Memakai id PROYEK. MENAUTKAN berkas yang sudah selesai diunggah \u2014 bukan menerima berkasnya. Unggah dulu lewat alur aset: `asset-upload-request` dengan `group: documents/<jenis>`, PUT ke `upload_url`, lalu `asset-upload-complete`; token yang keluar dari sana yang dikirim ke sini."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Project Attachment",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-attachment-update",
+            "{{project_attachment_id}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+        },
+        "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini \u2014 mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya."
+      },
+      "response": [
+        {
+          "name": "Update Project Attachment - Success",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-update",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+            },
+            "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini \u2014 mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project attachment updated successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Update Project Attachment - Invalid Kind",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-update",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+            },
+            "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini \u2014 mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid attachment kind\"\n}"
+        },
+        {
+          "name": "Update Project Attachment - Company Not Involved",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-update",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+            },
+            "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini \u2014 mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"company is not involved in this project\"\n}"
+        },
+        {
+          "name": "Update Project Attachment - Invalid ID",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-update",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+            },
+            "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini \u2014 mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project attachment id\"\n}"
+        },
+        {
+          "name": "Update Project Attachment - Not Found",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-update",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+            },
+            "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini \u2014 mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"project attachment not found\"\n}"
+        },
+        {
+          "name": "Update Project Attachment - Forbidden For AI Agent",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-update/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-update",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"contract\",\n  \"company_id\": \"\",\n  \"note\": \"Ternyata kontrak, bukan PO.\"\n}"
+            },
+            "description": "Memakai id LAMPIRAN. `asset_token` TIDAK dibaca di sini \u2014 mengganti berkas di balik sebuah lampiran adalah lampiran yang berbeda, bukan lampiran yang sama dengan isi baru. `company_id` kosong melepaskan kepemilikannya."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Remove Project Attachment",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-attachment-delete",
+            "{{project_attachment_id}}"
+          ]
+        },
+        "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu."
+      },
+      "response": [
+        {
+          "name": "Remove Project Attachment - Success",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-delete",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project attachment removed successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Remove Project Attachment - Invalid ID",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-delete",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project attachment id\"\n}"
+        },
+        {
+          "name": "Remove Project Attachment - Not Found",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-delete",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"project attachment not found\"\n}"
+        },
+        {
+          "name": "Remove Project Attachment - Storage Failure",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-delete",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu."
+          },
+          "status": "Internal Server Error",
+          "code": 500,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"attachment file could not be removed\"\n}"
+        },
+        {
+          "name": "Remove Project Attachment - Forbidden For AI Agent",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-attachment-delete/{{project_attachment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-attachment-delete",
+                "{{project_attachment_id}}"
+              ]
+            },
+            "description": "Memakai id LAMPIRAN. **BERKASNYA IKUT DIHAPUS**, bukan sekadar dilepas tautannya \u2014 objeknya di object storage dan barisnya di `assets` sama-sama hilang, dan TIDAK dapat dibatalkan. Satu berkas milik satu proyek, jadi tidak ada pemakai lain yang perlu dihitung lebih dulu."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "project_id",
+      "value": "1"
+    },
+    {
+      "key": "project_attachment_id",
+      "value": ""
+    },
+    {
+      "key": "asset_token",
+      "value": ""
+    }
+  ]
+}

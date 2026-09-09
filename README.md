@@ -281,7 +281,7 @@ Baris yang sudah ada mendapat `NOW()` sebagai nilai awal kedua kolom, yaitu wakt
 `ALTER` dijalankan — bukan waktu barisnya benar-benar dibuat, yang memang tidak
 tersimpan di mana pun.
 
-Urutan baseline yang aman:
+Urutan baseline yang aman — seluruh tabel, sesuai pohon di atas:
 
 ```text
 users.sql
@@ -289,6 +289,10 @@ projects.sql
 document_papers.sql
 documents.sql
 assets.sql
+companies.sql
+company_contacts.sql
+project_companies.sql
+project_attachments.sql
 ```
 
 Contoh menjalankan manual dengan `psql`:

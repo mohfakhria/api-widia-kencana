@@ -1,0 +1,888 @@
+{
+  "info": {
+    "_postman_id": "7c4b9e21-58d3-4a6f-b012-9e3f7a1c5d84",
+    "name": "Widia Kencana - Project Company",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Perusahaan yang terlibat dalam sebuah proyek, beserta perannya.\n\n**MEMBACANYA ada di koleksi Project**, bukan di sini: `project-detail` mengembalikan `companies` sekaligus. Tidak ada endpoint daftar peserta tersendiri \u2014 peserta tidak pernah dicari lintas proyek, ia selalu dilihat di dalam proyeknya.\n\n**Tiga peran, kosakata tertutup:** `customer` (yang diberi penawaran dan menerbitkan PO), `end-user` (pemilik lokasi tempat pekerjaan berlangsung), `supplier` (asal barangnya). Selain ketiganya ditolak 400.\n\n**Satu perusahaan boleh memegang DUA peran dalam satu proyek** \u2014 pelanggan yang sekaligus memasok sebagian barangnya bukan hal aneh. Yang ditolak adalah peran yang sama dua kali (409). Banyak perusahaan per peran juga diizinkan; dua pemasok dalam satu proyek biasa saja.\n\n**Perhatikan id mana yang dipakai:** menambah memakai id PROYEK, sedangkan mengubah dan menghapus memakai id KETERLIBATAN \u2014 nilai `id` pada tiap elemen `companies`. Proyek dan perusahaannya diambil dari baris keterlibatan itu sendiri, sehingga tidak ada kemungkinan menyebut pasangan yang tidak berhubungan.\n\nPerusahaan yang masih terlibat di sebuah proyek **tidak dapat dihapus** lewat `company-delete` \u2014 database menolaknya. Pelanggan lama dipensiunkan dengan `status: inactive`, bukan dihapus.\n\nSeluruhnya superadmin."
+  },
+  "item": [
+    {
+      "name": "Add Project Company",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-company-add",
+            "{{project_id}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+        },
+        "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+      },
+      "response": [
+        {
+          "name": "Add Project Company - Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project company added successfully\",\n  \"data\": {\n    \"project_company\": {\n      \"id\": \"e2f1c8d0-77aa-4e35-bd90-1f4c6a2b8e11\",\n      \"project_id\": 1,\n      \"role\": \"customer\",\n      \"note\": \"Pemberi order, PO terbit lewat mereka.\",\n      \"company\": {\n        \"id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n        \"code\": \"DIZKAA\",\n        \"name\": \"Dizkaa Putra Anugerah\",\n        \"legal_name\": \"PT Dizkaa Putra Anugerah\",\n        \"status\": \"active\"\n      },\n      \"created_at\": \"2026-09-09T10:00:00Z\",\n      \"updated_at\": \"2026-09-09T10:00:00Z\"\n    }\n  }\n}"
+        },
+        {
+          "name": "Add Project Company - Invalid Role",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company role\"\n}"
+        },
+        {
+          "name": "Add Project Company - Invalid Company ID",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid company id\"\n}"
+        },
+        {
+          "name": "Add Project Company - Invalid Payload",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid request payload\"\n}"
+        },
+        {
+          "name": "Add Project Company - Project Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"project not found\"\n}"
+        },
+        {
+          "name": "Add Project Company - Company Not Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"company not found\"\n}"
+        },
+        {
+          "name": "Add Project Company - Role Already Taken",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Conflict",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"company already has this role in the project\"\n}"
+        },
+        {
+          "name": "Add Project Company - Company ID Empty",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"company id is required\"\n}"
+        },
+        {
+          "name": "Add Project Company - Forbidden For AI Agent",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-add/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-add",
+                "{{project_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"6b1f0a44-3b57-4c2d-9a11-0c2f8e5d7a01\",\n  \"role\": \"customer\",\n  \"note\": \"Pemberi order, PO terbit lewat mereka.\"\n}"
+            },
+            "description": "Memakai id PROYEK. `role` wajib salah satu dari `customer`, `end-user`, `supplier`."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Project Company",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-company-update",
+            "{{project_company_id}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+        },
+        "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini \u2014 memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah."
+      },
+      "response": [
+        {
+          "name": "Update Project Company - Success",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-update",
+                "{{project_company_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+            },
+            "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini \u2014 memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project company updated successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Update Project Company - Invalid Role",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-update",
+                "{{project_company_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+            },
+            "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini \u2014 memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company role\"\n}"
+        },
+        {
+          "name": "Update Project Company - Invalid ID",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-update",
+                "{{project_company_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+            },
+            "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini \u2014 memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company id\"\n}"
+        },
+        {
+          "name": "Update Project Company - Not Found",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-update",
+                "{{project_company_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+            },
+            "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini \u2014 memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"project company not found\"\n}"
+        },
+        {
+          "name": "Update Project Company - Role Already Taken",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-update",
+                "{{project_company_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+            },
+            "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini \u2014 memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah."
+          },
+          "status": "Conflict",
+          "code": 409,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"company already has this role in the project\"\n}"
+        },
+        {
+          "name": "Update Project Company - Forbidden For AI Agent",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-update/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-update",
+                "{{project_company_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"end-user\",\n  \"note\": \"Ternyata lokasinya di pabrik mereka.\"\n}"
+            },
+            "description": "Memakai id KETERLIBATAN, bukan id proyek. `company_id` TIDAK dibaca di sini \u2014 memindahkan keterlibatan ke perusahaan lain berarti menghapus lalu menambah, bukan mengubah."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Remove Project Company",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "project-company-delete",
+            "{{project_company_id}}"
+          ]
+        },
+        "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh."
+      },
+      "response": [
+        {
+          "name": "Remove Project Company - Success",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-delete",
+                "{{project_company_id}}"
+              ]
+            },
+            "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Project company removed successfully\",\n  \"data\": null\n}"
+        },
+        {
+          "name": "Remove Project Company - Invalid ID",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-delete",
+                "{{project_company_id}}"
+              ]
+            },
+            "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh."
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"invalid project company id\"\n}"
+        },
+        {
+          "name": "Remove Project Company - Not Found",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-delete",
+                "{{project_company_id}}"
+              ]
+            },
+            "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh."
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"project company not found\"\n}"
+        },
+        {
+          "name": "Remove Project Company - Forbidden For AI Agent",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-company-delete/{{project_company_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-company-delete",
+                "{{project_company_id}}"
+              ]
+            },
+            "description": "Memakai id KETERLIBATAN. Yang dilepas hanya keterlibatannya; perusahaannya sendiri tidak tersentuh."
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"status\": \"error\",\n  \"message\": \"Access is not permitted for this role\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "project_id",
+      "value": "1"
+    },
+    {
+      "key": "project_company_id",
+      "value": ""
+    }
+  ]
+}
