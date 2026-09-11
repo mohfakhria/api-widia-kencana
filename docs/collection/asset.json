@@ -1694,45 +1694,6 @@
           "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Asset deleted successfully\",\n  \"data\": null\n}"
         },
         {
-          "name": "Delete Asset - Not The Uploader",
-          "originalRequest": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/asset-delete?token={{asset_token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "asset-delete"
-              ],
-              "query": [
-                {
-                  "key": "token",
-                  "value": "{{asset_token}}"
-                }
-              ]
-            },
-            "description": "Deletes the object from storage when uploaded, then soft-deletes the asset metadata."
-          },
-          "status": "Forbidden",
-          "code": 403,
-          "_postman_previewlanguage": "json",
-          "header": [
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": "{\n  \"status\": \"error\",\n  \"message\": \"asset access forbidden\"\n}"
-        },
-        {
           "name": "Delete Asset - Not Found",
           "originalRequest": {
             "method": "DELETE",

@@ -298,7 +298,10 @@ func (uc *assetUseCase) ContentURL(ctx context.Context, ref input.AssetRef) (str
 	return uc.storage.PresignGet(ctx, asset.ObjectName, defaultAssetPreviewExpiry)
 }
 
-func (uc *assetUseCase) Delete(ctx context.Context, token string, uploadedBy *int64) error {
+// Delete membuang aset siapa pun yang mengunggahnya. Pengelolaan aset milik
+// bersama, dan hapus mengikuti sudut pandang yang sama dengan daftar dan ganti
+// isi — yang dituntut hanya login. uploaded_by tinggal keterangan riwayat.
+func (uc *assetUseCase) Delete(ctx context.Context, token string, actor *int64) error {
 	token = strings.TrimSpace(token)
 	if err := validateAssetUUIDToken(token, "asset token"); err != nil {
 		return err
@@ -308,7 +311,7 @@ func (uc *assetUseCase) Delete(ctx context.Context, token string, uploadedBy *in
 	if err != nil {
 		return err
 	}
-	if err := ensureAssetOwner(asset, uploadedBy); err != nil {
+	if err := ensureAssetReadable(asset, actor); err != nil {
 		return err
 	}
 	if asset.Status == "uploaded" {
@@ -515,10 +518,10 @@ func extensionSuffix(originalFilename string) string {
 // kosong di layar tetapi muncul di hasil cetak — perpecahan yang justru paling
 // ingin dihindari fitur ini.
 //
-// Daftar aset pun global — pengelolaannya memang milik bersama — sehingga
-// membatasi pembacaan per pengunggah hanya akan bertentangan dengan daftar yang
-// menampilkan semuanya. Yang tersisa dari kepemilikan hanyalah hak mengubah dan
-// menghapus, di ensureAssetOwner.
+// Daftar, ganti isi, dan hapus pun global — pengelolaan aset memang milik
+// bersama — sehingga membatasi pembacaan per pengunggah hanya akan bertentangan
+// dengan ketiganya. Kepemilikan tinggal menjaga satu hal: menuntaskan unggahan
+// yang masih berjalan, di ensureAssetOwner.
 func ensureAssetReadable(asset *entity.Asset, viewer *int64) error {
 	if asset == nil {
 		return domain.NewError(domain.ErrNotFound, "asset not found")
@@ -530,21 +533,17 @@ func ensureAssetReadable(asset *entity.Asset, viewer *int64) error {
 	return nil
 }
 
-// ensureAssetOwner: hanya pengunggahnya yang boleh mengubah atau membuang.
+// ensureAssetOwner: hanya pengunggahnya yang boleh MENUNTASKAN unggahannya.
 //
-// Aset tanpa pemilik ditolak untuk SIAPA PUN. Sebelumnya ia justru diizinkan
-// untuk semua orang, dan itu kebalikan dari yang seharusnya: kolom uploaded_by
-// memakai ON DELETE SET NULL, sehingga menghapus satu baris user akan mengubah
-// seluruh asetnya menjadi milik bersama yang dapat dihapus siapa saja — diam-diam,
-// dan tidak terlihat di daftar siapa pun.
+// Dulu ia juga menjaga hapus, dan itu dicabut bersama saringan daftar:
+// pengelolaan aset milik bersama, jadi hapus dan ganti isi terbuka untuk siapa
+// pun yang login. Yang tersisa hanya asset-upload-complete — baris pending
+// adalah bagian tengah alur unggah SATU orang, dan orang lain yang
+// menuntaskannya berarti mengesahkan objek yang bukan ia yang menaruh.
 //
-// Belum ada jalur di aplikasi ini yang menghapus user, jadi keadaan itu belum
-// dapat dicapai lewat API. Satu DELETE manual di database sudah cukup untuk
-// membukanya, dan pintu yang hanya butuh satu perintah untuk terbuka lebih baik
-// ditutup sekarang.
-//
-// Konsekuensinya aset tanpa pemilik tidak dapat dihapus lewat API sama sekali,
-// dan hanya dapat diurus lewat database.
+// Aset tanpa pemilik tetap ditolak di sini: uploaded_by memakai ON DELETE SET
+// NULL, dan baris pending yatim memang tidak punya alur untuk dituntaskan siapa
+// pun — penyapu yang akan membereskannya.
 func ensureAssetOwner(asset *entity.Asset, actor *int64) error {
 	if asset == nil {
 		return domain.NewError(domain.ErrNotFound, "asset not found")

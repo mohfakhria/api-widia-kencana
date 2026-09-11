@@ -40,7 +40,9 @@ type AssetUseCase interface {
 	// itu sendiri. Setiap pemanggil harus sadar bahwa ia sedang membuka jalur yang
 	// tidak bertanya siapa.
 	ContentURL(ctx context.Context, ref AssetRef) (string, error)
-	Delete(ctx context.Context, token string, uploadedBy *int64) error
+	// Delete terbuka untuk siapa pun yang login, bukan hanya pengunggahnya —
+	// pengelolaan aset milik bersama. actor hanya membuktikan ada yang login.
+	Delete(ctx context.Context, token string, actor *int64) error
 }
 
 type RequestAssetUploadCommand struct {
