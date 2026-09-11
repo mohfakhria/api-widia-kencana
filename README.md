@@ -282,6 +282,27 @@ DROP INDEX IF EXISTS assets_key_uq_idx;
 lalu jalankan ulang bagian `CREATE INDEX` di `migration/assets.sql` — seluruhnya
 memakai `IF NOT EXISTS`, jadi aman diulang.
 
+Jenis dokumen `cv` ditambahkan pada 2026-09-10. Ia menumpang dua daftar yang
+diturunkan dari `allowedDocumentTypes` — folder aset `documents/cv` dan `kind`
+lampiran proyek — dan yang kedua punya CHECK di database yang **tidak** ikut
+bertambah sendiri. Tanpa `ALTER` ini, melampirkan berkas ber-`kind` `cv`
+diterima usecase lalu ditolak Postgres sebagai 500 yang menyebut nama
+constraint, bukan 400 yang menyebutkan nilai apa yang boleh:
+
+```sql
+ALTER TABLE project_attachments DROP CONSTRAINT IF EXISTS project_attachments_kind_chk;
+ALTER TABLE project_attachments ADD CONSTRAINT project_attachments_kind_chk
+    CHECK (kind IN (
+        'quotation', 'purchase-order', 'bast',
+        'delivery-note', 'service-report', 'invoice', 'cv',
+        'contract', 'site-photo', 'tax-invoice'
+    ));
+```
+
+Tabel `documents` tidak menuntut apa pun: `document_type` di sana sengaja tanpa
+CHECK, justru supaya penambahan jenis tidak menuntut langkah manual yang akan
+terlewat.
+
 Sebagian berkas migration menuntut berkas lain sudah dijalankan — foreign
 key-nya menyebut tabel yang dibuat di sana. Berkas yang dijalankan terlalu awal
 gagal dengan pesan yang menyebut sebabnya (`relation "…" does not exist`), bukan

@@ -17,7 +17,7 @@ const defaultDocumentStatus = "draft"
 // allowedDocumentTypes adalah kosakata tertutup jenis dokumen.
 //
 // TIDAK ADA BAWAAN, dan itu keputusan yang diambil sadar setelah sempat ada:
-// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan keenam jenis di
+// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan ketujuh jenis di
 // bawah yang semuanya dokumen bisnis bermakna, tidak ada bawaan yang jujur —
 // memilih salah satunya berarti melabeli dokumen orang secara diam-diam, dan
 // label yang keliru tidak pernah muncul sebagai galat di kemudian hari. Permintaan
@@ -27,6 +27,14 @@ const defaultDocumentStatus = "draft"
 // Bertanda hubung, bukan garis bawah. Nilainya melintas di URL dan dibaca
 // manusia; nama fieldnya sendiri tetap document_type karena ia sudah dipakai
 // frontend dan menggantinya memutus mereka tanpa menambah apa pun.
+//
+// MENAMBAH JENIS DI SINI MENYENTUH DUA TEMPAT LAIN, keduanya lewat turunan dan
+// tidak satu pun terlihat dari berkas ini: assetGroups() melahirkan folder
+// documents/<jenis>, dan NewProjectUseCase memasukkannya ke
+// allowedAttachmentKinds. Yang kedua itu punya CHECK di database —
+// project_attachments_kind_chk — yang TIDAK ikut bertambah sendiri. Jenis baru
+// yang lupa di-ALTER di sana diterima usecase lalu ditolak Postgres sebagai 500
+// menyebut nama constraint. Lihat ALTER TABLE-nya di README.
 var allowedDocumentTypes = map[string]struct{}{
 	"quotation":      {},
 	"purchase-order": {},
@@ -34,6 +42,12 @@ var allowedDocumentTypes = map[string]struct{}{
 	"delivery-note":  {},
 	"service-report": {},
 	"invoice":        {},
+
+	// Curriculum vitae tenaga ahli — lampiran prakualifikasi dan tender, dan
+	// satu-satunya jenis di sini yang isinya tentang orang, bukan pekerjaan.
+	// Ditulis "cv", bukan "curriculum-vitae", karena itu yang diketik dan
+	// dibaca orang; kosakata ini melintas di URL dan dilihat manusia.
+	"cv": {},
 }
 
 // defaultDocumentPaperStatus menyaring daftar kertas ke yang benar-benar dapat

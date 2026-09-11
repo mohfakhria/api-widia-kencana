@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS documents (
 
     document_type TEXT NOT NULL DEFAULT 'custom',
     -- Kosakata TERTUTUP, ditegakkan di usecase — bukan di sini:
-    --   quotation, purchase-order, bast, delivery-note, service-report, invoice
+    --   quotation, purchase-order, bast, delivery-note, service-report,
+    --   invoice, cv
     --
     -- Sengaja tanpa CHECK. Daftarnya bertambah seiring jenis dokumen baru, dan
     -- constraint di database menuntut ALTER TABLE pada setiap penambahan —

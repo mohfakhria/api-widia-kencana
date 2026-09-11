@@ -19,10 +19,14 @@ CREATE TABLE IF NOT EXISTS project_attachments (
     kind VARCHAR(30) NOT NULL,
     -- Kosakata TERTUTUP — lihat CHECK di bawah.
     --
-    -- Enam yang pertama sama persis dengan document_type, karena berkas yang
+    -- Tujuh yang pertama sama persis dengan document_type, karena berkas yang
     -- diterima adalah jenis dokumen yang sama dengan yang dibuat sendiri: PO
-    -- yang datang dari pelanggan tetap sebuah purchase order. Tiga sisanya khas
-    -- unggahan dan tidak pernah dibuat di editor.
+    -- yang datang dari pelanggan tetap sebuah purchase order, CV tenaga ahli
+    -- yang dikirim pemasok tetap sebuah CV. Tiga sisanya khas unggahan dan
+    -- tidak pernah dibuat di editor.
+    --
+    -- CHECK di bawah HARUS ikut bertambah setiap kali allowedDocumentTypes
+    -- bertambah: usecase menurunkan daftarnya otomatis, database tidak.
     --
     -- Tertutup dengan alasan yang sama seperti group pada aset: teks bebas
     -- melahirkan "PO", "P.O.", dan "purchase order" sebagai tiga jenis berbeda,
@@ -53,7 +57,7 @@ CREATE TABLE IF NOT EXISTS project_attachments (
     CONSTRAINT project_attachments_kind_chk
         CHECK (kind IN (
             'quotation', 'purchase-order', 'bast',
-            'delivery-note', 'service-report', 'invoice',
+            'delivery-note', 'service-report', 'invoice', 'cv',
             'contract', 'site-photo', 'tax-invoice'
         )),
 

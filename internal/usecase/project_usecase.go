@@ -63,9 +63,14 @@ func NewProjectUseCase(
 		logger = slog.Default()
 	}
 
-	// Enam jenis pertama sama persis dengan document_type — PO yang datang dari
-	// pelanggan tetap sebuah purchase order — jadi diturunkan, bukan ditulis
-	// ulang. Dua daftar yang menyebut hal yang sama pasti berselisih suatu hari.
+	// Tujuh jenis pertama sama persis dengan document_type — PO yang datang dari
+	// pelanggan tetap sebuah purchase order, CV yang dikirim pemasok tetap sebuah
+	// CV — jadi diturunkan, bukan ditulis ulang. Dua daftar yang menyebut hal yang
+	// sama pasti berselisih suatu hari.
+	//
+	// Turunan ini membuat allowedAttachmentKinds ikut bertambah sendiri, tetapi
+	// project_attachments_kind_chk di database TIDAK. Jenis dokumen baru menuntut
+	// ALTER TABLE di sana pada saat yang sama — lihat README.
 	for documentType := range allowedDocumentTypes {
 		allowedAttachmentKinds[documentType] = struct{}{}
 	}
