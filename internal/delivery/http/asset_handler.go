@@ -174,8 +174,8 @@ func (h *AssetHandler) List(c *gin.Context) {
 	// Daftarnya GLOBAL, tidak disaring pengunggahnya. Pengelolaan aset di
 	// aplikasi ini milik bersama — logo dan stempel diunggah sekali untuk dipakai
 	// semua orang, dan daftar per-pengunggah membuat aset yang sama diunggah
-	// berulang hanya karena tidak terlihat. Ganti isi dan hapus mengikuti sudut
-	// pandang yang sama; kepemilikan tinggal menjaga asset-upload-complete.
+	// berulang hanya karena tidak terlihat. uploaded_by murni keterangan
+	// riwayat — sudut pandang yang sama berlaku di seluruh jalur aset.
 	assets, err := h.asset.List(c.Request.Context(), req.ToListAssetQuery())
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())

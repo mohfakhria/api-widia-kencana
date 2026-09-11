@@ -22,16 +22,19 @@ type AssetRef struct {
 	Key   string
 }
 
+// Seluruh operasi aset global: actor pada tiap metode hanya membuktikan ada
+// yang login, tidak pernah dicocokkan dengan uploaded_by. Kolom itu murni
+// keterangan riwayat — siapa yang mengunggah, bukan siapa yang boleh.
 type AssetUseCase interface {
 	RequestUpload(ctx context.Context, cmd RequestAssetUploadCommand) (*AssetUploadRequestResult, error)
-	CompleteUpload(ctx context.Context, ref AssetRef, uploadedBy *int64) (*entity.Asset, error)
+	CompleteUpload(ctx context.Context, ref AssetRef, actor *int64) (*entity.Asset, error)
 
 	// ReplaceContent mengganti berkas di balik satu aset tanpa mengubah tokennya,
 	// sehingga dokumen yang menunjuknya ikut memakai berkas baru tanpa disunting.
 	ReplaceContent(ctx context.Context, cmd ReplaceAssetContentCommand) (*entity.Asset, error)
 	List(ctx context.Context, query ListAssetQuery) ([]entity.Asset, error)
-	Get(ctx context.Context, ref AssetRef, uploadedBy *int64) (*entity.Asset, error)
-	PresignGet(ctx context.Context, ref AssetRef, uploadedBy *int64) (*AssetPresignGetResult, error)
+	Get(ctx context.Context, ref AssetRef, actor *int64) (*entity.Asset, error)
+	PresignGet(ctx context.Context, ref AssetRef, actor *int64) (*AssetPresignGetResult, error)
 
 	// ContentURL menyusun URL isi aset TANPA memeriksa siapa pemanggilnya.
 	//
@@ -40,8 +43,6 @@ type AssetUseCase interface {
 	// itu sendiri. Setiap pemanggil harus sadar bahwa ia sedang membuka jalur yang
 	// tidak bertanya siapa.
 	ContentURL(ctx context.Context, ref AssetRef) (string, error)
-	// Delete terbuka untuk siapa pun yang login, bukan hanya pengunggahnya —
-	// pengelolaan aset milik bersama. actor hanya membuktikan ada yang login.
 	Delete(ctx context.Context, token string, actor *int64) error
 }
 

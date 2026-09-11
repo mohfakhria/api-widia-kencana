@@ -184,12 +184,12 @@ func (uc *assetUseCase) RequestUpload(ctx context.Context, cmd input.RequestAsse
 	}, nil
 }
 
-func (uc *assetUseCase) CompleteUpload(ctx context.Context, ref input.AssetRef, uploadedBy *int64) (*entity.Asset, error) {
+func (uc *assetUseCase) CompleteUpload(ctx context.Context, ref input.AssetRef, actor *int64) (*entity.Asset, error) {
 	asset, err := uc.find(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureAssetOwner(asset, uploadedBy); err != nil {
+	if err := ensureAssetReadable(asset, actor); err != nil {
 		return nil, err
 	}
 	if asset.Status == "uploaded" {
@@ -235,24 +235,24 @@ func (uc *assetUseCase) List(ctx context.Context, query input.ListAssetQuery) ([
 	return uc.repo.List(ctx, query)
 }
 
-func (uc *assetUseCase) Get(ctx context.Context, ref input.AssetRef, uploadedBy *int64) (*entity.Asset, error) {
+func (uc *assetUseCase) Get(ctx context.Context, ref input.AssetRef, actor *int64) (*entity.Asset, error) {
 	asset, err := uc.find(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureAssetReadable(asset, uploadedBy); err != nil {
+	if err := ensureAssetReadable(asset, actor); err != nil {
 		return nil, err
 	}
 
 	return asset, nil
 }
 
-func (uc *assetUseCase) PresignGet(ctx context.Context, ref input.AssetRef, uploadedBy *int64) (*input.AssetPresignGetResult, error) {
+func (uc *assetUseCase) PresignGet(ctx context.Context, ref input.AssetRef, actor *int64) (*input.AssetPresignGetResult, error) {
 	asset, err := uc.find(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureAssetReadable(asset, uploadedBy); err != nil {
+	if err := ensureAssetReadable(asset, actor); err != nil {
 		return nil, err
 	}
 	if asset.Status != "uploaded" {
@@ -298,9 +298,8 @@ func (uc *assetUseCase) ContentURL(ctx context.Context, ref input.AssetRef) (str
 	return uc.storage.PresignGet(ctx, asset.ObjectName, defaultAssetPreviewExpiry)
 }
 
-// Delete membuang aset siapa pun yang mengunggahnya. Pengelolaan aset milik
-// bersama, dan hapus mengikuti sudut pandang yang sama dengan daftar dan ganti
-// isi — yang dituntut hanya login. uploaded_by tinggal keterangan riwayat.
+// Delete membuang aset siapa pun yang mengunggahnya — seluruh pengelolaan aset
+// global, dan uploaded_by murni keterangan riwayat. Lihat ensureAssetReadable.
 func (uc *assetUseCase) Delete(ctx context.Context, token string, actor *int64) error {
 	token = strings.TrimSpace(token)
 	if err := validateAssetUUIDToken(token, "asset token"); err != nil {
@@ -518,41 +517,16 @@ func extensionSuffix(originalFilename string) string {
 // kosong di layar tetapi muncul di hasil cetak — perpecahan yang justru paling
 // ingin dihindari fitur ini.
 //
-// Daftar, ganti isi, dan hapus pun global — pengelolaan aset memang milik
-// bersama — sehingga membatasi pembacaan per pengunggah hanya akan bertentangan
-// dengan ketiganya. Kepemilikan tinggal menjaga satu hal: menuntaskan unggahan
-// yang masih berjalan, di ensureAssetOwner.
+// Seluruh pengelolaan aset global — daftar, baca, tuntaskan unggahan, ganti
+// isi, hapus. uploaded_by MURNI KETERANGAN RIWAYAT, bukan izin: ia menjawab
+// "siapa yang mengunggah", tidak pernah "siapa yang boleh". Penjaga ini
+// satu-satunya untuk semua jalur itu, dan yang ia tuntut hanya login.
 func ensureAssetReadable(asset *entity.Asset, viewer *int64) error {
 	if asset == nil {
 		return domain.NewError(domain.ErrNotFound, "asset not found")
 	}
 	if viewer == nil {
 		return domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
-	}
-
-	return nil
-}
-
-// ensureAssetOwner: hanya pengunggahnya yang boleh MENUNTASKAN unggahannya.
-//
-// Dulu ia juga menjaga hapus, dan itu dicabut bersama saringan daftar:
-// pengelolaan aset milik bersama, jadi hapus dan ganti isi terbuka untuk siapa
-// pun yang login. Yang tersisa hanya asset-upload-complete — baris pending
-// adalah bagian tengah alur unggah SATU orang, dan orang lain yang
-// menuntaskannya berarti mengesahkan objek yang bukan ia yang menaruh.
-//
-// Aset tanpa pemilik tetap ditolak di sini: uploaded_by memakai ON DELETE SET
-// NULL, dan baris pending yatim memang tidak punya alur untuk dituntaskan siapa
-// pun — penyapu yang akan membereskannya.
-func ensureAssetOwner(asset *entity.Asset, actor *int64) error {
-	if asset == nil {
-		return domain.NewError(domain.ErrNotFound, "asset not found")
-	}
-	if actor == nil {
-		return domain.NewError(domain.ErrUnauthorized, "Invalid or expired token")
-	}
-	if asset.UploadedBy == nil || *asset.UploadedBy != *actor {
-		return domain.NewError(domain.ErrForbidden, "asset access forbidden")
 	}
 
 	return nil
