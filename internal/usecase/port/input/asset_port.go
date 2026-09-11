@@ -81,10 +81,9 @@ type ListAssetQuery struct {
 	Group  string
 	// Key mencari satu slot. Unik di antara aset yang hidup, jadi hasilnya nol
 	// atau satu — inilah cara menemukan aset TANPA tahu tokennya.
-	Key        string
-	MimeType   string
-	Extension  string
-	UploadedBy *int64
+	Key       string
+	MimeType  string
+	Extension string
 }
 
 type AssetPresignGetResult struct {

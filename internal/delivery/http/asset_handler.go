@@ -171,9 +171,12 @@ func (h *AssetHandler) List(c *gin.Context) {
 		return
 	}
 
-	query := req.ToListAssetQuery()
-	query.UploadedBy = currentUserID(c)
-	assets, err := h.asset.List(c.Request.Context(), query)
+	// Daftarnya GLOBAL, tidak disaring pengunggahnya. Pengelolaan aset di
+	// aplikasi ini milik bersama — logo dan stempel diunggah sekali untuk dipakai
+	// semua orang, dan daftar per-pengunggah membuat aset yang sama diunggah
+	// berulang hanya karena tidak terlihat. Kepemilikan tetap ditegakkan di
+	// tempat yang mengubah: ganti isi dan hapus, lewat ensureAssetOwner.
+	assets, err := h.asset.List(c.Request.Context(), req.ToListAssetQuery())
 	if err != nil {
 		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
 		return

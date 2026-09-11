@@ -515,9 +515,10 @@ func extensionSuffix(originalFilename string) string {
 // kosong di layar tetapi muncul di hasil cetak — perpecahan yang justru paling
 // ingin dihindari fitur ini.
 //
-// Tokennya UUID acak dan tidak pernah muncul di daftar milik orang lain, jadi
-// yang dapat membacanya tetap hanya orang yang memang diberi tahu — lewat dokumen
-// yang memuatnya.
+// Daftar aset pun global — pengelolaannya memang milik bersama — sehingga
+// membatasi pembacaan per pengunggah hanya akan bertentangan dengan daftar yang
+// menampilkan semuanya. Yang tersisa dari kepemilikan hanyalah hak mengubah dan
+// menghapus, di ensureAssetOwner.
 func ensureAssetReadable(asset *entity.Asset, viewer *int64) error {
 	if asset == nil {
 		return domain.NewError(domain.ErrNotFound, "asset not found")

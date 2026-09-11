@@ -137,10 +137,6 @@ func (r *AssetRepository) List(ctx context.Context, query input.ListAssetQuery) 
 		args = append(args, query.Extension)
 		builder.WriteString(fmt.Sprintf(" AND extension = $%d", len(args)))
 	}
-	if query.UploadedBy != nil {
-		args = append(args, *query.UploadedBy)
-		builder.WriteString(fmt.Sprintf(" AND uploaded_by = $%d", len(args)))
-	}
 	builder.WriteString(`
 		ORDER BY created_at DESC
 	`)
