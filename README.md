@@ -303,6 +303,24 @@ Tabel `documents` tidak menuntut apa pun: `document_type` di sana sengaja tanpa
 CHECK, justru supaya penambahan jenis tidak menuntut langkah manual yang akan
 terlewat.
 
+Nomor dokumen otomatis (`variables.document_no`, bentuk `WK/QTN/26101101`)
+ditambahkan pada 2026-09-12 dan menuntut dua langkah pada database lama:
+jalankan ulang `migration/documents.sql` — tabel pencacah
+`document_number_counters` dan indeks uniknya sama-sama tinggal di sana,
+keduanya `IF NOT EXISTS` sehingga aman diulang. Atau, bila enggan menjalankan
+seutuhnya, cukup `CREATE TABLE document_number_counters` di ujung berkas itu
+plus satu pernyataan ini:
+
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS documents_document_no_uq_idx
+    ON documents ((variables->>'document_no'))
+    WHERE variables ? 'document_no';
+```
+
+Dokumen yang lahir sebelum fitur ini tetap tanpa nomor, dan itu disengaja:
+nomor selalu lahir dari pencacah saat create, tidak pernah dari ketikan —
+memberi nomor mundur berarti tanggal pada nomornya berdusta.
+
 Sebagian berkas migration menuntut berkas lain sudah dijalankan — foreign
 key-nya menyebut tabel yang dibuat di sana. Berkas yang dijalankan terlalu awal
 gagal dengan pesan yang menyebut sebabnya (`relation "…" does not exist`), bukan

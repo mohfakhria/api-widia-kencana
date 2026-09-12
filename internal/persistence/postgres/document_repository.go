@@ -170,6 +170,26 @@ func (r *DocumentRepository) Create(ctx context.Context, document *entity.Docume
 	return r.GetByToken(ctx, createdToken)
 }
 
+// NextDocumentNumberSeq menaikkan pencacah satu jenis-hari lalu mengembalikan
+// nilainya, dalam SATU perintah. UPSERT yang mengembalikan hasilnya membuat dua
+// pemanggil bersamaan mustahil menerima angka yang sama — yang kalah berebut
+// baris menunggu, lalu menaikkan nilai yang sudah dinaikkan pemenangnya.
+func (r *DocumentRepository) NextDocumentNumberSeq(ctx context.Context, documentType string, day time.Time) (int, error) {
+	var seq int
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO document_number_counters (document_type, day, last_seq)
+		VALUES ($1, $2, 1)
+		ON CONFLICT (document_type, day)
+		DO UPDATE SET last_seq = document_number_counters.last_seq + 1
+		RETURNING last_seq
+	`, documentType, day.Format("2006-01-02")).Scan(&seq)
+	if err != nil {
+		return 0, err
+	}
+
+	return seq, nil
+}
+
 func (r *DocumentRepository) Update(ctx context.Context, token string, document *entity.Document) error {
 	paperID, err := r.getDocumentPaperIDByToken(ctx, document.Paper.Token)
 	if err != nil {

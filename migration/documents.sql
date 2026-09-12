@@ -91,8 +91,49 @@ CREATE INDEX IF NOT EXISTS documents_document_type_idx
 CREATE INDEX IF NOT EXISTS documents_grand_total_idx
     ON documents (((variables->>'grand_total')::numeric));
 
+-- Indeks UNIK atas nomor dokumen di dalam kantong.
+--
+-- document_no dilahirkan server saat create (WK/<KODE>/<YYMMDD><URUT>) dan
+-- tidak boleh ada dua dokumen memakai nomor yang sama, apa pun yang keliru di
+-- lapisan atas — pencacahnya di document_number_counters, dan indeks ini jaring
+-- terakhirnya. Parsial, supaya dokumen lama yang lahir sebelum fitur ini tidak
+-- terganggu.
+CREATE UNIQUE INDEX IF NOT EXISTS documents_document_no_uq_idx
+    ON documents ((variables->>'document_no'))
+    WHERE variables ? 'document_no';
+
 CREATE INDEX IF NOT EXISTS documents_status_idx
     ON documents (status);
 
 CREATE INDEX IF NOT EXISTS documents_created_at_idx
     ON documents (created_at DESC);
+
+-- Pencacah nomor dokumen: satu baris per jenis per hari.
+--
+-- Nomor dokumen berbentuk WK/<KODE>/<YYMMDD><URUT>, dan URUT diambil dari sini
+-- lewat satu UPSERT yang mengembalikan nilainya — atomik, sehingga dua dokumen
+-- yang dibuat bersamaan tidak pernah menerima urutan yang sama. Menghitungnya
+-- dari MAX() dokumen yang ada adalah lomba: dua permintaan membaca max yang
+-- sama lalu sama-sama menambah satu.
+--
+-- CELAH URUTAN DISENGAJA DIBIARKAN. Urutan diambil SEBELUM barisnya ditulis,
+-- jadi pembuatan yang gagal sesudahnya membakar satu nomor. Menutupnya berarti
+-- transaksi yang memegang kunci pencacah selama INSERT dokumen berlangsung —
+-- ongkos yang tidak sepadan dengan nomor yang sekadar melompat.
+--
+-- document_type TIDAK ber-FK ke mana pun: kosakatanya milik usecase
+-- (allowedDocumentTypes), sama seperti alasan documents.document_type tanpa
+-- CHECK. Kode pada nomornya sendiri (QTN, PO, BA, SJ, SR, INV, CV) hidup di
+-- documentNumberCodes, internal/usecase/document_usecase.go.
+--
+-- Baris lama tidak pernah dibaca lagi setelah harinya lewat. Dibiarkan —
+-- ukurannya tujuh baris per hari paling banyak, dan riwayat "sampai mana urutan
+-- hari itu" justru keterangan yang berguna saat ada yang menanyakan nomor yang
+-- melompat.
+CREATE TABLE IF NOT EXISTS document_number_counters (
+    document_type TEXT NOT NULL,
+    day DATE NOT NULL,
+    last_seq INTEGER NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (document_type, day)
+);

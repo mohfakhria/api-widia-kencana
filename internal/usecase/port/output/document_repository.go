@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/mohfakhria/api-widia-kencana/internal/domain/entity"
 	"github.com/mohfakhria/api-widia-kencana/internal/usecase/port/input"
@@ -15,6 +16,12 @@ type DocumentRepository interface {
 	Create(ctx context.Context, document *entity.Document) (*entity.Document, error)
 	Update(ctx context.Context, token string, document *entity.Document) error
 	Delete(ctx context.Context, token string) error
+
+	// NextDocumentNumberSeq mengambil nomor urut berikutnya untuk satu jenis
+	// dokumen pada satu hari — atomik, dua pemanggil bersamaan tidak pernah
+	// menerima angka yang sama. Harinya milik pemanggil (WIB), bukan clock
+	// database, supaya definisi "hari" pada nomor hidup di satu tempat.
+	NextDocumentNumberSeq(ctx context.Context, documentType string, day time.Time) (int, error)
 
 	// GetContent dan SaveContent melayani isi kanvas, terpisah dari metadata
 	// dokumen supaya content yang berukuran besar tidak ikut terbaca oleh List
