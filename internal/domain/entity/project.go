@@ -22,6 +22,13 @@ type Project struct {
 	Attachments []ProjectAttachment
 	Documents   []ProjectDocument
 	Milestones  []ProjectMilestone
+
+	// Customers adalah pengecualian dari aturan di atas: peserta ber-peran
+	// customer SAJA, dan justru terisi juga pada daftar — kolom "Customer" di
+	// layar daftar proyek membutuhkannya. Ongkosnya bukan per baris: repository
+	// mengisinya lewat SATU kueri untuk seluruh daftar. Pada detail ia
+	// diturunkan dari Companies, bukan dibaca kedua kalinya.
+	Customers []Company
 }
 
 // ProjectCompany adalah keterlibatan satu perusahaan dalam satu proyek.

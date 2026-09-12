@@ -32,6 +32,13 @@ type ProjectResponse struct {
 	Documents   []ProjectDocumentResponse   `json:"documents,omitempty"`
 	Milestones  []ProjectMilestoneResponse  `json:"milestones,omitempty"`
 
+	// Customers TANPA omitempty, berbeda dari keempat di atas, karena artinya
+	// berbeda: yang di atas dihilangkan pada daftar sebab memang tidak dimuat,
+	// sedangkan customers selalu dimuat — di daftar maupun detail — sehingga
+	// larik kosong di sini benar-benar berarti "belum ada pelanggan terdaftar".
+	// Boleh lebih dari satu: dua pelanggan pada satu proyek adalah keadaan sah.
+	Customers []ProjectCompanyRefResponse `json:"customers"`
+
 	// Variables selalu objek, tidak pernah null: kolomnya NOT NULL DEFAULT '{}',
 	// dan klien yang melakukan iterasi atasnya gagal justru pada proyek yang
 	// paling wajar — yang belum punya satu variabel pun.
@@ -329,8 +336,21 @@ func NewProjectResponse(project *entity.Project) ProjectResponse {
 		Name:      project.Name,
 		Status:    project.Status,
 		Variables: variablesOf(project.Variables),
+		// make, bukan nil: customers dijanjikan selalu larik, tidak pernah null.
+		Customers: make([]ProjectCompanyRefResponse, 0, len(project.Customers)),
 		CreatedAt: project.CreatedAt,
 		UpdatedAt: project.UpdatedAt,
+	}
+
+	for index := range project.Customers {
+		customer := &project.Customers[index]
+		response.Customers = append(response.Customers, ProjectCompanyRefResponse{
+			ID:        customer.ID,
+			Code:      customer.Code,
+			Name:      customer.Name,
+			LegalName: customer.LegalName,
+			Status:    customer.Status,
+		})
 	}
 
 	for index := range project.Companies {

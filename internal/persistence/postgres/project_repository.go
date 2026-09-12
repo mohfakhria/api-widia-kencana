@@ -50,7 +50,58 @@ func (r *ProjectRepository) List(ctx context.Context) ([]entity.Project, error) 
 		return nil, err
 	}
 
+	if err := r.fillCustomers(ctx, projects); err != nil {
+		return nil, err
+	}
+
 	return projects, nil
+}
+
+// fillCustomers mengisi peserta ber-peran customer untuk seluruh daftar
+// sekaligus — SATU kueri, bukan satu per proyek. Daftar proyek memang membaca
+// semua baris, jadi tautan customer-nya pun dibaca semua lalu dibagikan ke
+// pemiliknya di memori.
+//
+// 'customer' ditulis harfiah di sini; kosakata perannya milik usecase
+// (allowedProjectRoles), sama seperti kosakata lain di aplikasi ini.
+func (r *ProjectRepository) fillCustomers(ctx context.Context, projects []entity.Project) error {
+	if len(projects) == 0 {
+		return nil
+	}
+
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT pc.project_id, c.id::text, c.code, c.name, c.legal_name, c.status
+		FROM project_companies pc
+		JOIN companies c ON c.id = pc.company_id
+		WHERE pc.role = 'customer'
+		ORDER BY pc.project_id, LOWER(c.name)
+	`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	customers := make(map[int64][]entity.Company)
+	for rows.Next() {
+		var (
+			projectID int64
+			company   entity.Company
+		)
+		if err := rows.Scan(&projectID, &company.ID, &company.Code,
+			&company.Name, &company.LegalName, &company.Status); err != nil {
+			return err
+		}
+		customers[projectID] = append(customers[projectID], company)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	for index := range projects {
+		projects[index].Customers = customers[projects[index].ID]
+	}
+
+	return nil
 }
 
 func (r *ProjectRepository) GetByID(ctx context.Context, id int64) (*entity.Project, error) {

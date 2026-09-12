@@ -30,10 +30,15 @@ var allowedProjectStatuses = map[string]struct{}{
 // yang menghasilkan pesan yang dapat dibaca orang. Tanpa yang di sini, peran
 // salah ketik dijawab galat constraint Postgres — 500 yang menyebut nama indeks
 // dan tidak menyebutkan nilai apa yang sebenarnya boleh.
+// projectRoleCustomer disebut namanya karena ia satu-satunya peran yang
+// diperlakukan khusus: daftar dan detail proyek menyajikan peserta ber-peran
+// ini sebagai field customers tersendiri.
+const projectRoleCustomer = "customer"
+
 var allowedProjectRoles = map[string]struct{}{
-	"customer": {},
-	"end-user": {},
-	"supplier": {},
+	projectRoleCustomer: {},
+	"end-user":          {},
+	"supplier":          {},
 }
 
 var allowedAttachmentKinds = map[string]struct{}{
@@ -97,6 +102,15 @@ func (uc *projectUseCase) GetByID(ctx context.Context, id string) (*entity.Proje
 
 	if project.Companies, err = uc.repo.ListCompanies(ctx, projectID); err != nil {
 		return nil, err
+	}
+	// Customers DITURUNKAN dari Companies, bukan dibaca kedua kalinya — dua
+	// pembacaan atas hal yang sama boleh jadi tidak sepakat di antara keduanya.
+	// Daftar proyek mengisinya sendiri di repository, karena di sana Companies
+	// memang sengaja tidak dimuat.
+	for _, participant := range project.Companies {
+		if participant.Role == projectRoleCustomer && participant.Company != nil {
+			project.Customers = append(project.Customers, *participant.Company)
+		}
 	}
 	if project.Attachments, err = uc.repo.ListAttachments(ctx, projectID); err != nil {
 		return nil, err
