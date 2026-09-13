@@ -16,6 +16,11 @@ type CompanyUseCase interface {
 	Update(ctx context.Context, id string, cmd CompanyCommand) error
 	Delete(ctx context.Context, id string) error
 
+	// ListContacts menyajikan kontak satu perusahaan TANPA data perusahaannya.
+	// Get sudah membawa keduanya; ini untuk layar yang hanya membutuhkan
+	// kontaknya — pemilih PIC, misalnya — dan memanggilnya berulang.
+	ListContacts(ctx context.Context, companyID string) ([]entity.CompanyContact, error)
+
 	AddContact(ctx context.Context, companyID string, cmd CompanyContactCommand) (*entity.CompanyContact, error)
 	UpdateContact(ctx context.Context, contactID string, cmd CompanyContactCommand) error
 	DeleteContact(ctx context.Context, contactID string) error

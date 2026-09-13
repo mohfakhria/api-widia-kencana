@@ -71,6 +71,24 @@ func (uc *companyUseCase) Get(ctx context.Context, id string) (*entity.Company, 
 	return company, nil
 }
 
+// ListContacts mengembalikan kontak satu perusahaan.
+//
+// Perusahaannya DIPASTIKAN ADA lebih dulu, tidak langsung membaca kontaknya.
+// Tanpa itu, id yang tidak menunjuk siapa-siapa dijawab larik kosong — tidak
+// dapat dibedakan dari perusahaan yang memang belum punya kontak, dan yang
+// salah ketik id-nya tidak akan pernah tahu.
+func (uc *companyUseCase) ListContacts(ctx context.Context, id string) ([]entity.CompanyContact, error) {
+	companyID, err := parseUUID(id, "company id")
+	if err != nil {
+		return nil, err
+	}
+	if _, err := uc.repo.GetByID(ctx, companyID); err != nil {
+		return nil, err
+	}
+
+	return uc.repo.ListContacts(ctx, companyID)
+}
+
 func (uc *companyUseCase) Create(ctx context.Context, cmd input.CompanyCommand) (*entity.Company, error) {
 	company := mapCompanyCommand(cmd)
 	if err := validateCompany(company); err != nil {

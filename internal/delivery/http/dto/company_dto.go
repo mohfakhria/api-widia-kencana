@@ -99,6 +99,16 @@ type CompanyContactDataResponse struct {
 	Contact CompanyContactResponse `json:"contact"`
 }
 
+// CompanyContactListResponse membungkus daftar kontak satu perusahaan.
+//
+// Contacts TANPA omitempty, berbeda dari field bernama sama di
+// CompanyResponse: di sana ia dihilangkan pada daftar karena memang tidak
+// dimuat, sedangkan di sini larik kosong benar-benar berarti perusahaan itu
+// belum punya kontak.
+type CompanyContactListResponse struct {
+	Contacts []CompanyContactResponse `json:"contacts"`
+}
+
 // dateLayout adalah bentuk established_date di JSON: tanggal saja, tanpa jam.
 //
 // Kolomnya DATE, dan mengirimkannya sebagai timestamp lengkap membuat klien
@@ -208,6 +218,17 @@ func NewCompanyDataResponse(company *entity.Company) CompanyDataResponse {
 
 func NewCompanyContactDataResponse(contact *entity.CompanyContact) CompanyContactDataResponse {
 	return CompanyContactDataResponse{Contact: NewCompanyContactResponse(contact)}
+}
+
+func NewCompanyContactListResponse(contacts []entity.CompanyContact) CompanyContactListResponse {
+	response := CompanyContactListResponse{
+		Contacts: make([]CompanyContactResponse, 0, len(contacts)),
+	}
+	for index := range contacts {
+		response.Contacts = append(response.Contacts, NewCompanyContactResponse(&contacts[index]))
+	}
+
+	return response
 }
 
 func NewCompanyListResponse(companies []entity.Company) CompanyListResponse {

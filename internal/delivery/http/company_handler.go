@@ -104,6 +104,20 @@ func (h *CompanyHandler) Delete(c *gin.Context) {
 	dto.Success(c, "Company deleted successfully", nil)
 }
 
+// ListContacts menyajikan kontak satu perusahaan tanpa data perusahaannya.
+//
+// company-detail sudah membawa keduanya sekaligus; rute ini untuk layar yang
+// hanya membutuhkan kontaknya dan memanggilnya berulang.
+func (h *CompanyHandler) ListContacts(c *gin.Context) {
+	contacts, err := h.company.ListContacts(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		dto.Error(c, apperror.ToHTTPStatus(err), err.Error())
+		return
+	}
+
+	dto.Success(c, "Success", dto.NewCompanyContactListResponse(contacts))
+}
+
 func (h *CompanyHandler) AddContact(c *gin.Context) {
 	var req dto.CompanyContactRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

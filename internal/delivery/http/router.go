@@ -164,6 +164,10 @@ func NewRouter(deps RouterDeps) http.Handler {
 		// dengan alasan yang sama seperti font-list.
 		agentAllowed.GET("/company-list", deps.CompanyHandler.List)
 		agentAllowed.GET("/company-detail/:id", deps.CompanyHandler.Get)
+		// Kontak saja, tanpa data perusahaannya. Di grup yang sama dengan
+		// company-detail karena isinya bagian dari jawaban rute itu — membukanya
+		// lebih sempit hanya akan membuat agent memanggil yang lebih besar.
+		agentAllowed.GET("/company-contact-list/:id", deps.CompanyHandler.ListContacts)
 
 		// Di grup yang sama dengan document-add, karena keduanya dipakai
 		// berurutan: kertas dipilih lebih dulu, tokennya menjadi masukan wajib
