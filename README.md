@@ -321,6 +321,27 @@ Dokumen yang lahir sebelum fitur ini tetap tanpa nomor, dan itu disengaja:
 nomor selalu lahir dari pencacah saat create, tidak pernah dari ketikan —
 memberi nomor mundur berarti tanggal pada nomornya berdusta.
 
+Kolom `npwp` pada `companies` ditambahkan pada 2026-09-14, beserta indeks unik
+yang membandingkan digitnya saja:
+
+```sql
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS npwp VARCHAR(30);
+
+CREATE UNIQUE INDEX IF NOT EXISTS companies_npwp_uq_idx
+    ON companies (REGEXP_REPLACE(npwp, '\D', '', 'g'))
+    WHERE npwp IS NOT NULL AND BTRIM(npwp) <> '';
+```
+
+Indeksnya parsial karena NULL berarti "belum diketahui", bukan sebuah nilai —
+sepuluh perusahaan yang NPWP-nya belum dicatat tidak boleh saling menghalangi.
+Karena itu pula usecase menyimpan `npwp` kosong sebagai NULL, bukan string
+kosong. Bila database Anda sudah terlanjur punya baris ber-`npwp` `''`,
+bersihkan dulu sebelum memasang indeksnya:
+
+```sql
+UPDATE companies SET npwp = NULL WHERE BTRIM(npwp) = '';
+```
+
 Sebagian berkas migration menuntut berkas lain sudah dijalankan — foreign
 key-nya menyebut tabel yang dibuat di sana. Berkas yang dijalankan terlalu awal
 gagal dengan pesan yang menyebut sebabnya (`relation "…" does not exist`), bukan

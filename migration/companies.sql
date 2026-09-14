@@ -43,6 +43,20 @@ CREATE TABLE IF NOT EXISTS companies (
     -- menyimpannya sebagai satu teks dengan pergantian baris di tengah, dan
     -- memecahnya berarti setiap template merakitnya kembali sedikit berbeda.
 
+    npwp VARCHAR(30),
+    -- Nomor Pokok Wajib Pajak. DICETAK APA ADANYA di faktur dan dokumen pajak,
+    -- jadi disimpan persis seperti diketik — bertitik dan berstrip sekalipun
+    -- (01.234.567.8-901.000). Alasan yang sama dengan address dan legal_name:
+    -- yang dicetak tidak dirakit ulang oleh siapa pun.
+    --
+    -- Panjang 30 memberi ruang bagi kedua bentuk beserta pemisahnya: 15 digit
+    -- yang lama dan 16 digit yang berlaku sejak 2024. Jumlah digitnya yang
+    -- ditegakkan usecase, bukan bentuk tulisannya.
+    --
+    -- BOLEH KOSONG. Penawaran sering disusun sebelum NPWP pelanggan diketahui,
+    -- dan kolom yang memaksa diisi akan diisi tebakan — yang kosong terlihat,
+    -- yang salah tidak.
+
     email VARCHAR(150),
     phone VARCHAR(30),
     fax VARCHAR(30),
@@ -83,6 +97,24 @@ CREATE UNIQUE INDEX IF NOT EXISTS companies_code_uq_idx
     ON companies (UPPER(code));
 -- UPPER, supaya 'wiken' dan 'WIKEN' tidak dapat hidup berdampingan. Kode
 -- dimaksudkan dibaca manusia, dan manusia tidak membedakan keduanya.
+
+-- NPWP unik di antara yang mengisinya, DIBANDINGKAN SEBAGAI DIGIT SAJA.
+--
+-- Tanpa penghapusan pemisah, '01.234.567.8-901.000' dan '012345678901000'
+-- adalah dua nomor berbeda bagi database padahal satu nomor bagi kantor pajak —
+-- dan indeks yang tidak menangkap itu memberi rasa aman yang keliru.
+--
+-- Gunanya bukan menjaga kebersihan data demi kerapian, melainkan menangkap
+-- perusahaan yang TERDAFTAR DUA KALI. Itu persoalan yang sudah disebut pada
+-- kolom code di atas — DIZKAA, DIZKAA1, dan PTDIZKAA untuk perusahaan yang
+-- sama — dan kode yang dikarang orang tidak dapat menangkapnya, sedangkan NPWP
+-- bisa: ia diterbitkan pihak lain dan tidak ada duanya.
+--
+-- Parsial, karena NULL berarti "belum diketahui" dan bukan sebuah nilai:
+-- sepuluh pelanggan yang NPWP-nya belum dicatat tidak boleh saling menghalangi.
+CREATE UNIQUE INDEX IF NOT EXISTS companies_npwp_uq_idx
+    ON companies (REGEXP_REPLACE(npwp, '\D', '', 'g'))
+    WHERE npwp IS NOT NULL AND BTRIM(npwp) <> '';
 
 CREATE INDEX IF NOT EXISTS companies_status_idx
     ON companies (status);

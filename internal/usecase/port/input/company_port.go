@@ -49,6 +49,7 @@ type CompanyCommand struct {
 	Description     string
 	EstablishedDate *time.Time
 	Address         string
+	NPWP            string
 	Email           string
 	Phone           string
 	Fax             string

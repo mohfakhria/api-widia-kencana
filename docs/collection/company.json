@@ -93,7 +93,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"companies\": [\n      {\n        \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n        \"code\": \"DIZKAA\",\n        \"name\": \"Dizkaa Putra Anugerah\",\n        \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n        \"company_type\": \"PT\",\n        \"description\": \"Perusahaan jasa konstruksi\",\n        \"established_date\": \"2023-11-16\",\n        \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n        \"email\": \"\",\n        \"phone\": \"\",\n        \"fax\": \"\",\n        \"timezone\": \"Asia/Jakarta\",\n        \"locale\": \"id-ID\",\n        \"currency_code\": \"IDR\",\n        \"status\": \"active\",\n        \"created_at\": \"2026-09-08T13:30:00+07:00\",\n        \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n      }\n    ]\n  }\n}"
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"companies\": [\n      {\n        \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n        \"code\": \"DIZKAA\",\n        \"name\": \"Dizkaa Putra Anugerah\",\n        \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n        \"company_type\": \"PT\",\n        \"description\": \"Perusahaan jasa konstruksi\",\n        \"established_date\": \"2023-11-16\",\n        \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n        \"npwp\": \"01.234.567.8-901.000\",\n        \"email\": \"\",\n        \"phone\": \"\",\n        \"fax\": \"\",\n        \"timezone\": \"Asia/Jakarta\",\n        \"locale\": \"id-ID\",\n        \"currency_code\": \"IDR\",\n        \"status\": \"active\",\n        \"created_at\": \"2026-09-08T13:30:00+07:00\",\n        \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n      }\n    ]\n  }\n}"
 				},
 				{
 					"name": "List Companies - Empty",
@@ -312,7 +312,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"company\": {\n      \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"code\": \"DIZKAA\",\n      \"name\": \"Dizkaa Putra Anugerah\",\n      \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n      \"company_type\": \"PT\",\n      \"description\": \"Perusahaan jasa konstruksi\",\n      \"established_date\": \"2023-11-16\",\n      \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"fax\": \"\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"locale\": \"id-ID\",\n      \"currency_code\": \"IDR\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\",\n      \"contacts\": [\n        {\n          \"id\": \"7b2e1d90-3c4a-4f5b-9a8c-1d2e3f4a5b6c\",\n          \"company_id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n          \"salutation\": \"Bapak\",\n          \"name\": \"Wahyudi\",\n          \"position\": \"Owner\",\n          \"department\": \"\",\n          \"email\": \"\",\n          \"phone\": \"\",\n          \"mobile\": \"\",\n          \"is_primary\": true,\n          \"status\": \"active\",\n          \"created_at\": \"2026-09-08T13:30:00+07:00\",\n          \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n        }\n      ]\n    }\n  }\n}"
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Success\",\n  \"data\": {\n    \"company\": {\n      \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"code\": \"DIZKAA\",\n      \"name\": \"Dizkaa Putra Anugerah\",\n      \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n      \"company_type\": \"PT\",\n      \"description\": \"Perusahaan jasa konstruksi\",\n      \"established_date\": \"2023-11-16\",\n      \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n      \"npwp\": \"01.234.567.8-901.000\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"fax\": \"\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"locale\": \"id-ID\",\n      \"currency_code\": \"IDR\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\",\n      \"contacts\": [\n        {\n          \"id\": \"7b2e1d90-3c4a-4f5b-9a8c-1d2e3f4a5b6c\",\n          \"company_id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n          \"salutation\": \"Bapak\",\n          \"name\": \"Wahyudi\",\n          \"position\": \"Owner\",\n          \"department\": \"\",\n          \"email\": \"\",\n          \"phone\": \"\",\n          \"mobile\": \"\",\n          \"is_primary\": true,\n          \"status\": \"active\",\n          \"created_at\": \"2026-09-08T13:30:00+07:00\",\n          \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n        }\n      ]\n    }\n  }\n}"
 				},
 				{
 					"name": "Get Company Detail - Invalid ID",
@@ -596,7 +596,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+					"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -613,7 +613,7 @@
 						"company-add"
 					]
 				},
-				"description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya."
+				"description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya.\n\n**`npwp` opsional** dan disimpan **apa adanya** — titik dan stripnya ikut tercetak di dokumen pajak, jadi backend tidak pernah merapikannya. Yang divalidasi hanya jumlah digitnya: **15** (bentuk lama) atau **16** (berlaku sejak 2024); selain itu ditolak 400. Selain digit, hanya titik, strip, dan spasi yang diterima.\n\nKosong berarti belum diketahui, dan itu keadaan yang sah — penawaran sering disusun sebelum NPWP pelanggan dicatat. Yang terisi harus **unik**, dibandingkan sebagai digit saja: `01.234.567.8-901.000` dan `012345678901000` adalah nomor yang sama, dan yang kedua ditolak 409. Keunikan itu yang menangkap satu perusahaan yang telanjur didaftarkan dua kali dengan kode berbeda."
 			},
 			"response": [
 				{
@@ -632,7 +632,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -661,7 +661,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company created successfully\",\n  \"data\": {\n    \"company\": {\n      \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"code\": \"DIZKAA\",\n      \"name\": \"Dizkaa Putra Anugerah\",\n      \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n      \"company_type\": \"PT\",\n      \"description\": \"Perusahaan jasa konstruksi\",\n      \"established_date\": \"2023-11-16\",\n      \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"fax\": \"\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"locale\": \"id-ID\",\n      \"currency_code\": \"IDR\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n    }\n  }\n}"
+					"body": "{\n  \"status\": \"ok\",\n  \"message\": \"Company created successfully\",\n  \"data\": {\n    \"company\": {\n      \"id\": \"9a1f2c3d-4e5b-4a7c-8d9e-0f1a2b3c4d5e\",\n      \"code\": \"DIZKAA\",\n      \"name\": \"Dizkaa Putra Anugerah\",\n      \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n      \"company_type\": \"PT\",\n      \"description\": \"Perusahaan jasa konstruksi\",\n      \"established_date\": \"2023-11-16\",\n      \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n      \"npwp\": \"01.234.567.8-901.000\",\n      \"email\": \"\",\n      \"phone\": \"\",\n      \"fax\": \"\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"locale\": \"id-ID\",\n      \"currency_code\": \"IDR\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-09-08T13:30:00+07:00\",\n      \"updated_at\": \"2026-09-08T13:30:00+07:00\"\n    }\n  }\n}"
 				},
 				{
 					"name": "Create Company - Code Taken",
@@ -679,7 +679,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -726,7 +726,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -773,7 +773,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -820,7 +820,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -867,7 +867,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -914,7 +914,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -944,6 +944,100 @@
 					],
 					"cookie": [],
 					"body": "{\n  \"status\": \"error\",\n  \"message\": \"established_date must be formatted as YYYY-MM-DD\"\n}"
+				},
+				{
+					"name": "Create Company - Invalid NPWP",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-add"
+							]
+						},
+						"description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya."
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"company npwp must have 15 or 16 digits\"\n}"
+				},
+				{
+					"name": "Create Company - NPWP Taken",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-add",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-add"
+							]
+						},
+						"description": "**`code`, `name`, dan `legal_name` wajib.**\n\n`legal_name` adalah yang **dicetak di dokumen, apa adanya** — sampai ke tanda bacanya. Ia tidak dirakit dari `company_type` + `name`: perakitan harus memutuskan \"PT\" atau \"PT.\", spasi, dan perlakuan untuk CV maupun Yayasan, dan kekeliruannya muncul di kop surat pelanggan. Karena itu `PT. Widia Kencana` bertitik sementara `PT UTAC Manufacturing Services Indonesia` tidak — masing-masing membawa ejaan resminya sendiri.\n\n`name` nama pendek untuk daftar dan pencarian, bukan untuk dicetak.\n\n**`code` unik tanpa peduli huruf besar-kecil.** `wiken` dan `WIKEN` tidak dapat hidup berdampingan; yang bentrok dijawab 409. Bentuk yang Anda ketik disimpan apa adanya karena kode ini muncul di layar.\n\n`address` boleh multi-baris dan **dicetak apa adanya** — pergantian barisnya dipertahankan, tidak dirapikan backend.\n\n`established_date` berformat `YYYY-MM-DD`, tanggal saja tanpa jam. Kosongkan atau kirim `null` bila tidak diketahui.\n\n`timezone`, `locale`, dan `currency_code` punya bawaan `Asia/Jakarta`, `id-ID`, `IDR`. Ketiganya hanya berarti bagi perusahaan **penerbit** dokumen; pada baris pelanggan ia terisi tetapi tidak dipakai apa pun.\n\n`status` hanya `active` atau `inactive`. Ia **bukan** penanda terhapus — menghapus perusahaan benar-benar menghapus barisnya."
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"company npwp is already used\"\n}"
 				}
 			]
 		},
@@ -963,7 +1057,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+					"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -981,7 +1075,7 @@
 						"{{company_id}}"
 					]
 				},
-				"description": "**Mengganti SELURUH isi barisnya**, bukan menambal sebagian: field yang tidak dikirim menjadi kosong.\n\nBerbeda dari `page.update` pada dokumen, yang justru menolak field yang hilang — di sana halaman ditambal per-properti oleh banyak penyunting sekaligus. Master data disunting satu orang lewat satu formulir yang memuat semuanya.\n\nKontak **tidak** ikut di sini; ia punya endpointnya sendiri."
+				"description": "**Mengganti SELURUH isi barisnya**, bukan menambal sebagian: field yang tidak dikirim menjadi kosong.\n\nBerbeda dari `page.update` pada dokumen, yang justru menolak field yang hilang — di sana halaman ditambal per-properti oleh banyak penyunting sekaligus. Master data disunting satu orang lewat satu formulir yang memuat semuanya.\n\nKontak **tidak** ikut di sini; ia punya endpointnya sendiri.\n\n**`npwp` opsional** dan disimpan **apa adanya** — titik dan stripnya ikut tercetak di dokumen pajak, jadi backend tidak pernah merapikannya. Yang divalidasi hanya jumlah digitnya: **15** (bentuk lama) atau **16** (berlaku sejak 2024); selain itu ditolak 400. Selain digit, hanya titik, strip, dan spasi yang diterima.\n\nKosong berarti belum diketahui, dan itu keadaan yang sah — penawaran sering disusun sebelum NPWP pelanggan dicatat. Yang terisi harus **unik**, dibandingkan sebagai digit saja: `01.234.567.8-901.000` dan `012345678901000` adalah nomor yang sama, dan yang kedua ditolak 409. Keunikan itu yang menangkap satu perusahaan yang telanjur didaftarkan dua kali dengan kode berbeda."
 			},
 			"response": [
 				{
@@ -1000,7 +1094,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1048,7 +1142,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1096,7 +1190,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1127,6 +1221,54 @@
 					],
 					"cookie": [],
 					"body": "{\n  \"status\": \"error\",\n  \"message\": \"company code is already used\"\n}"
+				},
+				{
+					"name": "Update Company - NPWP Taken",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"DIZKAA\",\n  \"name\": \"Dizkaa Putra Anugerah\",\n  \"legal_name\": \"PT. Dizkaa Putra Anugerah\",\n  \"company_type\": \"PT\",\n  \"description\": \"Perusahaan jasa konstruksi\",\n  \"established_date\": \"2023-11-16\",\n  \"npwp\": \"01.234.567.8-901.000\",\n  \"address\": \"Ruko New Westfield, Jl. Western Boulevard No. 32 Blok ER7\\nMustika Jaya, Bekasi 17158\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"fax\": \"\",\n  \"timezone\": \"Asia/Jakarta\",\n  \"locale\": \"id-ID\",\n  \"currency_code\": \"IDR\",\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-update/{{company_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"company-update",
+								"{{company_id}}"
+							]
+						},
+						"description": "**Mengganti SELURUH isi barisnya**, bukan menambal sebagian: field yang tidak dikirim menjadi kosong.\n\nBerbeda dari `page.update` pada dokumen, yang justru menolak field yang hilang — di sana halaman ditambal per-properti oleh banyak penyunting sekaligus. Master data disunting satu orang lewat satu formulir yang memuat semuanya.\n\nKontak **tidak** ikut di sini; ia punya endpointnya sendiri."
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"company npwp is already used\"\n}"
 				}
 			]
 		},

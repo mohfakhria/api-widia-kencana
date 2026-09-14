@@ -27,7 +27,8 @@ func companySelectQuery() string {
 		SELECT
 			id::text, code, name, legal_name,
 			COALESCE(company_type, ''), COALESCE(description, ''), established_date,
-			COALESCE(address, ''), COALESCE(email, ''), COALESCE(phone, ''), COALESCE(fax, ''),
+			COALESCE(address, ''), COALESCE(npwp, ''),
+			COALESCE(email, ''), COALESCE(phone, ''), COALESCE(fax, ''),
 			timezone, locale, currency_code, status, created_at, updated_at
 		FROM companies
 	`
@@ -40,7 +41,8 @@ func scanCompany(row interface{ Scan(...any) error }) (*entity.Company, error) {
 	if err := row.Scan(
 		&company.ID, &company.Code, &company.Name, &company.LegalName,
 		&company.CompanyType, &company.Description, &established,
-		&company.Address, &company.Email, &company.Phone, &company.Fax,
+		&company.Address, &company.NPWP,
+		&company.Email, &company.Phone, &company.Fax,
 		&company.Timezone, &company.Locale, &company.CurrencyCode,
 		&company.Status, &company.CreatedAt, &company.UpdatedAt,
 	); err != nil {
@@ -113,13 +115,17 @@ func (r *CompanyRepository) Create(ctx context.Context, company *entity.Company)
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO companies (
 			code, name, legal_name, company_type, description, established_date,
-			address, email, phone, fax, timezone, locale, currency_code, status
+			address, npwp, email, phone, fax, timezone, locale, currency_code, status
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
 		RETURNING id::text
 	`,
 		company.Code, company.Name, company.LegalName, company.CompanyType,
 		company.Description, company.EstablishedDate, company.Address,
+		// NULL, bukan string kosong: indeks unik NPWP parsial dan hanya
+		// melewatkan NULL. Sepuluh perusahaan ber-NPWP '' akan saling
+		// menghalangi, dan galatnya menyebut nomor yang tidak pernah diisi.
+		nullableText(company.NPWP),
 		company.Email, company.Phone, company.Fax,
 		company.Timezone, company.Locale, company.CurrencyCode, company.Status,
 	).Scan(&id)
@@ -134,13 +140,14 @@ func (r *CompanyRepository) Update(ctx context.Context, id string, company *enti
 	result, err := r.db.ExecContext(ctx, `
 		UPDATE companies
 		SET code = $1, name = $2, legal_name = $3, company_type = $4,
-			description = $5, established_date = $6, address = $7,
-			email = $8, phone = $9, fax = $10,
-			timezone = $11, locale = $12, currency_code = $13, status = $14
-		WHERE id = $15::uuid
+			description = $5, established_date = $6, address = $7, npwp = $8,
+			email = $9, phone = $10, fax = $11,
+			timezone = $12, locale = $13, currency_code = $14, status = $15
+		WHERE id = $16::uuid
 	`,
 		company.Code, company.Name, company.LegalName, company.CompanyType,
 		company.Description, company.EstablishedDate, company.Address,
+		nullableText(company.NPWP),
 		company.Email, company.Phone, company.Fax,
 		company.Timezone, company.Locale, company.CurrencyCode, company.Status, id,
 	)
@@ -338,11 +345,29 @@ func translateCompanyConflict(err error) error {
 		return err
 	}
 
-	if pgErr.Constraint == "companies_code_uq_idx" {
+	switch pgErr.Constraint {
+	case "companies_code_uq_idx":
 		return domain.NewError(domain.ErrConflict, "company code is already used")
+	case "companies_npwp_uq_idx":
+		// Hampir selalu berarti perusahaan yang sama didaftarkan dua kali —
+		// itulah yang indeks ini diadakan untuk menangkap.
+		return domain.NewError(domain.ErrConflict, "company npwp is already used")
 	}
 
 	return err
+}
+
+// nullableText mengubah string kosong menjadi NULL.
+//
+// Ada untuk kolom yang dijaga indeks unik parsial: di sana "belum diisi" HARUS
+// NULL, karena string kosong adalah sebuah nilai dan dua di antaranya
+// bertabrakan.
+func nullableText(value string) any {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+
+	return value
 }
 
 func ensureCompanyAffected(result sql.Result, pesan string) error {

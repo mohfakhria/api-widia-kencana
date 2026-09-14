@@ -19,15 +19,19 @@ type Company struct {
 	Description     string
 	EstablishedDate *time.Time
 	Address         string
-	Email           string
-	Phone           string
-	Fax             string
-	Timezone        string
-	Locale          string
-	CurrencyCode    string
-	Status          string
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	// NPWP disimpan persis seperti diketik, termasuk titik dan stripnya — ia
+	// dicetak apa adanya di dokumen pajak. Yang ditegakkan usecase hanya jumlah
+	// digitnya; keunikan dijaga indeks yang membandingkan digitnya saja.
+	NPWP         string
+	Email        string
+	Phone        string
+	Fax          string
+	Timezone     string
+	Locale       string
+	CurrencyCode string
+	Status       string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 
 	// Contacts hanya terisi pada pengambilan satu perusahaan, bukan pada daftar.
 	// Daftar perusahaan dipakai pemilih di layar, dan menyertakan seluruh kontak

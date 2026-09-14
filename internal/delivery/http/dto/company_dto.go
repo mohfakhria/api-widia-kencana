@@ -21,13 +21,16 @@ type CompanyRequest struct {
 	Description     string  `json:"description"`
 	EstablishedDate *string `json:"established_date"`
 	Address         string  `json:"address"`
-	Email           string  `json:"email"`
-	Phone           string  `json:"phone"`
-	Fax             string  `json:"fax"`
-	Timezone        string  `json:"timezone"`
-	Locale          string  `json:"locale"`
-	CurrencyCode    string  `json:"currency_code"`
-	Status          string  `json:"status"`
+	// NPWP opsional. Diterima apa adanya termasuk titik dan stripnya; yang
+	// ditolak hanya jumlah digit selain 15 atau 16.
+	NPWP         string `json:"npwp"`
+	Email        string `json:"email"`
+	Phone        string `json:"phone"`
+	Fax          string `json:"fax"`
+	Timezone     string `json:"timezone"`
+	Locale       string `json:"locale"`
+	CurrencyCode string `json:"currency_code"`
+	Status       string `json:"status"`
 }
 
 type CompanyListFilterRequest struct {
@@ -72,6 +75,7 @@ type CompanyResponse struct {
 	Description     string  `json:"description"`
 	EstablishedDate *string `json:"established_date"`
 	Address         string  `json:"address"`
+	NPWP            string  `json:"npwp"`
 	Email           string  `json:"email"`
 	Phone           string  `json:"phone"`
 	Fax             string  `json:"fax"`
@@ -124,6 +128,7 @@ func (r CompanyRequest) ToCompanyCommand() (input.CompanyCommand, error) {
 		CompanyType:  r.CompanyType,
 		Description:  r.Description,
 		Address:      r.Address,
+		NPWP:         r.NPWP,
 		Email:        r.Email,
 		Phone:        r.Phone,
 		Fax:          r.Fax,
@@ -189,6 +194,7 @@ func NewCompanyResponse(company *entity.Company) CompanyResponse {
 		CompanyType:  company.CompanyType,
 		Description:  company.Description,
 		Address:      company.Address,
+		NPWP:         company.NPWP,
 		Email:        company.Email,
 		Phone:        company.Phone,
 		Fax:          company.Fax,

@@ -194,7 +194,10 @@ func mapCompanyCommand(cmd input.CompanyCommand) *entity.Company {
 		// Address TIDAK dipangkas per baris — ia dicetak apa adanya, dan
 		// merapikannya di sini berarti backend diam-diam mengubah tata letak yang
 		// sudah dilihat orang saat mengetiknya.
-		Address:      strings.Trim(cmd.Address, " \t\n"),
+		Address: strings.Trim(cmd.Address, " \t\n"),
+		// NPWP hanya dipangkas, tidak dinormalkan menjadi digit: bentuk yang
+		// diketik orang itulah yang tercetak di faktur.
+		NPWP:         strings.TrimSpace(cmd.NPWP),
 		Email:        strings.TrimSpace(cmd.Email),
 		Phone:        strings.TrimSpace(cmd.Phone),
 		Fax:          strings.TrimSpace(cmd.Fax),
@@ -223,6 +226,47 @@ func validateCompany(company *entity.Company) error {
 	// pernah muncul sebagai galat.
 	if len(company.CurrencyCode) != 3 {
 		return domain.NewError(domain.ErrInvalidInput, "company currency code must be 3 letters")
+	}
+	if err := validateNPWP(company.NPWP); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateNPWP memeriksa JUMLAH DIGIT saja, bukan bentuk tulisannya.
+//
+// Titik, strip, dan spasi dibiarkan — orang menyalinnya dari surat pajak apa
+// adanya, dan menolak bentuk yang sah hanya memindahkan pekerjaan merapikan ke
+// orang yang sedang mengetik penawaran. Yang ditangkap di sini kesalahan yang
+// benar-benar merugikan: digit yang kurang atau kelebihan, yaitu salah ketik
+// yang tercetak di faktur pajak pelanggan dan baru ketahuan di sana.
+//
+// Lima belas digit adalah bentuk lama, enam belas yang berlaku sejak 2024.
+// Keduanya diterima karena keduanya masih beredar di surat yang disalin orang.
+//
+// Kosong SAH — lihat alasannya pada kolomnya di migration/companies.sql.
+func validateNPWP(npwp string) error {
+	if npwp == "" {
+		return nil
+	}
+
+	digits := 0
+	for _, r := range npwp {
+		switch {
+		case r >= '0' && r <= '9':
+			digits++
+		case r == '.' || r == '-' || r == ' ':
+			// Pemisah yang lazim ditulis orang.
+		default:
+			return domain.NewError(domain.ErrInvalidInput,
+				"company npwp may only contain digits, dots, dashes, and spaces")
+		}
+	}
+
+	if digits != 15 && digits != 16 {
+		return domain.NewError(domain.ErrInvalidInput,
+			"company npwp must have 15 or 16 digits")
 	}
 
 	return nil
