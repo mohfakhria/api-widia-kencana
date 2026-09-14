@@ -19,7 +19,7 @@ const defaultDocumentStatus = "draft"
 // allowedDocumentTypes adalah kosakata tertutup jenis dokumen.
 //
 // TIDAK ADA BAWAAN, dan itu keputusan yang diambil sadar setelah sempat ada:
-// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan ketujuh jenis di
+// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan kedelapan jenis di
 // bawah yang semuanya dokumen bisnis bermakna, tidak ada bawaan yang jujur —
 // memilih salah satunya berarti melabeli dokumen orang secara diam-diam, dan
 // label yang keliru tidak pernah muncul sebagai galat di kemudian hari. Permintaan
@@ -50,6 +50,11 @@ var allowedDocumentTypes = map[string]struct{}{
 	// Ditulis "cv", bukan "curriculum-vitae", karena itu yang diketik dan
 	// dibaca orang; kosakata ini melintas di URL dan dilihat manusia.
 	"cv": {},
+
+	// Serah terima yang BUKAN bast. Keduanya berdampingan atas permintaan
+	// pemilik repo; yang perlu diketahui siapa pun yang menambah jenis
+	// berikutnya hanyalah bahwa pemisahan itu disengaja, bukan terlewat.
+	"handover": {},
 }
 
 // Nomor dokumen: WK/<KODE>/<YYMMDD><URUT>, contoh WK/QTN/26101101.
@@ -86,6 +91,7 @@ var documentNumberCodes = map[string]string{
 	"service-report": "SR",
 	"invoice":        "INV",
 	"cv":             "CV",
+	"handover":       "HO",
 }
 
 // defaultDocumentPaperStatus menyaring daftar kertas ke yang benar-benar dapat
