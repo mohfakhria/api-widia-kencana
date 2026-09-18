@@ -282,11 +282,12 @@ DROP INDEX IF EXISTS assets_key_uq_idx;
 lalu jalankan ulang bagian `CREATE INDEX` di `migration/assets.sql` — seluruhnya
 memakai `IF NOT EXISTS`, jadi aman diulang.
 
-Jenis dokumen `cv` (2026-09-10) dan `handover` (2026-09-14) ditambahkan.
-Keduanya menumpang dua daftar yang diturunkan dari `allowedDocumentTypes` —
+Jenis dokumen `cv` (2026-09-10), `handover` (2026-09-14), dan
+`working-permit` (2026-09-18) ditambahkan.
+Ketiganya menumpang dua daftar yang diturunkan dari `allowedDocumentTypes` —
 folder aset `documents/<jenis>` dan `kind` lampiran proyek — dan yang kedua
 punya CHECK di database yang **tidak** ikut bertambah sendiri. Tanpa `ALTER` di
-bawah, melampirkan berkas ber-`kind` `cv` atau `handover` diterima usecase lalu
+bawah, melampirkan berkas ber-`kind` yang baru itu diterima usecase lalu
 ditolak Postgres sebagai 500 yang menyebut nama constraint, bukan 400 yang
 menyebutkan nilai apa yang boleh:
 
@@ -296,7 +297,7 @@ ALTER TABLE project_attachments ADD CONSTRAINT project_attachments_kind_chk
     CHECK (kind IN (
         'quotation', 'purchase-order', 'bast',
         'delivery-note', 'service-report', 'invoice', 'cv', 'handover',
-        'contract', 'site-photo', 'tax-invoice'
+        'working-permit', 'contract', 'site-photo', 'tax-invoice'
     ));
 ```
 

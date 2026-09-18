@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS documents (
     document_type TEXT NOT NULL DEFAULT 'custom',
     -- Kosakata TERTUTUP, ditegakkan di usecase — bukan di sini:
     --   quotation, purchase-order, bast, delivery-note, service-report,
-    --   invoice, cv, handover
+    --   invoice, cv, handover, working-permit
     --
     -- Sengaja tanpa CHECK. Daftarnya bertambah seiring jenis dokumen baru, dan
     -- constraint di database menuntut ALTER TABLE pada setiap penambahan —
@@ -123,11 +123,12 @@ CREATE INDEX IF NOT EXISTS documents_created_at_idx
 --
 -- document_type TIDAK ber-FK ke mana pun: kosakatanya milik usecase
 -- (allowedDocumentTypes), sama seperti alasan documents.document_type tanpa
--- CHECK. Kode pada nomornya sendiri (QTN, PO, BA, SJ, SR, INV, CV, HO) hidup di
+-- CHECK. Kode pada nomornya sendiri (QTN, PO, BA, SJ, SR, INV, CV, HO, WP) hidup
+-- di
 -- documentNumberCodes, internal/usecase/document_usecase.go.
 --
 -- Baris lama tidak pernah dibaca lagi setelah harinya lewat. Dibiarkan —
--- ukurannya delapan baris per hari paling banyak, dan riwayat "sampai mana urutan
+-- ukurannya sembilan baris per hari paling banyak, dan riwayat "sampai mana urutan
 -- hari itu" justru keterangan yang berguna saat ada yang menanyakan nomor yang
 -- melompat.
 CREATE TABLE IF NOT EXISTS document_number_counters (

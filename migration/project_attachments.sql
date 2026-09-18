@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS project_attachments (
     kind VARCHAR(30) NOT NULL,
     -- Kosakata TERTUTUP — lihat CHECK di bawah.
     --
-    -- Delapan yang pertama sama persis dengan document_type, karena berkas yang
+    -- Sembilan yang pertama sama persis dengan document_type, karena berkas yang
     -- diterima adalah jenis dokumen yang sama dengan yang dibuat sendiri: PO
     -- yang datang dari pelanggan tetap sebuah purchase order, CV tenaga ahli
     -- yang dikirim pemasok tetap sebuah CV. Tiga sisanya khas unggahan dan
@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS project_attachments (
         CHECK (kind IN (
             'quotation', 'purchase-order', 'bast',
             'delivery-note', 'service-report', 'invoice', 'cv', 'handover',
+            'working-permit',
             'contract', 'site-photo', 'tax-invoice'
         )),
 

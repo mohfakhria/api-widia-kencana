@@ -19,7 +19,7 @@ const defaultDocumentStatus = "draft"
 // allowedDocumentTypes adalah kosakata tertutup jenis dokumen.
 //
 // TIDAK ADA BAWAAN, dan itu keputusan yang diambil sadar setelah sempat ada:
-// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan kedelapan jenis di
+// sebelumnya jenis yang tidak disebut menjadi "custom". Dengan kesembilan jenis di
 // bawah yang semuanya dokumen bisnis bermakna, tidak ada bawaan yang jujur —
 // memilih salah satunya berarti melabeli dokumen orang secara diam-diam, dan
 // label yang keliru tidak pernah muncul sebagai galat di kemudian hari. Permintaan
@@ -55,6 +55,12 @@ var allowedDocumentTypes = map[string]struct{}{
 	// pemilik repo; yang perlu diketahui siapa pun yang menambah jenis
 	// berikutnya hanyalah bahwa pemisahan itu disengaja, bukan terlewat.
 	"handover": {},
+
+	// Surat izin kerja — izin masuk dan bekerja di area pelanggan, yang di
+	// pabrik lazimnya terbit per pekerjaan dan per tanggal. Satu-satunya jenis
+	// di sini yang masa berlakunya penting; kalau tanggalnya kelak perlu
+	// ditanyakan kembali, tempatnya variables, bukan kolom baru.
+	"working-permit": {},
 }
 
 // Nomor dokumen: WK/<KODE>/<YYMMDD><URUT>, contoh WK/QTN/26101101.
@@ -92,6 +98,7 @@ var documentNumberCodes = map[string]string{
 	"invoice":        "INV",
 	"cv":             "CV",
 	"handover":       "HO",
+	"working-permit": "WP",
 }
 
 // defaultDocumentPaperStatus menyaring daftar kertas ke yang benar-benar dapat

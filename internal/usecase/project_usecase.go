@@ -68,7 +68,7 @@ func NewProjectUseCase(
 		logger = slog.Default()
 	}
 
-	// Delapan jenis pertama sama persis dengan document_type — PO yang datang dari
+	// Sembilan jenis pertama sama persis dengan document_type — PO yang datang dari
 	// pelanggan tetap sebuah purchase order, CV yang dikirim pemasok tetap sebuah
 	// CV — jadi diturunkan, bukan ditulis ulang. Dua daftar yang menyebut hal yang
 	// sama pasti berselisih suatu hari.
