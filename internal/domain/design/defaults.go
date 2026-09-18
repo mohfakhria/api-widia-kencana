@@ -167,6 +167,26 @@ func (e *Element) ResolvedStrokeStyle() string {
 // keduanya sepakat tanpa siapa pun perlu menyetel apa pun. Konsekuensinya "dot"
 // adalah kotak kecil, bukan lingkaran; membulatkannya di satu sisi saja justru
 // akan membuat keduanya berbeda.
+// ArrowHeadSize mengembalikan panjang kepala panah dan setengah lebar alasnya,
+// dalam titik.
+//
+// SATU-SATUNYA tempat angka ini hidup di backend, dan angkanya tertulis juga di
+// berkas kontrak bersama — alasan yang sama persis dengan StrokeDashPattern di
+// bawah: dua renderer yang masing-masing menebak proporsinya pasti menghasilkan
+// panah yang berbeda, dan perbedaan itu baru terlihat setelah dicetak.
+//
+// Kelipatan lebar garis, bukan angka mutlak, supaya kepala tetap sebanding
+// ketika garisnya ditebalkan. Empat berbanding dua menghasilkan sudut puncak
+// sekitar 53 derajat — cukup lancip untuk terbaca sebagai panah pada ukuran
+// diagram, dan tidak selancip jarum yang menghilang saat dicetak kecil.
+func ArrowHeadSize(strokeWidth float64) (length, halfWidth float64) {
+	if strokeWidth <= 0 {
+		return 0, 0
+	}
+
+	return 4 * strokeWidth, 2 * strokeWidth
+}
+
 func StrokeDashPattern(style string, strokeWidth float64) []float64 {
 	if strokeWidth <= 0 {
 		return nil

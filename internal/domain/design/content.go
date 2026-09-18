@@ -430,6 +430,25 @@ type Element struct {
 	// StrokeStyle hanya berarti bila StrokeWidth > 0. Kosong berarti solid.
 	StrokeStyle string `json:"strokeStyle,omitempty"`
 
+	// ArrowStart dan ArrowEnd menggambar kepala panah pada ElementLine, dan
+	// hanya di sana — jenis lain mengabaikannya seperti properti asing lainnya.
+	//
+	// Ujung mana yang mana ditentukan bentuk data yang sudah ada: pada garis, W
+	// dan H adalah SIMPANGAN ujung terhadap pangkal, sehingga pangkalnya (X, Y)
+	// dan ujungnya (X+W, Y+H). ArrowEnd menaruh kepala di ujung itu.
+	//
+	// Ukurannya tidak disebut di sini melainkan diturunkan dari StrokeWidth —
+	// lihat ArrowHeadSize. Kepala yang ukurannya ditulis tersendiri akan
+	// berhenti sebanding dengan garisnya pada hari seseorang menebalkan
+	// garisnya saja.
+	//
+	// Panah mengikuti warna dan putaran garisnya, dan ikut lenyap bila garisnya
+	// tidak tergambar — stroke kosong atau strokeWidth nol. Kepala panah yang
+	// melayang tanpa garis adalah keadaan yang tidak pernah dimaksudkan siapa
+	// pun.
+	ArrowStart bool `json:"arrowStart,omitempty"`
+	ArrowEnd   bool `json:"arrowEnd,omitempty"`
+
 	// Properti gambar. AssetToken menunjuk aset yang sudah terunggah, bukan URL,
 	// supaya renderer tidak pernah mengambil alamat yang ditentukan klien.
 	AssetToken string `json:"assetToken,omitempty"`

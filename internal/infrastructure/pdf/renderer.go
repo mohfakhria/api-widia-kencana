@@ -474,6 +474,70 @@ func (c *canvas) drawLine(element *design.Element) {
 	// terbagi rata di kedua sisi jalurnya — perilaku yang sama dengan stroke pada
 	// SVG.
 	c.pdf.Line(element.X, element.Y, element.X+element.W, element.Y+element.H)
+
+	c.drawArrowHeads(element)
+}
+
+// drawArrowHeads menggambar kepala panah di salah satu atau kedua ujung garis.
+//
+// Dipanggil SETELAH garisnya, dan kepalanya menimpa ujung garis alih-alih
+// garisnya diperpendek lebih dulu. Dua sebabnya: memperpendek garis mengubah
+// geometri yang dikirim klien — panjang yang tergambar tidak lagi sama dengan
+// yang ia nyatakan — dan pada garis putus-putus, pemendekan menggeser seluruh
+// pola putusnya. Kepala terisi pekat dengan warna yang sama, jadi tumpangan itu
+// tidak terlihat.
+//
+// Segitiga digambar sebagai poligon TERISI, bukan dua garis miring. Dua garis
+// akan mewarisi pola putus-putus yang sedang terpasang, sehingga panah pada
+// garis putus-putus muncul sebagai kepala yang ikut terputus-putus.
+func (c *canvas) drawArrowHeads(element *design.Element) {
+	if !element.ArrowStart && !element.ArrowEnd {
+		return
+	}
+
+	// Garis tanpa panjang tidak punya arah, dan panah tanpa arah tidak dapat
+	// digambar ke mana pun. Didiamkan, bukan ditebak ke kanan: garis sepanjang
+	// nol adalah keadaan sementara saat orang baru mulai menyeretnya.
+	panjangGaris := math.Hypot(element.W, element.H)
+	if panjangGaris == 0 {
+		return
+	}
+
+	length, halfWidth := design.ArrowHeadSize(element.StrokeWidth)
+	if length == 0 {
+		return
+	}
+
+	// Isi disamakan dengan warna garisnya. Kepala panah bukan bidang tersendiri
+	// yang boleh berwarna lain — ia bagian dari garis yang sama.
+	red, green, blue, _ := design.ParseColor(element.Stroke)
+	c.pdf.SetFillColor(red, green, blue)
+
+	// Arah satuan dari pangkal ke ujung, beserta tegak lurusnya.
+	dirX, dirY := element.W/panjangGaris, element.H/panjangGaris
+
+	if element.ArrowEnd {
+		c.arrowHead(element.X+element.W, element.Y+element.H, dirX, dirY, length, halfWidth)
+	}
+	if element.ArrowStart {
+		// Arah dibalik: kepala di pangkal menunjuk menjauhi ujung.
+		c.arrowHead(element.X, element.Y, -dirX, -dirY, length, halfWidth)
+	}
+}
+
+// arrowHead menggambar satu segitiga terisi dengan puncak di (tipX, tipY),
+// menunjuk ke arah (dirX, dirY) yang sudah bersatuan.
+func (c *canvas) arrowHead(tipX, tipY, dirX, dirY, length, halfWidth float64) {
+	// Pusat alas mundur sepanjang length dari puncaknya, lalu kedua sudut alas
+	// digeser ke kiri dan ke kanan sejauh halfWidth pada arah tegak lurus.
+	baseX, baseY := tipX-dirX*length, tipY-dirY*length
+	perpX, perpY := -dirY*halfWidth, dirX*halfWidth
+
+	c.pdf.Polygon([]fpdf.PointType{
+		{X: tipX, Y: tipY},
+		{X: baseX + perpX, Y: baseY + perpY},
+		{X: baseX - perpX, Y: baseY - perpY},
+	}, "F")
 }
 
 // applyStroke menyetel warna, ketebalan, DAN pola putus-putus sekaligus.
