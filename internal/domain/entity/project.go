@@ -3,8 +3,17 @@ package entity
 import "time"
 
 type Project struct {
-	ID        int64
-	Name      string
+	ID   int64
+	Name string
+	// Status pada JALUR BACA adalah status tampilan: proyek aktif yang sudah
+	// punya tonggak menampilkan nama tonggak TERAKHIRNYA (reached_at terbesar,
+	// lalu created_at) alih-alih "active" — permintaan pemilik repo, supaya
+	// daftar proyek langsung menjawab "sampai mana". Status selain active, dan
+	// proyek aktif tanpa tonggak, tampil apa adanya.
+	//
+	// Kosakata TULIS tidak berubah: create dan update tetap hanya menerima
+	// active, inactive, decline, completed. Klien yang mengirim balik status
+	// tampilan akan ditolak 400 — dan itu benar, karena tonggak bukan status.
 	Status    string
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -22,6 +31,17 @@ type Project struct {
 	Attachments []ProjectAttachment
 	Documents   []ProjectDocument
 	Milestones  []ProjectMilestone
+
+	// Amount adalah angka nilai yang ditampilkan daftar dan detail proyek.
+	//
+	// Berjenjang: variables.project_value bila ada — angka yang dikonfirmasi
+	// orang selalu menang — kalau tidak, JUMLAH grand_total seluruh penawaran
+	// yang tertaut, sebagai cadangan SEMENTARA. Nol adalah bawaannya atas
+	// permintaan pemilik repo, dan karenanya "belum ada apa-apa" dan "bernilai
+	// nol" tampak sama di layar; asal-usul angkanya pun sengaja tidak dibawa.
+	// Bila salah satu pembedaan itu kelak dibutuhkan, kembalikan field source
+	// di sini dan di DTO-nya — jangan menebaknya dari tempat lain.
+	Amount float64
 
 	// Customers adalah pengecualian dari aturan di atas: peserta ber-peran
 	// customer SAJA, dan justru terisi juga pada daftar — kolom "Customer" di

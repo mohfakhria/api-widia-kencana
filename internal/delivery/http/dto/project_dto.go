@@ -24,6 +24,10 @@ type ProjectResponse struct {
 	ID     int64  `json:"id"`
 	Name   string `json:"name"`
 	Status string `json:"status"`
+	// Amount selalu angka, nol bila belum ada apa-apa — bentuk dan bawaannya
+	// permintaan pemilik repo, dan konsekuensinya tercatat di
+	// entity.Project.Amount.
+	Amount float64 `json:"amount"`
 	// Keduanya hanya muncul pada project-detail. Pada daftar ia dihilangkan,
 	// bukan dikirim kosong — larik kosong akan terbaca sebagai "proyek ini
 	// memang tidak punya peserta".
@@ -335,6 +339,7 @@ func NewProjectResponse(project *entity.Project) ProjectResponse {
 		ID:        project.ID,
 		Name:      project.Name,
 		Status:    project.Status,
+		Amount:    project.Amount,
 		Variables: variablesOf(project.Variables),
 		// make, bukan nil: customers dijanjikan selalu larik, tidak pernah null.
 		Customers: make([]ProjectCompanyRefResponse, 0, len(project.Customers)),

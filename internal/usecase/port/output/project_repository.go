@@ -24,6 +24,23 @@ type ProjectRepository interface {
 	AddAttachment(ctx context.Context, attachment *entity.ProjectAttachment) (*entity.ProjectAttachment, error)
 	UpdateAttachment(ctx context.Context, id string, attachment *entity.ProjectAttachment) error
 
+	// SumQuotationAmounts menjumlahkan grand_total SELURUH penawaran tiap
+	// proyek, dikunci id proyeknya — satu kueri untuk seluruh daftar; proyek
+	// tanpa penawaran ber-angka tidak punya baris, dan pembacanya memakai nol.
+	// Penawaran tanpa grand_total dilewati, bukan dihitung nol. Revisi TIDAK
+	// dikecualikan: seluruh status ikut terjumlah, apa pun keadaannya —
+	// aturan sementara yang diminta pemilik repo. SumQuotationAmount melayani
+	// satu proyek dengan aturan yang sama persis, untuk project-detail.
+	SumQuotationAmounts(ctx context.Context) (map[int64]float64, error)
+	SumQuotationAmount(ctx context.Context, projectID int64) (float64, error)
+
+	// LatestMilestones mengembalikan nama tonggak TERAKHIR tiap proyek —
+	// reached_at terbesar, created_at sebagai pemutus seri — satu kueri untuk
+	// seluruh daftar. Proyek tanpa tonggak tidak punya baris. Detail tidak
+	// memakai ini: tonggaknya sudah dimuat ListMilestones dengan urutan yang
+	// pemutus serinya sama, jadi elemen terakhirnya adalah jawaban yang sama.
+	LatestMilestones(ctx context.Context) (map[int64]string, error)
+
 	ListDocuments(ctx context.Context, projectID int64) ([]entity.ProjectDocument, error)
 	GetDocumentByID(ctx context.Context, id string) (*entity.ProjectDocument, error)
 	AddDocument(ctx context.Context, document *entity.ProjectDocument) (*entity.ProjectDocument, error)

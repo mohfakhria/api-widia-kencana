@@ -86,7 +86,61 @@ func NewProjectUseCase(
 }
 
 func (uc *projectUseCase) List(ctx context.Context) ([]entity.Project, error) {
-	return uc.repo.List(ctx)
+	projects, err := uc.repo.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Satu kueri untuk seluruh daftar, pola yang sama dengan customers —
+	// bukan satu kueri per proyek. Proyek yang tidak punya baris di peta
+	// menerima nol dari bacaan peta itu sendiri.
+	quotations, err := uc.repo.SumQuotationAmounts(ctx)
+	if err != nil {
+		return nil, err
+	}
+	milestones, err := uc.repo.LatestMilestones(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for index := range projects {
+		projects[index].Amount = deriveProjectAmount(projects[index].Variables, quotations[projects[index].ID])
+		projects[index].Status = deriveProjectStatus(projects[index].Status, milestones[projects[index].ID])
+	}
+
+	return projects, nil
+}
+
+// deriveProjectStatus memilih status yang DITAMPILKAN.
+//
+// Hanya proyek aktif yang statusnya diganti nama tonggak terakhirnya — di
+// situlah "sampai mana" lebih berarti daripada kata "active" yang sama di
+// setiap baris. Status lain adalah keadaan akhir atau keputusan (completed,
+// decline, inactive) dan tampil apa adanya; proyek aktif tanpa tonggak juga,
+// karena belum ada yang bisa diceritakan.
+func deriveProjectStatus(status, latestMilestone string) string {
+	if status != "active" || latestMilestone == "" {
+		return status
+	}
+
+	return latestMilestone
+}
+
+// deriveProjectAmount memilih angka yang ditampilkan sebagai nilai proyek.
+//
+// BERJENJANG, dan urutannya adalah keputusan: variables.project_value menang
+// karena ia satu-satunya angka yang DIKONFIRMASI orang — penawaran hanyalah
+// tawaran, dan README menuliskan panjang kenapa nilai proyek tidak diturunkan
+// dari dokumen. Jumlah penawaran adalah cadangan SEMENTARA atas permintaan
+// pemilik repo, untuk proyek yang nilainya belum sempat diisi — dan nol adalah
+// bawaannya, juga atas permintaan yang sama.
+func deriveProjectAmount(variables map[string]any, quotationSum float64) float64 {
+	// project_value dijamin angka oleh penjaga variables dan indeks ekspresi;
+	// nil JSON berarti sengaja dikosongkan dan jatuh ke cadangan.
+	if amount, ok := variables["project_value"].(float64); ok {
+		return amount
+	}
+
+	return quotationSum
 }
 
 func (uc *projectUseCase) GetByID(ctx context.Context, id string) (*entity.Project, error) {
@@ -121,6 +175,24 @@ func (uc *projectUseCase) GetByID(ctx context.Context, id string) (*entity.Proje
 	if project.Milestones, err = uc.repo.ListMilestones(ctx, projectID); err != nil {
 		return nil, err
 	}
+
+	// Diisi juga di sini, bukan hanya di daftar: amount selalu ada, dan nol
+	// pada detail harus berarti hasil hitungan yang sama dengan di daftar —
+	// bukan "tidak dihitung". Aturan pemilihannya satu, deriveProjectAmount.
+	quotationSum, err := uc.repo.SumQuotationAmount(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	project.Amount = deriveProjectAmount(project.Variables, quotationSum)
+
+	// Tonggak terakhir diambil dari daftar yang sudah dimuat — ListMilestones
+	// urut reached_at lalu created_at, jadi elemen terakhirnya adalah jawaban
+	// yang sama dengan LatestMilestones pada daftar.
+	latestMilestone := ""
+	if len(project.Milestones) > 0 {
+		latestMilestone = project.Milestones[len(project.Milestones)-1].Milestone
+	}
+	project.Status = deriveProjectStatus(project.Status, latestMilestone)
 
 	return project, nil
 }

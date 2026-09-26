@@ -524,6 +524,67 @@ func scanProjectDocument(row interface{ Scan(...any) error }) (*entity.ProjectDo
 	return &item, nil
 }
 
+// quotationSumWhere menyaring baris yang ikut dijumlah: seluruh penawaran
+// tertaut yang PUNYA grand_total, apa pun statusnya.
+//
+// Yang tanpa grand_total dilewati oleh WHERE, bukan dihitung nol — nol adalah
+// penawaran gratis yang sah, sedangkan tanpa angka berarti belum diisi.
+// Nilainya dijamin numerik oleh indeks documents_grand_total_idx, yang menolak
+// tipe salah ketika barisnya ditulis; dan satu dokumen tidak pernah terjumlah
+// dua kali karena tautannya unik (project_documents_document_uq_idx).
+//
+// Revisi penawaran IKUT terjumlah — dua revisi atas tawaran yang sama berarti
+// dua kali lipat. Itu batas aturan sementara ini, diterima sadar oleh pemilik
+// repo; bila kelak revisi perlu dikecualikan, saringannya status, di sini.
+const quotationSumWhere = `
+	FROM project_documents pd
+	JOIN documents d ON d.id = pd.document_id
+	WHERE d.document_type = 'quotation'
+		AND d.variables ? 'grand_total'
+`
+
+func (r *ProjectRepository) SumQuotationAmounts(ctx context.Context) (map[int64]float64, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT pd.project_id, SUM((d.variables->>'grand_total')::numeric)
+	`+quotationSumWhere+`
+		GROUP BY pd.project_id
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	amounts := make(map[int64]float64)
+	for rows.Next() {
+		var (
+			projectID int64
+			amount    float64
+		)
+		if err := rows.Scan(&projectID, &amount); err != nil {
+			return nil, err
+		}
+		amounts[projectID] = amount
+	}
+
+	return amounts, rows.Err()
+}
+
+func (r *ProjectRepository) SumQuotationAmount(ctx context.Context, projectID int64) (float64, error) {
+	var amount float64
+	// COALESCE membuat proyek tanpa penawaran ber-angka menghasilkan nol dari
+	// satu baris, bukan sql.ErrNoRows yang harus ditangani pemanggil.
+	err := r.db.QueryRowContext(ctx, `
+		SELECT COALESCE(SUM((d.variables->>'grand_total')::numeric), 0)
+	`+quotationSumWhere+`
+		AND pd.project_id = $1
+	`, projectID).Scan(&amount)
+	if err != nil {
+		return 0, err
+	}
+
+	return amount, nil
+}
+
 func (r *ProjectRepository) ListDocuments(ctx context.Context, projectID int64) ([]entity.ProjectDocument, error) {
 	rows, err := r.db.QueryContext(ctx, projectDocumentSelectQuery()+`
 		WHERE pd.project_id = $1
@@ -621,12 +682,43 @@ func scanProjectMilestone(row interface{ Scan(...any) error }) (*entity.ProjectM
 // ListMilestones mengurutkan TERLAMA lebih dulu, berbeda dari lampiran dan
 // dokumen yang terbaru di atas. Di sana yang dicari yang paling akhir masuk; di
 // sini yang dicari jalan ceritanya.
+// LatestMilestones: tonggak terakhir per proyek, untuk status tampilan pada
+// daftar. Pemutus serinya created_at — dua tonggak yang dicapai pada tanggal
+// yang sama diwakili yang dicatat belakangan — dan pemutus seri yang SAMA
+// dipakai ListMilestones di bawah, supaya daftar dan detail tidak pernah
+// menjawab berbeda tentang tonggak terakhir satu proyek.
+func (r *ProjectRepository) LatestMilestones(ctx context.Context) (map[int64]string, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT DISTINCT ON (project_id) project_id, milestone
+		FROM project_milestones
+		ORDER BY project_id, reached_at DESC, created_at DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	milestones := make(map[int64]string)
+	for rows.Next() {
+		var (
+			projectID int64
+			milestone string
+		)
+		if err := rows.Scan(&projectID, &milestone); err != nil {
+			return nil, err
+		}
+		milestones[projectID] = milestone
+	}
+
+	return milestones, rows.Err()
+}
+
 func (r *ProjectRepository) ListMilestones(ctx context.Context, projectID int64) ([]entity.ProjectMilestone, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id::text, project_id, milestone, reached_at, COALESCE(note, ''), created_at, updated_at
 		FROM project_milestones
 		WHERE project_id = $1
-		ORDER BY reached_at
+		ORDER BY reached_at, created_at
 	`, projectID)
 	if err != nil {
 		return nil, err
